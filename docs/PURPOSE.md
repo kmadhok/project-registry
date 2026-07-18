@@ -1,0 +1,111 @@
+# Purpose and Operating Model
+
+## Problem
+
+Meaningful effort is spread across many repositories, experiments, and unfinished ideas. Repository activity alone does not explain what a project was for, what was accomplished, whether it is still active, or what should happen next. As a result:
+
+- completed work becomes difficult to rediscover;
+- promising work drops when attention moves elsewhere;
+- experiments and active products appear equally important;
+- open issues and pull requests lack portfolio-level context;
+- overlapping projects are difficult to consolidate or retire;
+- GitHub does not present a coherent account of what has been built.
+
+## Purpose
+
+The Project Registry is the durable source of truth for the **meaning and lifecycle** of Kanu's projects.
+
+It should answer five questions quickly:
+
+1. What projects exist, and why does each one exist?
+2. Which projects are active now, next, complete, reference material, superseded, or archived?
+3. What meaningful outcome or evidence has each project produced?
+4. What is the single clearest next action for each active project?
+5. What live GitHub work needs attention, including open PRs, failing checks, stale branches, and unresolved issues?
+
+## Desired outcomes
+
+- Effort remains discoverable after active work stops.
+- Every active project has an explicit purpose and next action.
+- The number of active projects stays intentionally small.
+- Related and superseded projects are visibly connected.
+- Open GitHub work can be reviewed across the portfolio from one place.
+- Agents can retrieve reliable portfolio context instead of reconstructing it from repository names.
+- Public-facing portfolio material can be generated from reviewed registry data without exposing private details.
+
+## Sources of truth
+
+The registry deliberately separates human judgment from observed system state.
+
+### Human-curated registry data
+
+The registry owns:
+
+- purpose;
+- lifecycle state;
+- active/inactive status;
+- priority and time horizon;
+- desired outcome;
+- accomplishments and evidence;
+- next action;
+- relationships such as successor, predecessor, duplicate, or component;
+- private notes and public-safe summaries.
+
+### GitHub-observed data
+
+GitHub owns:
+
+- repository visibility and archival state;
+- default branch and recent activity;
+- open and draft pull requests;
+- issues and labels;
+- review and CI status;
+- releases, branches, and repository metadata.
+
+Observed data may be cached for speed, but it should be refreshable and clearly timestamped.
+
+## Lifecycle vocabulary
+
+| Lifecycle | Meaning |
+|---|---|
+| `now` | Receiving intentional work now. Keep this list very small. |
+| `next` | A real near-term commitment, not a generic someday idea. |
+| `incubating` | Being explored before a commitment is made. |
+| `showcase` | Complete enough to demonstrate; only maintenance is expected. |
+| `maintained` | Operational infrastructure or a useful tool that remains supported. |
+| `reference` | Valuable for learning, examples, research, or historical context. |
+| `superseded` | Replaced by another named project but retained for history. |
+| `archived` | Intentionally closed with no further work expected. |
+
+`active` is a separate boolean signal. Normally, `now`, `next`, and `maintained` projects are active, but keeping lifecycle and activity separate supports exceptions without distorting the vocabulary.
+
+## Core operating rules
+
+1. Every registered project must have a purpose.
+2. Every active project must have exactly one clear next action.
+3. A project cannot become `now` without identifying the outcome that would move it out of `now`.
+4. New projects should be checked against existing projects for overlap.
+5. Superseded projects must name their successor.
+6. GitHub activity is evidence, not priority. A recent commit does not automatically make a project active.
+7. Generated data must never overwrite human-curated fields.
+8. Automated write actions require explicit confirmation and must identify their exact target.
+
+## Initial success criteria
+
+The foundation is successful when:
+
+- all owned GitHub repositories can be represented in a consistent schema;
+- every non-fork repository has a lifecycle state and purpose or an explicit `needs_review` marker;
+- all active projects have a next action and last-reviewed date;
+- open PRs can be listed across the portfolio;
+- projects with no next action, stale activity, or conflicting signals can be found;
+- the registry can generate a concise portfolio dashboard;
+- an MCP client can answer read-only questions without direct GitHub exploration.
+
+## Safety and privacy boundaries
+
+- Never store tokens, API keys, `.env` contents, or credential values.
+- Treat repository visibility and public-safe descriptions independently: a private project may have a public-safe summary, but it is never public by default.
+- Do not expose private issue, PR, or project content through a public output unless it has been explicitly marked safe.
+- Do not merge PRs, close issues, archive repositories, delete branches, or change visibility without explicit approval.
+- Record refresh times and distinguish stale cached data from live GitHub state.

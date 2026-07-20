@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kmadhok/project-registry/schema/understanding.schema.json",
+  "title": "Repository Understanding Brief",
+  "type": "object",
+  "required": [
+    "schema_version", "repository", "analyzed_at", "revision", "analysis_scope",
+    "stated_purpose", "observed_capabilities", "planned_work", "architecture",
+    "maturity", "accomplishments", "gaps", "risks", "suggested_next_actions",
+    "questions", "evidence", "confidence", "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "repository": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
+    "analyzed_at": {"type": "string", "format": "date-time"},
+    "revision": {"type": "string", "minLength": 7},
+    "analysis_scope": {
+      "type": "object",
+      "required": ["inspected", "missing", "inaccessible", "sampling_notes"],
+      "properties": {
+        "inspected": {"type": "array", "items": {"type": "string"}},
+        "missing": {"type": "array", "items": {"type": "string"}},
+        "inaccessible": {"type": "array", "items": {"type": "string"}},
+        "sampling_notes": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "stated_purpose": {"type": ["string", "null"]},
+    "observed_capabilities": {"$ref": "#/$defs/claims"},
+    "planned_work": {"$ref": "#/$defs/claims"},
+    "architecture": {"$ref": "#/$defs/claims"},
+    "maturity": {"enum": ["empty", "concept", "scaffold", "prototype", "functional", "operational", "mature"]},
+    "accomplishments": {"$ref": "#/$defs/claims"},
+    "gaps": {"$ref": "#/$defs/claims"},
+    "risks": {"$ref": "#/$defs/claims"},
+    "suggested_next_actions": {"$ref": "#/$defs/claims"},
+    "questions": {"type": "array", "items": {"type": "string"}},
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "location", "summary"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "location": {"type": "string", "minLength": 1},
+          "summary": {"type": "string", "minLength": 1}
+        },
+        "additionalProperties": false
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "required": ["level", "rationale"],
+      "properties": {
+        "level": {"enum": ["low", "medium", "high"]},
+        "rationale": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["statement", "claim_type", "evidence_ids"],
+        "properties": {
+          "statement": {"type": "string", "minLength": 1},
+          "claim_type": {"enum": ["observed_fact", "supported_inference", "owner_context"]},
+          "evidence_ids": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

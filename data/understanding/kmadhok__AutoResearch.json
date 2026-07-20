@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/AutoResearch",
+  "analyzed_at": "2026-07-20T00:00:00Z",
+  "revision": "1f2a7ae3f7cffeda0827f6d42a733dff4ed616a7",
+  "analysis_scope": {
+    "inspected": [
+      "README.md",
+      "RALPH_IMPLEMENTATION_STATUS.md",
+      "pyproject.toml",
+      "loop.py",
+      "evaluate.py",
+      "scraper.py",
+      "lib/circuit_breaker.py",
+      "lib/response_analyzer.py",
+      "infra/",
+      "tests/",
+      "recent commit history"
+    ],
+    "missing": [
+      ".github/workflows/"
+    ],
+    "inaccessible": [
+      "Test execution because pytest is not installed in the analysis environment",
+      "Live target verification because it would perform network scraping and agent execution"
+    ],
+    "sampling_notes": "All 33 tracked paths were inventoried. Core loop, evaluator, scraper, safety libraries, infrastructure tests, and documentation were sampled in depth."
+  },
+  "stated_purpose": "Run a bounded autonomous improvement loop in which Codex edits one scraper, evaluates results, and keeps or discards each change according to an objective score.",
+  "observed_capabilities": [
+    {
+      "statement": "The CLI creates isolated Git worktree sessions, bootstraps cached pages, runs bounded iterations, evaluates scraper output, and records kept, discarded, crashed, rejected, timed-out, or no-op outcomes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["readme", "loop"]
+    },
+    {
+      "statement": "The evaluator scores yield, required and optional fields, type validity, uniqueness, and request efficiency.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["evaluator"]
+    },
+    {
+      "statement": "The repository contains response-analysis, circuit-breaker, adaptive-rate-limiter, smart-client, and cached/live validation components with unit and integration-style tests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["safety-libs", "tests"]
+    },
+    {
+      "statement": "Agent edits are constrained and rejected when they modify forbidden files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["loop", "tests"]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The status document lists main-loop circuit-breaker integration, session continuity, monitoring, and broader testing as pending work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["status"]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "A session-specific Git worktree contains the editable scraper and result log; the loop invokes Codex, validates the diff, executes the scraper in cached or live mode, scores artifacts, and commits or discards the candidate.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["readme", "loop", "evaluator"]
+    },
+    {
+      "statement": "The human controls strategy through program.md and evaluation rules, while the agent is limited to scraper.py.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["readme", "loop"]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The repository implements the complete cached experiment loop, including worktree isolation, agent invocation, scoring, keep/discard decisions, artifacts, and status summaries.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["loop", "readme"]
+    },
+    {
+      "statement": "Committed tests cover evaluator behavior, keep/discard/crash/rejection/timeout paths, smart-client behavior, and fixture-based scraper output.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["tests"]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "CircuitBreaker exists as a library but is not referenced by the sampled main loop, matching the status document's integration gap.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["safety-libs", "loop", "status"]
+    },
+    {
+      "statement": "There is no CI workflow to execute the committed tests automatically.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["tree-inventory"]
+    },
+    {
+      "statement": "The implementation status document is partially stale because the current tree contains rate-limiter and broader tests while still describing them as future phases.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["status", "tests", "safety-libs"]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The loop can invoke an autonomous coding agent and live network scraper; incomplete circuit-breaker integration increases the cost of stalled or repetitive runs.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["loop", "status", "safety-libs"]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Run the full committed test suite in the intended uv environment, reconcile RALPH_IMPLEMENTATION_STATUS.md with the current tree, and either integrate CircuitBreaker into run_loop or explicitly defer it.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["status", "loop", "tests", "safety-libs"]
+    }
+  ],
+  "questions": [
+    "Is AutoResearch intended to remain a reusable scraper experiment harness or become a general autonomous code-improvement framework?",
+    "Is the project still active after the July archive snapshot, or should it become showcase/reference?",
+    "Should live-mode execution remain part of the MVP or be treated as an optional validation stage?"
+  ],
+  "evidence": [
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Defines the autoscrape MVP, quick start, loop, evaluation, modes, exit conditions, and file responsibilities."
+    },
+    {
+      "id": "status",
+      "kind": "status_document",
+      "location": "RALPH_IMPLEMENTATION_STATUS.md",
+      "summary": "Claims completed response analysis and circuit-breaker libraries while listing integration, session, monitoring, and broader test work as pending."
+    },
+    {
+      "id": "loop",
+      "kind": "source",
+      "location": "loop.py",
+      "summary": "Implements session worktrees, agent prompting, diff restrictions, scraper execution, scoring, commits/discards, live validation, exit conditions, and CLI commands."
+    },
+    {
+      "id": "evaluator",
+      "kind": "source",
+      "location": "evaluate.py",
+      "summary": "Implements deterministic output quality and efficiency scoring."
+    },
+    {
+      "id": "safety-libs",
+      "kind": "source",
+      "location": "lib/ and infra/",
+      "summary": "Contain response analysis, circuit breaker, adaptive rate limiting, failure detection, fingerprints, and smart HTTP/browser client components."
+    },
+    {
+      "id": "tests",
+      "kind": "test_source",
+      "location": "tests/ and test_ralph_components.py",
+      "summary": "Eight test-like tracked paths cover evaluator, infrastructure, loop outcomes, scraper fixtures, response analysis, and circuit breaker behavior."
+    },
+    {
+      "id": "tree-inventory",
+      "kind": "repository_tree",
+      "location": "1f2a7ae3f7cffeda0827f6d42a733dff4ed616a7",
+      "summary": "The revision contains 33 tracked paths and no GitHub workflow."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "1f2a7ae3f7cffeda0827f6d42a733dff4ed616a7",
+      "summary": "Three commits show the initial scaffold, cache/codex defaults fix, and July archive snapshot."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The core workflow is supported by implementation and representative test source, but tests and live behavior were not executed and the status document is partially stale."
+  },
+  "limitations": [
+    "Tests were inspected but not executed because pytest is unavailable.",
+    "No live scraping or Codex agent iteration was run.",
+    "The July commit message indicates an archive snapshot and does not establish current owner intent."
+  ]
+}

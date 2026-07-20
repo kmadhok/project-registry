@@ -104,6 +104,74 @@ Acceptance criteria:
 - Private repository names and details are excluded by default.
 - Showcase ordering is human-curated.
 
+## Repository understanding stories
+
+### RU-001 — Perform a repository understanding pass (`P0`)
+
+As the project owner, I want each repository examined systematically so that the registry explains what the project actually is rather than relying on its name or GitHub description.
+
+Acceptance criteria:
+
+- The process inspects documentation, source structure, entry points, dependencies, tests, workflows, recent history, issues, PRs, and representative outputs when available.
+- The process records which evidence was available, inspected, missing, or inaccessible.
+- Large repositories may be sampled strategically, but the sampling method and limitations are recorded.
+- The result is dated and tied to a repository revision.
+
+### RU-002 — Distinguish intent from implementation (`P0`)
+
+As the project owner, I want intended capabilities separated from implemented capabilities so that plans and stale documentation are not mistaken for completed work.
+
+Acceptance criteria:
+
+- The brief separately records stated purpose, observed implementation, and planned work.
+- Implemented-capability claims cite supporting files, tests, commits, releases, or runnable artifacts.
+- Conflicts between documentation and code are surfaced as questions or mismatches.
+- Unsupported claims are never presented as facts.
+
+### RU-003 — Explain architecture and operation (`P1`)
+
+As the project owner, I want a concise explanation of how a repository works so that I or an agent can resume work without rediscovering its structure.
+
+Acceptance criteria:
+
+- The brief identifies primary entry points, major components, dependencies, external systems, and important data flows.
+- Setup and execution paths are summarized when evidence supports them.
+- Important operational constraints and credential requirements are named without capturing secret values.
+- Architecture detail is proportional to the repository's complexity.
+
+### RU-004 — Assess maturity, accomplishments, and gaps (`P0`)
+
+As the project owner, I want evidence-backed maturity and accomplishment summaries so that effort is recognized and unfinished work is visible.
+
+Acceptance criteria:
+
+- The brief identifies working artifacts, meaningful milestones, tests, deployments, demos, or outputs.
+- It records material gaps, broken paths, missing documentation, security concerns, and maintenance risks.
+- Maturity uses a defined vocabulary rather than commit count alone.
+- Suggested next actions explain which evidence motivated them.
+
+### RU-005 — Record confidence and unresolved questions (`P0`)
+
+As the project owner, I want analysis confidence and unanswered questions recorded so that inference is not confused with knowledge.
+
+Acceptance criteria:
+
+- Material conclusions are labeled as observed fact, supported inference, or owner-provided context.
+- The brief has an overall confidence level and explains important limitations.
+- Questions requiring owner knowledge are collected for review instead of guessed.
+- Owner corrections become curated context and remain distinguishable from generated analysis.
+
+### RU-006 — Refresh understanding incrementally (`P1`)
+
+As the project owner, I want repository understanding refreshed when meaningful changes occur so that analysis remains current without repeatedly rereading everything.
+
+Acceptance criteria:
+
+- The system detects changes since the last analyzed revision.
+- Refresh focuses on affected evidence while preserving still-valid findings.
+- Material changes to purpose, architecture, maturity, or next actions are highlighted.
+- Previous briefs remain auditable.
+
 ## GitHub intelligence stories
 
 #### US-010 — See open pull requests (`P1`)
@@ -209,12 +277,50 @@ Acceptance criteria:
 - Any later external write tool names the exact repository and target.
 - Destructive or public-facing changes always require explicit confirmation.
 
+#### MCP-007 — Analyze a repository (`P1`)
+
+As an MCP client, I need to request or retrieve an evidence-backed repository understanding brief so that agents can reason from durable analysis instead of repeatedly exploring the repository.
+
+Expected read tools:
+
+- `analyze_repository`
+- `get_repository_understanding`
+- `get_repository_evidence`
+- `list_repository_questions`
+
+Acceptance criteria:
+
+- Analysis follows `RU-001` through `RU-005`.
+- Results identify the analyzed revision, timestamp, evidence, confidence, and limitations.
+- Facts and inferences are distinguishable in structured output.
+- Analysis does not modify the analyzed repository.
+
+#### MCP-008 — Compare and refresh repository understanding (`P1`)
+
+As an MCP client, I need to compare related repositories and refresh prior analysis so that overlap, successors, and meaningful changes can be detected.
+
+Expected read tools:
+
+- `refresh_repository_understanding`
+- `compare_repositories`
+- `find_repository_overlaps`
+- `list_understanding_changes`
+
+Acceptance criteria:
+
+- Comparisons cite evidence from every repository involved.
+- Similarity does not automatically create a registry relationship.
+- Refresh preserves prior analysis and highlights changed conclusions.
+- Suggested relationship or lifecycle changes require owner review.
+
 ## First implementation slice
 
-The first implementation should satisfy `US-001`, `US-002`, `US-004`, `US-005`, and `US-007` without an MCP server:
+The first implementation should satisfy `US-001`, `US-002`, `US-004`, `US-005`, `US-007`, `RU-001`, `RU-002`, `RU-004`, and `RU-005` without an MCP server:
 
 1. Define and validate a machine-readable project schema.
 2. Import the GitHub repository inventory with `needs_review` placeholders.
-3. Curate purpose, lifecycle, activity, relationships, and next action.
-4. Generate a readable portfolio dashboard.
-5. Review the workflow before exposing it as MCP tools.
+3. Define the repository-understanding brief, evidence model, maturity vocabulary, and confidence rules.
+4. Run the understanding process on a small, varied pilot set of repositories.
+5. Curate purpose, lifecycle, activity, relationships, accomplishments, and next action using reviewed evidence.
+6. Generate a readable portfolio dashboard.
+7. Review the workflow before scaling the analysis or exposing it as MCP tools.

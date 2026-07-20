@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kmadhok/project-registry/schema/projects.schema.json",
+  "title": "Project Registry",
+  "type": "object",
+  "required": ["schema_version", "owner", "updated_at", "projects"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "owner": {"type": "string", "minLength": 1},
+    "updated_at": {"type": ["string", "null"], "format": "date-time"},
+    "projects": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/project"}
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "project": {
+      "type": "object",
+      "required": [
+        "id", "name", "repository", "review_status", "purpose", "public_summary",
+        "lifecycle", "active", "priority", "desired_outcome", "next_action",
+        "last_reviewed_at", "accomplishments", "relationships", "tags",
+        "understanding_path", "notes"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^github:"},
+        "name": {"type": "string", "minLength": 1},
+        "repository": {"type": "string", "pattern": "^[^/]+/[^/]+$"},
+        "review_status": {"enum": ["needs_review", "reviewed"]},
+        "purpose": {"type": ["string", "null"]},
+        "public_summary": {"type": ["string", "null"]},
+        "lifecycle": {
+          "type": ["string", "null"],
+          "enum": [null, "now", "next", "incubating", "showcase", "maintained", "reference", "superseded", "archived"]
+        },
+        "active": {"type": "boolean"},
+        "priority": {"type": ["integer", "null"], "minimum": 1},
+        "desired_outcome": {"type": ["string", "null"]},
+        "next_action": {"type": ["string", "null"]},
+        "last_reviewed_at": {"type": ["string", "null"], "format": "date-time"},
+        "accomplishments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["date", "summary", "evidence"],
+            "properties": {
+              "date": {"type": "string"},
+              "summary": {"type": "string", "minLength": 1},
+              "evidence": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": false
+          }
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "project_id"],
+            "properties": {
+              "type": {"enum": ["component_of", "contains", "duplicate_of", "predecessor_of", "related_to", "successor_of"]},
+              "project_id": {"type": "string"},
+              "notes": {"type": ["string", "null"]}
+            },
+            "additionalProperties": false
+          }
+        },
+        "tags": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "understanding_path": {"type": ["string", "null"]},
+        "notes": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  }
+}

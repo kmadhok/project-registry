@@ -5,3 +5,11 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .DS_Store
+*.egg-info/
+build/
+dist/
+
+# Observed GitHub state is a refreshable cache, not a source of truth.
+# Proposals and the audit log stay tracked so change history is durable.
+data/github/
+data/portfolio.json

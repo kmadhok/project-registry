@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kmadhok/project-registry/registry/schema/project.schema.json",
+  "title": "Registry project",
+  "description": "One curated project. Human intent only -- observed GitHub state lives in data/github/snapshot.json and is never merged into this file.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "Stable slug. Relationships reference this."
+    },
+    "name": { "type": "string", "minLength": 1 },
+    "purpose": {
+      "type": "string",
+      "description": "Why this project exists. Required unless needs_review is true."
+    },
+    "desired_outcome": {
+      "type": "string",
+      "description": "The result that matters. Required for lifecycle `now`."
+    },
+    "lifecycle": {
+      "enum": ["now", "next", "incubating", "showcase", "maintained", "reference", "superseded", "archived"],
+      "default": "incubating"
+    },
+    "active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Separate from lifecycle so exceptions can be expressed."
+    },
+    "needs_review": { "type": "boolean", "default": false },
+    "category": { "type": "string" },
+    "priority": {
+      "enum": ["high", "medium", "low"],
+      "description": "Human priority. Never derived from GitHub activity."
+    },
+    "effort": { "enum": ["small", "medium", "large"] },
+    "horizon": { "enum": ["week", "month", "quarter", "year", "someday"] },
+    "blocked_by": { "type": "string" },
+    "repo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",
+      "description": "owner/name. Omit for intentional non-repository projects."
+    },
+    "is_fork": { "type": "boolean", "default": false },
+    "visibility": { "enum": ["public", "private"], "default": "private" },
+    "last_reviewed": { "type": "string", "format": "date" },
+    "next_action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description"],
+      "description": "At most one. Required when active is true.",
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "reviewed": { "type": "string", "format": "date" },
+        "link": { "type": "string" }
+      }
+    },
+    "accomplishments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["date", "summary"],
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "summary": { "type": "string", "minLength": 1 },
+          "kind": {
+            "enum": ["milestone", "artifact", "demo", "lesson", "release"],
+            "default": "milestone"
+          },
+          "links": { "type": "array", "items": { "type": "string" } },
+          "public": {
+            "type": "boolean",
+            "default": false,
+            "description": "Explicit opt-in before this appears in a public export."
+          }
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "target"],
+        "properties": {
+          "kind": {
+            "enum": ["successor", "predecessor", "duplicate", "component", "part_of", "related"]
+          },
+          "target": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "descriptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "private": { "type": "string" },
+        "public_safe": {
+          "type": "string",
+          "description": "The only description a public export may use."
+        }
+      }
+    },
+    "public": {
+      "type": "boolean",
+      "default": false,
+      "description": "Opt in to the portfolio export. Requires descriptions.public_safe."
+    },
+    "showcase_order": { "type": "integer" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": "string" }
+  }
+}

@@ -30,7 +30,7 @@ registry show project-registry
 registry dashboard            # regenerate DASHBOARD.md
 ```
 
-To pull in GitHub evidence, export a token with read access and run:
+To pull in GitHub evidence, export a token with read access ([docs/SETUP.md](docs/SETUP.md) covers creating one) and run:
 
 ```bash
 export GITHUB_TOKEN=...
@@ -67,22 +67,12 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 
 21 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — the HTTP client is restricted to `GET`, and a test enforces both.
 
-Client config:
-
-```json
-{
-  "mcpServers": {
-    "project-registry": {
-      "command": "registry",
-      "args": ["--root", "/path/to/project-registry", "mcp"],
-      "env": { "GITHUB_TOKEN": "..." }
-    }
-  }
-}
-```
+**Claude Code discovers the server automatically** via [`.mcp.json`](.mcp.json) when this repo is open. Claude Desktop and global registration are covered in [docs/SETUP.md](docs/SETUP.md). Sessions without MCP still work: [`CLAUDE.md`](CLAUDE.md) gives any LLM session the CLI commands and the rules.
 
 ## Documents
 
+- [Setup](docs/SETUP.md) — token creation, inventory import, curation loop, MCP registration
+- [Agent instructions](CLAUDE.md) — how LLM sessions should use this repo
 - [Purpose and operating model](docs/PURPOSE.md) — the problem, sources of truth, lifecycle vocabulary, safety boundaries
 - [User stories and MCP capabilities](docs/USER_STORIES.md) — 18 stories with acceptance criteria
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md) — how each story is built and verified
@@ -99,7 +89,7 @@ Client config:
 | 4. Decision support — active work, stale work, missing next actions | done |
 | 5. MCP server — query and maintain the registry with explicit write controls | done |
 
-What remains is data, not code: run `import-github`, then curate a purpose, lifecycle, and next action for each imported stub.
+What remains is data, not code: follow [docs/SETUP.md](docs/SETUP.md) to import your repositories, then curate a purpose, lifecycle, and next action for each imported stub.
 
 Tests: `python3 -m pytest` (213 tests, no network required).
 

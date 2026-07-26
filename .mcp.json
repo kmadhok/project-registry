@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "project-registry": {
+      "command": "python3",
+      "args": ["-m", "project_registry.cli", "--root", ".", "mcp"],
+      "env": { "PYTHONPATH": "src" }
+    }
+  }
+}

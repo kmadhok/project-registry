@@ -1,7 +1,14 @@
 id: extract-insights-spotify-youtube
 name: Extract_Insights_Spotify_Youtube
-lifecycle: incubating
+purpose: An empty repository apparently intended by its name for extracting Spotify and YouTube
+  insights, with no available implementation that verifies the intended workflow.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/Extract_Insights_Spotify_Youtube
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- spotify
+- youtube
+- data-analysis

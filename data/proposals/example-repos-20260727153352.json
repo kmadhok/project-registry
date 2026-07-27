@@ -1,0 +1,35 @@
+{
+  "id": "example-repos-20260727153352",
+  "project_id": "example-repos",
+  "created_at": "2026-07-27T15:33:52.507019+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/example-repos.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.507019+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A minimal repository container that currently records a pinned but unconfigured gitlink named skills."
+    },
+    "category": {
+      "before": null,
+      "after": "tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "skills",
+        "git-submodule",
+        "scaffold"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

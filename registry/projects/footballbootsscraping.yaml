@@ -1,10 +1,20 @@
 id: footballbootsscraping
 name: FootballBootsScraping
-lifecycle: incubating
+purpose: A notebook-based 2022 World Cup analysis prototype that scrapes player boot brands
+  from footballbootsdb.com and joins them with archived performance statistics for downstream
+  Tableau analysis.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/FootballBootsScraping
 visibility: public
+last_reviewed: '2026-07-27'
 descriptions:
   private: This repository shows different trends that exist in the World Cup. This ranges
     from which brands were the most popular to who scored the most goals.
+tags:
+- web-scraping
+- world-cup
+- jupyter
+- pandas
+- sports-data

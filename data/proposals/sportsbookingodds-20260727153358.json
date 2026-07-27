@@ -1,0 +1,40 @@
+{
+  "id": "sportsbookingodds-20260727153358",
+  "project_id": "sportsbookingodds",
+  "created_at": "2026-07-27T15:33:58.136125+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/sportsbookingodds.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:58.136125+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Jupyter notebook prototype that scrapes NBA matchup and bookmaker odds from Covers.com into a pandas DataFrame."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-scraping"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "web-scraping",
+        "sports-betting",
+        "jupyter"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

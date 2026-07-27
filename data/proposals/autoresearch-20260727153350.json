@@ -1,0 +1,40 @@
+{
+  "id": "autoresearch-20260727153350",
+  "project_id": "autoresearch",
+  "created_at": "2026-07-27T15:33:50.533516+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/autoresearch.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:50.533516+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Codex-driven experiment harness for autonomously improving and scoring a Books to Scrape parser while retaining only score-increasing scraper changes."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "developer-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "autoresearch",
+        "web-scraping",
+        "codex",
+        "python"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

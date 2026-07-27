@@ -1,7 +1,17 @@
 id: playlist-to-transcript
 name: playlist-to-transcript
-lifecycle: incubating
+purpose: A Python CLI prototype for discovering YouTube videos and Spotify podcast episodes,
+  producing transcripts from online or owner-supplied sources, summarizing them with OpenAI,
+  and storing local artifacts with SQLite processing state.
+lifecycle: archived
 active: false
-needs_review: true
+category: tooling
 repo: kmadhok/playlist-to-transcript
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- playlists
+- transcription
+- summarization
+- youtube
+- spotify

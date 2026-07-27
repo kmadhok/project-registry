@@ -1,10 +1,19 @@
 id: deep-learning-challenge
 name: deep-learning-challenge
-lifecycle: incubating
+purpose: Coursework prototype for preprocessing charity-application data and training a TensorFlow
+  neural network to predict successful use of Alphabet Soup funding.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/deep-learning-challenge
 visibility: public
+last_reviewed: '2026-07-27'
 descriptions:
   private: Deep learning and neural networks were used to determine if Alphabet Soup would
     successfully fund applicants
+tags:
+- deep-learning
+- tensorflow
+- classification
+- jupyter
+- charity-data

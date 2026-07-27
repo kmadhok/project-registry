@@ -1,0 +1,23 @@
+{
+  "id": "project-registry-20260727153457",
+  "project_id": "project-registry",
+  "created_at": "2026-07-27T15:34:57.815467+00:00",
+  "status": "applied",
+  "rationale": "Previous next action (import + curate the inventory) completed by the bulk curation run",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:34:57.815467+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": "2026-07-25",
+      "after": "2026-07-27"
+    },
+    "next_action.description": {
+      "before": "Import the GitHub repository inventory, then curate purpose and lifecycle for each imported stub",
+      "after": "Decide which maintained/incubating projects to activate, and record relationships for the 9 overlap clusters surfaced by bulk curation (see REVIEW appendix in the audit trail)"
+    },
+    "next_action.reviewed": {
+      "before": "2026-07-25",
+      "after": "2026-07-27"
+    }
+  }
+}

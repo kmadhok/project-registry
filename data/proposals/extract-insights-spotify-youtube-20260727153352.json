@@ -1,0 +1,39 @@
+{
+  "id": "extract-insights-spotify-youtube-20260727153352",
+  "project_id": "extract-insights-spotify-youtube",
+  "created_at": "2026-07-27T15:33:52.608313+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/extract-insights-spotify-youtube.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.608313+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An empty repository apparently intended by its name for extracting Spotify and YouTube insights, with no available implementation that verifies the intended workflow."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "spotify",
+        "youtube",
+        "data-analysis"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

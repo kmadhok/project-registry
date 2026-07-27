@@ -1,7 +1,17 @@
 id: real-time-crypto-trading
 name: Real_Time_Crypto_Trading
-lifecycle: incubating
+purpose: A Python prototype that derives BTC/USD buy and sell signals from moving averages
+  and daily sentiment, replays them through Alpaca paper trading, and streams the events to
+  a D3 browser view.
+lifecycle: archived
 active: false
-needs_review: true
+category: trading
 repo: kmadhok/Real_Time_Crypto_Trading
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- python
+- alpaca
+- bitcoin
+- sentiment-analysis
+- flask

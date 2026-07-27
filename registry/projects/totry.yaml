@@ -1,7 +1,13 @@
 id: totry
 name: ToTry
-lifecycle: incubating
+purpose: An empty private repository placeholder named ToTry with no committed implementation
+  or documented purpose.
+lifecycle: archived
 active: false
-needs_review: true
+category: placeholder
 repo: kmadhok/ToTry
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- empty-repository
+- placeholder

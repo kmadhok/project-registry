@@ -1,0 +1,41 @@
+{
+  "id": "text-to-looker-sql-20260727153359",
+  "project_id": "text-to-looker-sql",
+  "created_at": "2026-07-27T15:33:59.059831+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/text-to-looker-sql.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:59.059831+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A prototype playground for translating natural-language retail questions into Looker-style query JSON and BigQuery SQL, with an alternate RAG pipeline that executes against synthetic CSV data through a fake Looker SDK."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "analytics-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "looker",
+        "gemini",
+        "text-to-sql",
+        "rag",
+        "streamlit"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

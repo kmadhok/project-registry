@@ -1,0 +1,40 @@
+{
+  "id": "firstmate-sandbox-20260727153353",
+  "project_id": "firstmate-sandbox",
+  "created_at": "2026-07-27T15:33:53.136673+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/firstmate-sandbox.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:53.136673+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A disposable practice target for making small firstmate-workflow changes to a two-function Python calculator module."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "sandbox",
+        "workflow-practice",
+        "python",
+        "calculator"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "join-codex-20260727153354",
+  "project_id": "join-codex",
+  "created_at": "2026-07-27T15:33:54.211214+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/join-codex.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.211214+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python prototype for profiling BigQuery datasets, ranking possible cross-table join columns, validating them with sampled overlap, and exporting analyst-facing join reports."
+    },
+    "category": {
+      "before": null,
+      "after": "data-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "bigquery",
+        "data-profiling",
+        "join-discovery",
+        "python",
+        "gemini"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

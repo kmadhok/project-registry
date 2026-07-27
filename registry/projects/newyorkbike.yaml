@@ -1,7 +1,16 @@
 id: newyorkbike
 name: NewYorkBike
-lifecycle: incubating
+purpose: A static Leaflet visualization that maps live Citi Bike stations by availability
+  and operating status using Citi Bike GBFS feeds.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-visualization
 repo: kmadhok/NewYorkBike
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- citibike
+- leaflet
+- gbfs
+- javascript
+- mapping

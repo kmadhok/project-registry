@@ -1,7 +1,16 @@
 id: join-identification
 name: Join-Identification
-lifecycle: incubating
+purpose: A BigQuery-focused Python CLI prototype for inferring table joins and multi-hop paths
+  from column statistics, value overlap, and optional historical SQL evidence.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-engineering
 repo: kmadhok/Join-Identification
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- bigquery
+- join-discovery
+- data-profiling
+- graph-analysis
+- gemini

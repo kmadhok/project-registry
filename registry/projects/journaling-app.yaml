@@ -1,7 +1,17 @@
 id: journaling-app
 name: journaling-app
+purpose: A full-stack theme-aware journaling application for capturing typed, spoken, or AI-guided
+  entries and connecting them to goals, streaks, structured reflections, weekly summaries,
+  and 12-week execution plans.
 lifecycle: incubating
 active: false
-needs_review: true
+category: web-app
 repo: kmadhok/journaling-app
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- journaling
+- openai
+- voice
+- goal-tracking
+- nextjs

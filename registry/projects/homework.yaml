@@ -1,7 +1,13 @@
 id: homework
 name: Homework
-lifecycle: incubating
+purpose: The repository's actual purpose cannot be determined because the available checkout
+  exposes no project content or revision.
+lifecycle: archived
 active: false
-needs_review: true
+category: unclassified
 repo: kmadhok/Homework
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- dormant
+- unclassified

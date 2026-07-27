@@ -1,7 +1,15 @@
 id: scraping
 name: scraping
-lifecycle: incubating
+purpose: Prototype Python tooling for extracting NFL moneyline odds from Vegas Insider HTML,
+  developed around Jets/Bengals and 49ers/Texans examples.
+lifecycle: archived
 active: false
-needs_review: true
+category: scraping
 repo: kmadhok/scraping
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- python
+- web-scraping
+- nfl
+- sports-betting

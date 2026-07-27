@@ -1,7 +1,16 @@
 id: myappliedai
 name: MyAppliedAI
-lifecycle: incubating
+purpose: A branch-based Python prototype for discovering and validating likely database joins
+  from schema metadata, column-name embeddings, value statistics, and SQL join heuristics.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-tooling
 repo: kmadhok/MyAppliedAI
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- auto-join
+- schema-matching
+- sqlalchemy
+- nlp
+- python

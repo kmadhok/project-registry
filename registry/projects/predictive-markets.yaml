@@ -1,7 +1,16 @@
 id: predictive-markets
 name: predictive-markets
+purpose: A Python prototype for retrieving Kalshi demo-market data and experimenting with
+  simulated portfolio and order-management operations.
 lifecycle: incubating
 active: false
-needs_review: true
+category: trading
 repo: kmadhok/predictive-markets
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- kalshi
+- prediction-markets
+- python
+- api
+- demo-trading

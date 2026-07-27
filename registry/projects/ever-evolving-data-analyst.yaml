@@ -1,7 +1,17 @@
 id: ever-evolving-data-analyst
 name: Ever_Evolving_Data_Analyst
-lifecycle: incubating
+purpose: A Kalshi-focused analytics prototype that ingests prediction-market and sportsbook
+  data into BigQuery, generates signals, serves role-based dashboards, supports LLM-assisted
+  analysis, and backtests trading strategies.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-platform
 repo: kmadhok/Ever_Evolving_Data_Analyst
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- kalshi
+- bigquery
+- data-pipelines
+- fastapi
+- react

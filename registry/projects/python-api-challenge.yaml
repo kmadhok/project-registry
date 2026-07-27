@@ -1,7 +1,16 @@
 id: python-api-challenge
 name: Python-Api-Challenge
-lifecycle: incubating
+purpose: A two-notebook coursework-style analysis that gathers global city weather from OpenWeatherMap,
+  visualizes latitude relationships, and maps favorable vacation locations and nearby hotels
+  with Google services.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/Python-Api-Challenge
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- python
+- jupyter
+- weather-api
+- geospatial

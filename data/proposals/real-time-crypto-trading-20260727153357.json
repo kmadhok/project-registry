@@ -1,0 +1,41 @@
+{
+  "id": "real-time-crypto-trading-20260727153357",
+  "project_id": "real-time-crypto-trading",
+  "created_at": "2026-07-27T15:33:57.559173+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/real-time-crypto-trading.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:57.559173+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python prototype that derives BTC/USD buy and sell signals from moving averages and daily sentiment, replays them through Alpaca paper trading, and streams the events to a D3 browser view."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "trading"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "alpaca",
+        "bitcoin",
+        "sentiment-analysis",
+        "flask"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

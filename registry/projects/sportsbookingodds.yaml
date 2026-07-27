@@ -1,9 +1,17 @@
 id: sportsbookingodds
 name: SportsBookingOdds
-lifecycle: incubating
+purpose: A Jupyter notebook prototype that scrapes NBA matchup and bookmaker odds from Covers.com
+  into a pandas DataFrame.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-scraping
 repo: kmadhok/SportsBookingOdds
 visibility: public
+last_reviewed: '2026-07-27'
 descriptions:
   private: Using a webscraper scrape Covers.com to collect odds across different bookmakers.
+tags:
+- python
+- web-scraping
+- sports-betting
+- jupyter

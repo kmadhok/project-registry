@@ -1,7 +1,16 @@
 id: journaling
 name: journaling
+purpose: Implements a privacy-first FastAPI journaling backend that pseudonymizes personal
+  information before Gemini-based coaching and organizes conversations by user-defined themes.
 lifecycle: incubating
 active: false
-needs_review: true
+category: ai-journaling
 repo: kmadhok/journaling
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- fastapi
+- privacy
+- journaling
+- gemini
+- pseudonymization

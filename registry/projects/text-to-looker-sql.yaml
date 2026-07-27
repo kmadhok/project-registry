@@ -1,7 +1,17 @@
 id: text-to-looker-sql
 name: Text_to_Looker_SQL
-lifecycle: incubating
+purpose: A prototype playground for translating natural-language retail questions into Looker-style
+  query JSON and BigQuery SQL, with an alternate RAG pipeline that executes against synthetic
+  CSV data through a fake Looker SDK.
+lifecycle: archived
 active: false
-needs_review: true
+category: analytics-tooling
 repo: kmadhok/Text_to_Looker_SQL
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- looker
+- gemini
+- text-to-sql
+- rag
+- streamlit

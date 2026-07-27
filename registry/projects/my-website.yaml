@@ -1,7 +1,15 @@
 id: my-website
 name: my_website
-lifecycle: incubating
+purpose: A Next.js personal portfolio for presenting Kanu Madhok's data science and AI engineering
+  experience, selected projects, résumé, and contact channels.
+lifecycle: archived
 active: false
-needs_review: true
+category: portfolio-site
 repo: kmadhok/my_website
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- portfolio
+- nextjs
+- typescript
+- tailwind

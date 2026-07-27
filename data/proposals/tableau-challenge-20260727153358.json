@@ -1,0 +1,40 @@
+{
+  "id": "tableau-challenge-20260727153358",
+  "project_id": "tableau-challenge",
+  "created_at": "2026-07-27T15:33:58.708163+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/tableau-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:58.708163+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A completed Tableau analysis of June 2013 Citi Bike trips that explores rider age, user type, trip duration, ride frequency, and station popularity through six worksheets and three dashboards."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "tableau",
+        "data-visualization",
+        "citibike",
+        "analytics"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

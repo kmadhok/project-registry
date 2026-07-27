@@ -1,7 +1,17 @@
 id: advancedcompvisionproject
 name: AdvancedCompVisionProject
-lifecycle: incubating
+purpose: A 2024 computer-vision coursework prototype that trains and evaluates TensorFlow
+  Vision Transformers for classifying 64-by-64 microscopy images into eight red-blood-cell
+  morphology classes.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/AdvancedCompVisionProject
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- computer-vision
+- vision-transformer
+- tensorflow
+- microscopy
+- classification

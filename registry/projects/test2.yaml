@@ -1,7 +1,14 @@
 id: test2
 name: test2
-lifecycle: incubating
+purpose: An empty private repository whose issue backlog proposes a mock test-runner interface
+  with test definitions, list and detail views, run actions, history, and status indicators.
+lifecycle: archived
 active: false
-needs_review: true
+category: web-app
 repo: kmadhok/test2
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- test-runner
+- mock-data
+- ui-prototype

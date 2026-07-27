@@ -1,9 +1,17 @@
 id: unsupervised-learning
 name: Unsupervised-Learning
-lifecycle: incubating
+purpose: An incomplete coursework notebook for preprocessing myopia patient measurements and
+  exploring dimensionality reduction and clustering.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/Unsupervised-Learning
 visibility: public
+last_reviewed: '2026-07-27'
 descriptions:
   private: Clustering algorithms used to place data into groups
+tags:
+- machine-learning
+- clustering
+- jupyter
+- myopia

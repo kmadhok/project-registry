@@ -1,0 +1,36 @@
+{
+  "id": "bentonville-move-20260727153350",
+  "project_id": "bentonville-move",
+  "created_at": "2026-07-27T15:33:50.630574+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/bentonville-move.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:50.630574+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A personal Bentonville apartment move-in workspace for coordinating tiered purchases, tracking a relocation-funded budget, applying buying rules, and comparing researched household products."
+    },
+    "category": {
+      "before": null,
+      "after": "personal-planning"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "relocation",
+        "shopping",
+        "budgeting",
+        "product-research"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

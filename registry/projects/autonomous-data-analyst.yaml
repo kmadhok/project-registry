@@ -1,7 +1,17 @@
 id: autonomous-data-analyst
 name: Autonomous-Data-Analyst
+purpose: A prototype Claude-assisted workspace for documenting, executing, auditing, and presenting
+  BigQuery analyses of Kalshi prediction-market data, alongside an unimplemented design for
+  a four-agent autonomous service.
 lifecycle: incubating
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/Autonomous-Data-Analyst
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- bigquery
+- prediction-markets
+- multi-agent
+- analytics
+- claude

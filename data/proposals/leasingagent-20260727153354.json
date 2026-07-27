@@ -1,0 +1,40 @@
+{
+  "id": "leasingagent-20260727153354",
+  "project_id": "leasingagent",
+  "created_at": "2026-07-27T15:33:54.956964+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/leasingagent.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.956964+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A macOS Python prototype that retrieves the first unread Gmail message from a configured sender and forwards its text to a configured iMessage recipient."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "automation"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "gmail",
+        "imessage",
+        "macos"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

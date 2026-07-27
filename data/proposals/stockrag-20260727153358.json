@@ -1,0 +1,41 @@
+{
+  "id": "stockrag-20260727153358",
+  "project_id": "stockrag",
+  "created_at": "2026-07-27T15:33:58.484383+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/stockrag.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:58.484383+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Streamlit prototype for finding stock-related news, extracting a selected article, and answering questions over a temporary RAG index."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "ml"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "rag",
+        "stock-news",
+        "streamlit",
+        "llamaindex",
+        "chromadb"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

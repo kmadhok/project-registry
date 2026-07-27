@@ -1,7 +1,15 @@
 id: leasingagent
 name: LeasingAgent
-lifecycle: incubating
+purpose: A macOS Python prototype that retrieves the first unread Gmail message from a configured
+  sender and forwards its text to a configured iMessage recipient.
+lifecycle: archived
 active: false
-needs_review: true
+category: automation
 repo: kmadhok/LeasingAgent
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- python
+- gmail
+- imessage
+- macos

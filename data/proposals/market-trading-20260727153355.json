@@ -1,0 +1,37 @@
+{
+  "id": "market-trading-20260727153355",
+  "project_id": "market-trading",
+  "created_at": "2026-07-27T15:33:55.526184+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/market-trading.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.526184+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python scaffold for comparing normalized prediction-market and sportsbook prices, generating multi-venue trading signals, and routing them through sizing, risk, paper-execution, position, and alert components."
+    },
+    "category": {
+      "before": null,
+      "after": "trading"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "prediction-markets",
+        "arbitrage",
+        "quant-trading",
+        "python",
+        "sportsbook-odds"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

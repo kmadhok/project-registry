@@ -1,7 +1,17 @@
 id: database-rag
 name: database-rag
-lifecycle: incubating
+purpose: A command-line prototype for answering natural-language questions over a small Markdown-described
+  participant and survey database schema using FAISS-backed LangChain retrieval with either
+  OpenAI or local Hugging Face models.
+lifecycle: archived
 active: false
-needs_review: true
+category: ml-prototype
 repo: kmadhok/database-rag
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- database-rag
+- langchain
+- faiss
+- llm
+- schema-documentation

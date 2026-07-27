@@ -1,7 +1,15 @@
 id: nfl-tackling-analysis
 name: NFL_Tackling_Analysis
-lifecycle: incubating
+purpose: Stores NFL game, player, play, tackle, and weekly tracking datasets with a Python
+  utility that converts nine locally sourced tracking CSV files into Parquet.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/NFL_Tackling_Analysis
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- nfl
+- tackling
+- data-preparation
+- parquet

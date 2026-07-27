@@ -1,10 +1,8 @@
 id: project-registry
 name: Project Registry
-purpose: >-
-  A private control plane for understanding, prioritizing, and maintaining the
-  project portfolio, combining human intent with GitHub evidence.
-desired_outcome: >-
-  The registry answers the five portfolio questions from curated data plus
+purpose: A private control plane for understanding, prioritizing, and maintaining the project
+  portfolio, combining human intent with GitHub evidence.
+desired_outcome: The registry answers the five portfolio questions from curated data plus
   refreshable GitHub evidence, without exploring repositories by hand.
 lifecycle: now
 active: true
@@ -14,42 +12,35 @@ effort: medium
 horizon: quarter
 repo: kmadhok/project-registry
 visibility: private
-last_reviewed: 2026-07-25
+last_reviewed: '2026-07-27'
 next_action:
-  description: >-
-    Import the GitHub repository inventory, then curate purpose and lifecycle
-    for each imported stub
-  reviewed: 2026-07-25
+  description: Decide which maintained/incubating projects to activate, and record relationships
+    for the 9 overlap clusters surfaced by bulk curation (see REVIEW appendix in the audit
+    trail)
+  reviewed: '2026-07-27'
 accomplishments:
-  - date: 2026-07-25
-    kind: milestone
-    summary: >-
-      Defined the purpose, operating model, lifecycle vocabulary, and safety
-      boundaries
-    links:
-      - docs/PURPOSE.md
-  - date: 2026-07-25
-    kind: milestone
-    summary: >-
-      Wrote 18 user stories with acceptance criteria and expected MCP tools
-    links:
-      - docs/USER_STORIES.md
-  - date: 2026-07-25
-    kind: milestone
-    summary: >-
-      Built the project schema, validation rules, read-only GitHub sync,
-      dashboard, portfolio export, and MCP server
-    links:
-      - docs/IMPLEMENTATION_PLAN.md
+- date: '2026-07-25'
+  kind: milestone
+  summary: Defined the purpose, operating model, lifecycle vocabulary, and safety boundaries
+  links:
+  - docs/PURPOSE.md
+- date: '2026-07-25'
+  kind: milestone
+  summary: Wrote 18 user stories with acceptance criteria and expected MCP tools
+  links:
+  - docs/USER_STORIES.md
+- date: '2026-07-25'
+  kind: milestone
+  summary: Built the project schema, validation rules, read-only GitHub sync, dashboard, portfolio
+    export, and MCP server
+  links:
+  - docs/IMPLEMENTATION_PLAN.md
 descriptions:
-  private: >-
-    Foundation phase. The schema, validation, sync, dashboard, and MCP server
-    are in place; the repository inventory has not been imported yet.
-  public_safe: >-
-    A registry that tracks the purpose, lifecycle, and next action of every
-    project in a portfolio, and reconciles that intent against live GitHub
-    activity.
+  private: Foundation phase. The schema, validation, sync, dashboard, and MCP server are in
+    place; the repository inventory has not been imported yet.
+  public_safe: A registry that tracks the purpose, lifecycle, and next action of every project
+    in a portfolio, and reconciles that intent against live GitHub activity.
 tags:
-  - portfolio
-  - mcp
-  - github
+- portfolio
+- mcp
+- github

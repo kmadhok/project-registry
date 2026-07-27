@@ -1,0 +1,37 @@
+{
+  "id": "live-portrait-20260727153355",
+  "project_id": "live-portrait",
+  "created_at": "2026-07-27T15:33:55.072797+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/live-portrait.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.072797+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A technical specification for a planned real-time web experience that lets users converse with an animated, retrieval-grounded Abraham Lincoln portrait."
+    },
+    "category": {
+      "before": null,
+      "after": "ai-experience"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "conversational-ai",
+        "rag",
+        "speech",
+        "avatar",
+        "historical-education"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

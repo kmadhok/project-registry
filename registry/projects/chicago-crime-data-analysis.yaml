@@ -1,9 +1,19 @@
 id: chicago-crime-data-analysis
 name: Chicago-Crime-Data-Analysis
-lifecycle: incubating
+purpose: A 2022 data-engineering coursework project that extracts 2021 Chicago crime records,
+  models and analyzes them in MySQL, and presents geographic and categorical findings through
+  Leaflet, Tableau, and a slide deck.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/Chicago-Crime-Data-Analysis
 visibility: public
+last_reviewed: '2026-07-27'
 descriptions:
   private: Analysis of Chicago Crime
+tags:
+- chicago-crime
+- mysql
+- tableau
+- leaflet
+- coursework

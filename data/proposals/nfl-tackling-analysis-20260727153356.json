@@ -1,0 +1,40 @@
+{
+  "id": "nfl-tackling-analysis-20260727153356",
+  "project_id": "nfl-tackling-analysis",
+  "created_at": "2026-07-27T15:33:56.428457+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/nfl-tackling-analysis.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:56.428457+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Stores NFL game, player, play, tackle, and weekly tracking datasets with a Python utility that converts nine locally sourced tracking CSV files into Parquet."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "nfl",
+        "tackling",
+        "data-preparation",
+        "parquet"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

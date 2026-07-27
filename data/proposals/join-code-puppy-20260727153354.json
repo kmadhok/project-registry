@@ -1,0 +1,37 @@
+{
+  "id": "join-code-puppy-20260727153354",
+  "project_id": "join-code-puppy",
+  "created_at": "2026-07-27T15:33:54.096592+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/join-code-puppy.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.096592+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python prototype for discovering candidate join keys across BigQuery tables by combining schema profiling, embedding or lexical similarity, sampled-value validation, optional Gemini analysis, and local report generation."
+    },
+    "category": {
+      "before": null,
+      "after": "data-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "bigquery",
+        "data-profiling",
+        "join-discovery",
+        "gemini",
+        "python"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

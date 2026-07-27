@@ -1,7 +1,17 @@
 id: realtimetrading
 name: RealTimeTrading
-lifecycle: incubating
+purpose: A Bitcoin paper-trading prototype that combines historical Alpaca prices with daily
+  Twitter sentiment to generate moving-average orders, replay them over server-sent events,
+  and visualize them in a Flask/D3 interface.
+lifecycle: archived
 active: false
-needs_review: true
+category: trading
 repo: kmadhok/RealTimeTrading
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- bitcoin
+- paper-trading
+- sentiment-analysis
+- flask
+- alpaca

@@ -1,7 +1,16 @@
 id: doctorsimulation
 name: DoctorSimulation
+purpose: A Flask prototype for practicing voice-based clinical interviews with an LLM-simulated
+  patient through Groq speech transcription, response generation, and speech synthesis.
 lifecycle: incubating
 active: false
-needs_review: true
+category: web-app
 repo: kmadhok/DoctorSimulation
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- flask
+- voice-ai
+- medical-simulation
+- groq
+- llm

@@ -1,0 +1,38 @@
+{
+  "id": "mrmellow-agent-20260727153355",
+  "project_id": "mrmellow-agent",
+  "created_at": "2026-07-27T15:33:55.634434+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/mrmellow-agent.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.634434+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An empty public repository reserved under the mrmellow-agent name, with no tracked evidence establishing an implementation or intended use."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "placeholder"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "empty",
+        "placeholder"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,7 +1,16 @@
 id: text-to-sql-looker-refined
 name: Text_to_SQL_Looker_Refined
-lifecycle: incubating
+purpose: A LookML-grounded Python prototype that uses Gemini or heuristic planning to generate
+  BigQuery SQL for the public theLook e-commerce model and records evaluation results.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-tooling
 repo: kmadhok/Text_to_SQL_Looker_Refined
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- text-to-sql
+- lookml
+- bigquery
+- gemini
+- prototype

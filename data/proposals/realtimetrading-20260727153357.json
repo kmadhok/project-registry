@@ -1,0 +1,41 @@
+{
+  "id": "realtimetrading-20260727153357",
+  "project_id": "realtimetrading",
+  "created_at": "2026-07-27T15:33:57.670893+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/realtimetrading.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:57.670893+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Bitcoin paper-trading prototype that combines historical Alpaca prices with daily Twitter sentiment to generate moving-average orders, replay them over server-sent events, and visualize them in a Flask/D3 interface."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "trading"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "bitcoin",
+        "paper-trading",
+        "sentiment-analysis",
+        "flask",
+        "alpaca"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

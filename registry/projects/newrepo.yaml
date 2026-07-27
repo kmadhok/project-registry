@@ -1,7 +1,14 @@
 id: newrepo
 name: NewRepo
-lifecycle: incubating
+purpose: A minimal Jupyter notebook used to verify a Python environment by importing os and
+  printing a hello-world message.
+lifecycle: archived
 active: false
-needs_review: true
+category: experiment
 repo: kmadhok/NewRepo
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- python
+- jupyter
+- hello-world

@@ -1,7 +1,17 @@
 id: yelp-sentitment-recommender
 name: Yelp_Sentitment_Recommender
-lifecycle: incubating
+purpose: A 2023 group-coursework prototype that uses PySpark and Spark NLP to prepare Yelp
+  data, analyze aspect sentiment, predict ratings, and experiment with ALS, association-rule,
+  and graph-based restaurant recommendations.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/Yelp_Sentitment_Recommender
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- pyspark
+- yelp
+- recommender
+- sentiment-analysis
+- machine-learning

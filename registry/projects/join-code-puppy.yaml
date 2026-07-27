@@ -1,7 +1,17 @@
 id: join-code-puppy
 name: join-code-puppy
+purpose: A Python prototype for discovering candidate join keys across BigQuery tables by
+  combining schema profiling, embedding or lexical similarity, sampled-value validation, optional
+  Gemini analysis, and local report generation.
 lifecycle: incubating
 active: false
-needs_review: true
+category: data-tooling
 repo: kmadhok/join-code-puppy
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- bigquery
+- data-profiling
+- join-discovery
+- gemini
+- python

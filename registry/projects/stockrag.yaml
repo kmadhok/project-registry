@@ -1,7 +1,16 @@
 id: stockrag
 name: StockRag
-lifecycle: incubating
+purpose: A Streamlit prototype for finding stock-related news, extracting a selected article,
+  and answering questions over a temporary RAG index.
+lifecycle: archived
 active: false
-needs_review: true
+category: ml
 repo: kmadhok/StockRag
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- rag
+- stock-news
+- streamlit
+- llamaindex
+- chromadb

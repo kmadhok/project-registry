@@ -1,0 +1,41 @@
+{
+  "id": "ever-evolving-data-analyst-20260727153352",
+  "project_id": "ever-evolving-data-analyst",
+  "created_at": "2026-07-27T15:33:52.405951+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/ever-evolving-data-analyst.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.405951+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Kalshi-focused analytics prototype that ingests prediction-market and sportsbook data into BigQuery, generates signals, serves role-based dashboards, supports LLM-assisted analysis, and backtests trading strategies."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-platform"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "kalshi",
+        "bigquery",
+        "data-pipelines",
+        "fastapi",
+        "react"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

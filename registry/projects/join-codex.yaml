@@ -1,7 +1,16 @@
 id: join-codex
 name: join-codex
+purpose: A Python prototype for profiling BigQuery datasets, ranking possible cross-table
+  join columns, validating them with sampled overlap, and exporting analyst-facing join reports.
 lifecycle: incubating
 active: false
-needs_review: true
+category: data-tooling
 repo: kmadhok/join-codex
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- bigquery
+- data-profiling
+- join-discovery
+- python
+- gemini

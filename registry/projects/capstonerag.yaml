@@ -1,7 +1,13 @@
 id: capstonerag
 name: CapstoneRag
-lifecycle: incubating
+purpose: An empty public repository placeholder named CapstoneRag with no tracked implementation
+  or documented purpose.
+lifecycle: archived
 active: false
-needs_review: true
+category: placeholder
 repo: kmadhok/CapstoneRag
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- empty-repository
+- placeholder

@@ -1,7 +1,15 @@
 id: sql-rag-demo
 name: Sql_Rag_Demo
+purpose: A placeholder for a proposed SQL-RAG query-search workflow involving BigQuery sampling,
+  table selection, generated-SQL validation, and query-quality feedback.
 lifecycle: incubating
 active: false
-needs_review: true
+category: ml
 repo: kmadhok/Sql_Rag_Demo
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- sql
+- rag
+- bigquery
+- text-to-sql

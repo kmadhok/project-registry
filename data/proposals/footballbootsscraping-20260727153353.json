@@ -1,0 +1,41 @@
+{
+  "id": "footballbootsscraping-20260727153353",
+  "project_id": "footballbootsscraping",
+  "created_at": "2026-07-27T15:33:53.353189+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/footballbootsscraping.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:53.353189+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A notebook-based 2022 World Cup analysis prototype that scrapes player boot brands from footballbootsdb.com and joins them with archived performance statistics for downstream Tableau analysis."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "web-scraping",
+        "world-cup",
+        "jupyter",
+        "pandas",
+        "sports-data"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

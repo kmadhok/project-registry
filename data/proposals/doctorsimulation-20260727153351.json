@@ -1,0 +1,37 @@
+{
+  "id": "doctorsimulation-20260727153351",
+  "project_id": "doctorsimulation",
+  "created_at": "2026-07-27T15:33:51.868303+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/doctorsimulation.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:51.868303+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Flask prototype for practicing voice-based clinical interviews with an LLM-simulated patient through Groq speech transcription, response generation, and speech synthesis."
+    },
+    "category": {
+      "before": null,
+      "after": "web-app"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "flask",
+        "voice-ai",
+        "medical-simulation",
+        "groq",
+        "llm"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

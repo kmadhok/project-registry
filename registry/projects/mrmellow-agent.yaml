@@ -1,7 +1,13 @@
 id: mrmellow-agent
 name: mrmellow-agent
-lifecycle: incubating
+purpose: An empty public repository reserved under the mrmellow-agent name, with no tracked
+  evidence establishing an implementation or intended use.
+lifecycle: archived
 active: false
-needs_review: true
+category: placeholder
 repo: kmadhok/mrmellow-agent
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- empty
+- placeholder

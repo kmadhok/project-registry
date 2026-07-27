@@ -1,0 +1,40 @@
+{
+  "id": "learning-20260727153354",
+  "project_id": "learning",
+  "created_at": "2026-07-27T15:33:54.852185+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/learning.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.852185+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A small GitHub Codespaces and Azure Node.js demonstration that renders five haikus with bundled Octocat images through Express and EJS."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "learning-demo"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "nodejs",
+        "express",
+        "codespaces",
+        "azure"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

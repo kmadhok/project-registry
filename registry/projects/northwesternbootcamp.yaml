@@ -1,7 +1,15 @@
 id: northwesternbootcamp
 name: NorthwesternBootcamp
-lifecycle: incubating
+purpose: An Excel analysis exercise that summarizes 1,000 crowdfunding records by funding
+  outcome, parent category, and subcategory using formulas, pivot tables, and bar charts.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/NorthwesternBootcamp
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- excel
+- crowdfunding
+- pivot-tables
+- data-analysis

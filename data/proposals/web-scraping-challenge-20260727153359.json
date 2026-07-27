@@ -1,0 +1,41 @@
+{
+  "id": "web-scraping-challenge-20260727153359",
+  "project_id": "web-scraping-challenge",
+  "created_at": "2026-07-27T15:33:59.896176+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/web-scraping-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:59.896176+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A notebook-based Mars web-scraping exercise that collects news, a featured image, planetary comparison facts, and hemisphere imagery into one Python dictionary."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "web-scraping",
+        "python",
+        "jupyter",
+        "beautifulsoup",
+        "splinter"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

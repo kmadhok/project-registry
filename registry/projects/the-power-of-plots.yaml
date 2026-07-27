@@ -1,7 +1,16 @@
 id: the-power-of-plots
 name: The_Power_of_Plots
-lifecycle: incubating
+purpose: A guided Jupyter coursework analysis of mouse tumor-response data across drug regimens
+  using pandas, Matplotlib, and SciPy.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/The_Power_of_Plots
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- jupyter
+- data-analysis
+- pandas
+- matplotlib
+- statistics

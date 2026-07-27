@@ -1,7 +1,16 @@
 id: join-claude
 name: join-claude
+purpose: Discover and classify likely join-key relationships across sampled BigQuery or CSV
+  tables using metadata pruning, MinHash matching, multi-signal scoring, and validation.
 lifecycle: incubating
 active: false
-needs_review: true
+category: data-tooling
 repo: kmadhok/join-claude
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- bigquery
+- join-discovery
+- data-profiling
+- python
+- minhash

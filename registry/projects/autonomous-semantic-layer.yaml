@@ -1,7 +1,16 @@
 id: autonomous-semantic-layer
 name: Autonomous-Semantic-Layer
+purpose: Generate a Claude Code-oriented Markdown semantic layer from BigQuery schemas, optionally
+  using sampled data to validate and discover joins.
 lifecycle: incubating
 active: false
-needs_review: true
+category: data-tooling
 repo: kmadhok/Autonomous-Semantic-Layer
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- bigquery
+- semantic-layer
+- claude-code
+- metadata
+- python

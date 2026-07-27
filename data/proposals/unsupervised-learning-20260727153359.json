@@ -1,0 +1,40 @@
+{
+  "id": "unsupervised-learning-20260727153359",
+  "project_id": "unsupervised-learning",
+  "created_at": "2026-07-27T15:33:59.661971+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/unsupervised-learning.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:59.661971+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An incomplete coursework notebook for preprocessing myopia patient measurements and exploring dimensionality reduction and clustering."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "machine-learning",
+        "clustering",
+        "jupyter",
+        "myopia"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

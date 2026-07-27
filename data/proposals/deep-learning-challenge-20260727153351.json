@@ -1,0 +1,41 @@
+{
+  "id": "deep-learning-challenge-20260727153351",
+  "project_id": "deep-learning-challenge",
+  "created_at": "2026-07-27T15:33:51.769478+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/deep-learning-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:51.769478+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Coursework prototype for preprocessing charity-application data and training a TensorFlow neural network to predict successful use of Alphabet Soup funding."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "deep-learning",
+        "tensorflow",
+        "classification",
+        "jupyter",
+        "charity-data"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

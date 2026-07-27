@@ -1,7 +1,15 @@
 id: employee-database-sql-analysis
 name: Employee-Database-SQL-Analysis
-lifecycle: incubating
+purpose: A PostgreSQL employee-data modeling and analysis exercise containing six CSV datasets,
+  a six-table relational schema, an ERD, and eight example analytical queries.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/Employee-Database-SQL-Analysis
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- sql
+- postgresql
+- data-modeling
+- relational-data

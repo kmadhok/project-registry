@@ -1,0 +1,40 @@
+{
+  "id": "supervised-machine-learning-20260727153358",
+  "project_id": "supervised-machine-learning",
+  "created_at": "2026-07-27T15:33:58.594052+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/supervised-machine-learning.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:58.594052+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A notebook-scale experiment comparing logistic regression and random forest classifiers for predicting binary loan status from tabular lending attributes."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "ml"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "credit-risk",
+        "classification",
+        "scikit-learn",
+        "jupyter"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

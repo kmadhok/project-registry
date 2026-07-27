@@ -1,0 +1,41 @@
+{
+  "id": "newyorkbike-20260727153356",
+  "project_id": "newyorkbike",
+  "created_at": "2026-07-27T15:33:56.318455+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/newyorkbike.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:56.318455+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A static Leaflet visualization that maps live Citi Bike stations by availability and operating status using Citi Bike GBFS feeds."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-visualization"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "citibike",
+        "leaflet",
+        "gbfs",
+        "javascript",
+        "mapping"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

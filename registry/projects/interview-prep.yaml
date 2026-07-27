@@ -1,7 +1,16 @@
 id: interview-prep
 name: interview-prep
-lifecycle: incubating
+purpose: A file-backed, agent-assisted job-search workspace that tracks applications, generates
+  tailored resume and apply packets, and stages human-reviewed recruiter outreach.
+lifecycle: maintained
 active: false
-needs_review: true
+category: career-automation
 repo: kmadhok/interview-prep
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- job-search
+- interview-prep
+- agent-workflows
+- automation
+- outreach

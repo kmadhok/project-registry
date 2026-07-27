@@ -1,0 +1,40 @@
+{
+  "id": "pandas-20260727153356",
+  "project_id": "pandas",
+  "created_at": "2026-07-27T15:33:56.874178+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/pandas.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:56.874178+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Stores two Jupyter notebook coursework exercises using pandas to analyze game-item purchasing and school-performance datasets."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "pandas",
+        "jupyter",
+        "data-analysis",
+        "coursework"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

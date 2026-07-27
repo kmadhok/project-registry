@@ -1,7 +1,17 @@
 id: finance-understanding
 name: finance-understanding
+purpose: A local personal-finance toolkit that syncs account and transaction data through
+  Plaid or Teller into CSV and analyzes it into paycheck, recurring-bill, cash-flow, savings-goal,
+  and snapshot reports.
 lifecycle: incubating
 active: false
-needs_review: true
+category: personal-finance
 repo: kmadhok/finance-understanding
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- python
+- plaid
+- teller
+- cash-flow
+- data-analysis

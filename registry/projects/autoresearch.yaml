@@ -1,7 +1,15 @@
 id: autoresearch
 name: AutoResearch
-lifecycle: incubating
+purpose: A Codex-driven experiment harness for autonomously improving and scoring a Books
+  to Scrape parser while retaining only score-increasing scraper changes.
+lifecycle: archived
 active: false
-needs_review: true
+category: developer-tooling
 repo: kmadhok/AutoResearch
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- autoresearch
+- web-scraping
+- codex
+- python

@@ -1,0 +1,37 @@
+{
+  "id": "fitness-sync-20260727153353",
+  "project_id": "fitness-sync",
+  "created_at": "2026-07-27T15:33:53.249676+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/fitness-sync.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:53.249676+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A SwiftUI iPhone ingestion utility that aggregates selected Apple Health metrics into daily records and synchronizes them to a FastAPI/PostgreSQL backend with retry support."
+    },
+    "category": {
+      "before": null,
+      "after": "health-data"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "ios",
+        "healthkit",
+        "fastapi",
+        "postgresql",
+        "data-ingestion"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

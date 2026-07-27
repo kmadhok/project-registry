@@ -1,7 +1,15 @@
 id: capstonerepo
 name: CapstoneRepo
-lifecycle: incubating
+purpose: A dormant capstone-project placeholder containing an empty Python file and a committed
+  Windows Python 3.9 virtual environment, with no implemented application.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/CapstoneRepo
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- python
+- capstone
+- placeholder
+- coursework

@@ -1,7 +1,16 @@
 id: automate-job-search
 name: Automate_Job_Search
+purpose: Automates an owner-specific job-search pipeline that turns alerts, reports, and URLs
+  into scored opportunities, tailored resumes, outreach drafts, and Google Sheets records.
 lifecycle: incubating
 active: false
-needs_review: true
+category: career-automation
 repo: kmadhok/Automate_Job_Search
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- job-search
+- automation
+- outreach
+- llm
+- python

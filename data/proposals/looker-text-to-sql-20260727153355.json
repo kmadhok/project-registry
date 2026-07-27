@@ -1,0 +1,41 @@
+{
+  "id": "looker-text-to-sql-20260727153355",
+  "project_id": "looker-text-to-sql",
+  "created_at": "2026-07-27T15:33:55.301958+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/looker-text-to-sql.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.301958+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Prototype a CLI that retrieves relevant retail LookML schema context and uses Ollama embeddings plus Gemini to turn natural-language questions into SQL."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "ml-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "text-to-sql",
+        "lookml",
+        "rag",
+        "gemini",
+        "faiss"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

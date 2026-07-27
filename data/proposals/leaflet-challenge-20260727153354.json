@@ -1,0 +1,40 @@
+{
+  "id": "leaflet-challenge-20260727153354",
+  "project_id": "leaflet-challenge",
+  "created_at": "2026-07-27T15:33:54.635479+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/leaflet-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.635479+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A static Leaflet coursework prototype that maps the USGS past-week earthquake feed with marker size based on magnitude, marker color based on depth, and informational popups."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "leaflet",
+        "javascript",
+        "earthquakes",
+        "data-visualization"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

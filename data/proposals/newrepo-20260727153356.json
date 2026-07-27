@@ -1,0 +1,39 @@
+{
+  "id": "newrepo-20260727153356",
+  "project_id": "newrepo",
+  "created_at": "2026-07-27T15:33:56.202456+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/newrepo.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:56.202456+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A minimal Jupyter notebook used to verify a Python environment by importing os and printing a hello-world message."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "experiment"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "jupyter",
+        "hello-world"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

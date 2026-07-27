@@ -1,0 +1,41 @@
+{
+  "id": "drivestorage-20260727153352",
+  "project_id": "drivestorage",
+  "created_at": "2026-07-27T15:33:52.086572+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/drivestorage.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.086572+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A dormant storage snapshot containing a static fast-food calorie-to-protein comparison prototype, its Nutritionix-derived CSV datasets, and several standalone nutrition and web-scraping notebooks."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "nutrition",
+        "static-web",
+        "csv",
+        "notebooks",
+        "web-scraping"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

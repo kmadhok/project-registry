@@ -1,0 +1,41 @@
+{
+  "id": "myappliedai-20260727153356",
+  "project_id": "myappliedai",
+  "created_at": "2026-07-27T15:33:56.083213+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/myappliedai.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:56.083213+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A branch-based Python prototype for discovering and validating likely database joins from schema metadata, column-name embeddings, value statistics, and SQL join heuristics."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "auto-join",
+        "schema-matching",
+        "sqlalchemy",
+        "nlp",
+        "python"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

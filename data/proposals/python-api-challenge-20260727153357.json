@@ -1,0 +1,40 @@
+{
+  "id": "python-api-challenge-20260727153357",
+  "project_id": "python-api-challenge",
+  "created_at": "2026-07-27T15:33:57.337121+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/python-api-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:57.337121+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A two-notebook coursework-style analysis that gathers global city weather from OpenWeatherMap, visualizes latitude relationships, and maps favorable vacation locations and nearby hotels with Google services."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "jupyter",
+        "weather-api",
+        "geospatial"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

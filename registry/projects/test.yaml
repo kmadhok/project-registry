@@ -1,7 +1,16 @@
 id: test
 name: test
-lifecycle: incubating
+purpose: A collection of Python prototypes for using CrewAI and local Ollama models to lint
+  Markdown, reformat noisy consulting text, and assemble automated stock-analysis reports.
+lifecycle: archived
 active: false
-needs_review: true
+category: llm-experiments
 repo: kmadhok/test
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- crewai
+- ollama
+- langchain
+- text-formatting
+- stock-analysis

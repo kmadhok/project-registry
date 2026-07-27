@@ -1,0 +1,37 @@
+{
+  "id": "autonomous-data-analyst-20260727153350",
+  "project_id": "autonomous-data-analyst",
+  "created_at": "2026-07-27T15:33:50.338464+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/autonomous-data-analyst.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:50.338464+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A prototype Claude-assisted workspace for documenting, executing, auditing, and presenting BigQuery analyses of Kalshi prediction-market data, alongside an unimplemented design for a four-agent autonomous service."
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "bigquery",
+        "prediction-markets",
+        "multi-agent",
+        "analytics",
+        "claude"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

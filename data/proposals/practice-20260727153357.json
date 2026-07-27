@@ -1,0 +1,39 @@
+{
+  "id": "practice-20260727153357",
+  "project_id": "practice",
+  "created_at": "2026-07-27T15:33:57.105881+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/practice.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:57.105881+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A placeholder repository apparently initialized for Python practice, containing only a Python-oriented ignore template and a title-only README."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "learning"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "practice",
+        "placeholder"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

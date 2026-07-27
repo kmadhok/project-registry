@@ -1,0 +1,41 @@
+{
+  "id": "chicago-crime-data-analysis-20260727153351",
+  "project_id": "chicago-crime-data-analysis",
+  "created_at": "2026-07-27T15:33:51.027802+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/chicago-crime-data-analysis.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:51.027802+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A 2022 data-engineering coursework project that extracts 2021 Chicago crime records, models and analyzes them in MySQL, and presents geographic and categorical findings through Leaflet, Tableau, and a slide deck."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "chicago-crime",
+        "mysql",
+        "tableau",
+        "leaflet",
+        "coursework"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

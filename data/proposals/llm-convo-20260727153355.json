@@ -1,0 +1,41 @@
+{
+  "id": "llm-convo-20260727153355",
+  "project_id": "llm-convo",
+  "created_at": "2026-07-27T15:33:55.189039+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/llm-convo.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.189039+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A browser-controlled Python voice-assistant prototype that transcribes server-side microphone audio with faster-whisper, maintains Groq Llama conversation context, and speaks responses through AWS Polly."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "ml"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "voice-assistant",
+        "speech-to-text",
+        "llm",
+        "text-to-speech",
+        "flask"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

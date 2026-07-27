@@ -1,0 +1,40 @@
+{
+  "id": "sqlalchemy-challenge-20260727153358",
+  "project_id": "sqlalchemy-challenge",
+  "created_at": "2026-07-27T15:33:58.372911+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/sqlalchemy-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:58.372911+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Jupyter notebook that demonstrates SQLAlchemy ORM reflection and exploratory precipitation and station analysis over a Hawaii weather SQLite dataset."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "sqlalchemy",
+        "sqlite",
+        "jupyter",
+        "climate-analysis"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

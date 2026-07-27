@@ -1,7 +1,17 @@
 id: fantasyfootball
 name: FantasyFootball
-lifecycle: incubating
+purpose: A Python prototype that combines Sleeper and MyFantasyLeague roster data with player
+  usage, projections, rankings, and NFL statistics to identify and contextualize fantasy-football
+  waiver candidates.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/FantasyFootball
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- fantasy-football
+- python
+- sports-data
+- sleeper
+- waivers

@@ -1,0 +1,37 @@
+{
+  "id": "automate-job-search-20260727153350",
+  "project_id": "automate-job-search",
+  "created_at": "2026-07-27T15:33:50.239885+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/automate-job-search.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:50.239885+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Automates an owner-specific job-search pipeline that turns alerts, reports, and URLs into scored opportunities, tailored resumes, outreach drafts, and Google Sheets records."
+    },
+    "category": {
+      "before": null,
+      "after": "career-automation"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "job-search",
+        "automation",
+        "outreach",
+        "llm",
+        "python"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

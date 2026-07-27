@@ -1,0 +1,37 @@
+{
+  "id": "predictive-markets-20260727153357",
+  "project_id": "predictive-markets",
+  "created_at": "2026-07-27T15:33:57.225152+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/predictive-markets.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:57.225152+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python prototype for retrieving Kalshi demo-market data and experimenting with simulated portfolio and order-management operations."
+    },
+    "category": {
+      "before": null,
+      "after": "trading"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "kalshi",
+        "prediction-markets",
+        "python",
+        "api",
+        "demo-trading"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

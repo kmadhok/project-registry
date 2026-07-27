@@ -1,7 +1,15 @@
 id: leaflet-challenge
 name: leaflet-challenge
-lifecycle: incubating
+purpose: A static Leaflet coursework prototype that maps the USGS past-week earthquake feed
+  with marker size based on magnitude, marker color based on depth, and informational popups.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/leaflet-challenge
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- leaflet
+- javascript
+- earthquakes
+- data-visualization

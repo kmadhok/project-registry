@@ -1,0 +1,38 @@
+{
+  "id": "capstonerag-20260727153350",
+  "project_id": "capstonerag",
+  "created_at": "2026-07-27T15:33:50.825975+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/capstonerag.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:50.825975+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An empty public repository placeholder named CapstoneRag with no tracked implementation or documented purpose."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "placeholder"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "empty-repository",
+        "placeholder"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,9 +1,17 @@
 id: firstmate-sandbox
 name: firstmate-sandbox
-lifecycle: incubating
+purpose: A disposable practice target for making small firstmate-workflow changes to a two-function
+  Python calculator module.
+lifecycle: archived
 active: false
-needs_review: true
+category: tooling
 repo: kmadhok/firstmate-sandbox
 visibility: private
+last_reviewed: '2026-07-27'
 descriptions:
   private: Throwaway repo for practicing the firstmate workflow
+tags:
+- sandbox
+- workflow-practice
+- python
+- calculator

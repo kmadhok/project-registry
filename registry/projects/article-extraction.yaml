@@ -1,7 +1,15 @@
 id: article-extraction
 name: Article_Extraction
-lifecycle: incubating
+purpose: A single-file Python experiment for discovering BBC or CNN business articles, extracting
+  article content through Crawl4AI and OpenAI, and writing the results to Markdown.
+lifecycle: archived
 active: false
-needs_review: true
+category: web-scraping
 repo: kmadhok/Article_Extraction
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- python
+- crawl4ai
+- article-extraction
+- openai

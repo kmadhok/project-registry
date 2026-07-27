@@ -1,7 +1,14 @@
 id: codingfun
 name: CodingFun
-lifecycle: incubating
+purpose: 'A collection of two small Python automation experiments: a desktop voice assistant
+  and a Gmail SMTP sender.'
+lifecycle: archived
 active: false
-needs_review: true
+category: learning-experiments
 repo: kmadhok/CodingFun
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- python
+- voice-assistant
+- email-automation

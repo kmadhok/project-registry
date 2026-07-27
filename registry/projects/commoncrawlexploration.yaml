@@ -1,7 +1,15 @@
 id: commoncrawlexploration
 name: CommonCrawlExploration
-lifecycle: incubating
+purpose: A Python prototype for discovering historical news URLs through Common Crawl or Google,
+  retrieving archived pages through Wayback or WARC ranges, and exporting extracted text.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-extraction
 repo: kmadhok/CommonCrawlExploration
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- common-crawl
+- web-archives
+- news-extraction
+- python

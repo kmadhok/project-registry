@@ -1,7 +1,16 @@
 id: fitness-sync
 name: fitness-sync
+purpose: A SwiftUI iPhone ingestion utility that aggregates selected Apple Health metrics
+  into daily records and synchronizes them to a FastAPI/PostgreSQL backend with retry support.
 lifecycle: incubating
 active: false
-needs_review: true
+category: health-data
 repo: kmadhok/fitness-sync
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- ios
+- healthkit
+- fastapi
+- postgresql
+- data-ingestion

@@ -1,7 +1,15 @@
 id: learning-projects
 name: learning-projects
-lifecycle: incubating
+purpose: Preserves an introductory Turi Create notebook that explores housing-sales data,
+  compares single- and multi-feature linear regressions, and predicts prices for example homes.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/learning-projects
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- jupyter
+- turicreate
+- linear-regression
+- housing

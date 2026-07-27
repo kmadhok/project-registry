@@ -1,7 +1,17 @@
 id: llm-convo
 name: LLM_Convo
-lifecycle: incubating
+purpose: A browser-controlled Python voice-assistant prototype that transcribes server-side
+  microphone audio with faster-whisper, maintains Groq Llama conversation context, and speaks
+  responses through AWS Polly.
+lifecycle: archived
 active: false
-needs_review: true
+category: ml
 repo: kmadhok/LLM_Convo
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- voice-assistant
+- speech-to-text
+- llm
+- text-to-speech
+- flask

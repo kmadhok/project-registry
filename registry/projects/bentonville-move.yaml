@@ -1,10 +1,19 @@
 id: bentonville-move
 name: bentonville-move
+purpose: A personal Bentonville apartment move-in workspace for coordinating tiered purchases,
+  tracking a relocation-funded budget, applying buying rules, and comparing researched household
+  products.
 lifecycle: incubating
 active: false
-needs_review: true
+category: personal-planning
 repo: kmadhok/bentonville-move
 visibility: private
+last_reviewed: '2026-07-27'
 descriptions:
   private: 'Bentonville apartment setup: shopping lists, budget tracker, buying strategy,
     and verified bed-frame research'
+tags:
+- relocation
+- shopping
+- budgeting
+- product-research

@@ -1,0 +1,41 @@
+{
+  "id": "ai-news-aggregator-20260727153338",
+  "project_id": "ai-news-aggregator",
+  "created_at": "2026-07-27T15:33:38.650484+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/ai-news-aggregator.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:38.650484+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Collect YouTube captions, Semantic Scholar papers, and podcast transcripts into Markdown, then organize and semantically search the resulting personal AI knowledge base."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "maintained"
+    },
+    "category": {
+      "before": null,
+      "after": "knowledge-management"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "ai-news",
+        "content-aggregation",
+        "semantic-search",
+        "transcription",
+        "python"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

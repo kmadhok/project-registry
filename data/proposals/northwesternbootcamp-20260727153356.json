@@ -1,0 +1,40 @@
+{
+  "id": "northwesternbootcamp-20260727153356",
+  "project_id": "northwesternbootcamp",
+  "created_at": "2026-07-27T15:33:56.647038+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/northwesternbootcamp.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:56.647038+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An Excel analysis exercise that summarizes 1,000 crowdfunding records by funding outcome, parent category, and subcategory using formulas, pivot tables, and bar charts."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "excel",
+        "crowdfunding",
+        "pivot-tables",
+        "data-analysis"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

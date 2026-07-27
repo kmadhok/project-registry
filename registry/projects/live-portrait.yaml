@@ -1,7 +1,16 @@
 id: live-portrait
 name: live-portrait
+purpose: A technical specification for a planned real-time web experience that lets users
+  converse with an animated, retrieval-grounded Abraham Lincoln portrait.
 lifecycle: incubating
 active: false
-needs_review: true
+category: ai-experience
 repo: kmadhok/live-portrait
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- conversational-ai
+- rag
+- speech
+- avatar
+- historical-education

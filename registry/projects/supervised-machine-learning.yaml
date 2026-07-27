@@ -1,10 +1,18 @@
 id: supervised-machine-learning
 name: Supervised-Machine-Learning
-lifecycle: incubating
+purpose: A notebook-scale experiment comparing logistic regression and random forest classifiers
+  for predicting binary loan status from tabular lending attributes.
+lifecycle: archived
 active: false
-needs_review: true
+category: ml
 repo: kmadhok/Supervised-Machine-Learning
 visibility: public
+last_reviewed: '2026-07-27'
 descriptions:
   private: Repository contains two machine learning models that will give insight to if a
     loan should be accepted or not.
+tags:
+- credit-risk
+- classification
+- scikit-learn
+- jupyter

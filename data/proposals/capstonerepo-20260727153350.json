@@ -1,0 +1,40 @@
+{
+  "id": "capstonerepo-20260727153350",
+  "project_id": "capstonerepo",
+  "created_at": "2026-07-27T15:33:50.922595+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/capstonerepo.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:50.922595+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A dormant capstone-project placeholder containing an empty Python file and a committed Windows Python 3.9 virtual environment, with no implemented application."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "capstone",
+        "placeholder",
+        "coursework"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

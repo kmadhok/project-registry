@@ -1,7 +1,15 @@
 id: python-challenge
 name: Python---Challenge
-lifecycle: incubating
+purpose: Implements two notebook-based CSV coursework exercises that summarize financial records
+  and tabulate election results into text reports.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/Python---Challenge
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- python
+- jupyter
+- csv
+- data-analysis

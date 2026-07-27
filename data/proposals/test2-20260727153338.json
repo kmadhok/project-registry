@@ -1,0 +1,39 @@
+{
+  "id": "test2-20260727153338",
+  "project_id": "test2",
+  "created_at": "2026-07-27T15:33:38.755261+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/test2.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:38.755261+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An empty private repository whose issue backlog proposes a mock test-runner interface with test definitions, list and detail views, run actions, history, and status indicators."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "web-app"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "test-runner",
+        "mock-data",
+        "ui-prototype"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "id": "ms-ds-classes-20260727153355",
+  "project_id": "ms-ds-classes",
+  "created_at": "2026-07-27T15:33:55.743806+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/ms-ds-classes.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.743806+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A private collection of executed master's-level NLP coursework notebooks covering text preprocessing, similarity analysis, sentiment analysis, and classical text classification."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "nlp",
+        "coursework",
+        "jupyter",
+        "text-classification",
+        "sentiment-analysis"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

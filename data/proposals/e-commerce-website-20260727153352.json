@@ -1,0 +1,40 @@
+{
+  "id": "e-commerce-website-20260727153352",
+  "project_id": "e-commerce-website",
+  "created_at": "2026-07-27T15:33:52.197792+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/e-commerce-website.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.197792+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Flask/MySQL coursework prototype for a Pine Valley storefront where users register, place product orders, write and filter reviews, and employees receive and grade product QA assignments."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "flask",
+        "mysql",
+        "e-commerce",
+        "database-design"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

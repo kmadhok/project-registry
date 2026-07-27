@@ -1,0 +1,37 @@
+{
+  "id": "journaling-app-20260727153354",
+  "project_id": "journaling-app",
+  "created_at": "2026-07-27T15:33:54.426856+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/journaling-app.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.426856+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A full-stack theme-aware journaling application for capturing typed, spoken, or AI-guided entries and connecting them to goals, streaks, structured reflections, weekly summaries, and 12-week execution plans."
+    },
+    "category": {
+      "before": null,
+      "after": "web-app"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "journaling",
+        "openai",
+        "voice",
+        "goal-tracking",
+        "nextjs"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

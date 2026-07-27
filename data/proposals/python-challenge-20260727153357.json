@@ -1,0 +1,40 @@
+{
+  "id": "python-challenge-20260727153357",
+  "project_id": "python-challenge",
+  "created_at": "2026-07-27T15:33:57.446969+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/python-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:57.446969+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Implements two notebook-based CSV coursework exercises that summarize financial records and tabulate election results into text reports."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "jupyter",
+        "csv",
+        "data-analysis"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

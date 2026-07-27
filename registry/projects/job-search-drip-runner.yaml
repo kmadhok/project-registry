@@ -1,7 +1,17 @@
 id: job-search-drip-runner
 name: job-search-drip-runner
+purpose: A human-gated Claude Code and Python automation engine that turns saved jobs into
+  tailored application packets and, after an application is recorded, stages verified recruiter
+  outreach drafts.
 lifecycle: incubating
 active: false
-needs_review: true
+category: job-search-automation
 repo: kmadhok/job-search-drip-runner
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- claude-code
+- python
+- workflow-automation
+- job-search
+- outreach

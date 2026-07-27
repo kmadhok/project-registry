@@ -1,0 +1,37 @@
+{
+  "id": "finance-understanding-20260727153352",
+  "project_id": "finance-understanding",
+  "created_at": "2026-07-27T15:33:52.914950+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/finance-understanding.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.914950+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A local personal-finance toolkit that syncs account and transaction data through Plaid or Teller into CSV and analyzes it into paycheck, recurring-bill, cash-flow, savings-goal, and snapshot reports."
+    },
+    "category": {
+      "before": null,
+      "after": "personal-finance"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "plaid",
+        "teller",
+        "cash-flow",
+        "data-analysis"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,7 +1,16 @@
 id: chicagofoodsafety
 name: ChicagoFoodSafety
-lifecycle: incubating
+purpose: A Python notebook that retrieves Chicago food-inspection records from the city's
+  open-data API, summarizes inspection outcomes, and partitions records by result category.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/ChicagoFoodSafety
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- python
+- jupyter
+- open-data
+- food-safety
+- chicago

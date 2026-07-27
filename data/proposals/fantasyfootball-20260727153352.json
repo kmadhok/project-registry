@@ -1,0 +1,41 @@
+{
+  "id": "fantasyfootball-20260727153352",
+  "project_id": "fantasyfootball",
+  "created_at": "2026-07-27T15:33:52.710434+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/fantasyfootball.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.710434+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python prototype that combines Sleeper and MyFantasyLeague roster data with player usage, projections, rankings, and NFL statistics to identify and contextualize fantasy-football waiver candidates."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "fantasy-football",
+        "python",
+        "sports-data",
+        "sleeper",
+        "waivers"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

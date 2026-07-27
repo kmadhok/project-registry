@@ -1,0 +1,40 @@
+{
+  "id": "my-website-20260727153355",
+  "project_id": "my-website",
+  "created_at": "2026-07-27T15:33:55.964725+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/my-website.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.964725+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Next.js personal portfolio for presenting Kanu Madhok's data science and AI engineering experience, selected projects, r\u00e9sum\u00e9, and contact channels."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "portfolio-site"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "portfolio",
+        "nextjs",
+        "typescript",
+        "tailwind"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

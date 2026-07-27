@@ -1,7 +1,16 @@
 id: remote-workstation
 name: remote-workstation
-lifecycle: incubating
+purpose: Operate a Windows coding workstation from a Mac through persistent Tailscale SSH
+  sessions, quote-safe cross-shell commands, and delegated Claude tasks.
+lifecycle: maintained
 active: false
-needs_review: true
+category: tooling
 repo: kmadhok/remote-workstation
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- remote-workstation
+- ssh
+- wsl
+- tmux
+- agent-automation

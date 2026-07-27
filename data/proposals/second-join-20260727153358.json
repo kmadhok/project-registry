@@ -1,0 +1,36 @@
+{
+  "id": "second-join-20260727153358",
+  "project_id": "second-join",
+  "created_at": "2026-07-27T15:33:58.015409+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/second-join.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:58.015409+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python utility that samples up to 1,000 random rows from every table in BigQuery's public census_utility dataset and exports each sample to CSV."
+    },
+    "category": {
+      "before": null,
+      "after": "data-extraction"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "bigquery",
+        "census",
+        "csv"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

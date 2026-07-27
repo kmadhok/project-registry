@@ -1,0 +1,39 @@
+{
+  "id": "my-blog-20260727153355",
+  "project_id": "my-blog",
+  "created_at": "2026-07-27T15:33:55.854247+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/my-blog.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:55.854247+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An empty public repository reserved under the name My_Blog without documentation or a blog implementation."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "placeholder"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "blog",
+        "empty-repository",
+        "placeholder"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

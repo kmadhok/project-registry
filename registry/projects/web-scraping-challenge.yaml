@@ -1,7 +1,16 @@
 id: web-scraping-challenge
 name: web-scraping-challenge
-lifecycle: incubating
+purpose: A notebook-based Mars web-scraping exercise that collects news, a featured image,
+  planetary comparison facts, and hemisphere imagery into one Python dictionary.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/web-scraping-challenge
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- web-scraping
+- python
+- jupyter
+- beautifulsoup
+- splinter

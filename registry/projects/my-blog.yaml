@@ -1,7 +1,14 @@
 id: my-blog
 name: My_Blog
-lifecycle: incubating
+purpose: An empty public repository reserved under the name My_Blog without documentation
+  or a blog implementation.
+lifecycle: archived
 active: false
-needs_review: true
+category: placeholder
 repo: kmadhok/My_Blog
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- blog
+- empty-repository
+- placeholder

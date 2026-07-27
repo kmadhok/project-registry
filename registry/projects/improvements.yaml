@@ -1,7 +1,16 @@
 id: improvements
 name: improvements
+purpose: A macOS command-line utility for recording microphone input, transcribing it through
+  OpenAI's whisper-1 API, and copying the result to the clipboard.
 lifecycle: incubating
 active: false
-needs_review: true
+category: tooling
 repo: kmadhok/improvements
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- speech-to-text
+- openai
+- python
+- macos
+- audio

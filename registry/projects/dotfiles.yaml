@@ -1,7 +1,16 @@
 id: dotfiles
 name: dotfiles
-lifecycle: incubating
+purpose: Personal Claude Code tooling that packages custom agents, slash-command delivery
+  workflows, lifecycle hooks, and adapters for routing work across multiple model CLIs.
+lifecycle: maintained
 active: false
-needs_review: true
+category: tooling
 repo: kmadhok/dotfiles
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- dotfiles
+- claude-code
+- agents
+- automation
+- model-routing

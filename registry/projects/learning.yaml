@@ -1,7 +1,15 @@
 id: learning
 name: Learning
-lifecycle: incubating
+purpose: A small GitHub Codespaces and Azure Node.js demonstration that renders five haikus
+  with bundled Octocat images through Express and EJS.
+lifecycle: archived
 active: false
-needs_review: true
+category: learning-demo
 repo: kmadhok/Learning
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- nodejs
+- express
+- codespaces
+- azure

@@ -1,7 +1,16 @@
 id: ms-ds-classes
 name: MS_DS_Classes
-lifecycle: incubating
+purpose: A private collection of executed master's-level NLP coursework notebooks covering
+  text preprocessing, similarity analysis, sentiment analysis, and classical text classification.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/MS_DS_Classes
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- nlp
+- coursework
+- jupyter
+- text-classification
+- sentiment-analysis

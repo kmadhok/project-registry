@@ -1,7 +1,16 @@
 id: no-more-pop-ups
 name: no-more-pop-ups
+purpose: A dual-platform prototype that gives Chrome/Edge extension users and users of a custom
+  iOS browser explicit control over cross-site, popup, and script-driven navigations.
 lifecycle: incubating
 active: false
-needs_review: true
+category: browser-tooling
 repo: kmadhok/no-more-pop-ups
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- browser-extension
+- ios
+- navigation-control
+- privacy
+- swiftui

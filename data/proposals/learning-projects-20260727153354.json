@@ -1,0 +1,40 @@
+{
+  "id": "learning-projects-20260727153354",
+  "project_id": "learning-projects",
+  "created_at": "2026-07-27T15:33:54.744605+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/learning-projects.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.744605+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Preserves an introductory Turi Create notebook that explores housing-sales data, compares single- and multi-feature linear regressions, and predicts prices for example homes."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "jupyter",
+        "turicreate",
+        "linear-regression",
+        "housing"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

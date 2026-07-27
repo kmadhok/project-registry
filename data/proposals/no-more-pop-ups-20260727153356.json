@@ -1,0 +1,37 @@
+{
+  "id": "no-more-pop-ups-20260727153356",
+  "project_id": "no-more-pop-ups",
+  "created_at": "2026-07-27T15:33:56.537990+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/no-more-pop-ups.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:56.537990+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A dual-platform prototype that gives Chrome/Edge extension users and users of a custom iOS browser explicit control over cross-site, popup, and script-driven navigations."
+    },
+    "category": {
+      "before": null,
+      "after": "browser-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "browser-extension",
+        "ios",
+        "navigation-control",
+        "privacy",
+        "swiftui"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

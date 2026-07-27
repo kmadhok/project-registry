@@ -1,0 +1,40 @@
+{
+  "id": "scraping-20260727153357",
+  "project_id": "scraping",
+  "created_at": "2026-07-27T15:33:57.899126+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/scraping.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:57.899126+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Prototype Python tooling for extracting NFL moneyline odds from Vegas Insider HTML, developed around Jets/Bengals and 49ers/Texans examples."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "scraping"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "web-scraping",
+        "nfl",
+        "sports-betting"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

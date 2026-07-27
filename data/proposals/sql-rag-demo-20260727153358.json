@@ -1,0 +1,36 @@
+{
+  "id": "sql-rag-demo-20260727153358",
+  "project_id": "sql-rag-demo",
+  "created_at": "2026-07-27T15:33:58.259414+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/sql-rag-demo.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:58.259414+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A placeholder for a proposed SQL-RAG query-search workflow involving BigQuery sampling, table selection, generated-SQL validation, and query-quality feedback."
+    },
+    "category": {
+      "before": null,
+      "after": "ml"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "sql",
+        "rag",
+        "bigquery",
+        "text-to-sql"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

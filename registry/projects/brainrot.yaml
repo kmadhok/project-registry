@@ -1,7 +1,15 @@
 id: brainrot
 name: Brainrot
-lifecycle: incubating
+purpose: A three-script Python scaffold for generating short-form social-video transcripts,
+  synthesizing narration, and producing SRT subtitles through OpenAI, Amazon Polly, and AssemblyAI.
+lifecycle: archived
 active: false
-needs_review: true
+category: video-automation
 repo: kmadhok/Brainrot
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- short-form-video
+- text-to-speech
+- subtitles
+- generative-ai

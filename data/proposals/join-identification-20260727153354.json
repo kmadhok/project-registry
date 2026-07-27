@@ -1,0 +1,41 @@
+{
+  "id": "join-identification-20260727153354",
+  "project_id": "join-identification",
+  "created_at": "2026-07-27T15:33:54.320701+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/join-identification.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.320701+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A BigQuery-focused Python CLI prototype for inferring table joins and multi-hop paths from column statistics, value overlap, and optional historical SQL evidence."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-engineering"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "bigquery",
+        "join-discovery",
+        "data-profiling",
+        "graph-analysis",
+        "gemini"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,7 +1,17 @@
 id: financial-article-llm-rag
 name: Financial-Article-LLM-RAG
-lifecycle: incubating
+purpose: A Streamlit stock-news assistant experiment that combines NewsAPI and Finnhub data
+  with OpenAI-assisted article scraping, Gemini/Chroma retrieval, summarization, and article
+  Q&A.
+lifecycle: archived
 active: false
-needs_review: true
+category: ml
 repo: kmadhok/Financial-Article-LLM-RAG
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- rag
+- streamlit
+- financial-news
+- llm
+- prototype

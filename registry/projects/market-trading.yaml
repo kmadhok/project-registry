@@ -1,7 +1,17 @@
 id: market-trading
 name: market-trading
+purpose: A Python scaffold for comparing normalized prediction-market and sportsbook prices,
+  generating multi-venue trading signals, and routing them through sizing, risk, paper-execution,
+  position, and alert components.
 lifecycle: incubating
 active: false
-needs_review: true
+category: trading
 repo: kmadhok/market-trading
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- prediction-markets
+- arbitrage
+- quant-trading
+- python
+- sportsbook-odds

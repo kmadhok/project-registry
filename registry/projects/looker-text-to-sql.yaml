@@ -1,7 +1,16 @@
 id: looker-text-to-sql
 name: Looker_Text_to_SQL
-lifecycle: incubating
+purpose: Prototype a CLI that retrieves relevant retail LookML schema context and uses Ollama
+  embeddings plus Gemini to turn natural-language questions into SQL.
+lifecycle: archived
 active: false
-needs_review: true
+category: ml-tooling
 repo: kmadhok/Looker_Text_to_SQL
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- text-to-sql
+- lookml
+- rag
+- gemini
+- faiss

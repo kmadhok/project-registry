@@ -1,0 +1,37 @@
+{
+  "id": "job-search-drip-runner-20260727153353",
+  "project_id": "job-search-drip-runner",
+  "created_at": "2026-07-27T15:33:53.876447+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/job-search-drip-runner.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:53.876447+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A human-gated Claude Code and Python automation engine that turns saved jobs into tailored application packets and, after an application is recorded, stages verified recruiter outreach drafts."
+    },
+    "category": {
+      "before": null,
+      "after": "job-search-automation"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "claude-code",
+        "python",
+        "workflow-automation",
+        "job-search",
+        "outreach"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

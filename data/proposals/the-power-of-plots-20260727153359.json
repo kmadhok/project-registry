@@ -1,0 +1,41 @@
+{
+  "id": "the-power-of-plots-20260727153359",
+  "project_id": "the-power-of-plots",
+  "created_at": "2026-07-27T15:33:59.300999+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/the-power-of-plots.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:59.300999+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A guided Jupyter coursework analysis of mouse tumor-response data across drug regimens using pandas, Matplotlib, and SciPy."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "jupyter",
+        "data-analysis",
+        "pandas",
+        "matplotlib",
+        "statistics"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

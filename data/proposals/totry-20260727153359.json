@@ -1,0 +1,38 @@
+{
+  "id": "totry-20260727153359",
+  "project_id": "totry",
+  "created_at": "2026-07-27T15:33:59.415180+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/totry.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:59.415180+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An empty private repository placeholder named ToTry with no committed implementation or documented purpose."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "placeholder"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "empty-repository",
+        "placeholder"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,7 +1,17 @@
 id: drivestorage
 name: DriveStorage
-lifecycle: incubating
+purpose: A dormant storage snapshot containing a static fast-food calorie-to-protein comparison
+  prototype, its Nutritionix-derived CSV datasets, and several standalone nutrition and web-scraping
+  notebooks.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/DriveStorage
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- nutrition
+- static-web
+- csv
+- notebooks
+- web-scraping

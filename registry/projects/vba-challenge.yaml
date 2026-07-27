@@ -1,7 +1,15 @@
 id: vba-challenge
 name: VBA-Challenge
-lifecycle: incubating
+purpose: An Excel VBA coursework project that aggregates row-level stock data by ticker into
+  yearly change, percentage change, total volume, and greatest-value summaries.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/VBA-Challenge
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- vba
+- excel
+- stock-analysis
+- automation

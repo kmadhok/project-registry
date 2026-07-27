@@ -1,0 +1,40 @@
+{
+  "id": "commoncrawlexploration-20260727153351",
+  "project_id": "commoncrawlexploration",
+  "created_at": "2026-07-27T15:33:51.366290+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/commoncrawlexploration.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:51.366290+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Python prototype for discovering historical news URLs through Common Crawl or Google, retrieving archived pages through Wayback or WARC ranges, and exporting extracted text."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-extraction"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "common-crawl",
+        "web-archives",
+        "news-extraction",
+        "python"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

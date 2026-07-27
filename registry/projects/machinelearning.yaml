@@ -1,9 +1,17 @@
 id: machinelearning
 name: MachineLearning
-lifecycle: incubating
+purpose: Stores MSCA-31009 introductory machine-learning course materials, including lecture
+  and assignment PDFs, worked scikit-learn notebooks, and their static HTML exports.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/MachineLearning
 visibility: private
+last_reviewed: '2026-07-27'
 descriptions:
   private: Repo for Class
+tags:
+- machine-learning
+- scikit-learn
+- jupyter
+- coursework

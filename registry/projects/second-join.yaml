@@ -1,7 +1,15 @@
 id: second-join
 name: second-join
+purpose: A Python utility that samples up to 1,000 random rows from every table in BigQuery's
+  public census_utility dataset and exports each sample to CSV.
 lifecycle: incubating
 active: false
-needs_review: true
+category: data-extraction
 repo: kmadhok/second-join
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- python
+- bigquery
+- census
+- csv

@@ -1,0 +1,41 @@
+{
+  "id": "advancedcompvisionproject-20260727153349",
+  "project_id": "advancedcompvisionproject",
+  "created_at": "2026-07-27T15:33:49.810417+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/advancedcompvisionproject.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:49.810417+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A 2024 computer-vision coursework prototype that trains and evaluates TensorFlow Vision Transformers for classifying 64-by-64 microscopy images into eight red-blood-cell morphology classes."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "computer-vision",
+        "vision-transformer",
+        "tensorflow",
+        "microscopy",
+        "classification"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

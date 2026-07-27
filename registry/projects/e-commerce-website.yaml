@@ -1,7 +1,16 @@
 id: e-commerce-website
 name: E-Commerce-Website
-lifecycle: incubating
+purpose: A Flask/MySQL coursework prototype for a Pine Valley storefront where users register,
+  place product orders, write and filter reviews, and employees receive and grade product
+  QA assignments.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/E-Commerce-Website
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- flask
+- mysql
+- e-commerce
+- database-design

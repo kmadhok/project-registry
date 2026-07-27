@@ -1,0 +1,41 @@
+{
+  "id": "yelp-sentitment-recommender-20260727153400",
+  "project_id": "yelp-sentitment-recommender",
+  "created_at": "2026-07-27T15:34:00.139462+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/yelp-sentitment-recommender.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:34:00.139462+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A 2023 group-coursework prototype that uses PySpark and Spark NLP to prepare Yelp data, analyze aspect sentiment, predict ratings, and experiment with ALS, association-rule, and graph-based restaurant recommendations."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "pyspark",
+        "yelp",
+        "recommender",
+        "sentiment-analysis",
+        "machine-learning"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "finance-tracking-20260727153352",
+  "project_id": "finance-tracking",
+  "created_at": "2026-07-27T15:33:52.813323+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/finance-tracking.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.813323+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A local-first Tauri desktop application that imports Teller account transactions into SQLite for rule-based categorization, split editing, filtering, and monthly spending summaries."
+    },
+    "category": {
+      "before": null,
+      "after": "personal-finance"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "tauri",
+        "react",
+        "rust",
+        "sqlite",
+        "teller"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

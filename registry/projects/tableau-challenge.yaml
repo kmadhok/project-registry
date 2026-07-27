@@ -1,7 +1,16 @@
 id: tableau-challenge
 name: Tableau-Challenge
-lifecycle: incubating
+purpose: A completed Tableau analysis of June 2013 Citi Bike trips that explores rider age,
+  user type, trip duration, ride frequency, and station popularity through six worksheets
+  and three dashboards.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/Tableau-Challenge
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- tableau
+- data-visualization
+- citibike
+- analytics

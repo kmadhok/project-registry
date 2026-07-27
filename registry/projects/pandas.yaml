@@ -1,7 +1,15 @@
 id: pandas
 name: Pandas
-lifecycle: incubating
+purpose: Stores two Jupyter notebook coursework exercises using pandas to analyze game-item
+  purchasing and school-performance datasets.
+lifecycle: archived
 active: false
-needs_review: true
+category: coursework
 repo: kmadhok/Pandas
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- pandas
+- jupyter
+- data-analysis
+- coursework

@@ -1,7 +1,16 @@
 id: daily-apartment-pull
 name: Daily_Apartment_Pull
-lifecycle: incubating
+purpose: Monitors Chicago apartment availability and pricing through Crawl4AI and Playwright
+  scrapers, with CSV/BigQuery persistence and optional Slack alerts.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-collection
 repo: kmadhok/Daily_Apartment_Pull
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- web-scraping
+- apartments
+- bigquery
+- playwright
+- automation

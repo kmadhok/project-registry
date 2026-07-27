@@ -1,7 +1,14 @@
 id: weshallsee
 name: WeShallSee
-lifecycle: incubating
+purpose: An uninspectable, dormant private repository whose intended purpose cannot be determined
+  from the empty local checkout or supplied metadata.
+lifecycle: archived
 active: false
-needs_review: true
+category: unknown
 repo: kmadhok/WeShallSee
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- private
+- empty-checkout
+- dormant

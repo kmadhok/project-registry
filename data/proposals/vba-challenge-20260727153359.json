@@ -1,0 +1,40 @@
+{
+  "id": "vba-challenge-20260727153359",
+  "project_id": "vba-challenge",
+  "created_at": "2026-07-27T15:33:59.780077+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/vba-challenge.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:59.780077+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An Excel VBA coursework project that aggregates row-level stock data by ticker into yearly change, percentage change, total volume, and greatest-value summaries."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "coursework"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "vba",
+        "excel",
+        "stock-analysis",
+        "automation"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

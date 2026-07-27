@@ -1,0 +1,41 @@
+{
+  "id": "financial-article-llm-rag-20260727153353",
+  "project_id": "financial-article-llm-rag",
+  "created_at": "2026-07-27T15:33:53.024483+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/financial-article-llm-rag.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:53.024483+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A Streamlit stock-news assistant experiment that combines NewsAPI and Finnhub data with OpenAI-assisted article scraping, Gemini/Chroma retrieval, summarization, and article Q&A."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "ml"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "rag",
+        "streamlit",
+        "financial-news",
+        "llm",
+        "prototype"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

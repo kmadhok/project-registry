@@ -1,7 +1,17 @@
 id: finance-tracking
 name: finance-tracking
+purpose: A local-first Tauri desktop application that imports Teller account transactions
+  into SQLite for rule-based categorization, split editing, filtering, and monthly spending
+  summaries.
 lifecycle: incubating
 active: false
-needs_review: true
+category: personal-finance
 repo: kmadhok/finance-tracking
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- tauri
+- react
+- rust
+- sqlite
+- teller

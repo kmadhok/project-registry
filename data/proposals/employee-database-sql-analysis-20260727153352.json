@@ -1,0 +1,40 @@
+{
+  "id": "employee-database-sql-analysis-20260727153352",
+  "project_id": "employee-database-sql-analysis",
+  "created_at": "2026-07-27T15:33:52.304209+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/employee-database-sql-analysis.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:52.304209+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A PostgreSQL employee-data modeling and analysis exercise containing six CSV datasets, a six-table relational schema, an ERD, and eight example analytical queries."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-analysis"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "sql",
+        "postgresql",
+        "data-modeling",
+        "relational-data"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

@@ -1,7 +1,14 @@
 id: example-repos
 name: example-repos
+purpose: A minimal repository container that currently records a pinned but unconfigured gitlink
+  named skills.
 lifecycle: incubating
 active: false
-needs_review: true
+category: tooling
 repo: kmadhok/example-repos
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- skills
+- git-submodule
+- scaffold

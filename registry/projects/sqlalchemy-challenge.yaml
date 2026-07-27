@@ -1,7 +1,15 @@
 id: sqlalchemy-challenge
 name: sqlalchemy-challenge
-lifecycle: incubating
+purpose: A Jupyter notebook that demonstrates SQLAlchemy ORM reflection and exploratory precipitation
+  and station analysis over a Hawaii weather SQLite dataset.
+lifecycle: archived
 active: false
-needs_review: true
+category: data-analysis
 repo: kmadhok/sqlalchemy-challenge
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- sqlalchemy
+- sqlite
+- jupyter
+- climate-analysis

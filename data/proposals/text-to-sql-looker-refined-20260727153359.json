@@ -1,0 +1,41 @@
+{
+  "id": "text-to-sql-looker-refined-20260727153359",
+  "project_id": "text-to-sql-looker-refined",
+  "created_at": "2026-07-27T15:33:59.181416+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/text-to-sql-looker-refined.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:59.181416+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A LookML-grounded Python prototype that uses Gemini or heuristic planning to generate BigQuery SQL for the public theLook e-commerce model and records evaluation results."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "data-tooling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "text-to-sql",
+        "lookml",
+        "bigquery",
+        "gemini",
+        "prototype"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

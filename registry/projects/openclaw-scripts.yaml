@@ -1,7 +1,16 @@
 id: openclaw-scripts
 name: openclaw-scripts
+purpose: Provide standard-library Python readiness checks and JSON command wrappers for validating
+  Openclaw agent hosts, credentials, and external integrations before autonomous runs.
 lifecycle: incubating
 active: false
-needs_review: true
+category: tooling
 repo: kmadhok/openclaw-scripts
 visibility: private
+last_reviewed: '2026-07-27'
+tags:
+- openclaw
+- health-checks
+- automation
+- integrations
+- python

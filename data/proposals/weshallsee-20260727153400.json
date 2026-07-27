@@ -1,0 +1,39 @@
+{
+  "id": "weshallsee-20260727153400",
+  "project_id": "weshallsee",
+  "created_at": "2026-07-27T15:34:00.013419+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/weshallsee.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:34:00.013419+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "An uninspectable, dormant private repository whose intended purpose cannot be determined from the empty local checkout or supplied metadata."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "unknown"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "private",
+        "empty-checkout",
+        "dormant"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

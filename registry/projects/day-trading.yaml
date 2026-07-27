@@ -1,7 +1,16 @@
 id: day-trading
 name: Day_trading
-lifecycle: incubating
+purpose: A local Python research engine for generating and comparing SMA, MACD, RSI, and volume-based
+  trading signals from Yahoo Finance data, with CSV/Excel reporting and simple backtests.
+lifecycle: archived
 active: false
-needs_review: true
+category: trading
 repo: kmadhok/Day_trading
 visibility: public
+last_reviewed: '2026-07-27'
+tags:
+- python
+- algorithmic-trading
+- technical-analysis
+- backtesting
+- yfinance

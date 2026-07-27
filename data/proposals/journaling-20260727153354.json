@@ -1,0 +1,37 @@
+{
+  "id": "journaling-20260727153354",
+  "project_id": "journaling",
+  "created_at": "2026-07-27T15:33:54.530959+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/journaling.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:54.530959+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "Implements a privacy-first FastAPI journaling backend that pseudonymizes personal information before Gemini-based coaching and organizes conversations by user-defined themes."
+    },
+    "category": {
+      "before": null,
+      "after": "ai-journaling"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "fastapi",
+        "privacy",
+        "journaling",
+        "gemini",
+        "pseudonymization"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

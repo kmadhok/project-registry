@@ -1,0 +1,41 @@
+{
+  "id": "day-trading-20260727153351",
+  "project_id": "day-trading",
+  "created_at": "2026-07-27T15:33:51.668658+00:00",
+  "status": "applied",
+  "rationale": "Bulk curation from evidence brief data/understanding/day-trading.json (reviewed by owner)",
+  "source": "record_review",
+  "applied_at": "2026-07-27T15:33:51.668658+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-07-27"
+    },
+    "purpose": {
+      "before": null,
+      "after": "A local Python research engine for generating and comparing SMA, MACD, RSI, and volume-based trading signals from Yahoo Finance data, with CSV/Excel reporting and simple backtests."
+    },
+    "lifecycle": {
+      "before": "incubating",
+      "after": "archived"
+    },
+    "category": {
+      "before": null,
+      "after": "trading"
+    },
+    "tags": {
+      "before": null,
+      "after": [
+        "python",
+        "algorithmic-trading",
+        "technical-analysis",
+        "backtesting",
+        "yfinance"
+      ]
+    },
+    "needs_review": {
+      "before": true,
+      "after": false
+    }
+  }
+}

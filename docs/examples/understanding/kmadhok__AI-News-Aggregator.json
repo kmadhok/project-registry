@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/AI-News-Aggregator",
+  "analyzed_at": "2026-07-20T00:00:00Z",
+  "revision": "e40cf6898ffe77f07e20e7c90a6d4fca1350446f",
+  "analysis_scope": {
+    "inspected": [
+      "SETUP.md",
+      "ORGANIZED.md",
+      "PLAN.md",
+      "docs/specs/IDEA_TOPIC_MAP.md",
+      "ai_news_aggregator/run.py",
+      "ai_news_aggregator/indexer.py",
+      "ai_news_aggregator/graph/",
+      "tests/test_potw_semantic.py",
+      "tests/graph/test_builder.py",
+      "recent commit history",
+      "open pull requests"
+    ],
+    "missing": [
+      "README.md",
+      ".github/workflows/"
+    ],
+    "inaccessible": [
+      "Test execution because pytest is not installed in the analysis environment"
+    ],
+    "sampling_notes": "The repository contains tracked content and a large SQLite database. Analysis sampled pipeline entry points, graph/index modules, representative tests, specifications, and generated output; it did not inspect every content document or database row. Uncommitted worktree changes were excluded from revision-specific claims."
+  },
+  "stated_purpose": "Aggregate AI news and research from multiple sources into local Markdown, then organize, index, search, and explore it through semantic and topic-graph workflows.",
+  "observed_capabilities": [
+    {
+      "statement": "The CLI exposes ingestion commands for YouTube, Semantic Scholar papers, podcasts, X links, and papers of the week.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["setup", "cli"]
+    },
+    {
+      "statement": "The project stores normalized content as Markdown and can build organized topic and semantic-cluster views.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["setup", "organized"]
+    },
+    {
+      "statement": "The CLI supports indexing, search, similarity, clustering, and an idea/topic map with build, export, validate, and serve operations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["cli", "graph-spec"]
+    },
+    {
+      "statement": "Papers-of-the-week content is integrated into the semantic index, topic graph, and organizer paths with representative automated tests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["potw-tests", "recent-history", "pr-12"]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The idea/topic-map specification describes later phases for source/time exploration, grounded idea extraction, and typed idea relationships beyond the topic-graph MVP.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["graph-spec"]
+    },
+    {
+      "statement": "A separate draft PR proposes a product-purpose brief that has not been merged.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["pr-11"]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "Source-specific ingestion pipelines feed Markdown content; SQLite-backed indexing and graph modules derive embeddings, topics, edges, exports, and local browser artifacts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["setup", "cli", "graph-spec"]
+    },
+    {
+      "statement": "The system is local-first and most documented ingestion paths avoid paid API credentials, while podcast transcription downloads a local Whisper model.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["setup"]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "Multiple source-ingestion workflows, persisted content, and a generated organized view are present at the analyzed revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["setup", "organized", "cli"]
+    },
+    {
+      "statement": "The repository contains test-backed semantic POTW integration and an idempotent topic-graph export/validation path.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["potw-tests", "graph-tests", "recent-history"]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The repository lacks a top-level README and CI workflow, so setup documentation and committed tests are not automatically verified on GitHub.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["tree-inventory"]
+    },
+    {
+      "statement": "The specification's grounded idea layer and typed idea relationships are not proven complete by the sampled implementation evidence.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["graph-spec", "graph-tests"]
+    },
+    {
+      "statement": "Two draft PRs remain open and have no status checks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["pr-11", "pr-12"]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Compiled Python cache files and generated content are tracked, which can obscure meaningful diffs and increase repository churn.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["tree-inventory"]
+    },
+    {
+      "statement": "The checked-in content database and generated corpus may become a scaling and history-management concern as ingestion grows.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["tree-inventory", "organized"]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Review the two draft PRs, decide the canonical product-purpose documentation, and add a minimal CI workflow that executes the committed test suite.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["pr-11", "pr-12", "tree-inventory"]
+    }
+  ],
+  "questions": [
+    "Is the idea/topic map now the primary product direction, or is it an exploration layer for the ingestion archive?",
+    "Should generated content and content.db remain versioned in Git, or move to an artifact/data storage policy?",
+    "Which of the two open draft PRs should be completed, merged, or closed?"
+  ],
+  "evidence": [
+    {
+      "id": "setup",
+      "kind": "documentation",
+      "location": "SETUP.md",
+      "summary": "Documents YouTube, Scholar, and podcast ingestion, local Markdown outputs, dependencies, and credential expectations."
+    },
+    {
+      "id": "organized",
+      "kind": "generated_output",
+      "location": "ORGANIZED.md",
+      "summary": "Contains dated content grouped into weekly, topic, and semantic-cluster views."
+    },
+    {
+      "id": "cli",
+      "kind": "source",
+      "location": "ai_news_aggregator/run.py",
+      "summary": "Defines source ingestion, organization, indexing, retrieval, clustering, and map subcommands."
+    },
+    {
+      "id": "graph-spec",
+      "kind": "specification",
+      "location": "docs/specs/IDEA_TOPIC_MAP.md",
+      "summary": "Defines the topic/idea graph model, functional requirements, CLI, delivery phases, and acceptance criteria."
+    },
+    {
+      "id": "potw-tests",
+      "kind": "test_source",
+      "location": "tests/test_potw_semantic.py",
+      "summary": "Tests POTW indexing, graph construction, export ordering, failure handling, organizer rendering, and path recovery."
+    },
+    {
+      "id": "graph-tests",
+      "kind": "test_source",
+      "location": "tests/graph/test_builder.py",
+      "summary": "Tests idempotent graph builds, topic replacement, export structure, and validation."
+    },
+    {
+      "id": "recent-history",
+      "kind": "git_history",
+      "location": "e40cf6898ffe77f07e20e7c90a6d4fca1350446f",
+      "summary": "Recent commits add the idea/topic map, POTW pipeline, semantic integration, and creator-watchlist specification."
+    },
+    {
+      "id": "tree-inventory",
+      "kind": "repository_tree",
+      "location": "HEAD",
+      "summary": "The analyzed tree has 180 tracked files, 14 test-like paths, no GitHub workflow, no README, tracked cache files, generated content, and content.db."
+    },
+    {
+      "id": "pr-11",
+      "kind": "pull_request",
+      "location": "https://github.com/kmadhok/AI-News-Aggregator/pull/11",
+      "summary": "Open draft PR for a product-purpose brief; merge state clean and no checks in the imported snapshot."
+    },
+    {
+      "id": "pr-12",
+      "kind": "pull_request",
+      "location": "https://github.com/kmadhok/AI-News-Aggregator/pull/12",
+      "summary": "Open draft PR for completed POTW semantic topic integration; merge state clean and no checks in the imported snapshot."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary documentation, CLI entry points, representative tests, outputs, history, and PRs agree on the major capabilities. Tests were inspected but not executed, the large corpus was sampled, and uncommitted work was excluded."
+  },
+  "limitations": [
+    "The test suite was not executed because pytest is unavailable in the analysis environment.",
+    "The content database and full generated corpus were not inspected.",
+    "Current uncommitted worktree changes are outside the analyzed commit."
+  ]
+}

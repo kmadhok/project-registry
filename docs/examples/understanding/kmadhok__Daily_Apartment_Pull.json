@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Daily_Apartment_Pull",
+  "analyzed_at": "2026-07-20T00:00:00Z",
+  "revision": "48cf390e675a77fcce1cb607d6d9e3b2fc50f76b",
+  "analysis_scope": {
+    "inspected": [
+      "README.md",
+      "README_DEPLOY.md",
+      ".github/workflows/daily.yml",
+      ".github/workflows/simple_checker.yml",
+      "apartment_scraper_engine.py",
+      "apartment_site_config.py",
+      "bigquery_sink.py",
+      "data_validator.py",
+      "send_slack.py filename only",
+      "recent commit history",
+      "recent GitHub Actions metadata",
+      "filename-only credential-pattern scan"
+    ],
+    "missing": [],
+    "inaccessible": [
+      "Credential values and secret contents by policy",
+      "Live target execution because it would access external sites and cloud services"
+    ],
+    "sampling_notes": "The repository has 161 tracked paths and many generated HTML, JSON, CSV, debug, and cache artifacts. Analysis sampled architecture, deployment, workflows, primary scraper/validation/sink components, and recent Actions history rather than every captured artifact."
+  },
+  "stated_purpose": "Scrape apartment availability from dynamic sites, validate and normalize listings, persist results to BigQuery, and send scheduled notifications.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository implements site configuration, schema caching, multiple extraction strategies, normalization, validation, and integration paths for dynamic apartment websites.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["readme", "scraper-source"]
+    },
+    {
+      "statement": "BigQuery sink functions create or use floor-plan and unit tables and write normalized rows.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["bigquery-source", "deploy-doc"]
+    },
+    {
+      "statement": "Three GitHub Actions workflows exist, including daily extraction and a simple checker, with secrets passed through GitHub Actions environment configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["daily-workflow", "tree-inventory"]
+    },
+    {
+      "statement": "Scheduled daily and checker workflows completed successfully on multiple consecutive days through 2026-02-09 at the pre-archive revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["actions-history"]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "Site-specific configuration and cached schemas feed asynchronous scraping and fallback extraction; validated results can be written to BigQuery and surfaced through notification workflows.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["readme", "scraper-source", "bigquery-source", "daily-workflow"]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The project progressed from scraping experiments to repeated successful scheduled extraction and checker runs with BigQuery and artifact handling.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["actions-history", "daily-workflow", "history"]
+    },
+    {
+      "statement": "Validation and fallback logic cover prices, bedrooms, bathrooms, square footage, availability, and multiple target-site configurations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["readme", "scraper-source"]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No workflow runs were observed after 2026-02-09, and the successful runs used an older commit than the analyzed July archive revision, so current scheduled operation is not verified.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["actions-history", "history"]
+    },
+    {
+      "statement": "The repository tracks generated data, cache, debug, bytecode, and captured-page artifacts alongside source, which makes implementation state harder to review.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["tree-inventory"]
+    },
+    {
+      "statement": "Only two test-like Python paths were found and no current-revision test or workflow execution was performed during this analysis.",
+      "claim_type": "observed_fact",
+      "evidence_ids": ["tree-inventory"]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A filename-only scan found likely credential-pattern matches in extract_details.py and captured HTML artifacts; values were not inspected, so these require a manual secret-history review.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["credential-scan"]
+    },
+    {
+      "statement": "External site changes, browser dependencies, cloud credentials, and multiple fallback paths create operational fragility that requires current monitoring evidence.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["readme", "daily-workflow", "actions-history"]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Confirm whether the scheduled system is intentionally paused; then perform a secret-history review, separate generated artifacts from source, and run the workflows against the current revision before classifying it as operational or archived.",
+      "claim_type": "supported_inference",
+      "evidence_ids": ["actions-history", "credential-scan", "tree-inventory", "history"]
+    }
+  ],
+  "questions": [
+    "Was the scheduled apartment monitoring intentionally stopped after February 2026?",
+    "Are its BigQuery tables or notifications still used?",
+    "Should the July archive snapshot become a showcase/reference repository or be reactivated?"
+  ],
+  "evidence": [
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Documents the dynamic Crawl4AI architecture, configured sites, extraction strategies, validation, and integration workflow."
+    },
+    {
+      "id": "deploy-doc",
+      "kind": "documentation",
+      "location": "README_DEPLOY.md",
+      "summary": "Documents BigQuery schema, service-account setup, GitHub secrets, scheduled execution, local testing, and idempotency notes."
+    },
+    {
+      "id": "daily-workflow",
+      "kind": "workflow",
+      "location": ".github/workflows/daily.yml",
+      "summary": "Schedules daily extraction, installs browser dependencies, materializes secrets at runtime, runs two scrapers, and uploads artifacts."
+    },
+    {
+      "id": "scraper-source",
+      "kind": "source",
+      "location": "apartment_scraper_engine.py, apartment_site_config.py, data_validator.py",
+      "summary": "Implement configuration, extraction, normalization, validation, and result handling."
+    },
+    {
+      "id": "bigquery-source",
+      "kind": "source",
+      "location": "bigquery_sink.py",
+      "summary": "Implements BigQuery table setup and writes for floor plans and units."
+    },
+    {
+      "id": "actions-history",
+      "kind": "github_actions",
+      "location": "https://github.com/kmadhok/Daily_Apartment_Pull/actions",
+      "summary": "The ten most recent imported runs were successful scheduled daily/checker runs from 2026-02-05 through 2026-02-09 at commit fc1fe2d."
+    },
+    {
+      "id": "tree-inventory",
+      "kind": "repository_tree",
+      "location": "48cf390e675a77fcce1cb607d6d9e3b2fc50f76b",
+      "summary": "The revision has 161 tracked paths, three workflows, two test-like Python paths, and numerous generated/debug/cache artifacts."
+    },
+    {
+      "id": "credential-scan",
+      "kind": "security_scan",
+      "location": "filename-only scan at 48cf390e675a77fcce1cb607d6d9e3b2fc50f76b",
+      "summary": "Likely credential-pattern matches were reported only by filename; no value was displayed, read by the analyst, or stored."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "48cf390e675a77fcce1cb607d6d9e3b2fc50f76b",
+      "summary": "Recent history shows completed site-scraper work in September 2025 and a July 2026 archive snapshot."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Documentation, source structure, workflows, and historical successful runs support the main workflow. Current operation at the analyzed revision was not verified, artifacts were sampled, and secret values were intentionally excluded."
+  },
+  "limitations": [
+    "No external site, BigQuery, Slack, or GitHub Actions workflow was executed.",
+    "Credential values were not inspected by design.",
+    "Historical successful runs target an older commit than the analyzed revision."
+  ]
+}

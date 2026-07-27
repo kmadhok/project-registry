@@ -1,0 +1,7 @@
+id: llm-convo
+name: LLM_Convo
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/LLM_Convo
+visibility: public

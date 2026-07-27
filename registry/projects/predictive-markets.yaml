@@ -1,0 +1,7 @@
+id: predictive-markets
+name: predictive-markets
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/predictive-markets
+visibility: private

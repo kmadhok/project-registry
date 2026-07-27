@@ -1,0 +1,7 @@
+id: pandas
+name: Pandas
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Pandas
+visibility: public

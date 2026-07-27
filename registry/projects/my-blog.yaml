@@ -1,0 +1,7 @@
+id: my-blog
+name: My_Blog
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/My_Blog
+visibility: public

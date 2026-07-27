@@ -1,0 +1,13 @@
+id: interative-web-visualizations
+name: Interative-Web-Visualizations
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Interative-Web-Visualizations
+visibility: public
+descriptions:
+  private: This repository has an interative dashboard which explores the Belly Button Biodiversity
+    dataset.This dataset catalogs microbes that colonize human navels. The dataset reveals
+    that a small handful of microbial species (also called operational taxonomic units, or
+    OTUs, in the study) were present in more than 70% of people, while the rest were relatively
+    rare.

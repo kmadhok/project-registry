@@ -1,0 +1,7 @@
+id: automate-job-search
+name: Automate_Job_Search
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Automate_Job_Search
+visibility: public

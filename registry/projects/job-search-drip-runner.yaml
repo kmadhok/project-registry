@@ -1,0 +1,7 @@
+id: job-search-drip-runner
+name: job-search-drip-runner
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/job-search-drip-runner
+visibility: private

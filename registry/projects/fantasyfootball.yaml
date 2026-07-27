@@ -1,0 +1,7 @@
+id: fantasyfootball
+name: FantasyFootball
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/FantasyFootball
+visibility: public

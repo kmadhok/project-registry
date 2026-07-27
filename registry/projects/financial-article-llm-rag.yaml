@@ -1,0 +1,7 @@
+id: financial-article-llm-rag
+name: Financial-Article-LLM-RAG
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Financial-Article-LLM-RAG
+visibility: public

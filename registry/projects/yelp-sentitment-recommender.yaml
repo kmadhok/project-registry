@@ -1,0 +1,7 @@
+id: yelp-sentitment-recommender
+name: Yelp_Sentitment_Recommender
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Yelp_Sentitment_Recommender
+visibility: public

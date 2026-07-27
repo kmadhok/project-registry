@@ -1,0 +1,9 @@
+id: chicago-crime-data-analysis
+name: Chicago-Crime-Data-Analysis
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Chicago-Crime-Data-Analysis
+visibility: public
+descriptions:
+  private: Analysis of Chicago Crime

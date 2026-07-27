@@ -1,0 +1,7 @@
+id: autonomous-data-analyst
+name: Autonomous-Data-Analyst
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Autonomous-Data-Analyst
+visibility: private

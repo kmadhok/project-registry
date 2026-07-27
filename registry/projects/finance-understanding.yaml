@@ -1,0 +1,7 @@
+id: finance-understanding
+name: finance-understanding
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/finance-understanding
+visibility: private

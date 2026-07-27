@@ -1,0 +1,7 @@
+id: journaling
+name: journaling
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/journaling
+visibility: private

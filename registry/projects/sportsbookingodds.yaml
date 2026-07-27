@@ -1,0 +1,9 @@
+id: sportsbookingodds
+name: SportsBookingOdds
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/SportsBookingOdds
+visibility: public
+descriptions:
+  private: Using a webscraper scrape Covers.com to collect odds across different bookmakers.

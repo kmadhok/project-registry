@@ -1,0 +1,7 @@
+id: newyorkbike
+name: NewYorkBike
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/NewYorkBike
+visibility: public

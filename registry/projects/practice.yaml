@@ -1,0 +1,7 @@
+id: practice
+name: Practice
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Practice
+visibility: private

@@ -1,0 +1,7 @@
+id: article-extraction
+name: Article_Extraction
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Article_Extraction
+visibility: public

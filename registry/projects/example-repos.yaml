@@ -1,0 +1,7 @@
+id: example-repos
+name: example-repos
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/example-repos
+visibility: private

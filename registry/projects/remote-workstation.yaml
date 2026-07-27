@@ -1,0 +1,7 @@
+id: remote-workstation
+name: remote-workstation
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/remote-workstation
+visibility: private

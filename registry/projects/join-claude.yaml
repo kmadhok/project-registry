@@ -1,0 +1,7 @@
+id: join-claude
+name: join-claude
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/join-claude
+visibility: private

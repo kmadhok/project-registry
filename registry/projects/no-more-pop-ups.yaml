@@ -1,0 +1,7 @@
+id: no-more-pop-ups
+name: no-more-pop-ups
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/no-more-pop-ups
+visibility: private

@@ -1,0 +1,7 @@
+id: daily-apartment-pull
+name: Daily_Apartment_Pull
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Daily_Apartment_Pull
+visibility: public

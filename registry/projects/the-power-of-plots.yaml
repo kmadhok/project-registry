@@ -1,0 +1,7 @@
+id: the-power-of-plots
+name: The_Power_of_Plots
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/The_Power_of_Plots
+visibility: public

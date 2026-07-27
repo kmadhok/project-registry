@@ -1,0 +1,9 @@
+id: unsupervised-learning
+name: Unsupervised-Learning
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Unsupervised-Learning
+visibility: public
+descriptions:
+  private: Clustering algorithms used to place data into groups

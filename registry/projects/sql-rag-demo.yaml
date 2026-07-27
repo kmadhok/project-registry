@@ -1,0 +1,7 @@
+id: sql-rag-demo
+name: Sql_Rag_Demo
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Sql_Rag_Demo
+visibility: public

@@ -1,0 +1,7 @@
+id: newrepo
+name: NewRepo
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/NewRepo
+visibility: public

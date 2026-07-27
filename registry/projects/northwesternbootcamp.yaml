@@ -1,0 +1,7 @@
+id: northwesternbootcamp
+name: NorthwesternBootcamp
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/NorthwesternBootcamp
+visibility: public

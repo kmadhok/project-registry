@@ -1,0 +1,7 @@
+id: doctorsimulation
+name: DoctorSimulation
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/DoctorSimulation
+visibility: public

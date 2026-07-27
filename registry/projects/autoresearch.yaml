@@ -1,0 +1,7 @@
+id: autoresearch
+name: AutoResearch
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/AutoResearch
+visibility: private

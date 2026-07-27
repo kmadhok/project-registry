@@ -1,0 +1,7 @@
+id: learning
+name: Learning
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Learning
+visibility: private

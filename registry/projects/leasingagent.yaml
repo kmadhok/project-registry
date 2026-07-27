@@ -1,0 +1,7 @@
+id: leasingagent
+name: LeasingAgent
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/LeasingAgent
+visibility: private

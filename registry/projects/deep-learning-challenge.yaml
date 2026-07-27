@@ -1,0 +1,10 @@
+id: deep-learning-challenge
+name: deep-learning-challenge
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/deep-learning-challenge
+visibility: public
+descriptions:
+  private: Deep learning and neural networks were used to determine if Alphabet Soup would
+    successfully fund applicants

@@ -1,0 +1,7 @@
+id: codingfun
+name: CodingFun
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/CodingFun
+visibility: private

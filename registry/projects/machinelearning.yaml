@@ -1,0 +1,9 @@
+id: machinelearning
+name: MachineLearning
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/MachineLearning
+visibility: private
+descriptions:
+  private: Repo for Class

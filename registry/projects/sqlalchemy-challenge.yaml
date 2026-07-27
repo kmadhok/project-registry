@@ -1,0 +1,7 @@
+id: sqlalchemy-challenge
+name: sqlalchemy-challenge
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/sqlalchemy-challenge
+visibility: public

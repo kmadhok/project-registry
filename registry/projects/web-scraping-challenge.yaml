@@ -1,0 +1,7 @@
+id: web-scraping-challenge
+name: web-scraping-challenge
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/web-scraping-challenge
+visibility: public

@@ -1,0 +1,7 @@
+id: scraping
+name: scraping
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/scraping
+visibility: private

@@ -1,0 +1,7 @@
+id: looker-text-to-sql
+name: Looker_Text_to_SQL
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Looker_Text_to_SQL
+visibility: private

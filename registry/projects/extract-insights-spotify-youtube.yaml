@@ -1,0 +1,7 @@
+id: extract-insights-spotify-youtube
+name: Extract_Insights_Spotify_Youtube
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Extract_Insights_Spotify_Youtube
+visibility: public

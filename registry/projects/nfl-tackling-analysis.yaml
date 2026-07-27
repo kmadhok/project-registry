@@ -1,0 +1,7 @@
+id: nfl-tackling-analysis
+name: NFL_Tackling_Analysis
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/NFL_Tackling_Analysis
+visibility: public

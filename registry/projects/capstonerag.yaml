@@ -1,0 +1,7 @@
+id: capstonerag
+name: CapstoneRag
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/CapstoneRag
+visibility: public

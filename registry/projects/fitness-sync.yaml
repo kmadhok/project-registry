@@ -1,0 +1,7 @@
+id: fitness-sync
+name: fitness-sync
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/fitness-sync
+visibility: private

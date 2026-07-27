@@ -1,0 +1,7 @@
+id: vba-challenge
+name: VBA-Challenge
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/VBA-Challenge
+visibility: public

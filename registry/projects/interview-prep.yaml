@@ -1,0 +1,7 @@
+id: interview-prep
+name: interview-prep
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/interview-prep
+visibility: private

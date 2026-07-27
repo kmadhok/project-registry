@@ -1,0 +1,7 @@
+id: agent-trading
+name: Agent_Trading
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Agent_Trading
+visibility: public

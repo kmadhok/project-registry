@@ -1,0 +1,7 @@
+id: text-to-sql-looker-refined
+name: Text_to_SQL_Looker_Refined
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Text_to_SQL_Looker_Refined
+visibility: public

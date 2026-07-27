@@ -1,0 +1,7 @@
+id: advancedcompvisionproject
+name: AdvancedCompVisionProject
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/AdvancedCompVisionProject
+visibility: public

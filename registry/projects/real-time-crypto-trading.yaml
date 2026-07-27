@@ -1,0 +1,7 @@
+id: real-time-crypto-trading
+name: Real_Time_Crypto_Trading
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Real_Time_Crypto_Trading
+visibility: public

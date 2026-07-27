@@ -1,0 +1,7 @@
+id: database-rag
+name: database-rag
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/database-rag
+visibility: public

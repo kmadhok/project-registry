@@ -1,0 +1,7 @@
+id: leaflet-challenge
+name: leaflet-challenge
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/leaflet-challenge
+visibility: public

@@ -1,0 +1,7 @@
+id: stockrag
+name: StockRag
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/StockRag
+visibility: private

@@ -1,0 +1,7 @@
+id: python-api-challenge
+name: Python-Api-Challenge
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Python-Api-Challenge
+visibility: public

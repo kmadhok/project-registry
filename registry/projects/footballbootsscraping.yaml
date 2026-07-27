@@ -1,0 +1,10 @@
+id: footballbootsscraping
+name: FootballBootsScraping
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/FootballBootsScraping
+visibility: public
+descriptions:
+  private: This repository shows different trends that exist in the World Cup. This ranges
+    from which brands were the most popular to who scored the most goals.

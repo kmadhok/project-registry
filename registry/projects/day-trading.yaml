@@ -1,0 +1,7 @@
+id: day-trading
+name: Day_trading
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Day_trading
+visibility: public

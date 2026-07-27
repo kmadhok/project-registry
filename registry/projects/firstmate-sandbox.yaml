@@ -1,0 +1,9 @@
+id: firstmate-sandbox
+name: firstmate-sandbox
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/firstmate-sandbox
+visibility: private
+descriptions:
+  private: Throwaway repo for practicing the firstmate workflow

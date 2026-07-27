@@ -1,0 +1,9 @@
+id: ai-news-aggregator
+name: AI-News-Aggregator
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/AI-News-Aggregator
+visibility: private
+descriptions:
+  private: Aggregate AI news across various data sources

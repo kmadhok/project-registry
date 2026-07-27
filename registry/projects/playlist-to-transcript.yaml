@@ -1,0 +1,7 @@
+id: playlist-to-transcript
+name: playlist-to-transcript
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/playlist-to-transcript
+visibility: private

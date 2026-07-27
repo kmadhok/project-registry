@@ -1,0 +1,7 @@
+id: ms-ds-classes
+name: MS_DS_Classes
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/MS_DS_Classes
+visibility: private

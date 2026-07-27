@@ -1,0 +1,10 @@
+id: bentonville-move
+name: bentonville-move
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/bentonville-move
+visibility: private
+descriptions:
+  private: 'Bentonville apartment setup: shopping lists, budget tracker, buying strategy,
+    and verified bed-frame research'

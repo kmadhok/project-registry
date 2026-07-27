@@ -1,0 +1,7 @@
+id: finance-tracking
+name: finance-tracking
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/finance-tracking
+visibility: private

@@ -1,0 +1,7 @@
+id: chicagofoodsafety
+name: ChicagoFoodSafety
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/ChicagoFoodSafety
+visibility: private

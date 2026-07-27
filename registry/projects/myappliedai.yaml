@@ -1,0 +1,7 @@
+id: myappliedai
+name: MyAppliedAI
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/MyAppliedAI
+visibility: public

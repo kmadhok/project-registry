@@ -1,0 +1,7 @@
+id: learning-projects
+name: learning-projects
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/learning-projects
+visibility: private

@@ -1,0 +1,7 @@
+id: brainrot
+name: Brainrot
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Brainrot
+visibility: public

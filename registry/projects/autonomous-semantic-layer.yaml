@@ -1,0 +1,7 @@
+id: autonomous-semantic-layer
+name: Autonomous-Semantic-Layer
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Autonomous-Semantic-Layer
+visibility: private

@@ -1,0 +1,7 @@
+id: employee-database-sql-analysis
+name: Employee-Database-SQL-Analysis
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/Employee-Database-SQL-Analysis
+visibility: public

@@ -1,0 +1,7 @@
+id: join-codex
+name: join-codex
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/join-codex
+visibility: private

@@ -1,0 +1,7 @@
+id: openclaw-scripts
+name: openclaw-scripts
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/openclaw-scripts
+visibility: private

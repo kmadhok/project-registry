@@ -1,0 +1,7 @@
+id: capstonerepo
+name: CapstoneRepo
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/CapstoneRepo
+visibility: private

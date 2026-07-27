@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/learning-projects",
+  "analyzed_at": "2026-07-27T03:24:22Z",
+  "revision": "e908845c7fe4658a4f48747fc937a213dd62d959",
+  "analysis_scope": {
+    "inspected": [
+      "Registry-provided GitHub metadata and issue/PR snapshot",
+      "Complete tracked-file inventory and top-level structure",
+      ".gitignore",
+      "All 45 cells and saved execution outputs in FND02-NB01.ipynb",
+      "Bundled SFrame dataset structure and archive member listings",
+      "Bundled image filenames and archive member listings",
+      "Dependency imports, data-loading path, model features, evaluations, and example predictions",
+      "README, CLAUDE.md, AGENTS.md, docs, manifest, test, workflow, and deployment-file presence checks",
+      "Local branches, remote-tracking refs, repository status, and available commit history",
+      "Credential-related filename presence without reading any secret values"
+    ],
+    "missing": [
+      "README or other purpose and setup documentation",
+      "CLAUDE.md, AGENTS.md, or docs directory",
+      "Dependency manifest or environment specification",
+      "Automated tests",
+      "Continuous-integration workflows",
+      "Release or deployment artifacts",
+      "License and dataset provenance documentation",
+      "Current-work backlog or TODO documentation"
+    ],
+    "inaccessible": [],
+    "sampling_notes": "The repository is small, so all 13 tracked files were inventoried and the complete notebook was inspected; binary dataset records and image pixels were not exhaustively analyzed. The analysis environment described the clone as depth 50, so historical conclusions are limited to recent available history. Only one commit was present, while Git reported the checkout itself as non-shallow."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The notebook loads a 21,613-row housing-sales SFrame, explores price relationships, and visualizes living area, price, zipcode, and selected property features.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "notebook-outputs"
+      ]
+    },
+    {
+      "statement": "It performs a seeded 80/20 split and trains two Turi Create linear-regression models: one using living area and another using bedrooms, bathrooms, living area, lot area, floors, and zipcode.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "It evaluates both models and uses them to predict prices for two dataset houses and one manually specified large home.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "notebook-outputs"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The implementation is a single linear Jupyter workflow: load a bundled Turi Create SFrame, explore it, split it, train and compare regressors, then make example predictions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The repository stores both unpacked data and images and ZIP archives containing those same artifacts; the archived notebook is byte-identical to the unpacked notebook.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "archives"
+      ]
+    },
+    {
+      "statement": "This is structured as a self-contained instructional notebook artifact rather than a reusable package, service, or application.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "All substantive notebook cells have saved execution results, providing evidence that the exploration, training, evaluation, plotting, and prediction workflow previously ran.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-outputs"
+      ]
+    },
+    {
+      "statement": "The saved evaluation reports RMSE decreasing from approximately 255,209 for the living-area-only model to approximately 179,363 for the six-feature model.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-outputs"
+      ]
+    },
+    {
+      "statement": "The dataset and referenced example images are bundled in the repository, reducing dependence on their original download locations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "archives"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no documentation explaining the repository's purpose, setup, dependency versions, execution command, expected outputs, or data provenance.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    },
+    {
+      "statement": "The notebook loads '~/data/home_data.sframe/' even though the tracked dataset is located at the repository root, so a fresh checkout requires an undocumented path adjustment or manual copy.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "tree"
+      ]
+    },
+    {
+      "statement": "There are no automated tests, CI checks, dependency locks, or reproducibility verification artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    },
+    {
+      "statement": "No TODOs, issues, or other repository evidence define planned extensions or maintenance work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "metadata",
+        "notebook",
+        "tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Reproduction is fragile because Turi Create and Matplotlib are imported without pinned versions, while notebook metadata inconsistently identifies a Python 2 kernel and Python 3.6.3 language environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "A saved import warning records a binary incompatibility in the original NumPy environment, indicating that the captured execution environment was already dependency-sensitive.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-outputs"
+      ]
+    },
+    {
+      "statement": "Tracking both compressed and unpacked copies of the notebook, dataset, and images unnecessarily enlarges repository history.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "archives"
+      ]
+    },
+    {
+      "statement": "The absence of licensing and provenance notes makes permitted reuse of the housing data and example images unclear.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "Saved notebook output exposes an original local username and environment path, which is a minor privacy and environment-disclosure concern.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-outputs"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Treat the repository as archived coursework unless the owner still uses it as a learning reference.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "history",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "If retained as a runnable reference, add a concise README, pin a supported environment, change the data path to a repository-relative location, and verify a clean end-to-end execution.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Document the origin and reuse terms of the dataset and images, then remove redundant ZIP or unpacked copies according to the preferred distribution format.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "archives"
+      ]
+    },
+    {
+      "statement": "Clear or sanitize saved outputs that reveal local environment paths before making the repository public.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-outputs"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this notebook completed for a particular course, and should that course be credited in the README?",
+    "Is the repository intended to remain runnable, or only to preserve a historical learning exercise?",
+    "What are the source and reuse terms for the housing dataset and bundled house images?",
+    "Should the compressed downloads or unpacked artifacts be retained as the canonical copies?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/learning-projects",
+      "summary": "Registry snapshot identifies a private, unarchived repository on main, pushed on 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete 13-file tree contains one notebook, an SFrame dataset, three images, ZIP copies of those artifacts, and a small .gitignore; it has no README, manifests, tests, workflows, or deployment files."
+    },
+    {
+      "id": "notebook",
+      "kind": "jupyter_notebook",
+      "location": "FND02-NB01.ipynb",
+      "summary": "A 45-cell notebook imports Turi Create and Matplotlib, loads housing sales, performs exploration, trains two linear regressions, compares them, and predicts example home prices."
+    },
+    {
+      "id": "notebook-outputs",
+      "kind": "generated_output",
+      "location": "FND02-NB01.ipynb",
+      "summary": "Saved outputs show a 21,613-row, 21-column dataset, completed model training and plots, evaluation metrics, example predictions, and a dependency warning containing an original local environment path."
+    },
+    {
+      "id": "archives",
+      "kind": "bundled_artifacts",
+      "location": "repository ZIP files, home_data.sframe/, and house_images/",
+      "summary": "Archive listings contain the same SFrame, three example images, and notebook that are also unpacked; SHA-256 comparison confirms the archived and unpacked notebooks are identical."
+    },
+    {
+      "id": "gitignore",
+      "kind": "configuration",
+      "location": ".gitignore",
+      "summary": "The ignore rules cover .env, .DS_Store, and node_modules; no credential-related files were found in the inspected tree."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Available history consists of one commit, e908845 ('Initial commit'), dated 2026-07-11; local and origin/main refs point to that revision."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The complete small repository and all notebook cells provide strong evidence of what was implemented and previously executed. Confidence is reduced because no purpose or setup documentation exists, the workflow was not reproduced in a clean environment, dependency compatibility is uncertain, and available history contains only one commit."
+  },
+  "limitations": [
+    "The notebook was inspected but not executed, so current reproducibility is unverified.",
+    "Binary dataset records and image pixels were not exhaustively analyzed; structure, notebook-reported schema, filenames, and archive contents were inspected.",
+    "The repository has no stated purpose, so its coursework and archival character is an inference from notebook structure, artifact naming, and implementation style.",
+    "Historical analysis is limited to the repository history available in the supplied depth-50 analysis environment, which contained one commit.",
+    "The GitHub assessment relies on the supplied metadata snapshot rather than a live audit of every remote branch, release, or repository setting."
+  ]
+}

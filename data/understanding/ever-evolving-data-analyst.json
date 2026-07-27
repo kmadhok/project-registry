@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Ever_Evolving_Data_Analyst",
+  "analyzed_at": "2026-07-27T03:18:05Z",
+  "revision": "8e67ed53c05e2ba1c8c9b5572ce69cb74f80e5c9",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata",
+      "README.md and application READMEs",
+      "all available documentation headings and selected architecture, PRD, status, data-model, SQL-apply, and scheduler-runbook content",
+      "complete tracked-file and top-level structure inventories",
+      "Python and JavaScript dependency manifests, Makefile, Docker Compose, systemd unit, and gitignore",
+      "FastAPI routes, models, repository implementation, and model tests",
+      "React application routing, API client, component tests, and mocked Playwright tests",
+      "standalone scheduler and representative Kalshi REST, Kalshi WebSocket, Odds API, signal-generation, analyst-agent, SQL-apply, and backtest code",
+      "BigQuery SQL object inventory",
+      "credential-related filenames without reading credential values",
+      "static AST parsing of all 17 Python source files",
+      "all 16 commits available locally, including git log --oneline -20, branches, tags, and latest-commit contents"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "GitHub Actions or other CI workflows",
+      "release tags and packaged releases",
+      "tracked deployment output or runtime monitoring results",
+      "the README-referenced docs/local_and_live_validation.md",
+      "the README-referenced docs/environment_model.md",
+      "the README-referenced docs/governance_operator_runbook.md",
+      "the documentation-referenced sql/bigquery/006_kalshi_autonomy_app_tables.sql",
+      "the documented apps/api/app/cli.py entry point",
+      "tests for ingestion, scheduling, BigQuery repository behavior, analyst-agent safety, and backtesting"
+    ],
+    "inaccessible": [
+      "live Kalshi, Odds API, OpenAI, and BigQuery environments",
+      "runtime verification requiring uninstalled Python dependencies",
+      "historical operational logs and generated backtest results"
+    ],
+    "sampling_notes": "The documentation and implementation total more than 16,000 lines, so representative source was sampled while file, symbol, route, SQL-object, and test inventories were inspected broadly. The task describes a depth-50 clone; analysis was limited to the 16 commits available locally even though git currently reports the checkout as non-shallow, so history beyond the available commits was not assumed."
+  },
+  "stated_purpose": "The README presents the repository as a beta workspace for Kalshi and Odds API ingestion, BigQuery analytics, a FastAPI dashboard service, role-based React dashboards, and operator-oriented automation.",
+  "observed_capabilities": [
+    {
+      "statement": "Standalone Python pipelines implement Kalshi REST ingestion, Kalshi WebSocket collection, signal/report generation, and credit-budgeted Odds API ingestion into layered BigQuery datasets.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ingestion-source",
+        "sql-assets"
+      ]
+    },
+    {
+      "statement": "An APScheduler process invokes the four ingestion and signal scripts on five-minute or hourly schedules, with a Linux systemd unit and installation runbook.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "scheduler",
+        "scheduler-runbook"
+      ]
+    },
+    {
+      "statement": "The current FastAPI implementation serves health, role-filtered dashboard specifications, dashboard tile data, a filterable signal feed, and usage-event collection backed by BigQuery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "api-source"
+      ]
+    },
+    {
+      "statement": "The React application renders specification-driven tiles for data-engineer, analyst, data-scientist, and consumer roles, including an analyst signal-feed view.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ui-source"
+      ]
+    },
+    {
+      "statement": "A standalone OpenAI-assisted analyst CLI generates BigQuery SQL and reports with row and byte limits, while a separate backtester evaluates four Kalshi trading-strategy families and can export position results to CSV.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analyst-agent",
+        "backtester"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The analyst-agent status document leaves a live OpenAI-to-BigQuery end-to-end test unfinished.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "phase-status"
+      ]
+    },
+    {
+      "statement": "Architecture and WebSocket planning documents describe additional multi-agent orchestration, persistence, UI, production-hardening, and real-time-ingestion work, but the final commit's archive message makes their current ownership status uncertain.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "architecture-docs",
+        "git-history"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "External Kalshi and Odds APIs feed standalone Python scripts or legacy Airflow DAGs; the scripts write raw, staging, core, dashboard, signal, and operations assets in BigQuery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ingestion-source",
+        "airflow-source",
+        "sql-assets"
+      ]
+    },
+    {
+      "statement": "FastAPI reads dashboard specifications, tile views, and signal views from BigQuery, and the React client calls those endpoints to build role-specific dashboard views and record usage.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "api-source",
+        "ui-source"
+      ]
+    },
+    {
+      "statement": "APScheduler plus systemd is the documented primary execution path, while Dockerized Airflow remains as a legacy or optional orchestration path.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "scheduler",
+        "runtime-config"
+      ]
+    },
+    {
+      "statement": "The repository mixes production-oriented pipeline code with aspirational architecture documents and remnants of a removed governance implementation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "architecture-docs",
+        "documentation-drift",
+        "git-history"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains substantive implementations for ingestion, transformation, signal generation, dashboard serving, interactive visualization, analyst-assisted querying, and strategy backtesting rather than only plans or scaffolding.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests",
+        "ingestion-source",
+        "api-source",
+        "ui-source",
+        "analyst-agent",
+        "backtester"
+      ]
+    },
+    {
+      "statement": "The SQL directory defines ordered BigQuery assets for Odds data, Kalshi baseline data, dashboard and data-science views, event ingestion, signal reporting, and WebSocket data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sql-assets",
+        "sql-apply"
+      ]
+    },
+    {
+      "statement": "All 17 inspected Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-validation"
+      ]
+    },
+    {
+      "statement": "Local secret files and private keys are covered by gitignore patterns, and only example environment filenames were found among tracked credential-like files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "secret-inventory"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The current API exposes only five route families, while the root and API READMEs still document spec writes, agent proposals, governance decisions, apply, rollback, validation, and CLI operations that are absent from the tracked implementation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "api-source",
+        "documentation-drift"
+      ]
+    },
+    {
+      "statement": "The UI still requests /v1/agent/proposals, which the current backend does not implement, and /ops is normalized to the data-engineer role rather than rendering the documented operator console.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ui-source",
+        "api-source",
+        "documentation-drift"
+      ]
+    },
+    {
+      "statement": "The Playwright suite mocks removed governance and proposal endpoints and includes /ops in its route loop, so it does not prove compatibility between the current frontend and backend.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests",
+        "api-source",
+        "ui-source"
+      ]
+    },
+    {
+      "statement": "Automated verification is thin: the backend has only model-validation tests, frontend tests use mocks, no ingestion or backtest tests exist, and there is no CI workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "Repository evidence does not demonstrate a successful live run of the complete scheduler, data pipelines, dashboard, analyst agent, or backtester.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "phase-status",
+        "tests",
+        "git-history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Documentation drift could cause operators to invoke missing CLI commands, expect nonexistent endpoints, or follow references to absent files.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "documentation-drift",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The analyst agent's safety function blocks a list of mutation keywords but does not enforce that SQL is a SELECT and does not block every BigQuery execution mechanism, so using it with privileged credentials could permit unintended operations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "analyst-agent"
+      ]
+    },
+    {
+      "statement": "The ingestion and signal scripts log failed quality checks but continue publishing, allowing known-bad data to reach downstream core or reporting assets.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ingestion-source"
+      ]
+    },
+    {
+      "statement": "The public source embeds a specific Google Cloud project identifier in defaults and examples, increasing environment coupling and publicly disclosing infrastructure naming.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runtime-config",
+        "analyst-agent",
+        "backtester"
+      ]
+    },
+    {
+      "statement": "No tracked credential values were found, but operational use depends on external service-account, Kalshi, Odds API, and OpenAI credentials whose permissions and rotation posture could not be evaluated.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "secret-inventory",
+        "tree-manifests"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Keep the repository archived unless the owner intends to resume it; if resumed, first reconcile the README, UI API calls, tests, and documentation with the governance-stripped backend.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "documentation-drift"
+      ]
+    },
+    {
+      "statement": "Before granting the analyst agent live credentials, enforce read-only BigQuery jobs or credentials, require a single read-only query form, and add adversarial SQL-safety tests.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "analyst-agent",
+        "tests"
+      ]
+    },
+    {
+      "statement": "If the pipelines are intended for reuse, add isolated tests for budgeting, pagination, transformations, quality gates, scheduling, and backtest calculations plus a CI workflow that runs them.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "ingestion-source",
+        "scheduler",
+        "backtester",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Decide whether quality-gate failures should block publication, quarantine output, or remain warnings, and document that operational policy explicitly.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "ingestion-source",
+        "scheduler-runbook"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the July 2026 archive commit intended to end active development permanently?",
+    "Did the standalone scheduler and pipelines ever run successfully against the live BigQuery project, and are any operational logs available outside the repository?",
+    "Should the removed governance and operator-console behavior be restored, or should all remaining documentation and UI references be deleted?",
+    "Is the OpenAI-assisted analyst CLI still intended for use, and if so, what read-only credential boundary should it have?",
+    "Should the new backtesting script be retained as the repository's main reference value despite lacking tracked results or tests?"
+  ],
+  "evidence": [
+    {
+      "id": "github-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Ever_Evolving_Data_Analyst",
+      "summary": "Owner-supplied snapshot identifies a public, unarchived main-branch repository with no description, open issues, or open pull requests and a latest push on 2026-07-11."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a live-operable beta spanning Kalshi and Odds ingestion, FastAPI governance services, React dashboards, a standalone scheduler, BigQuery SQL, and legacy Airflow."
+    },
+    {
+      "id": "tree-manifests",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Tracked tree contains 23 app files, 19 documentation files, 14 scripts, 10 SQL files, three Airflow DAGs, Makefile, Docker Compose, systemd configuration, Python requirements, and a locked npm application."
+    },
+    {
+      "id": "architecture-docs",
+      "kind": "design_documentation",
+      "location": "docs/autonomous_data_analyst_architecture.md; docs/plan_kalshi_ws_realtime.md; docs/phase_b_c_plan.md",
+      "summary": "Documents a broader multi-agent analyst vision, phased implementation plan, and WebSocket ingestion design, including future phases and open questions."
+    },
+    {
+      "id": "phase-status",
+      "kind": "status_document",
+      "location": "docs/phase_c_status.md",
+      "summary": "Records analyst-agent creation, syntax and help-command smoke checks, but states that an OpenAI key was unavailable and no live OpenAI-to-BigQuery test was run."
+    },
+    {
+      "id": "api-source",
+      "kind": "source_code",
+      "location": "apps/api/app/main.py; apps/api/app/repository.py; apps/api/app/models.py",
+      "summary": "Current FastAPI code implements health, dashboard-spec reads, tile queries, signal-feed queries, and usage-event writes through a BigQuery repository; documented governance and proposal routes are absent."
+    },
+    {
+      "id": "ui-source",
+      "kind": "source_code",
+      "location": "apps/ui/src/App.jsx; apps/ui/src/api.js",
+      "summary": "React client supports four role views, dynamic tiles, analyst signals, usage events, and an agent-proposal request; it contains no operator role and normalizes unknown paths such as /ops to the data-engineer role."
+    },
+    {
+      "id": "ingestion-source",
+      "kind": "source_code",
+      "location": "scripts/kalshi_market_ingest.py; scripts/kalshi_ws_ingest.py; scripts/kalshi_signals.py; scripts/odds_api_ingest.py",
+      "summary": "Substantive single-shot pipelines perform API collection, raw persistence, staging, quality measurement, core publication, KPI generation, signal reporting, and quota-aware Odds API execution; quality failures are logged while processing continues."
+    },
+    {
+      "id": "airflow-source",
+      "kind": "source_code",
+      "location": "airflow/dags",
+      "summary": "Three large DAGs retain Airflow implementations for Kalshi REST, Kalshi WebSocket, and Odds API workflows, although current documentation labels Airflow legacy or optional."
+    },
+    {
+      "id": "scheduler",
+      "kind": "operational_code",
+      "location": "scripts/scheduler.py; systemd/ever-evolving-scheduler.service",
+      "summary": "APScheduler launches Kalshi REST, WebSocket, and signal jobs every five minutes with offsets and Odds ingestion hourly; a reference systemd service provides restart behavior."
+    },
+    {
+      "id": "scheduler-runbook",
+      "kind": "operational_documentation",
+      "location": "docs/scheduler_linux_runbook.md",
+      "summary": "Documents installation, health checks, log monitoring, restart procedures, and common Linux service failures."
+    },
+    {
+      "id": "sql-assets",
+      "kind": "data_definition",
+      "location": "sql/bigquery",
+      "summary": "Ten SQL files define layered Odds and Kalshi datasets, tables, views, reporting assets, and WebSocket storage."
+    },
+    {
+      "id": "sql-apply",
+      "kind": "source_code",
+      "location": "scripts/apply_bigquery_sql.py; docs/bigquery_apply_order.md",
+      "summary": "The apply helper defines four ordered SQL groups and substitutes a project identifier, while the apply-order document still lists a removed 006 governance SQL file."
+    },
+    {
+      "id": "analyst-agent",
+      "kind": "source_code",
+      "location": "scripts/analyst_agent.py",
+      "summary": "OpenAI-assisted CLI generates and executes BigQuery queries with a 500 MB billing cap and injected row limit; its safety check rejects selected keywords but does not affirmatively require SELECT-only SQL."
+    },
+    {
+      "id": "backtester",
+      "kind": "source_code",
+      "location": "scripts/backtest_kalshi.py",
+      "summary": "Latest commit adds a 780-line BigQuery-backed backtester for underdog-dip, favorite-hedge, momentum-reversal, and mid-game-arbitrage strategies with reporting and optional CSV export."
+    },
+    {
+      "id": "tests",
+      "kind": "verification_artifacts",
+      "location": "apps/api/tests/test_models.py; apps/ui/src/App.test.jsx; apps/ui/tests/e2e/dashboard.spec.js",
+      "summary": "Backend coverage is limited to five model tests; frontend tests mock API behavior, and Playwright mocks proposal and governance endpoints that the current backend lacks. No CI workflow exists."
+    },
+    {
+      "id": "runtime-config",
+      "kind": "configuration",
+      "location": "Makefile; docker-compose.airflow.yml; systemd/ever-evolving-scheduler.service; apps/api/requirements.txt; apps/ui/package.json",
+      "summary": "Configuration supports local FastAPI and Vite execution, BigQuery SQL application, Dockerized Airflow, APScheduler, and systemd, with a specific GCP project identifier used as a default."
+    },
+    {
+      "id": "documentation-drift",
+      "kind": "consistency_check",
+      "location": "README.md; apps/api/README.md; apps/ui/README.md; apps/api/app/main.py; apps/ui/src/App.jsx",
+      "summary": "READMEs describe governance endpoints, CLI commands, an operator route, and files that are absent after the governance-removal commit; the current UI also calls a missing proposal endpoint."
+    },
+    {
+      "id": "secret-inventory",
+      "kind": "security_inventory",
+      "location": ".gitignore and tracked filename inventory",
+      "summary": "Credential values were not read. Only two environment example files were tracked; credential JSON, PEM keys, local environment files, virtual environments, and runtime state are ignored, and no matching non-example credential files were present in the inspected tree."
+    },
+    {
+      "id": "local-validation",
+      "kind": "verification_result",
+      "location": "local read-only validation at revision 8e67ed53c05e2ba1c8c9b5572ce69cb74f80e5c9",
+      "summary": "AST parsing succeeded for all 17 Python files. Backend unit-test discovery failed before executing tests because pydantic was not installed in the checkout environment."
+    },
+    {
+      "id": "git-history",
+      "kind": "version_history",
+      "location": "git log --oneline -20",
+      "summary": "All 16 available commits were inspected. March 2026 history adds then removes governance complexity and adds ingestion, WebSocket, analyst, and documentation work; the final 2026-07-11 commit is explicitly titled 'Save latest changes before archiving.'"
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, configuration, documentation, tests, and all available commits establish what is implemented and expose substantial consistency gaps. Confidence is limited because dependencies were unavailable, no CI or live execution evidence exists, external data systems were inaccessible, and documentation contradicts the current code."
+  },
+  "limitations": [
+    "No credential values were opened or inspected.",
+    "No live external API, OpenAI, BigQuery, scheduler, systemd, Airflow, or browser workflow was executed.",
+    "Python unit tests could not execute because dependencies were not installed, and frontend tests were not run in the read-only checkout.",
+    "No runtime logs, deployed dashboard, generated backtest CSV, release artifact, or production monitoring record was available.",
+    "The GitHub activity assessment relies on the supplied snapshot and local refs rather than an independent remote query.",
+    "The available history contains 16 commits; earlier or alternate history not present in the task clone was not evaluated."
+  ]
+}

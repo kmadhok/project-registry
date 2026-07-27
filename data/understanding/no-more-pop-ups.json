@@ -1,0 +1,417 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/no-more-pop-ups",
+  "analyzed_at": "2026-07-27T03:28:19Z",
+  "revision": "d03c4ae6fec0783eb9c3fe781aa5f5f4e5edf063",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub metadata snapshot",
+      "CLAUDE.md and all tracked documentation",
+      "complete 50-file tracked-file inventory",
+      "package manifest and Chromium extension manifest",
+      "representative Chromium policy, storage, interception, background, popup, options, and modal source",
+      "Chromium policy and domain unit tests",
+      "iOS Xcode project configuration and representative SwiftUI, WebKit, policy, settings, logging, and tab-management source",
+      "tracked credential-like filename inventory without reading any credential values",
+      "local branches, tags, and the visible commit history",
+      "local npm test execution"
+    ],
+    "missing": [
+      "root README",
+      "CI workflow",
+      "completed manual QA results",
+      "automated browser UI or integration tests",
+      "iOS test target and automated iOS tests",
+      "packaged extension, signed iOS build, release, or deployment artifact"
+    ],
+    "inaccessible": [
+      "live GitHub archival, release, branch, pull-request, and issue verification because the GitHub API was unreachable"
+    ],
+    "sampling_notes": "The checkout is shallow with depth 50, so history beyond the available sample may be truncated. Only one commit is visible. All 50 tracked paths and all documentation were inventoried; representative files from each major runtime component were inspected, but every line of the approximately 8,300-line implementation was not reviewed."
+  },
+  "stated_purpose": "Provide Chrome/Edge and iOS browsing clients that intercept pop-ups, redirects, cross-site navigations, and script-driven navigations so users can explicitly choose Stay or Go.",
+  "observed_capabilities": [
+    {
+      "statement": "The Chromium application is a Manifest V3 extension that injects interception code at document start in both MAIN and isolated execution worlds across HTTP(S) frames.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-manifest",
+        "chromium-runtime"
+      ]
+    },
+    {
+      "statement": "The Chromium runtime implements policy-controlled handling for anchor clicks, form submissions, window.open, location changes, programmatic clicks and submissions, settings persistence, custom or native prompts, diagnostic logging, and a 15-second post-Stay rollback guard.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-runtime",
+        "chromium-policy"
+      ]
+    },
+    {
+      "statement": "The iOS target implements a SwiftUI multi-tab WKWebView browser with an address/search bar, navigation controls, onboarding, quick controls, settings, native navigation prompts, JavaScript hooks, and WebKit delegate interception.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-project",
+        "ios-runtime"
+      ]
+    },
+    {
+      "statement": "Both clients support enable/disable state, cross-site or all-navigation modes, allowlist and always-prompt rules, a one-time bypass, a five-minute pause, script-without-gesture protection, and debug logging.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-runtime",
+        "ios-runtime",
+        "shared-policy"
+      ]
+    },
+    {
+      "statement": "The iOS source includes a 15-second rollback guard even though the iOS specification's implementation-status section still lists that guard as unimplemented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-runtime",
+        "ios-spec"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The Chromium MVP tracker calls for validating seven stories covering scaffold, policy, interception, controls, domain rules, hardening, cross-browser QA, and packaging; every completion checkbox remains unchecked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-plan"
+      ]
+    },
+    {
+      "statement": "The manual QA document calls for Chrome and Edge verification of eleven navigation, rule, bypass, script-guard, and diagnostic scenarios, but no results are recorded.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manual-qa"
+      ]
+    },
+    {
+      "statement": "The iOS specification identifies further hardening and product work including dark-mode review, localization, accessibility auditing, iPad testing, history, and bookmarks, although parts of its implementation-status list are stale relative to source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-spec",
+        "ios-runtime"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The Chromium extension separates page-context prototype hooks, isolated-world DOM interception and modal presentation, shared policy modules, and a background service worker connected through CustomEvents and chrome.runtime messages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "architecture-doc",
+        "chromium-manifest",
+        "chromium-runtime"
+      ]
+    },
+    {
+      "statement": "The Chromium background worker owns chrome.storage.local settings, capped diagnostic logs, webNavigation observation, message handling, and tab-level rollback state.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-runtime"
+      ]
+    },
+    {
+      "statement": "The iOS target combines WKNavigationDelegate, WKUIDelegate, and WKScriptMessageHandler interception with SwiftUI views, a SettingsStore backed by UserDefaults, and JSONL diagnostic files in the app's Documents directory.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-runtime",
+        "ios-project"
+      ]
+    },
+    {
+      "statement": "Four UMD JavaScript modules for constants, domain handling, storage normalization, and policy evaluation are byte-identical between the Chromium shared directory and the iOS bundle; iOS evaluates them through JavaScriptCore.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "shared-policy",
+        "ios-runtime"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The initial commit delivers substantive implementations for two platforms rather than only specifications or generated scaffolding.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "commit-history"
+      ]
+    },
+    {
+      "statement": "The shared policy engine has deterministic precedence for disabled, paused, one-time bypass, URL validity, domain rules, script gesture protection, mode, and same-site decisions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-policy",
+        "shared-policy"
+      ]
+    },
+    {
+      "statement": "All 13 available Node tests passed locally, covering major policy branches, rule precedence, script-gesture handling, domain helpers, and settings defaults.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "test-run"
+      ]
+    },
+    {
+      "statement": "Both platforms include user controls and diagnostic facilities alongside the interception logic, including log export and clearing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-runtime",
+        "ios-runtime"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The only automated tests exercise Chromium-compatible policy, domain, and settings modules; there are no automated interception, modal, background-worker, browser integration, Swift, or iOS UI tests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chromium-tests",
+        "repository-tree",
+        "ios-project"
+      ]
+    },
+    {
+      "statement": "The manual Chrome and Edge QA matrix is entirely blank, and no checked-in evidence demonstrates that either browser client or the iOS application has been built and exercised end to end.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manual-qa",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There is no CI, release packaging, deployment automation, or published artifact evidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "commit-history"
+      ]
+    },
+    {
+      "statement": "Documentation is already inconsistent with implementation: the iOS status section says rollback and favicons are absent while source implements both, and it describes a shared WKProcessPool while TabManager creates configurations without assigning one.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "architecture-doc",
+        "ios-spec",
+        "ios-runtime"
+      ]
+    },
+    {
+      "statement": "The visible history contains only one initial commit, so ongoing maintenance patterns and the evolution of design decisions cannot be assessed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "commit-history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Diagnostic records can contain source and destination URLs, navigation metadata, and script context; persistent storage and export of these records may expose sensitive browsing information if logs are shared or retained unexpectedly.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "chromium-runtime",
+        "ios-runtime",
+        "security-inventory"
+      ]
+    },
+    {
+      "statement": "The fixed list of twelve multi-part public suffixes is not a full public-suffix implementation, so some domains may be classified incorrectly as same-site or cross-site.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "shared-policy"
+      ]
+    },
+    {
+      "statement": "Broad HTTP(S) host access, page-prototype patching, fail-open behavior, and heuristic goBack rollback create compatibility and enforcement risks that require real-site testing.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "chromium-manifest",
+        "chromium-runtime",
+        "known-limits"
+      ]
+    },
+    {
+      "statement": "Unchecked planning documents and stale implementation-status notes can obscure which acceptance criteria are actually complete.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "chromium-plan",
+        "manual-qa",
+        "ios-spec",
+        "ios-runtime"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Run and record the existing manual matrix on current Chrome and Edge releases, then add equivalent iOS simulator and device scenarios before treating the primary workflow as functional.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manual-qa",
+        "chromium-plan",
+        "ios-spec"
+      ]
+    },
+    {
+      "statement": "Add CI for the Node suite and automated coverage for content interception, background messaging, one-time-token consumption, rollback behavior, and the iOS policy bridge.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "chromium-tests",
+        "repository-tree",
+        "test-run"
+      ]
+    },
+    {
+      "statement": "Reconcile the specifications and architecture notes with the current source, especially rollback, favicon support, WKProcessPool sharing, test coverage, and remaining MVP status.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "architecture-doc",
+        "ios-spec",
+        "ios-runtime",
+        "chromium-plan"
+      ]
+    },
+    {
+      "statement": "Define a browsing-data privacy policy for diagnostics, redact URL query and fragment data where feasible, and make persistent logging and export behavior explicit to users.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "chromium-runtime",
+        "ios-runtime",
+        "security-inventory"
+      ]
+    },
+    {
+      "statement": "Evaluate a maintained public-suffix implementation or document the limited suffix model and add tests for unsupported country-code and private suffixes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "shared-policy",
+        "chromium-tests"
+      ]
+    }
+  ],
+  "questions": [
+    "Is the iOS browser intended to be a co-equal product, an experimental port, or a validation environment for the extension policy?",
+    "Have Chrome, Edge, simulator, or physical-device tests been performed outside the repository, and should their results be recorded?",
+    "What browsing-data retention and redaction guarantees should apply to diagnostic URLs and script metadata?",
+    "Should the repository remain an incubating private prototype, or is store/release packaging an intended near-term outcome?",
+    "Is shared cookie and session state across iOS tabs required, given that the documented shared WKProcessPool is not configured in TabManager?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/no-more-pop-ups",
+      "summary": "Supplied snapshot identifies a private repository on main, pushed 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "architecture-doc",
+      "kind": "repository_documentation",
+      "location": "CLAUDE.md",
+      "summary": "Describes the intended dual-platform architecture, shared policy engine, commands, conventions, and stated test coverage."
+    },
+    {
+      "id": "chromium-plan",
+      "kind": "project_plan",
+      "location": "docs/chromium-mvp-stories.md",
+      "summary": "Defines seven MVP stories and acceptance criteria; all tracking and validation checkboxes remain unchecked."
+    },
+    {
+      "id": "manual-qa",
+      "kind": "qa_plan",
+      "location": "docs/chromium-manual-qa.md",
+      "summary": "Contains eleven Chrome and Edge manual scenarios with every result field blank."
+    },
+    {
+      "id": "ios-spec",
+      "kind": "product_specification",
+      "location": "docs/iOS-App-Spec.md",
+      "summary": "Specifies iOS behavior, architecture, testing, security, and implementation status; parts of the status section conflict with current source."
+    },
+    {
+      "id": "known-limits",
+      "kind": "technical_documentation",
+      "location": "docs/triggers.md and apps/extension-chromium/README.md",
+      "summary": "Documents event flows and limits including unobservable address-bar navigation, browser-system bypasses, race conditions, and heuristic rollback behavior."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The revision contains 50 tracked files and approximately 8,304 added lines across Chromium JavaScript, Swift iOS source, specifications, tests, and configuration, with no tracked CI workflow or release artifact."
+    },
+    {
+      "id": "chromium-manifest",
+      "kind": "application_manifest",
+      "location": "apps/extension-chromium/manifest.json",
+      "summary": "Declares a version 0.4.0 MV3 extension with storage, tabs, activeTab, webNavigation, broad HTTP(S) host permissions, dual document-start content scripts, popup, and options page."
+    },
+    {
+      "id": "chromium-policy",
+      "kind": "source_code",
+      "location": "apps/extension-chromium/src/shared/policy.js and apps/extension-chromium/src/shared/domain.js",
+      "summary": "Implements navigation-decision precedence, domain normalization and matching, and a limited explicit multi-part suffix set."
+    },
+    {
+      "id": "shared-policy",
+      "kind": "source_comparison",
+      "location": "apps/extension-chromium/src/shared and apps/browser-ios/NoMorePopUps/Resources/js",
+      "summary": "The constants, domain, storage, and policy JavaScript files are byte-identical across Chromium and iOS resource trees."
+    },
+    {
+      "id": "chromium-runtime",
+      "kind": "source_code",
+      "location": "apps/extension-chromium/src",
+      "summary": "Representative inspection confirms content and main-world interception, modal prompts, settings controls, capped diagnostics, sanitized message handling, and rollback logic."
+    },
+    {
+      "id": "chromium-tests",
+      "kind": "automated_tests",
+      "location": "apps/extension-chromium/tests/policy.test.js",
+      "summary": "Contains 13 Node tests for policy decisions, precedence, gesture protection, domain helpers, and storage defaults; no runtime or UI tests are present."
+    },
+    {
+      "id": "test-run",
+      "kind": "verification_result",
+      "location": "npm test at d03c4ae6fec0783eb9c3fe781aa5f5f4e5edf063",
+      "summary": "The Node test runner completed with 13 passing tests, zero failures, and zero skipped tests."
+    },
+    {
+      "id": "ios-project",
+      "kind": "build_configuration",
+      "location": "apps/browser-ios/NoMorePopUps.xcodeproj/project.pbxproj",
+      "summary": "Defines one iOS 17 Swift 5 application target with Swift sources and the four shared JavaScript resources, but no test target."
+    },
+    {
+      "id": "ios-runtime",
+      "kind": "source_code",
+      "location": "apps/browser-ios/NoMorePopUps/Sources",
+      "summary": "Representative Swift inspection confirms SwiftUI browser views, per-tab WKWebViews, WebKit interception, JavaScriptCore policy evaluation, settings persistence, prompts, rollback, favicon fetching, and persistent diagnostic logging."
+    },
+    {
+      "id": "security-inventory",
+      "kind": "security_review",
+      "location": ".gitignore and tracked-file inventory",
+      "summary": "No credential-like tracked filenames were identified. The ignore file covers common Xcode artifacts but does not contain explicit .env or credential-file patterns; no secret values were accessed."
+    },
+    {
+      "id": "commit-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes a single commit, d03c4ae, dated 2026-07-11 and titled Initial commit; no local tags or additional branches are present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, manifests, specifications, and a passing policy test suite establish a substantive dual-platform prototype. Confidence is limited by the absence of browser and iOS build evidence, completed manual QA, integration tests, CI, releases, and accessible live GitHub verification; documentation also contains stale implementation claims."
+  },
+  "limitations": [
+    "The shallow depth-50 checkout may omit older history, although only one commit is visible.",
+    "No browser session or writable build environment was used, so the Chromium extension and iOS application were not executed end to end.",
+    "The iOS Xcode target was inspected statically but not compiled.",
+    "The GitHub API was unreachable, so supplied issue and pull-request metadata could not be refreshed and archival or release state could not be verified.",
+    "Credential safety inspection was limited to filenames and repository structure; no secret-file values were read."
+  ]
+}

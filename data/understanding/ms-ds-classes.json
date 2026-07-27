@@ -1,0 +1,319 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/MS_DS_Classes",
+  "analyzed_at": "2026-07-27T03:26:35Z",
+  "revision": "4c1ca7b72cb7c786f359f31177c4e962268178b1",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata",
+      "complete tracked-file inventory and top-level structure",
+      "documentation and dependency-manifest presence checks",
+      "metadata, cell counts, and execution-output presence across the coursework notebooks",
+      "representative code and markdown from assignments on Chicago food inspections, news and tweet similarity, text classification, tokenization, Yelp sentiment, and streaming sentiment",
+      "project-level tests, CI, tags, and entry-point presence",
+      "credential-like filenames and credential-named notebook assignments without reading their values",
+      "git log --oneline -20, branches, commit metadata, and available history"
+    ],
+    "missing": [
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "project dependency manifest",
+      "project-level tests",
+      "CI workflows",
+      "application or package entry point",
+      ".gitignore",
+      "release tags"
+    ],
+    "inaccessible": [
+      "live execution against external datasets and services because analysis was read-only and network-restricted"
+    ],
+    "sampling_notes": "The repository is large: 21,252 tracked files totaling approximately 569 MiB. Of these, 21,227 belong to a committed Windows Python virtual environment. All 25 files outside that environment were inventoried; representative content was inspected from six notebooks, with cell and execution-output summaries collected across the readable notebook set. The two substantive PDFs were identified by filename but not opened, and vendored package source and tests were not inspected. The supplied clone was described as shallow with depth 50, so history should be treated as recently sampled; only one root commit is reachable in the checkout."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "A completed notebook retrieves Chicago food-inspection records from the public Socrata API, filters failed and out-of-business inspections, parses violation descriptions, identifies repeat offenders, and plots frequent violations and trends.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "assignment-1"
+      ]
+    },
+    {
+      "statement": "An assignment notebook preprocesses news articles and tweets, creates n-grams, computes pairwise Jaccard similarity, compares duplicate and unique records, and visualizes similarity distributions and matrices.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "assignment-3"
+      ]
+    },
+    {
+      "statement": "The final classification assignment trains and evaluates multinomial Naive Bayes, logistic-regression, and linear SVM classifiers over vectorized food-inspection comments; stored outputs report test accuracies of approximately 93%, 98%, and 97%, respectively.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "assignment-4",
+        "notebook-outputs"
+      ]
+    },
+    {
+      "statement": "Instructional notebooks cover tokenization, stemming, lemmatization, part-of-speech tagging, Levenshtein distance, n-grams, word-mover distance, Yelp sentiment classification and serialized pipelines, VADER-based streaming sentiment, and multiprocessing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-inventory",
+        "representative-labs"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The repository is a notebook-centric coursework collection: all 25 substantive files are under class/NLP and comprise 23 Jupyter notebooks and two PDFs, with no standalone application, reusable package, or command-line entry point.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Notebooks obtain data independently from public Chicago and Google Cloud Storage endpoints, then perform cleaning, exploratory analysis, visualization, or model training within notebook cells.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "assignment-1",
+        "assignment-3",
+        "representative-labs"
+      ]
+    },
+    {
+      "statement": "Runtime dependencies are represented by a committed Windows Python 3.11 virtual environment containing packages such as pandas, NumPy, NLTK, scikit-learn, SciPy, matplotlib, seaborn, requests, and eli5 rather than by a portable dependency manifest.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "vendored-environment",
+        "manifest-check"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The repository preserves a broad set of NLP exercises and assignment solutions, and most sampled notebooks contain execution counts and stored outputs demonstrating that their workflows were run.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-inventory",
+        "notebook-outputs"
+      ]
+    },
+    {
+      "statement": "The final classification assignment includes comparative evaluation of three text-classification approaches and model-explanation calls using eli5.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "assignment-4",
+        "notebook-outputs"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no repository-level explanation of the course, notebook ordering, setup procedure, datasets, expected runtime, or distinction between starter, instructional, and completed work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest-check",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There are no project-owned automated tests or CI workflows; tests found under site-packages belong to vendored dependencies and do not verify the coursework notebooks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification-check",
+        "vendored-environment"
+      ]
+    },
+    {
+      "statement": "Reproduction is not portable because there is no dependency manifest and multiple notebooks rely on external downloads, notebook shell commands, Google Cloud paths, or local intermediate files.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest-check",
+        "external-resources",
+        "representative-labs"
+      ]
+    },
+    {
+      "statement": "The available history consists of a single bulk commit adding 21,252 files, which provides no incremental record of how assignments evolved.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "git-history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A streaming-sentiment notebook contains assignments to consumer_key, consumer_secret, access_token, and access_token_secret variables. Their values were deliberately not inspected, so it is unknown whether they are placeholders or credentials.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "credential-structure"
+      ]
+    },
+    {
+      "statement": "The tracked resume and consulting capstone PDF may contain personal, academic, or client-related information and should be reviewed before any visibility change or publication.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Committing approximately 569 MiB of notebooks, binaries, caches, and a platform-specific virtual environment makes cloning, review, dependency maintenance, and security scanning unnecessarily costly.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "vendored-environment",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The committed environment contains dependency versions from early 2024 and Windows-specific DLL and PYD artifacts, creating portability and stale-dependency risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "vendored-environment",
+        "git-history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Keep the repository private until the credential-named assignments and both personal or client-related PDFs are reviewed; remove the assignments and rotate credentials if any values are real.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "credential-structure",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Remove the committed virtual environment from future revisions, add an appropriate .gitignore, and replace it with a pinned portable dependency manifest.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "vendored-environment",
+        "manifest-check"
+      ]
+    },
+    {
+      "statement": "Add a concise README that identifies this as NLP coursework, orders the notebooks, distinguishes completed assignments from starter and lecture material, and documents external data requirements.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "manifest-check",
+        "external-resources"
+      ]
+    },
+    {
+      "statement": "If the coursework is no longer actively used, retain only the owner-authored notebooks worth consulting and archive the repository as a cleaned historical reference.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "notebook-inventory",
+        "repository-tree"
+      ]
+    }
+  ],
+  "questions": [
+    "Are the credential-named assignments in the streaming-sentiment notebook placeholders, revoked credentials, or active secrets?",
+    "Should the resume and FTI Consulting capstone document be stored in this repository?",
+    "Which notebooks are the owner's completed work versus instructor-provided starter or demonstration material?",
+    "Is any of this coursework still consulted, or can the repository be cleaned and archived?"
+  ],
+  "evidence": [
+    {
+      "id": "repository-metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/MS_DS_Classes",
+      "summary": "Registry snapshot identifies a private repository with main as the default branch, no description, no open issues or pull requests, and its latest recorded push on 2024-06-19."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": "class/NLP",
+      "summary": "All 21,252 tracked files are below class; outside nlp_env there are 23 Jupyter notebooks and two PDFs, including a resume and an FTI Consulting capstone problem-statement file."
+    },
+    {
+      "id": "notebook-inventory",
+      "kind": "notebook_inventory",
+      "location": "class/NLP",
+      "summary": "Notebook filenames and metadata span NLP assignments and instructional exercises on preprocessing, text similarity, distance metrics, classification, sentiment analysis, Yelp pipelines, streaming, and multiprocessing."
+    },
+    {
+      "id": "assignment-1",
+      "kind": "representative_source",
+      "location": "class/NLP/NLP_Assignment_1_Starter_Kanu_Madhok.ipynb",
+      "summary": "Twenty-code-cell executed notebook retrieves Chicago food-inspection data, cleans violations, analyzes repeat offenders and out-of-business restaurants, and creates frequency and trend plots."
+    },
+    {
+      "id": "assignment-3",
+      "kind": "representative_source",
+      "location": "class/NLP/Assignment_3_Kanu_Madhok_NLP.ipynb",
+      "summary": "Twenty-nine-code-cell executed assignment preprocesses news and tweet datasets, generates n-grams, calculates Jaccard similarities, and visualizes similar and dissimilar records."
+    },
+    {
+      "id": "assignment-4",
+      "kind": "representative_source",
+      "location": "class/NLP/Week4/Assignment_4_NLP_final_KanuMadhok.ipynb",
+      "summary": "Executed final assignment vectorizes inspection comments and compares multinomial Naive Bayes, logistic regression, and SGD-based linear SVM models with classification reports and eli5 explanations."
+    },
+    {
+      "id": "representative-labs",
+      "kind": "representative_source",
+      "location": "class/NLP/NLP_GCP_2.1_Tokenization_Stemming_POS_v4.ipynb and class/NLP/Week4/NLP_GCP_4.04_Yelp_Model_v3-1.ipynb",
+      "summary": "Sampled instructional notebooks demonstrate tokenization, stemming, lemmatization, POS tagging, web-text processing, and multi-model Yelp sentiment classification."
+    },
+    {
+      "id": "notebook-outputs",
+      "kind": "generated_outputs",
+      "location": "class/NLP/**/*.ipynb",
+      "summary": "Most notebooks contain execution counts and stored outputs; the final classification notebook reports approximately 93% Naive Bayes, 98% logistic-regression, and 97% SVM test accuracy on its stored split."
+    },
+    {
+      "id": "external-resources",
+      "kind": "data_dependencies",
+      "location": "class/NLP/**/*.ipynb",
+      "summary": "Notebook code references public Chicago Socrata data, Google Cloud Storage datasets, gsutil commands, local files, and generated model or data artifacts."
+    },
+    {
+      "id": "vendored-environment",
+      "kind": "dependency_artifact",
+      "location": "class/NLP/nlp_env",
+      "summary": "A complete Windows Python environment contributes 21,227 tracked files, including site-packages, DLL and PYD binaries, caches, package metadata, and scripts; the total repository tree is approximately 569 MiB."
+    },
+    {
+      "id": "manifest-check",
+      "kind": "configuration_review",
+      "location": "repository root",
+      "summary": "No README, CLAUDE.md, AGENTS.md, docs directory, pyproject.toml, requirements.txt, environment file, or .gitignore is present."
+    },
+    {
+      "id": "verification-check",
+      "kind": "verification_artifacts",
+      "location": "repository root and .github",
+      "summary": "No project-owned test suite or GitHub Actions workflow exists; apparent tests are contained only inside the committed third-party environment."
+    },
+    {
+      "id": "credential-structure",
+      "kind": "security_review",
+      "location": "class/NLP/Week4/NLP_GCP_4.08_Streaming_Sentiment_v3s-1.ipynb",
+      "summary": "The notebook assigns consumer-key, consumer-secret, access-token, and access-token-secret variables and passes them to Tweepy authentication. Assignment values were not read or recorded."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Only one reachable root commit exists: 4c1ca7b7, dated 2024-02-05 with subject 'files', adding all 21,252 files in one bulk change. The checkout has main and origin/main, no tags, and no additional commits."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository structure, representative implementation, stored notebook outputs, dependency artifact, and available history consistently identify a functional NLP coursework collection. Confidence is limited by the absence of documentation and tests, reliance on sampled notebook content and external services, intentionally unopened PDFs and credential values, and the supplied recent-history depth constraint."
+  },
+  "limitations": [
+    "The supplied checkout was described as shallow with depth 50, although only one root commit is reachable; history beyond the available checkout cannot be independently excluded.",
+    "Notebook workflows were not re-executed because analysis was read-only and network-restricted.",
+    "The two substantive PDFs were not opened, so their contents and sensitivity were not assessed.",
+    "The committed virtual environment was sampled structurally; its third-party source, tests, binaries, and package records were not exhaustively reviewed.",
+    "Credential assignment values were deliberately not inspected, so their authenticity and exposure status remain unknown.",
+    "GitHub activity conclusions rely on the supplied metadata snapshot rather than a fresh remote query."
+  ]
+}

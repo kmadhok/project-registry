@@ -1,0 +1,486 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Join-Identification",
+  "analyzed_at": "2026-07-27T03:22:49Z",
+  "revision": "832576b5c62c1cddd37c64bcaa58456790d1148d",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub and registry metadata",
+      "README.md and repository guides/design notes",
+      "complete tracked-file and top-level directory inventory",
+      "pyproject.toml and requirements manifests",
+      "CLI entry points and BigQuery adapter",
+      "representative profiling, blocking, overlap, metrics, scoring, graph, path, reporting, guardrail, and hybrid-analysis source",
+      "test package, tracked sample outputs, workflow inventory, and credential-related tracked filenames",
+      "all available recent commits, branches, and tags"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "dedicated docs directory",
+      "substantive automated tests",
+      "CI workflows",
+      "release tags or packaged releases",
+      "deployment or scheduled-execution artifacts",
+      "tracked schema JSON required by the documented schema-aware historical-query setup",
+      "LICENSE file despite the manifest declaring an MIT license",
+      "completed tracked edge, graph, path, or report outputs"
+    ],
+    "inaccessible": [
+      "BigQuery and Gemini services needed for an end-to-end run",
+      "Python runtime dependencies were not installed in the analysis environment",
+      "repository history older than the shallow clone boundary, if any"
+    ],
+    "sampling_notes": "This is a shallow clone with depth 50, so only recent history was available; the checkout contains two commits, both from 2025-10-27. The repository is small enough that every package area was sampled, with full inspection of entry points, adapters, guardrails, and representative traditional and hybrid pipeline code. Large reporter and metric-helper modules were sampled rather than line-reviewed exhaustively. CSV data rows and all possible secret-bearing configuration values were deliberately not inspected."
+  },
+  "stated_purpose": "The README presents joinmap as a Python command-line tool for discovering single-hop and multi-hop join relationships in unfamiliar relational data, currently using BigQuery data profiling and optional Gemini-assisted matching or historical-query analysis.",
+  "observed_capabilities": [
+    {
+      "statement": "The package defines Typer commands for complete execution and individual profiling, candidate-generation, overlap-probing, metric, graph, and report stages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "Implemented core modules profile candidate key columns, block compatible column pairs, probe value overlap, calculate relationship metrics, score table edges, build a NetworkX graph, enumerate bounded join paths, and render CSV, Markdown, and HTML outputs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-pipeline",
+        "reporting"
+      ]
+    },
+    {
+      "statement": "BigQuery is the only implemented database backend; the CLI explicitly raises NotImplementedError for Snowflake and PostgreSQL.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "bigquery-adapter"
+      ]
+    },
+    {
+      "statement": "An optional hybrid subsystem can examine BigQuery job history or CSV query logs, choose among historical enrichment, gap validation, and full discovery modes, and includes schema-aware and Gemini-based SQL parsing components.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "hybrid-source",
+        "csv-guide"
+      ]
+    },
+    {
+      "statement": "A guardrail engine is integrated into edge-metric processing to classify table pairs as exact, approximate, or skipped based on row-product thresholds and to wrap processing in local timeouts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "guardrails",
+        "edge-metrics"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The README lists Snowflake and PostgreSQL adapters, composite-key detection, improved path ranking, richer report visualization, and synthetic integration tests as future improvements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    },
+    {
+      "statement": "The complete guide identifies comprehensive guardrail testing and stronger prevention of expensive queries as the next implementation priority.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "complete-guide"
+      ]
+    },
+    {
+      "statement": "Advanced SQL-lineage documentation proposes multi-layer CTE analysis, schema validation, LLM fallback, caching, and batched LLM calls beyond the current regex-heavy parser.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "parsing-design"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The CLI orchestrates a database adapter and sequential core services for profiling, blocking, probing, metric calculation, scoring, graph construction, path search, and reporting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "core-pipeline"
+      ]
+    },
+    {
+      "statement": "The implementation pushes data-intensive work into generated BigQuery SQL while using pandas for intermediate tables and NetworkX for graph and path operations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bigquery-adapter",
+        "core-pipeline",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "Pipeline stages communicate through DataFrames and persisted CSV artifacts, culminating in Markdown and optional HTML reports.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-pipeline",
+        "reporting"
+      ]
+    },
+    {
+      "statement": "The hybrid layer sits alongside the traditional pipeline, combining historical SQL evidence with current schema and data analysis before converting results into the traditional reporting shape.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "hybrid-source",
+        "cli"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a packaged Python 3.11 project with a console-script entry point and substantial implementations across all advertised traditional pipeline stages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The source includes both data-driven discovery and historical-query-assisted discovery rather than only a planning document or generated scaffold.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-pipeline",
+        "hybrid-source"
+      ]
+    },
+    {
+      "statement": "A tracked column-profile artifact contains a header plus 40 result rows, demonstrating that at least the profiling stage produced output in one prior run.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tracked-output"
+      ]
+    },
+    {
+      "statement": "A tracked guide reports that two joins among smaller sample tables were discovered successfully during experimentation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "complete-guide"
+      ]
+    },
+    {
+      "statement": "All tracked Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-verification"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The tests tree contains only empty __init__.py files, and there is no CI workflow or other automated verification.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "The traditional full-run function closes the database context after profiling, while later overlap and metric stages reuse the now-disconnected adapter; the hybrid current-analysis path follows the same lifecycle pattern.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "profiler",
+        "hybrid-source",
+        "bigquery-adapter"
+      ]
+    },
+    {
+      "statement": "Because BigQueryAdapter.query rejects calls without an active client, the connection lifecycle makes successful completion of the advertised full pipeline unlikely without code changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "profiler",
+        "hybrid-source",
+        "bigquery-adapter"
+      ]
+    },
+    {
+      "statement": "No tracked candidate, edge, join-path, Markdown-report, or HTML-report artifact demonstrates a complete end-to-end run.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "tracked-output"
+      ]
+    },
+    {
+      "statement": "The documented schema-aware historical-query configuration refers to a schema JSON file, but all JSON files are ignored and no schema file is tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup-guide",
+        "repository-tree",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "Project metadata retains placeholder author and repository URLs, setup instructions use inconsistent directory names, and the declared MIT license has no corresponding LICENSE file.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "readme",
+        "repository-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The tracked complete guide reports that guardrails previously failed to stop a BigQuery join that ran for more than five hours, indicating material query-cost and operational risk if the prototype is used on large tables.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "complete-guide",
+        "guardrails",
+        "edge-metrics"
+      ]
+    },
+    {
+      "statement": "The guardrail timeout uses a local SIGALRM, while BigQueryAdapter neither sets maximum_bytes_billed nor explicitly cancels the remote query job; interrupting the local wait therefore may not reliably stop warehouse-side work.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "guardrails",
+        "bigquery-adapter"
+      ]
+    },
+    {
+      "statement": "The overlap-probe sampling helper returns before its sampling implementation, so large-table probes can execute without the documented sampling protection.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "overlap-probe"
+      ]
+    },
+    {
+      "statement": "Historical-query CSV support accepts SQL text and user identity metadata, so committing real exported query logs to this public repository could disclose sensitive schema, business logic, or user information.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "csv-guide",
+        "repository-tree",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "The absence of tests makes regressions in connection management, SQL generation, parsing, and cost guardrails difficult to detect before running against paid infrastructure.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tests-ci",
+        "complete-guide"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Before another warehouse run, keep one explicit database context around every SQL-using stage and add a synthetic end-to-end integration test that proves the traditional and hybrid paths retain a live adapter.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "profiler",
+        "hybrid-source",
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "Add BigQuery-native cost controls such as dry-run byte estimates, maximum_bytes_billed, job deadlines, and explicit job cancellation, then test exact, approximate, skipped, and timeout decisions without production-scale data.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "guardrails",
+        "bigquery-adapter",
+        "complete-guide"
+      ]
+    },
+    {
+      "statement": "Replace the unreachable overlap-sampling code with a tested bounded-query strategy before claiming scalability to million-row tables.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "overlap-probe",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Add real unit and integration tests plus CI for SQL generation, graph scoring, path enumeration, historical parsing, configuration loading, and report generation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tests-ci",
+        "core-pipeline",
+        "hybrid-source"
+      ]
+    },
+    {
+      "statement": "Sanitize or remove historical-query fixtures unless they are confirmed synthetic, and document that real query logs and user metadata must never be committed.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "csv-guide",
+        "repository-tree",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "If development is resumed, correct package metadata, setup paths, schema-file handling, and licensing; otherwise retain the repository as an archived prototype with a warning that it is not safe for production BigQuery workloads.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "readme",
+        "history",
+        "complete-guide"
+      ]
+    }
+  ],
+  "questions": [
+    "Was a complete run ever produced after commit 832576b, and are its edge, path, and report artifacts available elsewhere?",
+    "Does the documented five-hour BigQuery query describe a real cost incident, and was the remote job confirmed cancelled?",
+    "Are the tracked historical-query CSV files entirely synthetic and safe to keep public?",
+    "Was the untracked schema JSON intentionally omitted because it contains private database structure?",
+    "Should this remain an archived experimental reference, or is there an intention to repair and resume it?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "registry_github_snapshot",
+      "location": "https://github.com/kmadhok/Join-Identification",
+      "summary": "Public, unarchived repository on main with no description, no open issues or pull requests, and a last recorded push on 2025-10-27."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a six-stage BigQuery-native join-discovery pipeline, Gemini-assisted name normalization, multi-hop paths, metrics, outputs, operational caveats, and proposed improvements."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "pyproject.toml",
+      "summary": "Defines joinmap 0.1.0 as an alpha Python 3.11 package with a joinmap console script and dependencies for BigQuery, Gemini, pandas, NetworkX, Typer, MinHash, templating, and reporting; author and project URLs remain placeholders."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Contains 51 tracked files: core and hybrid Python modules, configuration, guides, two historical-query CSV fixtures, one profile output, and empty test-package initializers; no workflows, license, schema JSON, or completed reports are tracked."
+    },
+    {
+      "id": "cli",
+      "kind": "source",
+      "location": "joinmap/cli.py",
+      "summary": "Defines the Typer CLI, traditional and hybrid orchestration, individual stage commands, and BigQuery-only adapter selection; its full-run connection context ends before later SQL stages."
+    },
+    {
+      "id": "bigquery-adapter",
+      "kind": "source",
+      "location": "joinmap/adapters/bigquery.py",
+      "summary": "Implements schema inspection, querying, sampling, and identifier handling for BigQuery; query execution waits on to_dataframe without a configured byte cap, explicit deadline, or remote cancellation."
+    },
+    {
+      "id": "profiler",
+      "kind": "source",
+      "location": "joinmap/core/profiler.py",
+      "summary": "Profiles candidate columns inside its own adapter context and writes column_profiles.csv, closing the adapter when profiling returns."
+    },
+    {
+      "id": "core-pipeline",
+      "kind": "source_sample",
+      "location": "joinmap/core/",
+      "summary": "Representative inspection covered profiling, candidate blocking, overlap probing, metric calculation, scoring, graph construction, path search, name normalization, sketching, and reporting."
+    },
+    {
+      "id": "edge-metrics",
+      "kind": "source",
+      "location": "joinmap/core/edge_metrics.py",
+      "summary": "Integrates row-product guardrail decisions with exact and approximate metric calculation and persists edge and guardrail-decision CSVs."
+    },
+    {
+      "id": "guardrails",
+      "kind": "source",
+      "location": "joinmap/core/guardrails.py",
+      "summary": "Defines configurable row-product thresholds, exact/approximate/skip decisions, SIGALRM-based local timeouts, blacklisting, statistics, and decision export."
+    },
+    {
+      "id": "overlap-probe",
+      "kind": "source",
+      "location": "joinmap/core/overlap_probe.py",
+      "summary": "Probes candidate value overlap and writes a shortlist, but its sampling-clause helper returns an empty string before the remaining sampling logic."
+    },
+    {
+      "id": "reporting",
+      "kind": "source",
+      "location": "joinmap/core/reporter.py",
+      "summary": "Contains traditional and hybrid Markdown and HTML report generation, while other stages persist profiles, candidates, scored edges, and paths as CSV files."
+    },
+    {
+      "id": "hybrid-source",
+      "kind": "source_sample",
+      "location": "joinmap/data_sources/",
+      "summary": "Includes current-schema analysis, BigQuery and CSV historical-query loading, regex/schema-aware/Gemini SQL parsing, mode selection, and hybrid orchestration; its current-analysis flow also reuses the adapter after profiler-managed disconnection."
+    },
+    {
+      "id": "csv-guide",
+      "kind": "documentation",
+      "location": "joinmap/README_CSV.md",
+      "summary": "Documents CSV historical-query ingestion with query text and optional timestamp, user email, and job ID metadata."
+    },
+    {
+      "id": "parsing-design",
+      "kind": "design_document",
+      "location": "joinmap/ADVANCED_SQL_PARSING_DESIGN.md",
+      "summary": "Proposes layered schema loading, SQL structure analysis, LLM lineage tracing, schema validation, caching, and batched fallback parsing."
+    },
+    {
+      "id": "setup-guide",
+      "kind": "documentation",
+      "location": "joinmap/SETUP_GUIDE.md",
+      "summary": "Claims a schema JSON and historical-query setup are ready, although the referenced schema artifact is absent from the tracked tree."
+    },
+    {
+      "id": "complete-guide",
+      "kind": "analysis_document",
+      "location": "JOINMAP_COMPLETE_GUIDE.md",
+      "summary": "Explains the pipeline, reports successful joins on small sample tables, documents a large-table query exceeding five hours after guardrails failed, and calls for comprehensive guardrail testing."
+    },
+    {
+      "id": "tracked-output",
+      "kind": "generated_output",
+      "location": "test_results/column_profiles.csv",
+      "summary": "A tracked profiling-stage CSV contains a schema header and 40 data rows; no later-stage output is tracked."
+    },
+    {
+      "id": "tests-ci",
+      "kind": "verification_inventory",
+      "location": "tests/",
+      "summary": "Unit, integration, and performance directories contain only empty package initializers, and no .github workflow exists."
+    },
+    {
+      "id": "static-verification",
+      "kind": "verification",
+      "location": "joinmap/**/*.py",
+      "summary": "AST parsing succeeded for every tracked Python file; importing the CLI could not proceed because Typer was not installed in the read-only analysis environment."
+    },
+    {
+      "id": "gitignore",
+      "kind": "security_configuration",
+      "location": ".gitignore",
+      "summary": "Excludes .env files, JSON files, credential directories, generated outputs, logs, caches, and local analysis notes; no credential-like tracked filename was identified."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes two commits on main, both from 2025-10-27: an initial README commit followed 18 minutes later by one bulk commit adding the implementation and documentation; there are no tags or additional branches."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository structure and primary implementation strongly establish the intended architecture and prototype capabilities, while direct source inspection exposes concrete connection, sampling, testing, and cost-control gaps. Confidence is limited because dependencies and external services were unavailable, no automated tests or completed reports exist, historical claims were not independently verified, and only shallow recent history was available."
+  },
+  "limitations": [
+    "No end-to-end execution was attempted because required dependencies, BigQuery access, and Gemini access were unavailable.",
+    "The import check stopped at the missing Typer dependency; this reflects the analysis environment rather than proving a repository packaging defect.",
+    "The documented successful joins and five-hour query incident were treated as repository-recorded evidence, not independently verified operational facts.",
+    "Git history is shallow at depth 50 and may omit older or unreachable development context, although only two commits are present in the available branch history.",
+    "Open issue and pull-request conclusions rely on the supplied GitHub snapshot rather than a fresh network query.",
+    "Credential-bearing files were identified only by filename and configuration shape; secret values were never inspected.",
+    "Large implementation files were sampled around entry points and critical behavior rather than line-reviewed exhaustively."
+  ]
+}

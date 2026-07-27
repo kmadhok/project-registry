@@ -1,0 +1,369 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/market-trading",
+  "analyzed_at": "2026-07-27T03:26:19Z",
+  "revision": "389309ab60e2f237dd453e8433ae8a4d35e314e7",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata and revision state",
+      "README.md and CLAUDE.md",
+      "complete tracked-file inventory and top-level structure",
+      "pyproject.toml, requirements.txt, .gitignore, configuration loader, and configuration key structure without inspecting credential values",
+      "main daemon entry point and all core, connector, strategy, execution, sizing, and monitoring modules",
+      "tests, backtest, and scripts package contents",
+      "local branches, tags, workflows, credential-file inventory, and git status",
+      "git log --oneline -20 and the sole commit summary",
+      "AST parsing of all 29 Python files and dependency-limited import checks"
+    ],
+    "missing": [
+      "AGENTS.md",
+      "docs directory",
+      "substantive automated tests",
+      "implemented backtesting framework",
+      "notebooks or reproducible historical analysis",
+      "demos or recorded runtime output",
+      "CI workflows",
+      "release tags or packaged releases",
+      "deployment, service, scheduler, or container artifacts"
+    ],
+    "inaccessible": [
+      "Full runtime verification because required dependencies, including PyYAML and pytest, are not installed in the read-only environment",
+      "Live venue API behavior because network access and credentials were unavailable and intentionally not used",
+      "The related Ever_Evolving_Software repository referenced by CLAUDE.md"
+    ],
+    "sampling_notes": "The checkout is shallow at depth 50, so only recent history is available; this repository currently contains one commit. The repository is compact, so all substantive tracked Python modules were inspected rather than sampled. Configuration credential values were not inspected."
+  },
+  "stated_purpose": "README.md describes a continuously running, automated multi-venue trading engine intended to find and trade pricing discrepancies across prediction markets and sportsbook-derived signals.",
+  "observed_capabilities": [
+    {
+      "statement": "The code defines common event, market, normalized-probability, signal, order, and position models together with conversion functions for prediction-market and sportsbook price formats.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core"
+      ]
+    },
+    {
+      "statement": "Connectors are implemented for reading Kalshi, Polymarket, and The Odds API data, while Kalshi also contains an order-submission path and Polymarket trading explicitly remains unimplemented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "connectors"
+      ]
+    },
+    {
+      "statement": "The strategy layer contains cross-venue and multi-outcome arbitrage, fair-value deviation, momentum, event-lifecycle, correlation, and signal-ensemble logic.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "strategies"
+      ]
+    },
+    {
+      "statement": "The execution layer provides paper fills, live connector dispatch, position tracking, fee- and slippage-adjusted Kelly sizing, exposure limits, and console, Discord, and Slack alert paths.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "execution-monitoring"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The documented roadmap proposes Kalshi live trading, WebSocket feeds, historical backtesting, crypto-exchange integration, cross-asset signals, and traditional broker and options integrations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    },
+    {
+      "statement": "The empty backtest package and disabled optional crypto and broker dependencies are consistent with those roadmap items remaining future work.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree-manifests",
+        "tests-ci",
+        "readme"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "main.py is intended to orchestrate an asynchronous cycle of connector fetches, cross-venue matching, strategy scans, signal consolidation, sizing, risk checks, execution, position updates, and alerts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main"
+      ]
+    },
+    {
+      "statement": "Venue-specific connectors convert external records into shared core models, allowing matching and strategy code to operate on normalized probabilities rather than venue-specific formats.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core",
+        "connectors",
+        "strategies"
+      ]
+    },
+    {
+      "statement": "Configuration is loaded from YAML and overlays credential-related fields from environment variables; tracked ignore rules cover common environment, private-key, credential, local-override, and log files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-config"
+      ]
+    }
+  ],
+  "maturity": "scaffold",
+  "accomplishments": [
+    {
+      "statement": "A substantial 6,722-line initial implementation establishes module boundaries for ingestion, normalization, matching, valuation, strategy generation, sizing, execution, position accounting, and monitoring.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "All 29 tracked Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-check"
+      ]
+    },
+    {
+      "statement": "Paper mode is the documented and coded default, and live orders are routed through a distinct execution branch after a risk check.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main",
+        "execution-monitoring",
+        "readme"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The primary cycle cannot reach strategy execution as written: main.py passes all_events to EventMatcher.find_matches(), but the implemented method accepts no argument and instead expects events to have been added to internal state.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main",
+        "core"
+      ]
+    },
+    {
+      "statement": "The tests package contains only an empty __init__.py, and there is no CI workflow, so no automated evidence validates matching, strategies, risk controls, connectors, paper trading, or the daemon lifecycle.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "The backtest package contains no replay implementation, datasets, notebooks, or generated results, so the README's historical performance figures are not reproducible from this repository.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "Runtime imports could not be completed in the analysis environment because PyYAML is absent, and pytest is also unavailable.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-check"
+      ]
+    },
+    {
+      "statement": "The repository contains no durable datastore or restart-recovery mechanism for orders, positions, P&L, matcher state, or strategy history.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests",
+        "main",
+        "execution-monitoring"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The README's description of a fully automated trading system overstates the available evidence because the daemon has a deterministic matcher-call failure and no successful end-to-end verification artifact.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "main",
+        "core",
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "RiskManager checks projected exposure using only one contract's target price before OrderManager determines the actual quantity, allowing a sized order to pass checks even when its full cost exceeds total or per-venue limits.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "execution-monitoring",
+        "main"
+      ]
+    },
+    {
+      "statement": "The daily-loss check precedes the more severe kill-switch threshold, so losses beyond both configured thresholds return at the daily-loss check without setting the kill-switch flag.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "execution-monitoring"
+      ]
+    },
+    {
+      "statement": "The main loop opens and reprices positions but does not call the risk manager's position-close path, which is the only implemented path that updates daily realized P&L; therefore documented daily-loss and kill-switch protections are not connected to the normal loop.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main",
+        "execution-monitoring"
+      ]
+    },
+    {
+      "statement": "Enabling live mode before connector authentication, settlement accounting, quantity-aware risk checks, and restart recovery are verified could expose real funds to untested behavior.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "connectors",
+        "execution-monitoring",
+        "main",
+        "tests-ci"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Repair the event-matcher integration and add a deterministic, API-free paper-mode smoke test that executes at least one complete fetch-to-position cycle.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "main",
+        "core",
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "Move order sizing before final risk approval and validate exposure against full order cost, then reorder and test daily-loss and kill-switch evaluation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "execution-monitoring",
+        "main"
+      ]
+    },
+    {
+      "statement": "Connect settlement and position closure to risk-state P&L updates and add restart-safe persistence before considering live trading.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "main",
+        "execution-monitoring",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "Add focused tests for normalization, event matching, fair-value computation, strategy invariants, fee-adjusted sizing, and risk-limit boundaries, and run them in CI.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "core",
+        "strategies",
+        "execution-monitoring",
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "Either add the historical backtest artifacts needed to reproduce the README results or clearly label those results as external findings from the related repository.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "claude",
+        "tests-ci"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the July 2026 initial commit generated as a design scaffold, or has any version of this engine completed a paper-trading cycle elsewhere?",
+    "Are the README backtest figures still reproducible in Ever_Evolving_Software, and should that repository be recorded as a formal registry relationship?",
+    "Is live Kalshi trading an active near-term goal, or should live mode remain disabled until execution and risk controls are verified?",
+    "What persistence and reconciliation model is intended for positions, fills, settlements, and restart recovery?",
+    "Which of the six implemented strategies are based on validated research versus exploratory hypotheses?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/market-trading",
+      "summary": "Private main-branch repository with no description, open issues, or open pull requests; the supplied snapshot records a 2026-07-11 push."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "States the automated multi-venue trading purpose, architecture, historical performance claims, setup, risk defaults, venue status, and four-phase roadmap."
+    },
+    {
+      "id": "claude",
+      "kind": "development_documentation",
+      "location": "CLAUDE.md",
+      "summary": "Describes module responsibilities, intended daemon flow, design decisions, testing guidance, and the external Ever_Evolving_Software origin."
+    },
+    {
+      "id": "tree-manifests",
+      "kind": "repository_structure",
+      "location": "repository root, pyproject.toml, and requirements.txt",
+      "summary": "Contains a Python 3.11 project with 29 Python files and modules for core models, three connectors, six strategy families plus an ensemble, execution, monitoring, configuration, and placeholder test, script, and backtest packages."
+    },
+    {
+      "id": "main",
+      "kind": "entry_point",
+      "location": "main.py",
+      "summary": "Implements daemon initialization and the asynchronous fetch, match, scan, size, execute, track, and alert loop; its matcher call passes an unsupported argument."
+    },
+    {
+      "id": "core",
+      "kind": "source",
+      "location": "core/",
+      "summary": "Defines shared trading models, probability normalization, weighted category-aware fair value, and stateful fuzzy and structured event matching."
+    },
+    {
+      "id": "connectors",
+      "kind": "source",
+      "location": "connectors/",
+      "summary": "Implements Kalshi, Polymarket, and sportsbook-odds ingestion; Kalshi includes an order path, Polymarket is read-only, and The Odds API is a signal source."
+    },
+    {
+      "id": "strategies",
+      "kind": "source",
+      "location": "strategies/",
+      "summary": "Implements cross-venue arbitrage, fair-value deviation, momentum, event-lifecycle, multi-outcome arbitrage, correlation, and signal consolidation logic."
+    },
+    {
+      "id": "execution-monitoring",
+      "kind": "source",
+      "location": "execution/ and monitoring/",
+      "summary": "Implements paper and live order branches, positions and P&L, Kelly sizing, risk state, and console/webhook alerts; inspection exposed quantity, kill-switch ordering, and P&L integration gaps."
+    },
+    {
+      "id": "tests-ci",
+      "kind": "verification_inventory",
+      "location": "tests/, backtest/, scripts/, and .github/",
+      "summary": "Tests and scripts contain no substantive code, backtest contains only a package comment, and no GitHub Actions workflows, notebooks, demos, or generated results exist."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available shallow history contains one 2026-07-11 commit, 389309a Initial commit, adding 35 files and 6,722 lines; main is the only available branch and there are no tags."
+    },
+    {
+      "id": "static-check",
+      "kind": "verification",
+      "location": "local read-only analysis",
+      "summary": "AST parsing succeeded for all 29 Python files. Import verification stopped at the missing PyYAML dependency, and pytest is not installed."
+    },
+    {
+      "id": "security-config",
+      "kind": "security_configuration",
+      "location": "config/__init__.py, config/settings.yaml, and .gitignore",
+      "summary": "Configuration injects credential-related fields from named environment variables, and ignore rules cover common secret and local-override files. No tracked credential file matching those patterns was found; credential values were not inspected."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository is small enough that all substantive source and available history were inspected, and the central integration and risk findings are directly visible in code. Confidence is limited because dependencies were unavailable, no automated tests or runtime artifacts exist, live APIs were not exercised, and the clone contains only shallow recent history."
+  },
+  "limitations": [
+    "The clone is shallow at depth 50, although only one commit is present in the available history.",
+    "No dependency installation or filesystem mutation was permitted.",
+    "No external API, authenticated live-trading, or end-to-end daemon execution was performed.",
+    "Credential values and configuration values that could contain credentials were deliberately not inspected.",
+    "The historical datasets and related repository cited by the documentation were outside the analysis scope.",
+    "Suggested lifecycle and remediation decisions require owner review."
+  ]
+}

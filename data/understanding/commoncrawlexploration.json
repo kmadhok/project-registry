@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/CommonCrawlExploration",
+  "analyzed_at": "2026-07-27T03:15:15Z",
+  "revision": "297a575c0d8340afe40c930c78a95356c086765a",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub and registry metadata snapshot",
+      "README.md",
+      "complete tracked-file inventory and top-level structure",
+      "requirements.txt",
+      "all ten tracked Python source files",
+      "tracked JSON and CSV outputs by structure, metadata, and duplication characteristics",
+      "local branches, tags, tracked credential-filename indicators, and workflow inventory",
+      "all available commit history, including git log --oneline -20",
+      "static Python syntax parsing for every tracked script"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "license",
+      "Python runtime-version declaration",
+      "automated tests",
+      "CI workflows",
+      "deployment or scheduled-operation artifacts",
+      "release tags",
+      "dependency lockfile",
+      "explicit GitHub archival-state field"
+    ],
+    "inaccessible": [
+      "current remote GitHub metadata beyond the supplied snapshot because the GitHub API connection failed",
+      "live external-service verification against Common Crawl, Wayback Machine, Google, and news sites"
+    ],
+    "sampling_notes": "The repository is small, so all 14 tracked files and all ten Python scripts were inspected rather than sampled. The analysis context identified the clone as depth 50 and limited to recent history; git currently reports a non-shallow checkout because the available repository history contains only one commit, so the history assessment is necessarily limited to that single commit."
+  },
+  "stated_purpose": "Extract historical news articles from CNN, Fox News, and The Washington Post by searching Common Crawl for a query and date range, retrieving archived pages, extracting article text, and exporting JSON and CSV results.",
+  "observed_capabilities": [
+    {
+      "statement": "The primary command-line entry point accepts a query, domains, start and end dates, result limit, output directory, and an option to refresh the Common Crawl index list.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "primary-cli"
+      ]
+    },
+    {
+      "statement": "The code can query Common Crawl index endpoints, identify candidate URLs, retrieve archived HTML through the Wayback Machine, parse content with newspaper3k, and serialize results to JSON and CSV.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "common-crawl-client",
+        "primary-cli",
+        "requirements"
+      ]
+    },
+    {
+      "statement": "Alternate scripts support direct URL extraction, Google-result scraping, Wayback snapshot lookup, and HTTP range downloads of individual Common Crawl WARC records.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "alternate-pipelines",
+        "warc-experiments"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The documented primary flow is crawl_news_articles.py to CommonCrawlClient, then Common Crawl index discovery, Wayback-hosted page retrieval, newspaper3k parsing, and JSON/CSV export.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "primary-cli",
+        "common-crawl-client"
+      ]
+    },
+    {
+      "statement": "A parallel experimental flow combines GoogleSearchScraper with ArticleExtractor or WaybackMachineExtractor to discover URLs before fetching either current or archived pages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "alternate-pipelines"
+      ]
+    },
+    {
+      "statement": "The low-level WARC experiments query for filename, offset, and length metadata and download byte ranges from data.commoncrawl.org; one separate script parses a hard-coded local WARC gzip file with warcio.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "warc-experiments"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A configurable end-to-end extraction workflow and several fallback experiments were implemented across ten syntactically valid Python scripts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "source-tree",
+        "syntax-check"
+      ]
+    },
+    {
+      "statement": "The tracked JSON artifact demonstrates that Common Crawl WARC provenance fields and extracted text were successfully recorded for five 2019 captures.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sample-output"
+      ]
+    },
+    {
+      "statement": "Request pacing is included in the batch extraction and Google-search loops.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "common-crawl-client",
+        "alternate-pipelines"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no automated tests, CI workflows, release artifacts, deployment configuration, or repeatable operational evidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "source-tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "The tracked result does not demonstrate the stated article-search outcome: all five records are captures of the same CNN homepage with identical extracted text rather than distinct query-matching articles.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sample-output",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The primary Common Crawl path selects indices only by year; it does not enforce the requested start and end days on capture timestamps or verify that the extracted article text contains the requested query.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "common-crawl-client"
+      ]
+    },
+    {
+      "statement": "requirements.txt omits warcio even though try.py imports it, and the repository does not declare a supported Python version.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "requirements",
+        "warc-experiments"
+      ]
+    },
+    {
+      "statement": "The only CSV output contains a header row but no data rows.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sample-output"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The extraction paths depend on changing external APIs, archived-page availability, Google HTML selectors, and news-site markup; requests generally lack explicit timeouts, retries, and structured failure reporting.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "common-crawl-client",
+        "alternate-pipelines"
+      ]
+    },
+    {
+      "statement": "The permissive URL heuristic defaults uncertain URLs to article candidates, which can produce irrelevant and duplicate output as seen in the tracked CNN homepage captures.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "common-crawl-client",
+        "sample-output"
+      ]
+    },
+    {
+      "statement": "The repository tracks extracted third-party page text, so continued collection or publication should be reviewed for copyright, licensing, and dataset-governance requirements.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "sample-output"
+      ]
+    },
+    {
+      "statement": "try.py exposes an owner-specific absolute filesystem path and cannot run portably without editing; its required warcio dependency is also undeclared.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "warc-experiments",
+        "requirements"
+      ]
+    },
+    {
+      "statement": "Pinned dependencies date from the prototype's initial snapshot and have no automated update or security-checking configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "requirements",
+        "history",
+        "source-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "If the project is retained, create a fixture-backed test that proves a query and exact date range yield distinct matching article records rather than domain homepages.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "sample-output",
+        "common-crawl-client"
+      ]
+    },
+    {
+      "statement": "Choose one supported retrieval architecture\u2014direct Common Crawl WARC records or Common Crawl discovery followed by Wayback retrieval\u2014and align the README, filters, output schema, and dependency manifest with that choice.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "common-crawl-client",
+        "warc-experiments"
+      ]
+    },
+    {
+      "statement": "Add timestamp and content-query validation, URL deduplication, request timeouts and retries, a Python version declaration, complete dependencies, tests, and CI before treating the workflow as functional.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "common-crawl-client",
+        "requirements",
+        "sample-output",
+        "source-tree"
+      ]
+    },
+    {
+      "statement": "Remove or parameterize the hard-coded local WARC path and decide whether the tracked extracted page text should remain in the public repository.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "warc-experiments",
+        "sample-output"
+      ]
+    },
+    {
+      "statement": "Because the repository has a single March 2025 commit and no later maintenance evidence, confirm whether it should remain an archived experiment or be revived with a defined research use case.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata-snapshot"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository a one-off exploration, or is the historical-news dataset still needed?",
+    "Should Common Crawl supply both discovery and page content, or was Wayback Machine intentionally chosen for content retrieval?",
+    "What downstream analysis was the extracted news corpus intended to support?",
+    "Should the tracked third-party page text remain public?",
+    "Are the Google-search, cdx-toolkit fallback, and local-WARC scripts still useful, or can the project be reduced to one supported workflow?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/CommonCrawlExploration",
+      "summary": "Supplied snapshot identifies a public repository on main, last pushed on 2025-03-24, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a Common Crawl-based historical news extractor for keyword and date searches across CNN, Fox News, and The Washington Post, with JSON and CSV output."
+    },
+    {
+      "id": "source-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Fourteen tracked files comprise ten standalone Python scripts, one dependency manifest, one README, and two tracked data outputs; no tests, workflows, docs directory, license, or deployment files are present."
+    },
+    {
+      "id": "requirements",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Pins requests 2.31.0, beautifulsoup4 4.12.2, newspaper3k 0.2.8, pandas 2.0.1, and tqdm 4.66.1; no Python version or warcio dependency is declared."
+    },
+    {
+      "id": "primary-cli",
+      "kind": "entry_point",
+      "location": "crawl_news_articles.py",
+      "summary": "Defines the documented command-line interface, calls CommonCrawlClient, creates an output directory, and writes JSON and CSV result files."
+    },
+    {
+      "id": "common-crawl-client",
+      "kind": "source",
+      "location": "common_crawl_client.py",
+      "summary": "Implements crawl-index selection, CDX requests, permissive URL filtering, Wayback retrieval, newspaper3k parsing, batching, and JSON serialization."
+    },
+    {
+      "id": "alternate-pipelines",
+      "kind": "source",
+      "location": "article_extractor.py, google_search_scraper.py, extract_from_google.py, search_articles.py, alternative_search.py, wayback_machine_extractor.py",
+      "summary": "Implements overlapping direct-page, Google-discovery, cdx-toolkit fallback, and Wayback snapshot extraction paths with command-line wrappers."
+    },
+    {
+      "id": "warc-experiments",
+      "kind": "source",
+      "location": "new_format.py, try.py",
+      "summary": "Contains a direct Common Crawl WARC range-download experiment and a local gzip parser whose input is an owner-specific absolute path and whose warcio dependency is undeclared."
+    },
+    {
+      "id": "sample-output",
+      "kind": "generated_output",
+      "location": "apple_articles_cnn_2019_direct.json, news_domains_2019.csv",
+      "summary": "The JSON contains five records with WARC provenance but only one unique URL, title, and text body\u2014the CNN homepage\u2014while the CSV contains only its header."
+    },
+    {
+      "id": "syntax-check",
+      "kind": "static_verification",
+      "location": "all tracked *.py files",
+      "summary": "Python 3 ast.parse accepted all ten scripts; no functional or network execution was performed."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 297a575c0d8340afe40c930c78a95356c086765a",
+      "summary": "The available history consists of one commit, 'Add files via upload,' authored on 2025-03-23; local and origin main point to it, with no tags or additional branches."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "All tracked implementation and output artifacts were inspected and consistently indicate a prototype, but there are no tests or successful query-matching sample results, external services were not exercised, and current remote GitHub state could not be refreshed beyond the supplied snapshot."
+  },
+  "limitations": [
+    "The supplied analysis context limits history to at most the most recent 50 commits, although only one commit exists in the local checkout.",
+    "Current GitHub archival state, remote branches, releases, and post-snapshot issue or pull-request changes could not be independently refreshed.",
+    "No external network workflow was executed, so present-day compatibility with Common Crawl, Wayback Machine, Google, or news sites is unverified.",
+    "Static syntax parsing does not establish that dependencies install together or that any command completes successfully.",
+    "Tracked article text was inspected only structurally and for duplication; its full content was not reproduced in this brief.",
+    "No credential values were read or stored; no tracked credential-named file was identified."
+  ]
+}

@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/NorthwesternBootcamp",
+  "analyzed_at": "2026-07-27T03:28:54Z",
+  "revision": "5aacd07c78bfb09e32b9146fd912aaa91c787aa0",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "README.md and .gitignore",
+      "complete tracked-file inventory and top-level structure",
+      "CrowdfundingBook.xlsx workbook structure, source data, formulas, cached values, pivot tables, pivot cache, charts, and document metadata",
+      "local and remote branch inventory, tags, commit statistics, and git log --oneline -20"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs or setup documentation",
+      "dependency manifests",
+      "source-code entry points",
+      "tests or automated workbook validation",
+      "CI workflows",
+      "notebooks",
+      "separate demos",
+      "release tags",
+      "deployment artifacts",
+      "data-source or assignment provenance"
+    ],
+    "inaccessible": [
+      "live GitHub state beyond the supplied metadata snapshot"
+    ],
+    "sampling_notes": "All three tracked files and both available commits were inspected; the repository was small enough that no file sampling was necessary. The analysis context describes the clone as shallow with depth 50, so history older than that would normally be unavailable; however, Git reports this checkout as not shallow and shows only two commits."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The workbook stores 1,000 crowdfunding records with project identity, description, goal, pledged amount, funding outcome, backer count, country, currency, launch and deadline timestamps, selection flags, and category fields.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-source"
+      ]
+    },
+    {
+      "statement": "The source sheet calculates a whole-number percent-funded value for every record using pledged amount divided by goal.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-formulas"
+      ]
+    },
+    {
+      "statement": "Two pivot tables aggregate outcome counts by parent category and subcategory, and two bar charts visualize those summaries.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-analysis"
+      ]
+    },
+    {
+      "statement": "The cached pivot results reconcile with the source data at 1,000 records: 565 successful, 364 failed, 57 canceled, and 14 live.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-source",
+        "workbook-analysis"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The repository's implementation is a single self-contained Excel workbook rather than an executable software application.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "workbook-source"
+      ]
+    },
+    {
+      "statement": "The Crowdfunding sheet is the data and calculation layer; a shared pivot cache over A1:R1001 feeds the Category and Sub-Category pivot-table sheets, which in turn feed embedded bar charts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-source",
+        "workbook-formulas",
+        "workbook-analysis"
+      ]
+    },
+    {
+      "statement": "Because the pivot summaries and charts are stored inside the workbook without an external refresh or validation pipeline, maintenance depends on manual Excel operations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "workbook-analysis",
+        "repository-tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A complete 1,000-row dataset was organized into a structured analytical workbook with derived funding percentages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-source",
+        "workbook-formulas"
+      ]
+    },
+    {
+      "statement": "Category and subcategory outcome summaries were implemented as pivot tables and visualized with bar charts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-analysis"
+      ]
+    },
+    {
+      "statement": "The saved pivot totals agree with independently counted source outcomes, providing evidence that the principal categorical summaries were correct at the analyzed revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-source",
+        "workbook-analysis"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "README.md contains only the repository name and provides no purpose, setup, data provenance, methodology, findings, or workbook usage instructions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    },
+    {
+      "statement": "There is no automated test, CI workflow, formula-validation process, or documented refresh procedure.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The workbook has a blank column-L header, and only L2 is populated there; its formula applies an Excel-date conversion to a Unix timestamp and caches an implausibly large value.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-formulas"
+      ]
+    },
+    {
+      "statement": "No issues, TODO artifacts, or later commits identify intended follow-up work or explain whether the incomplete timestamp conversion was deliberate.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "github-metadata",
+        "commit-history",
+        "repository-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The isolated column-L date-conversion formula appears incomplete or incorrect and could be mistaken for a valid derived timestamp.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "workbook-formulas"
+      ]
+    },
+    {
+      "statement": "Without documented source provenance or methodology, future readers cannot establish whether the dataset is real, synthetic, transformed, or governed by a particular assignment specification.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "repository-tree",
+        "workbook-source"
+      ]
+    },
+    {
+      "statement": "The public workbook embeds document-author fields and an absolute local Downloads-directory reference, creating avoidable metadata exposure.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workbook-metadata"
+      ]
+    },
+    {
+      "statement": "The repository has had no purposeful activity since its two setup/upload commits in March 2022, so treating it as actively maintained would be misleading.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "github-metadata",
+        "commit-history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Document the workbook as a historical spreadsheet exercise, including the dataset's source, intended questions, calculation definitions, and instructions for refreshing the pivot tables.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "workbook-analysis"
+      ]
+    },
+    {
+      "statement": "Correct or remove the incomplete column-L timestamp conversion and give any retained derived date column an explicit header.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "workbook-formulas"
+      ]
+    },
+    {
+      "statement": "Scrub unnecessary personal and local-path metadata from the public workbook if the artifact is retained.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "workbook-metadata"
+      ]
+    },
+    {
+      "statement": "After owner review, archive the repository unless the workbook is still used as a reference or will receive documentation and quality fixes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "github-metadata",
+        "commit-history",
+        "readme"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this workbook created for a specific Northwestern bootcamp assignment, and if so, where is the assignment specification?",
+    "What is the provenance and licensing status of the 1,000 crowdfunding records?",
+    "What was column L intended to contain?",
+    "Are the pivot tables and charts worth retaining as a personal reference, or should the repository be archived as completed coursework?"
+  ],
+  "evidence": [
+    {
+      "id": "github-metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/NorthwesternBootcamp",
+      "summary": "Supplied snapshot identifies a public main-branch repository with no description, no open issues or pull requests, and its latest push on 2022-03-05."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "The README consists only of the heading 'NorthwesternBootcamp' and does not state a purpose or provide instructions."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains README.md, a generic Python-oriented .gitignore, and CrowdfundingBook.xlsx; there is no source code, manifest, documentation directory, test, workflow, or credential file."
+    },
+    {
+      "id": "workbook-source",
+      "kind": "spreadsheet_data",
+      "location": "CrowdfundingBook.xlsx#Crowdfunding!A1:R1001",
+      "summary": "The primary sheet contains 1,000 crowdfunding records. Independent counts found 565 successful, 364 failed, 57 canceled, and 14 live projects across nine parent categories and 24 subcategories."
+    },
+    {
+      "id": "workbook-formulas",
+      "kind": "spreadsheet_formulas",
+      "location": "CrowdfundingBook.xlsx#Crowdfunding",
+      "summary": "The sheet contains 1,000 percent-funded formulas in column F and one additional formula in L2. Column L has no header, L3:L1001 are empty, and L2 caches 125164641398400 from applying an Excel-date conversion formula to a Unix timestamp."
+    },
+    {
+      "id": "workbook-analysis",
+      "kind": "spreadsheet_pivots_and_charts",
+      "location": "CrowdfundingBook.xlsx#Category; CrowdfundingBook.xlsx#Sub-Category",
+      "summary": "Two pivot tables count outcomes by parent category and subcategory from Crowdfunding!A1:R1001; their grand totals reconcile to the 1,000 source records. Each summary sheet has an associated bar chart."
+    },
+    {
+      "id": "workbook-metadata",
+      "kind": "artifact_metadata",
+      "location": "CrowdfundingBook.xlsx#docProps/core.xml; CrowdfundingBook.xlsx#xl/workbook.xml",
+      "summary": "The workbook stores creator and last-modifier fields, 2021\u20132022 creation/modification timestamps, and an absolute local Downloads-directory reference."
+    },
+    {
+      "id": "commit-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The entire available history contains two commits on 2022-03-05: an initial README/.gitignore commit followed six minutes later by an Excel-file upload. The checkout has only main and origin/main and no tags."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The repository is small enough for complete file inspection, the workbook's source records, formulas, pivot definitions, cached summaries, charts, and metadata were directly examined, and the pivot totals were independently reconciled. The unstated original assignment and data provenance remain explicit limitations rather than inferred facts."
+  },
+  "limitations": [
+    "The repository provides no substantive statement of purpose, assignment specification, dataset provenance, or licensing information.",
+    "The workbook was inspected structurally as OOXML and through its saved values; it was not recalculated in Microsoft Excel or visually rendered.",
+    "The supplied clone was described as depth-50, so any history beyond that boundary would be unavailable, although Git reports the checkout as not shallow and exposes only two commits.",
+    "Current GitHub activity and settings beyond the supplied snapshot were not independently queried."
+  ]
+}

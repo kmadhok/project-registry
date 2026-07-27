@@ -1,0 +1,372 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/playlist-to-transcript",
+  "analyzed_at": "2026-07-27T03:29:09Z",
+  "revision": "0c2238cdb60860da1d59a5b35f0714892a4e81f0",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "README.md",
+      "complete tracked-file inventory and top-level structure",
+      "pyproject.toml and configuration structure",
+      "all 15 Python implementation files",
+      "all eight test files",
+      "credential-related filenames without opening credential-file contents",
+      "local branches, tags, and the available five-commit history",
+      "read-only compilation of all 23 implementation and test Python files"
+    ],
+    "missing": [
+      "CLAUDE.md, AGENTS.md, and docs directory",
+      "dependency lock file",
+      ".gitignore",
+      "CI workflows",
+      "release tags and packaged releases",
+      "deployment, scheduler, or monitoring configuration",
+      "notebooks, demos, and generated output examples",
+      "substantive integration or end-to-end tests"
+    ],
+    "inaccessible": [
+      "GitHub history and repository activity beyond the supplied snapshot and local checkout"
+    ],
+    "sampling_notes": "The repository is small, so every tracked source and test file was inspected. The checkout was supplied as a shallow clone with depth 50; only five commits are available, so any history beyond the retained checkout was not assessed."
+  },
+  "stated_purpose": "Monitor configured YouTube and Spotify playlists, extract or locally transcribe item transcripts, summarize them with OpenAI, and write local artifacts.",
+  "observed_capabilities": [
+    {
+      "statement": "The sync command fetches paginated YouTube playlist items, retrieves available transcripts, records items in SQLite, summarizes new transcript content through the OpenAI Responses API, and writes transcript, metadata, and summary artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "cli",
+        "youtube-components",
+        "storage",
+        "summarization"
+      ]
+    },
+    {
+      "statement": "The sync command authenticates with Spotify, retains podcast episodes from playlist responses, and can transcribe an owner-provided local audio.mp3 file with a Whisper base model before summarization.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "cli",
+        "spotify-components"
+      ]
+    },
+    {
+      "statement": "SQLite item status and transcript hashes provide basic deduplication so already processed items and unchanged summaries can be skipped.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "storage",
+        "summarization",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Configuration is loaded from YAML and environment-backed settings for YouTube, Spotify, and OpenAI credentials.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "config",
+        "manifest"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The backfill, summarize-one, and list commands are exposed by the CLI but explicitly remain stubs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli"
+      ]
+    },
+    {
+      "statement": "Source comments identify token-based chunking and map-reduce or otherwise structured summarization as future improvements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "summarization"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The project is a Python 3.10+ Typer CLI organized into configuration, playlist-provider, transcript, summarization, and SQLite persistence modules.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "tree",
+        "cli"
+      ]
+    },
+    {
+      "statement": "A sync run connects configured providers to a shared item model, persists discovered items, creates per-source and per-item output directories, and records summary hashes and paths in SQLite.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "models",
+        "storage"
+      ]
+    },
+    {
+      "statement": "YouTube ingestion uses the YouTube Data API and youtube-transcript-api, Spotify ingestion uses direct HTTP calls to Spotify, local audio transcription imports Whisper, and summarization uses OpenAI model gpt-4.1-mini.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "youtube-components",
+        "spotify-components",
+        "summarization",
+        "manifest"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "Five commits over 2026-02-10 and 2026-02-11 progressed from scaffolding to YouTube ingestion, SQLite delta tracking, Spotify and Whisper support, OpenAI summarization, tests, and documentation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history"
+      ]
+    },
+    {
+      "statement": "The implemented sync path connects playlist discovery, transcript acquisition, local artifact generation, summarization, and persistent processing state.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "youtube-components",
+        "spotify-components",
+        "storage",
+        "summarization"
+      ]
+    },
+    {
+      "statement": "All 15 implementation files and eight test files compile successfully as Python source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "syntax-check"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "Three of the four documented CLI workflows\u2014backfill, summarize-one, and list\u2014do not implement their advertised behavior.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "cli"
+      ]
+    },
+    {
+      "statement": "The test suite contains no substantive end-to-end test: its integration test only asserts true, and network providers, transcript retrieval, OpenAI summarization, and the complete sync command are not exercised.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "No test-run result, CI workflow, generated output, deployment artifact, or operational-use evidence demonstrates that the primary workflow succeeds with real services.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "tests",
+        "history"
+      ]
+    },
+    {
+      "statement": "Summarizer output parsing is intentionally naive: the entire model response becomes one executive-summary bullet while takeaway and action-item sections remain empty.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "summarization"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Spotify items are marked processed even when audio.mp3 is absent, so adding the required audio later will not cause a normal sync rerun to revisit that item.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "readme",
+        "storage"
+      ]
+    },
+    {
+      "statement": "YouTube items are also marked processed when transcript retrieval returns no text, including the broad exception path, which can turn transient failures into permanently skipped items.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "youtube-components",
+        "storage"
+      ]
+    },
+    {
+      "statement": "The repository instructs users to create a secret-bearing .env file and generates storage.db and output artifacts, but no tracked .gitignore exists; this raises the risk of accidentally committing credentials, transcripts, metadata, or local state.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "tracked-files"
+      ]
+    },
+    {
+      "statement": "Unbounded dependency specifications and the absence of a lock file make future installations vulnerable to incompatible upstream changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Change processing-state handling so missing audio, unavailable transcripts, and transient service failures remain retryable and record explicit failure states.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "storage",
+        "youtube-components"
+      ]
+    },
+    {
+      "statement": "Add a .gitignore covering .env, storage.db, generated output, Python caches, virtual environments, and local audio before using the tool with credentials or transcript data.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "tracked-files"
+      ]
+    },
+    {
+      "statement": "Implement or remove the three stub commands and add mocked service tests plus at least one opt-in real integration test for the complete sync workflow.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Pin and verify the external-service and transcription dependencies with a reproducible lock file, then document a known-working setup.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "readme"
+      ]
+    },
+    {
+      "statement": "If the workflow is no longer intended for use, retain the repository as archived rather than presenting its prototype commands as operational tooling.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "cli",
+        "tests"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the sync workflow ever run successfully against real YouTube, Spotify, Whisper, and OpenAI services?",
+    "Should items with missing audio or unavailable transcripts be retried automatically, manually reset, or tracked as failures?",
+    "Are backfill, summarize-one, and list still desired, or should the documented interface be reduced to sync?",
+    "Is this prototype still expected to process personal playlists, or should it be archived?",
+    "What retention and version-control policy should apply to generated transcripts, metadata, summaries, audio, and SQLite state?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/playlist-to-transcript",
+      "summary": "Private repository whose default branch is openclaw/playlist-to-transcript, with no description, open issues, or open pull requests in the supplied snapshot; last pushed 2026-02-12."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes playlist monitoring, YouTube transcript retrieval, locally supplied Spotify audio, OpenAI summarization, SQLite state, CLI commands, required credentials, limitations, and output layout."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Compact src-layout Python repository with configuration, providers, transcript handlers, summarization modules, storage, and eight tests; no docs, workflows, notebooks, demos, generated outputs, or lock file."
+    },
+    {
+      "id": "tracked-files",
+      "kind": "tracked_file_inventory",
+      "location": ".",
+      "summary": "Twenty-seven tracked files include .env.example but no .gitignore; credential-template contents were not opened or inspected."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "pyproject.toml",
+      "summary": "Defines Python 3.10+, a Typer console entry point, pytest configuration, and lower-bounded dependencies for HTTP, configuration, YouTube, OpenAI, retry, and Whisper functionality without a lock file."
+    },
+    {
+      "id": "config",
+      "kind": "configuration",
+      "location": "src/playlist_to_transcript/config.py",
+      "summary": "Loads YAML playlist definitions and environment-backed optional YouTube, Spotify, and OpenAI credential fields."
+    },
+    {
+      "id": "cli",
+      "kind": "entry_point",
+      "location": "src/playlist_to_transcript/cli.py",
+      "summary": "Implements the sync orchestration for YouTube and Spotify while backfill, summarize-one, and list only emit stub messages."
+    },
+    {
+      "id": "models",
+      "kind": "source_code",
+      "location": "src/playlist_to_transcript/models.py",
+      "summary": "Defines the shared playlist-item record containing source, identifier, title, URL, channel, and publication timestamp."
+    },
+    {
+      "id": "youtube-components",
+      "kind": "source_code",
+      "location": "src/playlist_to_transcript/providers/youtube.py and src/playlist_to_transcript/transcripts/youtube.py",
+      "summary": "Fetches paginated YouTube playlist items, requests transcripts, and writes transcript and metadata files."
+    },
+    {
+      "id": "spotify-components",
+      "kind": "source_code",
+      "location": "src/playlist_to_transcript/providers/spotify.py and src/playlist_to_transcript/transcripts/spotify.py",
+      "summary": "Authenticates to Spotify, filters playlist responses to episodes, transcribes a supplied local audio file with Whisper, and writes artifacts."
+    },
+    {
+      "id": "storage",
+      "kind": "source_code",
+      "location": "src/playlist_to_transcript/storage.py",
+      "summary": "Creates SQLite items and summaries tables, upserts discovered items, selects new items, marks processing complete, and records transcript hashes and summary paths."
+    },
+    {
+      "id": "summarization",
+      "kind": "source_code",
+      "location": "src/playlist_to_transcript/summarize",
+      "summary": "Provides overlapping character chunks, SHA-256 transcript hashes, OpenAI Responses API summarization with gpt-4.1-mini, Markdown formatting, and summary-file output."
+    },
+    {
+      "id": "tests",
+      "kind": "tests",
+      "location": "tests",
+      "summary": "Eight small tests cover configuration, chunking, formatting, Spotify ID parsing, SQLite upsert behavior, transcript-hash stability, and a missing-audio call; the integration placeholder only asserts true."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available history contains five commits from 2026-02-10 through 2026-02-11, progressing from scaffolding through ingestion, storage, summarization, Spotify and Whisper support, tests, and documentation."
+    },
+    {
+      "id": "syntax-check",
+      "kind": "static_verification",
+      "location": "src and tests",
+      "summary": "Python compilation completed successfully for all 23 implementation and test files without executing application code or writing repository files."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The complete small implementation, tests, documentation, configuration structure, and available history were inspected and agree that this is a meaningful prototype. Confidence is limited by the absence of test execution, substantive integration coverage, generated results, CI, operational artifacts, and evidence of successful runs against real services."
+  },
+  "limitations": [
+    "The supplied checkout is shallow with depth 50, so conclusions about historical maintenance are limited to the five available commits.",
+    "No dependency installation or test suite execution was performed under the read-only constraint; verification was limited to source inspection and compilation.",
+    "Credential-file values were neither opened nor inspected.",
+    "The supplied GitHub snapshot exposes no open issues or pull requests, but closed issues, closed pull requests, releases, and other remote activity were not independently inspected.",
+    "No generated database, transcript, metadata, summary, or audio artifact was present to verify real output quality."
+  ]
+}

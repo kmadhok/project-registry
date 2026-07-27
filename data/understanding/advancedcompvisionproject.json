@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/AdvancedCompVisionProject",
+  "analyzed_at": "2026-07-27T03:12:11Z",
+  "revision": "4b41350bb61ca2e5807af9b41b34ec77ad2a376f",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "complete local tracked-file inventory",
+      "all six notebooks, including code, metadata, and recorded outputs",
+      "architecture PDF text",
+      "all Keras Tuner trial metadata and build configurations",
+      "tracked model-checkpoint inventory",
+      "local branches, tags, repository status, and all four available commits",
+      "filenames indicating tests, CI, dependency manifests, documentation, deployment entry points, and credential files"
+    ],
+    "missing": [
+      "README, CLAUDE.md, AGENTS.md, and docs",
+      "dependency manifest or lockfile",
+      "tracked microscopy dataset",
+      "automated tests",
+      "CI workflows",
+      "Streamlit application or another inference entry point",
+      "tracked final model referenced by the final notebook",
+      "license and gitignore"
+    ],
+    "inaccessible": [
+      "live GitHub repository and release metadata because api.github.com was unreachable"
+    ],
+    "sampling_notes": "The analysis context describes a shallow clone with depth 50, so history should be treated as recently sampled even though `git rev-parse --is-shallow-repository` returned false. All four locally available commits, all 32 tracked files, all notebook source cells, representative recorded outputs, the architecture PDF, and all ten tuner trial records were inspected; binary HDF5 weight contents were not decoded."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The notebooks organize TIFF microscopy images into eight red-blood-cell morphology classes using filename patterns.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "eda-notebooks",
+        "classification-notebooks"
+      ]
+    },
+    {
+      "statement": "The repository implements TensorFlow/Keras Vision Transformer classifiers with patch extraction, positional embeddings, multi-head attention, dense classifier heads, augmentation, class weighting, and random-search hyperparameter tuning.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "image-vit",
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Recorded runs loaded 649 images across eight classes, split into 523 training and 126 validation images.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "image-vit",
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "One notebook records a tuned model reaching 59.52% validation accuracy, while the later final notebook records 46% classification accuracy and predictions confined to the majority echinocyte class.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "image-vit",
+        "final-notebook",
+        "tuner-artifacts"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The architecture draft suggests a future Streamlit interface for uploaded-image classification and image generation, but no corresponding application implementation is tracked.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "architecture-draft",
+        "repository-tree"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "Data preparation is notebook-driven: files are selected by morphology names embedded in TIFF filenames and copied into class directories consumed by Keras directory generators.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "eda-notebooks",
+        "classification-notebooks"
+      ]
+    },
+    {
+      "statement": "The classifier converts 64-by-64 RGB images into patches, adds positional embeddings, processes them with transformer encoder blocks, and applies a dense softmax head for eight-class prediction.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "image-vit",
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Experiment state is stored as Keras Tuner JSON records and three HDF5 weight checkpoints under `my_dir/hparam_tuning`.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tuner-artifacts",
+        "repository-tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository demonstrates an end-to-end experimental workflow from filename-based dataset organization through model construction, training, tuning, validation, and classification reporting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "eda-notebooks",
+        "image-vit",
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Executed notebooks preserve evidence of ten-trial and eighty-trial hyperparameter searches, model summaries, training histories, class distributions, and evaluation results.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "image-vit",
+        "final-notebook",
+        "tuner-artifacts"
+      ]
+    },
+    {
+      "statement": "The final experiment explicitly measures class imbalance and applies balanced class weights during tuning.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "final-notebook"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The repository has no documentation explaining its purpose, data provenance, setup, execution order, expected results, or model limitations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The source dataset is absent and several notebooks depend on hard-coded absolute paths to an external drive or a specific user directory, preventing reproduction from the checkout alone.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "eda-notebooks",
+        "image-vit",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There are no pinned dependencies, tests, CI workflows, reusable Python modules, or deployable inference application.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "architecture-draft"
+      ]
+    },
+    {
+      "statement": "Two tracked notebooks are empty, and the final notebook saves a `.keras` model that is not present in the tracked tree.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "final-notebook"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The final classification report is not reliable evidence of per-class performance because the validation generator is shuffled while predictions are compared with labels in their original stored order.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "The final recorded model effectively predicts only the majority echinocyte class, producing zero precision and recall for seven classes despite 46% aggregate accuracy.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Validation images receive stochastic augmentation from the same generator configuration as training images, which makes evaluation variable and less representative of a fixed holdout set.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "The final tuner declares `num_layers` and `dropout_rate` hyperparameters that are not actually used by the model-building call, so the reported optimum overstates what was tuned.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Recorded performance is internally inconsistent: the `image_vit` notebook reports a best validation accuracy of 59.52%, while every committed tuner trial record reports 46.03%.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "image-vit",
+        "tuner-artifacts"
+      ]
+    },
+    {
+      "statement": "Approximately 88 MB of generated HDF5 checkpoints are committed without visible Git LFS or generated-artifact controls, increasing repository size and obscuring which checkpoint is authoritative.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "tuner-artifacts"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Document the coursework objective, dataset provenance and access requirements, environment setup, notebook execution order, and the limitations of the recorded results.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "eda-notebooks",
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Refactor shared preparation and model code into reusable modules, replace machine-specific paths with configuration, and pin a reproducible environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "eda-notebooks",
+        "image-vit",
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Re-run evaluation with an unaugmented, non-shuffled validation generator and report a confusion matrix plus macro-averaged metrics before treating the model as a meaningful classifier.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "final-notebook"
+      ]
+    },
+    {
+      "statement": "Either implement and document the proposed Streamlit inference flow or remove the architecture draft so the repository does not imply a deployable application that is absent.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "architecture-draft",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Choose one authoritative model artifact, record how it was produced, and move disposable tuning checkpoints out of normal Git tracking.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "image-vit",
+        "tuner-artifacts",
+        "repository-tree"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository solely a completed Advanced Computer Vision course project, or is the red-blood-cell classifier intended for further development?",
+    "What is the source and licensing status of the microscopy dataset, and can a reproducible subset or download procedure be published?",
+    "Which result should be considered authoritative: the 59.52% validation result in `image_vit.ipynb` or the later majority-class result in the final notebook?",
+    "Was the Streamlit classification and image-generation diagram an intended deliverable or only an early concept?",
+    "Should the repository be retained as a coursework reference or formally archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/AdvancedCompVisionProject",
+      "summary": "Supplied snapshot identifies a public repository on `main`, with no description, open issues, or open pull requests, last pushed on 2024-05-20."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The 32 tracked files comprise six notebooks, one architecture PDF, tuner JSON records, and three HDF5 checkpoints; no README, manifest, tests, CI, dataset, application entry point, license, or gitignore is present."
+    },
+    {
+      "id": "eda-notebooks",
+      "kind": "notebooks",
+      "location": "elipse_eda.ipynb and image_eda.ipynb",
+      "summary": "Executed exploratory notebooks copy TIFF files into morphology directories, count class files, inspect images, and report 64-by-64 image dimensions; they use an external-drive path."
+    },
+    {
+      "id": "classification-notebooks",
+      "kind": "source_code",
+      "location": "image_vit.ipynb and vit_image_classification_final.ipynb",
+      "summary": "Both notebooks contain filename-based preparation and TensorFlow directory-generator pipelines for eight morphology classes."
+    },
+    {
+      "id": "image-vit",
+      "kind": "notebook_experiment",
+      "location": "image_vit.ipynb",
+      "summary": "Implements a Keras Vision Transformer and ten-trial random search. Recorded outputs show 523 training and 126 validation images, a 59.52% best validation result, two model-loading errors, and machine-specific paths."
+    },
+    {
+      "id": "final-notebook",
+      "kind": "notebook_experiment",
+      "location": "vit_image_classification_final.ipynb",
+      "summary": "Implements an augmented and class-weighted Vision Transformer experiment with eighty tuning trials and a 52,797,704-parameter final model. The recorded report has 46% accuracy and predicts only the 58-sample echinocyte class in the 126-image validation set."
+    },
+    {
+      "id": "tuner-artifacts",
+      "kind": "generated_training_artifacts",
+      "location": "my_dir/hparam_tuning",
+      "summary": "Ten completed tuner trial records all store a score of 0.460317462682724; trials 07 through 09 include HDF5 checkpoints totaling approximately 88 MB."
+    },
+    {
+      "id": "architecture-draft",
+      "kind": "architecture_diagram",
+      "location": "CompVisArchitectureDraft.drawio.pdf",
+      "summary": "A one-page draft connects a user and Streamlit interface to uploaded-image classification, image generation, loaded models, and output results."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The four available commits span 2024-04-26 through 2024-05-20 and are generic file-upload commits; no later maintenance evidence, tags, or additional local branches are present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "All locally tracked source and experiment metadata were inspected, and they strongly support classification as a coursework prototype. Confidence is reduced because the dataset is absent, the notebooks were not reproducibly re-run, evaluation methodology is flawed, committed tuner scores conflict with a notebook result, and live GitHub release metadata was inaccessible."
+  },
+  "limitations": [
+    "The dataset and its provenance were unavailable, so preprocessing assumptions and label quality could not be verified.",
+    "Notebook execution was not reproduced because required data and a pinned environment are absent.",
+    "Binary HDF5 checkpoints were inventoried but not loaded or behaviorally evaluated.",
+    "The clone was supplied under a depth-50 history constraint, so conclusions about long-term history rely on the four commits available locally.",
+    "Live GitHub archival, release, and remote-branch state could not be independently verified because GitHub API access failed.",
+    "No credential-like filenames were found in the inspected tree; secret values were not searched for or read."
+  ]
+}

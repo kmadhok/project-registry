@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/openclaw-scripts",
+  "analyzed_at": "2026-07-27T03:28:10Z",
+  "revision": "5df7ae2407e1372846ea6f07addff60b214a2cef",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and activity snapshot",
+      "README.md and .gitignore",
+      "complete tracked-file inventory and top-level structure",
+      "all five Python scripts under scripts/",
+      "command-line entry points and dependency usage",
+      "local branches and git log --oneline -20",
+      "tracked credential-filename inventory",
+      "tests, CI, manifest, notebook, demo, release, and deployment artifact presence",
+      "read-only syntax, help-entry-point, missing-credential, and in-memory SQLite verification"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency or packaging manifest",
+      "automated tests",
+      "CI workflows",
+      "notebooks",
+      "demos",
+      "release artifacts",
+      "deployment or scheduled-job configuration"
+    ],
+    "inaccessible": [
+      "live OpenAI, Serper, GitHub, Airtable, Postgres, and Redis verification requiring credentials or external services"
+    ],
+    "sampling_notes": "The checkout is shallow with depth 50, so only recent history was available; this repository contains only one visible commit. The repository is small enough that every tracked file and all 1,520 tracked lines were inspected rather than sampled. Credential values and the process environment were not inspected."
+  },
+  "stated_purpose": "Provide lightweight, standard-library Python health checks and stable JSON command contracts that detect broken Openclaw agent setup before autonomous runs.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository validates OpenAI, Serper, and GitHub credentials through small live HTTP requests, with configurable timeouts and optional warning behavior for missing credentials.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "api-checker"
+      ]
+    },
+    {
+      "statement": "It checks host readiness including Python version, required executables, free disk, RAM, CPU count, file-descriptor limits, writable paths, and Docker availability.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "autonomy-checker"
+      ]
+    },
+    {
+      "statement": "It checks GitHub, Airtable, SQLite, Postgres, and Redis integration readiness using HTTP requests, local queries, TCP connections, optional psql execution, and the Redis wire protocol.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "integration-checker"
+      ]
+    },
+    {
+      "statement": "A consolidated readiness command runs the credential, host, and integration checkers as subprocesses, accepts optional smoke commands, and emits one pass/fail JSON report.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "readiness-runner"
+      ]
+    },
+    {
+      "statement": "The JSON tool gateway supports GitHub identity and repository reads, Airtable record listing and creation, SQLite queries, and Postgres and Redis connectivity checks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tool-gateway"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The implementation is a flat collection of standalone Python command-line programs using only the standard library; there is no installable package or third-party dependency manifest.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Each specialized checker owns its argument parsing, result model, provider logic, JSON or human-readable rendering, and exit status.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "api-checker",
+        "autonomy-checker",
+        "integration-checker"
+      ]
+    },
+    {
+      "statement": "The readiness runner composes the three specialized checkers through subprocess JSON contracts rather than importing their functions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readiness-runner"
+      ]
+    },
+    {
+      "statement": "Credentials and connection settings are primarily supplied through named environment variables, while the tool gateway also permits selected command-line overrides.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "api-checker",
+        "integration-checker",
+        "tool-gateway"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The initial commit delivers five documented command-line tools totaling 1,404 lines of Python implementation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "All five Python files parsed successfully, every command accepted --help, missing-credential branches produced structured warnings, and the SQLite gateway returned its documented JSON envelope for an in-memory SELECT query.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-verification"
+      ]
+    },
+    {
+      "statement": "The README documents quick-start, component-specific, Docker-tuned, gateway, exit-code, and suggested cron/CI usage.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    },
+    {
+      "statement": "The tracked ignore policy excludes .env, and no tracked credential or secret file was found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "ignore-policy"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no automated tests or CI workflows to exercise success, failure, timeout, malformed-response, or platform-specific behavior.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "No checked-in cron, scheduler, deployment, container, or release artifact demonstrates the README's suggested pre-run operational use.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Live success paths for external providers and persistent data services were not verified during this read-only analysis.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-verification"
+      ]
+    },
+    {
+      "statement": "The repository has no explicit roadmap, TODO backlog, open issue, or open pull request describing future work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "github-snapshot",
+        "repository-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The SQLite gateway's default write guard accepts statements beginning with WITH or PRAGMA and opens the database without SQLite read-only mode, so its documented read-only default is not a strong write-prevention boundary.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tool-gateway"
+      ]
+    },
+    {
+      "statement": "The Redis checks extract only the host and port from REDIS_URL and issue a plaintext unauthenticated PING, so authenticated or TLS Redis deployments may be reported as unavailable despite valid configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "integration-checker",
+        "tool-gateway"
+      ]
+    },
+    {
+      "statement": "Supplying Airtable tokens or database URLs through gateway command-line overrides can expose credentials through shell history or process inspection.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tool-gateway"
+      ]
+    },
+    {
+      "statement": "Because the consolidated runner deliberately executes user-provided smoke commands through a shell, configuration that incorporates untrusted input could lead to command execution beyond the intended check.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readiness-runner"
+      ]
+    },
+    {
+      "statement": "A single initial commit and absence of automated verification make regressions and actual operational adoption difficult to assess.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "repository-tree",
+        "local-verification"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Add unit tests with mocked HTTP, socket, subprocess, filesystem, and environment boundaries, plus CLI contract tests for JSON shapes and exit codes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "api-checker",
+        "autonomy-checker",
+        "integration-checker",
+        "readiness-runner",
+        "tool-gateway"
+      ]
+    },
+    {
+      "statement": "Run those tests in a minimal CI workflow across the supported Python versions and operating systems.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Enforce SQLite read-only access with a read-only connection for the default mode and parser or authorization controls that cannot be bypassed by WITH or state-changing PRAGMA statements.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tool-gateway"
+      ]
+    },
+    {
+      "statement": "Either implement Redis authentication and TLS URL semantics or document that only unauthenticated plaintext Redis endpoints are supported.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "integration-checker",
+        "tool-gateway"
+      ]
+    },
+    {
+      "statement": "Prefer environment, file-descriptor, or protected configuration inputs for credentials and clearly mark command-line credential overrides as exposure-prone.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tool-gateway",
+        "ignore-policy"
+      ]
+    },
+    {
+      "statement": "If these checks are actively used before autonomous jobs, check in the actual scheduler or CI invocation and document the supported deployment environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "repository-tree"
+      ]
+    }
+  ],
+  "questions": [
+    "Which Openclaw autonomous jobs currently invoke these scripts, if any?",
+    "Are authenticated or TLS Redis deployments intended to be supported?",
+    "Is sqlite-query meant to provide a security boundary against writes or only an accidental-write safeguard?",
+    "Which Python versions and host operating systems are expected to be supported?",
+    "Should Airtable record creation and SQLite write mode remain in the same gateway as readiness-oriented read operations?"
+  ],
+  "evidence": [
+    {
+      "id": "github-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/openclaw-scripts",
+      "summary": "Owner-supplied snapshot identifies a private, unarchived repository on main, pushed 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Defines the project as standard-library readiness checks and stable JSON agent tools, documents all five scripts, and suggests running the consolidated checker before autonomous jobs."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains .gitignore, README.md, and five Python scripts; it has no tests, workflows, manifests, docs directory, notebooks, demos, deployment configuration, or release artifacts."
+    },
+    {
+      "id": "ignore-policy",
+      "kind": "configuration",
+      "location": ".gitignore",
+      "summary": "Ignores .env, .DS_Store, and node_modules; no tracked credential or secret file was identified."
+    },
+    {
+      "id": "api-checker",
+      "kind": "source",
+      "location": "scripts/check_api_keys.py",
+      "summary": "Implements timed live validation for OpenAI, Serper, and GitHub credentials with structured pass, warning, or failure results."
+    },
+    {
+      "id": "autonomy-checker",
+      "kind": "source",
+      "location": "scripts/check_autonomy_tools.py",
+      "summary": "Implements host checks for Python, commands, disk, memory, CPUs, file limits, writable paths, and Docker availability."
+    },
+    {
+      "id": "integration-checker",
+      "kind": "source",
+      "location": "scripts/check_integrations.py",
+      "summary": "Implements GitHub, Airtable, SQLite, Postgres, and Redis readiness checks using environment-provided connection settings."
+    },
+    {
+      "id": "readiness-runner",
+      "kind": "source",
+      "location": "scripts/check_openclaw_readiness.py",
+      "summary": "Runs the three checker programs as subprocesses, merges their JSON results, optionally executes shell smoke commands, and emits a consolidated status."
+    },
+    {
+      "id": "tool-gateway",
+      "kind": "source",
+      "location": "scripts/openclaw_tools.py",
+      "summary": "Provides JSON command contracts for GitHub, Airtable, SQLite, Postgres, and Redis actions, including mutating Airtable and optional SQLite operations."
+    },
+    {
+      "id": "local-verification",
+      "kind": "verification",
+      "location": "local read-only execution at revision 5df7ae2407e1372846ea6f07addff60b214a2cef",
+      "summary": "All five scripts passed AST parsing and --help execution; isolated missing-credential checks returned valid warning JSON, and an in-memory SQLite SELECT returned a successful gateway envelope. No live credential values or external success paths were exercised."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes one commit, 5df7ae2 Initial commit, dated 2026-07-11; local and origin branch references point to main."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The entire small implementation, documentation, tracked tree, and available history were inspected, and safe local execution confirmed syntax and several CLI contracts. Confidence is limited because there are no automated tests, CI or operational artifacts, live external success paths were not exercised, and the checkout is shallow."
+  },
+  "limitations": [
+    "The depth-50 shallow checkout limits historical and deleted-artifact analysis, although only one commit was visible.",
+    "Supplied GitHub metadata was not independently refreshed from the private remote.",
+    "No credential values or process-environment values were inspected.",
+    "External provider, database, and cache success paths could not be verified without credentials and reachable services.",
+    "No evidence establishes whether the scripts are currently invoked by an autonomous job."
+  ]
+}

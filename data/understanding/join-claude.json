@@ -1,0 +1,470 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/join-claude",
+  "analyzed_at": "2026-07-27T03:22:35Z",
+  "revision": "4c64e778406da2c1f2d3bb1322f15ee23833be92",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata",
+      "README.md, CLAUDE.md, prd.md, NEW_STRUCTURE_README.md, and dataset_recommendations.md",
+      "complete tracked-file inventory and top-level structure",
+      "requirements.txt, pytest.ini, .gitignore, .python-version, and all three dataset YAML configurations",
+      "safe_join_engine.py and pipelines/run_pipeline.py entry points",
+      "configuration, data-source, profiling, candidate, validation, LLM, reporting, and generic layer implementations",
+      "the collected pytest module and representative standalone BigQuery test scripts",
+      "headers and row counts from representative tracked CSV samples",
+      "counts and aggregate classifications from tracked JSONL results",
+      "CI, release, deployment, and ground-truth artifact presence checks",
+      "all available local branches and git log --oneline -20"
+    ],
+    "missing": [
+      "AGENTS.md",
+      "docs directory",
+      "CI workflows",
+      "release or deployment configuration",
+      "ground_truth_joins.json referenced by the TheLook configuration",
+      "repeatable lockfile or fully complete dependency manifest",
+      "automated tests for the configuration-driven four-layer pipeline"
+    ],
+    "inaccessible": [
+      "live BigQuery execution and billing evidence",
+      "live Gemini execution evidence",
+      "older history beyond the shallow checkout"
+    ],
+    "sampling_notes": "The checkout is shallow at depth 50 and therefore exposes recent history only; it contains a single commit. The repository has 111 tracked files totaling about 98 MB, including large CSV and JSONL artifacts. All documentation and principal entry points were inspected, representative components from both implementations were inspected, and generated outputs were aggregated, but large datasets and result files were sampled rather than read row by row. No credential-sensitive file contents were opened."
+  },
+  "stated_purpose": "Automate discovery and classification of valid join relationships across BigQuery tables using schema metadata, sampled values, similarity scoring, validation, and optional LLM reasoning.",
+  "observed_capabilities": [
+    {
+      "statement": "The configuration-driven pipeline can profile locally available CSV tables, prune incompatible cross-table column pairs, generate MinHash/LSH candidates, compute weighted overlap, containment, name, pattern, cardinality, and distribution scores, and classify validated relationships.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "unified-entry",
+        "generic-layers",
+        "datasource"
+      ]
+    },
+    {
+      "statement": "Dataset configurations are provided for baseball, Stack Overflow, and TheLook, with table selections, sampling settings, paths, scoring weights, and classification thresholds.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dataset-configs"
+      ]
+    },
+    {
+      "statement": "A separate BigQuery-oriented orchestrator implements metadata collection, table and column profiling, lexical and type-based candidate scoring, sampled validation, optional Gemini analysis, and Parquet reporting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "classic-entry",
+        "classic-components"
+      ]
+    },
+    {
+      "statement": "Tracked result artifacts demonstrate prior end-to-end experimentation: the TheLook validation file contains 78 records with 43 marked as passing, while the baseball validation file contains 2,514 records with 238 marked as passing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-results"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The PRD identifies historical-query mining, incremental profiling, foreign-key directionality, drift alerts, an interactive UI, and Cloud Run or Scheduler deployment as future enhancements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd"
+      ]
+    },
+    {
+      "statement": "The classic CLI exposes Pipeline B and dry-run options, but query-augmented behavior is not connected and dry-run currently returns from a TODO branch without estimating costs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "classic-entry"
+      ]
+    },
+    {
+      "statement": "The refactoring note still lists layer unification, generic downloading, data reorganization, and archival of duplicate scripts as pending, although generic implementations of layers 1\u20133 now exist.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "refactor-doc",
+        "generic-layers"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The newer entry point loads a Pydantic-validated YAML dataset configuration and sequentially invokes four generic layer modules that exchange JSONL files through a dataset-specific output directory.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "unified-entry",
+        "dataset-config-loader",
+        "generic-layers"
+      ]
+    },
+    {
+      "statement": "A shared DataSource abstraction has CSV and BigQuery implementations; helper logic prefers a configured local CSV directory when it exists and otherwise falls back to BigQuery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "datasource"
+      ]
+    },
+    {
+      "statement": "The repository retains an older parallel architecture centered on safe_join_engine.py, whose components write Parquet profiles, candidates, validations, and reports and optionally call Gemini.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "classic-entry",
+        "classic-components"
+      ]
+    },
+    {
+      "statement": "The coexistence of the classic orchestrator, generic layer pipeline, and numerous dataset-specific legacy scripts indicates an active migration rather than one canonical architecture.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "classic-entry",
+        "unified-entry",
+        "refactor-doc"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "Meaningful join-discovery logic exists for metadata pruning, approximate set matching, multi-signal ranking, fanout analysis, relationship classification, cost tracking, optional semantic review, and report compilation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generic-layers",
+        "datasource",
+        "classic-components"
+      ]
+    },
+    {
+      "statement": "The repository includes substantial local samples for three public-data domains and tracked intermediate and final outputs from TheLook and baseball experiments.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sample-data",
+        "generated-results"
+      ]
+    },
+    {
+      "statement": "All 61 tracked Python files passed a syntax-compilation check under Python 3.14.2.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "Generic implementations are now present for all four configured layers, extending beyond the layer-0-only status documented in the refactoring note.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generic-layers",
+        "refactor-doc"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The dependency manifest omits PyYAML and datasketch even though the unified configuration loader and MinHash layer import them.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "dataset-config-loader",
+        "generic-layers",
+        "verification"
+      ]
+    },
+    {
+      "statement": "Automated coverage is limited to six column-profiler tests; the standalone BigQuery scripts are outside the configured tests directory, and no tests cover the generic four-layer workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "Tests could not be executed in the analysis environment because pytest was unavailable, and a runtime import check failed immediately because yaml was not installed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "The BigQuery DataSource leaves fanout calculation unimplemented, so BigQuery-backed layer-3 classification falls back to zero fanout metrics.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "datasource",
+        "generic-layers"
+      ]
+    },
+    {
+      "statement": "The TheLook configuration points to data/thelook/raw, while tracked samples are under data/thelook_samples; the configured local path is absent and therefore triggers a BigQuery fallback.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dataset-configs",
+        "sample-data",
+        "datasource"
+      ]
+    },
+    {
+      "statement": "The TheLook configuration enables ground-truth evaluation but its referenced ground_truth_joins.json file is absent, and the available generated results do not establish the stated 80% detection target.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dataset-configs",
+        "prd",
+        "generated-results"
+      ]
+    },
+    {
+      "statement": "There is no CI, release, deployment, or operational monitoring evidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "README.md presents the engine as runnable, whereas CLAUDE.md calls it planning-phase and NEW_STRUCTURE_README.md describes only layer 0 as unified; these status descriptions no longer align with one another or the current source tree.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "claude-doc",
+        "refactor-doc",
+        "generic-layers"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The advertised cost controls are not consistently enforced: the generic BigQuery profiler performs full-table count and distinct-count queries without the classic CostTracker, while the classic CLI's dry-run path is unimplemented.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "datasource",
+        "classic-entry",
+        "classic-components"
+      ]
+    },
+    {
+      "statement": "All dataset YAML files contain a hard-coded billing-project identifier, reducing portability and creating a risk of queries being charged to an unintended project.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dataset-configs"
+      ]
+    },
+    {
+      "statement": "Approximately 98 MB of CSV samples and JSONL results are committed directly, increasing repository size and making future history growth likely if experiment outputs continue to be tracked.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "sample-data",
+        "generated-results"
+      ]
+    },
+    {
+      "statement": "Tracked samples expose fields named email, IP address, street address, profile URL, and post or comment text; any public release should review whether those rows are appropriate to redistribute even when sourced from public or synthetic datasets.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "sample-data"
+      ]
+    },
+    {
+      "statement": "Very low configured classification thresholds and examples where perfect layer-2 overlap is rejected by layer 3 indicate that score interpretation and validation behavior need calibration before analysts rely on recommendations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dataset-configs",
+        "generated-results",
+        "generic-layers"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Choose and document one canonical entry point, then either retire the parallel implementation and legacy scripts or clearly separate their supported use cases.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "classic-entry",
+        "unified-entry",
+        "refactor-doc"
+      ]
+    },
+    {
+      "statement": "Add PyYAML and datasketch to a reproducible dependency definition, replace the invalid or environment-specific .python-version value, and verify installation in a clean environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "verification"
+      ]
+    },
+    {
+      "statement": "Add unit and integration coverage for layers 0\u20133, including local fixture datasets, relationship classification edge cases, configuration path validation, and an optional credential-gated BigQuery smoke test.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tests",
+        "generic-layers",
+        "datasource"
+      ]
+    },
+    {
+      "statement": "Implement BigQuery fanout and genuine dry-run cost estimation before presenting the BigQuery workflow as cost-bounded.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "datasource",
+        "classic-entry",
+        "prd"
+      ]
+    },
+    {
+      "statement": "Create a reviewed ground-truth fixture and report precision, recall, and classification accuracy against it so the 80% target can be evaluated.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "prd",
+        "dataset-configs",
+        "generated-results"
+      ]
+    },
+    {
+      "statement": "Move bulky samples and generated outputs to a deliberate fixture or artifact strategy and review data fields before considering broader repository visibility.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "sample-data",
+        "generated-results"
+      ]
+    }
+  ],
+  "questions": [
+    "Which implementation is intended to be canonical: safe_join_engine.py or pipelines/run_pipeline.py?",
+    "Were the tracked baseball and TheLook results produced by the current generic modules or the legacy dataset-specific scripts?",
+    "What reviewed join set should serve as ground truth for precision and recall measurement?",
+    "Should BigQuery execution remain a supported path, or is the intended workflow local analysis of downloaded CSV samples?",
+    "Is the hard-coded billing project still appropriate, and should it be replaced by environment or user configuration?",
+    "Are the checked-in sample rows and generated results intended to remain in Git history?",
+    "Is Pipeline B still desired, or should the unused CLI mode and query-history plans be removed?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/join-claude",
+      "summary": "Supplied snapshot identifies a private, unarchived repository on main, pushed 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a runnable Safe Join Discovery Engine, five architectural layers, Pipeline A and planned Pipeline B, Parquet outputs, cost limits, and pytest usage."
+    },
+    {
+      "id": "claude-doc",
+      "kind": "development_documentation",
+      "location": "CLAUDE.md",
+      "summary": "Calls the repository planning-phase, describes the BigQuery and Gemini architecture, and presents several commands and components in future tense."
+    },
+    {
+      "id": "prd",
+      "kind": "product_requirements",
+      "location": "prd.md",
+      "summary": "Defines the intended BigQuery join-discovery workflow, 80% detection, 30-minute and $50 targets, unchecked acceptance criteria, and future query-mining, UI, drift, and deployment work."
+    },
+    {
+      "id": "refactor-doc",
+      "kind": "architecture_documentation",
+      "location": "NEW_STRUCTURE_README.md",
+      "summary": "Documents migration from duplicated dataset scripts to YAML-driven generic modules, but states only layer 0 is complete and layers 1\u20133 still require unification."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Contains 111 tracked files totaling about 98 MB: 61 Python files, 25 CSV files, 12 JSONL outputs, three YAML configurations, documentation, and no .github workflows or deploy/release manifests."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Lists BigQuery, Gemini, FAISS, sentence-transformers, pandas, Pydantic, dotenv, pytest, and utilities, but not the imported PyYAML or datasketch packages."
+    },
+    {
+      "id": "dataset-configs",
+      "kind": "configuration",
+      "location": "config/datasets",
+      "summary": "YAML configurations define baseball, Stack Overflow, and TheLook tables, sampling, layer thresholds, paths, ground-truth settings, and a shared hard-coded billing project."
+    },
+    {
+      "id": "dataset-config-loader",
+      "kind": "source",
+      "location": "config/dataset_config.py",
+      "summary": "Loads YAML into Pydantic models covering source, sampling, paths, four pipeline layers, and optional ground truth."
+    },
+    {
+      "id": "classic-entry",
+      "kind": "entry_point",
+      "location": "safe_join_engine.py",
+      "summary": "Implements the BigQuery-oriented orchestration path with profiling, candidate generation, validation, optional Gemini reasoning, and Parquet reporting; dry-run remains a TODO and Pipeline B is not behaviorally distinguished."
+    },
+    {
+      "id": "unified-entry",
+      "kind": "entry_point",
+      "location": "pipelines/run_pipeline.py",
+      "summary": "Loads a named dataset configuration and sequentially executes generic layers 0\u20133, exiting on the first layer failure."
+    },
+    {
+      "id": "generic-layers",
+      "kind": "source",
+      "location": "src/layer0, src/layer1, src/layer2, and src/layer3",
+      "summary": "Implements metadata pruning, MinHash/LSH candidate merging, multi-signal scoring, sampled validation, relationship classification, JSONL persistence, and optional ground-truth metrics."
+    },
+    {
+      "id": "datasource",
+      "kind": "source",
+      "location": "datasource.py and src/utils/datasource_helpers.py",
+      "summary": "Defines CSV and BigQuery data sources and local-first selection; CSV fanout is implemented, while BigQuery fanout raises NotImplementedError and BigQuery profiling uses full-table aggregate queries."
+    },
+    {
+      "id": "classic-components",
+      "kind": "source_sample",
+      "location": "src/profiling, src/candidates, src/validation, src/llm_reasoning, and src/reporting",
+      "summary": "Separate modules support BigQuery metadata and sampling, candidate scoring, cost tracking, validation, Gemini calls, FAISS caching, and report compilation."
+    },
+    {
+      "id": "tests",
+      "kind": "tests",
+      "location": "pytest.ini, tests/profiling/test_column_profiler.py, test_bigquery_connection.py, and test_two_tables.py",
+      "summary": "Pytest is configured to collect only tests/; that directory has six profiler tests, while root-level BigQuery scripts require external credentials and are not collected by the configured suite."
+    },
+    {
+      "id": "sample-data",
+      "kind": "data_sample",
+      "location": "data/",
+      "summary": "Tracked CSV samples cover baseball, Stack Overflow, and TheLook. Headers include join-related identifiers as well as email, IP address, street address, profile URL, and free-text fields; large files were not read row by row."
+    },
+    {
+      "id": "generated-results",
+      "kind": "generated_output",
+      "location": "layer0_*.jsonl, layer1_*.jsonl, layer2_*.jsonl, and layer3_*.jsonl",
+      "summary": "Tracked intermediates and results include 78 TheLook validation records with 43 passes and 2,514 baseball validation records with 238 passes; classifications include FK, many-to-many, one-to-one, and reject."
+    },
+    {
+      "id": "verification",
+      "kind": "verification",
+      "location": "local read-only analysis environment",
+      "summary": "All 61 Python files compiled syntactically under Python 3.14.2. Pytest was not installed, and a runtime import check failed on missing yaml before the suite could run."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes one commit, 4c64e77 dated 2026-07-11 with subject 'Initial commit'; main and origin/main point to the same revision."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, configurations, tracked samples, and generated results establish a substantive prototype and expose concrete gaps. Confidence is limited because dependencies are incomplete, tests could not run, no ground-truth artifact or CI evidence exists, external BigQuery and Gemini paths were not exercised, and the one-commit shallow history cannot establish sustained use."
+  },
+  "limitations": [
+    "The checkout is shallow at depth 50, although only one commit was available within that history.",
+    "Large CSV and JSONL artifacts were sampled by filenames, sizes, headers, counts, and aggregate classifications rather than inspected in full.",
+    "No live BigQuery or Gemini calls were made, so external correctness, cost, authentication, and runtime claims were not verified.",
+    "The test suite could not be executed because pytest and required runtime packages were unavailable.",
+    "The supplied GitHub snapshot had no issues or pull requests to provide additional owner context.",
+    "No secret values were inspected; no credential-sensitive files were found by filename in the checked-out tree."
+  ]
+}

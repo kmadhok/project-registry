@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/E-Commerce-Website",
+  "analyzed_at": "2026-07-27T03:17:57Z",
+  "revision": "98e5755a6257654cf71c87f5658391719780cf65",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub and registry metadata",
+      "empty README.md and absence of CLAUDE.md, AGENTS.md, and substantive docs beyond the ERD",
+      "complete tracked-file inventory and top-level structure",
+      "Flask entry point, application initialization, models, forms, and all route definitions",
+      "representative Jinja templates and CSS",
+      "both MySQL DDL and seed-data files, excluding credential-value reporting",
+      "ERD PDF metadata and extracted text",
+      "tracked SQLite database schema metadata without reading stored rows",
+      "dependency installation script and absence of a versioned dependency manifest",
+      "tests, CI, notebook, deployment, release-tag, and demo inventory",
+      "Python syntax via AST parsing of all five Python source files",
+      "all 31 locally visible commits, including the requested recent 20-commit log",
+      "local and remote-tracking branch inventory"
+    ],
+    "missing": [
+      "substantive README or setup documentation",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "versioned dependency manifest or lockfile",
+      "automated tests",
+      "CI workflows",
+      "container or deployment configuration",
+      "release tags or packaged artifacts",
+      "roadmap or current TODO documentation"
+    ],
+    "inaccessible": [
+      "live GitHub metadata, archival state, and any remote-only activity because api.github.com was unreachable",
+      "visual rendering of the ERD PDF because the read-only workspace prevented creation of a rendered image"
+    ],
+    "sampling_notes": "The checkout was supplied as a shallow, depth-50 clone, so history should be treated as recent-history evidence. Thirty-one commits are visible and .git/shallow is absent, suggesting the repository fits within that limit, but remote-only history and branches were not verified. The repository is small: all Python and DDL source was inspected, representative templates were read, and the remaining templates were inventoried. Binary profile images and compiled bytecode contents were not inspected."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The Flask application supports user registration, login, logout, account updates, and customer-versus-employee account types using Flask-Login, Flask-Bcrypt, Flask-WTF, and SQLAlchemy.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-core",
+        "forms-models",
+        "routes-auth"
+      ]
+    },
+    {
+      "statement": "Authenticated customers can place product orders and view their prior order lines, while the home page displays recently ordered products.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "routes-commerce",
+        "templates"
+      ]
+    },
+    {
+      "statement": "Users can browse and sort product reviews, add reviews with ratings from one to five, and view their own reviews.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "routes-reviews",
+        "forms-models",
+        "templates"
+      ]
+    },
+    {
+      "statement": "Employee-facing QA pages allow supervisors to assign products to employees and allow product assignments to be graded pass or fail or deleted.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "routes-qa",
+        "templates",
+        "ddl"
+      ]
+    },
+    {
+      "statement": "The tracked DDL can create and populate a six-table MySQL data model covering users, products, orders, order lines, reviews, and QA assignments.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ddl",
+        "erd"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The application is a server-rendered Flask project with a module-level application instance, Jinja templates, Bootstrap 4 assets loaded from CDNs, and a small custom stylesheet.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-core",
+        "templates"
+      ]
+    },
+    {
+      "statement": "SQLAlchemy reflects a configured MySQL schema at import time; the models explicitly define User_t and bind Order_t, Review_t, Product_t, Orderline_t, and QA_t from reflected metadata.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "forms-models",
+        "ddl"
+      ]
+    },
+    {
+      "statement": "Most routes use SQLAlchemy, but order-history, personal-review, and QA queries also create direct mysql.connector connections, producing two database-access styles in the same module.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "routes-commerce",
+        "routes-reviews",
+        "routes-qa"
+      ]
+    },
+    {
+      "statement": "The relational design links orders and reviews to users and products, models order lines with a composite key, and uses a self-referencing user supervisor relationship for employee QA assignment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ddl",
+        "erd"
+      ]
+    },
+    {
+      "statement": "The tracked SQLite database contains only generic user and post tables and does not match the active MySQL e-commerce model.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sqlite-schema",
+        "forms-models",
+        "ddl"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a multi-page prototype connecting authentication, ordering, reviews, employee supervision, and QA workflows to a coherent relational schema.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "routes-commerce",
+        "routes-reviews",
+        "routes-qa",
+        "ddl",
+        "templates"
+      ]
+    },
+    {
+      "statement": "The project includes both executable schema scripts with sample records and a one-page entity-relationship diagram.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ddl",
+        "erd"
+      ]
+    },
+    {
+      "statement": "All five tracked Python source files parse successfully under the available Python parser.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-check"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "README.md is empty, and the repository provides no documented purpose, database setup procedure, run instructions, configuration contract, or user workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Dependencies are represented only by unpinned pip and conda installation commands rather than a requirements file, environment definition, or lockfile.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies"
+      ]
+    },
+    {
+      "statement": "There are no automated tests, CI workflows, release tags, deployment artifacts, notebooks, or recorded runtime verification.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification-inventory",
+        "history"
+      ]
+    },
+    {
+      "statement": "Legacy department and project routes refer to forms and models that are neither imported nor defined in the current source, so those endpoints would raise errors when exercised.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "routes-legacy",
+        "forms-models"
+      ]
+    },
+    {
+      "statement": "Running the main application requires an externally configured MySQL database at module-import time; the mismatched tracked SQLite file is not a usable fallback for the implemented models.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "app-core",
+        "forms-models",
+        "sqlite-schema",
+        "ddl"
+      ]
+    },
+    {
+      "statement": "No repository evidence identifies desired future work or indicates that development continued after the 2021 implementation commits.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "metadata",
+        "tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A Flask secret and database connection credentials are hard-coded in tracked Python source; because the repository is public, they should be treated as exposed until proven otherwise.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-core",
+        "routes-database-config",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "The development entry point enables Flask debug mode, which would expose debugging behavior if reused unchanged outside a local environment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-core"
+      ]
+    },
+    {
+      "statement": "QA mutation endpoints require authentication but accept user and product identifiers from the URL without checking that the acting user is the assigned employee or authorized supervisor.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "routes-qa"
+      ]
+    },
+    {
+      "statement": "QA assignment, grading, and deletion routes permit GET requests to perform database mutations, increasing the risk of unintended or cross-site-triggered changes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "routes-qa"
+      ]
+    },
+    {
+      "statement": "Unpinned dependencies and imports from deprecated WTForms modules make successful installation with current package releases uncertain.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "forms-models"
+      ]
+    },
+    {
+      "statement": "Tracked Python 3.6, 3.7, and 3.8 bytecode, a mismatched tutorial-style SQLite database, and profile-image artifacts add stale generated state that can obscure the actual runtime requirements.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "sqlite-schema"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Owner review should confirm archival; the repository has no recent implementation activity or maintenance evidence and currently reads as completed or abandoned coursework.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata",
+        "readme",
+        "verification-inventory"
+      ]
+    },
+    {
+      "statement": "Immediately rotate any credential or signing value that might still be valid, remove hard-coded configuration from source, and document environment-variable names without committing their values.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "app-core",
+        "routes-database-config",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "If the prototype is revived, add a versioned dependency manifest, database initialization instructions, safe example configuration, and a smoke test covering registration, login, ordering, reviews, and QA.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "verification-inventory",
+        "routes-commerce",
+        "routes-reviews",
+        "routes-qa"
+      ]
+    },
+    {
+      "statement": "Consolidate database access behind SQLAlchemy, remove or repair the unrelated department and project endpoints, and delete stale SQLite and bytecode artifacts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "routes-database-config",
+        "routes-legacy",
+        "sqlite-schema",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Before any deployment, restrict all mutation routes to appropriate HTTP methods and enforce role, ownership, and supervisor authorization on QA operations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "routes-qa"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository a COMP453 database-course final project, and should it now be archived as coursework?",
+    "Are any of the tracked application or database credentials still valid, and have they been rotated?",
+    "Were the department and project routes intentionally retained from an earlier sample application, or should they be removed?",
+    "Was the application ever deployed or demonstrated against a shared MySQL database?",
+    "Should the ERD and expanded DDL be preserved as a reference artifact even if the application is archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "owner_supplied_github_metadata",
+      "location": "https://github.com/kmadhok/E-Commerce-Website",
+      "summary": "Supplied snapshot identifies a public main-branch repository with no description, open issues, or open pull requests; its last recorded push was 2022-07-28."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "README.md is a tracked zero-byte file."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The 57 tracked files include Flask source, 21 Jinja templates, CSS, profile images, two DDL files, an ERD PDF, a SQLite database, and compiled Python bytecode."
+    },
+    {
+      "id": "app-core",
+      "kind": "source",
+      "location": "src/run.py and src/flaskDemo/__init__.py",
+      "summary": "Defines a module-level Flask application with SQLAlchemy, Bcrypt, and Flask-Login integration; configuration values are tracked in source, and run.py starts the development server with debug enabled."
+    },
+    {
+      "id": "forms-models",
+      "kind": "source",
+      "location": "src/flaskDemo/forms.py and src/flaskDemo/models.py",
+      "summary": "Defines registration, login, order, review, QA, and account forms plus reflected SQLAlchemy mappings for six e-commerce tables."
+    },
+    {
+      "id": "routes-auth",
+      "kind": "source",
+      "location": "src/flaskDemo/routes.py:340",
+      "summary": "Implements registration, Bcrypt-based login, logout, and authenticated account updates."
+    },
+    {
+      "id": "routes-commerce",
+      "kind": "source",
+      "location": "src/flaskDemo/routes.py:14",
+      "summary": "Implements recent-order display, authenticated order creation, order-line persistence, and personal order-history queries."
+    },
+    {
+      "id": "routes-reviews",
+      "kind": "source",
+      "location": "src/flaskDemo/routes.py:39",
+      "summary": "Implements review listing, four sort modes, personal review display, and authenticated review creation."
+    },
+    {
+      "id": "routes-qa",
+      "kind": "source",
+      "location": "src/flaskDemo/routes.py:222",
+      "summary": "Implements supervisor assignment and employee grading/deletion of QA records; mutation URLs accept GET and POST and lack explicit per-record authorization checks."
+    },
+    {
+      "id": "routes-database-config",
+      "kind": "source",
+      "location": "src/flaskDemo/routes.py",
+      "summary": "Several routes establish direct MySQL connections using tracked connection settings in addition to the application's SQLAlchemy connection."
+    },
+    {
+      "id": "routes-legacy",
+      "kind": "source",
+      "location": "src/flaskDemo/routes.py:449",
+      "summary": "Contains department, project, and employee-assignment endpoints referencing undefined or unimported models and forms."
+    },
+    {
+      "id": "templates",
+      "kind": "user_interface",
+      "location": "src/flaskDemo/templates",
+      "summary": "Server-rendered Bootstrap pages expose Home, Reviews, Order, QA, Account, authentication, and related form workflows under the Pine Valley name."
+    },
+    {
+      "id": "ddl",
+      "kind": "database_schema",
+      "location": "ddl/project.ddl and ddl/project_added_reviews_and_users.ddl",
+      "summary": "MySQL DDL defines User_t, Product_t, Order_t, Orderline_t, QA_t, and Review_t with primary and foreign keys and includes sample records."
+    },
+    {
+      "id": "erd",
+      "kind": "design_document",
+      "location": "docs/project_erd.pdf",
+      "summary": "A one-page 2021 ERD depicts user/customer/employee roles, supervision, orders, order lines, products, reviews, and QA relationships."
+    },
+    {
+      "id": "sqlite-schema",
+      "kind": "database_artifact",
+      "location": "src/flaskDemo/site.db",
+      "summary": "Schema-only inspection found generic user and post tables that do not correspond to the active MySQL e-commerce tables."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_configuration",
+      "location": "src/imports.sh",
+      "summary": "An executable shell script contains unpinned pip and conda installation commands for Flask database, authentication, form, validation, and MySQL packages; no manifest or lockfile exists."
+    },
+    {
+      "id": "verification-inventory",
+      "kind": "verification_inventory",
+      "location": ".",
+      "summary": "No tests, GitHub Actions workflows, notebooks, containers, deployment files, release tags, or other repeatable verification artifacts were found."
+    },
+    {
+      "id": "static-check",
+      "kind": "static_verification",
+      "location": "src",
+      "summary": "AST parsing completed successfully for all five Python source files; dependencies and the required external database were not executed."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Thirty-one commits are locally visible, spanning 2021-04-19 through 2021-05-05; recent messages concern orders, QA, reviews, SQL queries, and route updates, with no later implementation commit."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The implementation, schema, templates, and local history consistently support classification as a meaningful Flask/MySQL e-commerce coursework prototype. Confidence is limited by the empty documentation, absent tests and deployment evidence, inability to run safely without external database configuration, and unavailable live GitHub metadata."
+  },
+  "limitations": [
+    "The application was not started because it imports and reflects an externally configured MySQL database and no safe reproducible environment is documented.",
+    "Live GitHub archival state, branches, issues, pull requests, Actions, and releases could not be independently refreshed because GitHub API access failed; supplied snapshot metadata was used instead.",
+    "The checkout was supplied with a depth-50 history constraint, so conclusions about older or remote-only history are limited even though all 31 locally visible commits were reviewed.",
+    "The ERD was inspected through metadata and text extraction but could not be rendered for visual verification in the read-only workspace.",
+    "Binary profile images and compiled Python bytecode were inventoried but not content-inspected.",
+    "No owner statement establishes whether the repository is coursework, abandoned, deployed elsewhere, or intentionally retained as a reference."
+  ]
+}

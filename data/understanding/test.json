@@ -1,0 +1,338 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/test",
+  "analyzed_at": "2026-07-27T03:33:42Z",
+  "revision": "1f9f0e84afc0f13aeef8f8492d2a0307e968e127",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "all three nested README files",
+      "complete tracked-file inventory and top-level structure",
+      "all three Poetry manifests and dependency lockfile metadata",
+      "all 16 tracked Python source files, including entry points and tools",
+      "Ollama model files and model-creation shell scripts",
+      "Jupyter notebook structure, execution counts, and output types",
+      "Excel workbook package structure without reading cell values",
+      "tests, CI, deployment, license, and credential-file presence checks",
+      "all five commits available through git log",
+      "local and remote branch references"
+    ],
+    "missing": [
+      "root README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "tests",
+      "CI workflows",
+      "deployment configuration",
+      "release artifacts",
+      "root license file",
+      ".gitignore",
+      ".env.example files referenced by the Markdown example READMEs",
+      "explicit roadmap or actionable TODO backlog"
+    ],
+    "inaccessible": [
+      "live GitHub metadata, including archival state, because api.github.com was unreachable",
+      "runtime verification requiring Ollama models, external APIs, credentials, or network access"
+    ],
+    "sampling_notes": "This is a small repository: all tracked Python source was syntax-parsed and the principal implementations were read. Large lockfiles were summarized rather than reviewed line by line; notebook outputs and workbook cell values were not inspected. The supplied checkout was described as shallow at depth 50, so history must be treated as recent-history sampling even though only five commits were available."
+  },
+  "stated_purpose": "The nested documentation presents the repository as a collection of CrewAI examples using local or OpenAI-compatible language models, principally for Markdown review and local stock analysis.",
+  "observed_capabilities": [
+    {
+      "statement": "A Markdown-review prototype scans a supplied file with PyMarkdown and asks a CrewAI agent to summarize the lint findings into actionable changes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "markdown-example"
+      ]
+    },
+    {
+      "statement": "Text-formatting prototypes use few-shot examples with locally hosted Ollama or OpenAI-compatible models to rewrite noisy consulting responses into shorter structured prose.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "formatting-prototypes",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "A stock-analysis crew coordinates research, financial-analysis, SEC-filing, and investment-advisor tasks using web search, Yahoo Finance news, SEC API data, embeddings, and a calculator tool.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "stock-example"
+      ]
+    },
+    {
+      "statement": "Setup scripts can pull Ollama base models and create CrewAI-oriented Llama 2, Llama 3, and Mistral model aliases.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ollama-setup"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The repository is a loose collection of independent scripts and three nested Poetry projects rather than one packaged application or shared library.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "manifests"
+      ]
+    },
+    {
+      "statement": "The examples connect CrewAI agents and LangChain tools to models exposed through an OpenAI-compatible endpoint at localhost:11434, while the stock workflow additionally depends on remote search and SEC services.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "markdown-example",
+        "formatting-prototypes",
+        "stock-example"
+      ]
+    },
+    {
+      "statement": "Formatting behavior is driven primarily by large examples embedded directly in Python and notebook cells; an Excel evaluation workbook is present but its loading code is commented out.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "formatting-prototypes",
+        "workbook",
+        "notebook"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains demonstrable implementations for three distinct agent workflows: Markdown review, example-guided text reformatting, and multi-agent stock research.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "markdown-example",
+        "formatting-prototypes",
+        "stock-example"
+      ]
+    },
+    {
+      "statement": "Each nested example includes a pinned Poetry lockfile, and the notebook records five executed code cells with outputs and no stored error result.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifests",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "All 16 tracked Python source files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-verification"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no automated tests, CI workflows, release artifacts, or deployment configurations to verify that the documented workflows still run reproducibly.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "static-verification"
+      ]
+    },
+    {
+      "statement": "The repository lacks root-level documentation explaining how the Markdown, formatting, notebook, workbook, and stock-analysis experiments relate to one another.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "readmes"
+      ]
+    },
+    {
+      "statement": "The formatting README duplicates the Markdown-review description even though its main entry point implements LLM-assisted string formatting, leaving that subproject inaccurately documented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readmes",
+        "formatting-prototypes"
+      ]
+    },
+    {
+      "statement": "Repository hygiene is incomplete: nine compiled __pycache__ files are tracked, basellama.py is empty, FormattingTools.py defines the same decorated function twice, and no .gitignore is present.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "formatting-prototypes"
+      ]
+    },
+    {
+      "statement": "The READMEs instruct users to copy .env.example, but no such template is tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readmes",
+        "credential-review"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The stock-analysis calculator passes model-supplied expressions directly to Python eval, allowing arbitrary code execution if an agent or prompt supplies malicious input.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "stock-example"
+      ]
+    },
+    {
+      "statement": "The stock workflow produces investment recommendations from external search results and filings without tests, source-validation controls, or documented financial-use disclaimers.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "stock-example",
+        "static-verification"
+      ]
+    },
+    {
+      "statement": "Dependencies and model integrations were pinned around the repository's June 2024 activity and may no longer match current CrewAI, LangChain, Ollama, or external API behavior.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifests",
+        "history"
+      ]
+    },
+    {
+      "statement": "Hard-coded company-specific consulting examples and the evaluation workbook may contain material that warrants privacy and ownership review before any public release.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "formatting-prototypes",
+        "workbook"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Treat this as a dormant experiment unless the owner still uses it; if retained, add a root README that identifies the supported workflow and clearly labels the other directories as historical examples.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "repository-tree",
+        "readmes"
+      ]
+    },
+    {
+      "statement": "Replace the calculator's eval call with a restricted arithmetic parser before running the stock-analysis crew against untrusted prompts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "stock-example"
+      ]
+    },
+    {
+      "statement": "Remove generated bytecode, add a .gitignore and non-secret environment template, deduplicate the formatting tool, and add at least smoke tests for each workflow selected for preservation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "formatting-prototypes",
+        "credential-review",
+        "static-verification"
+      ]
+    },
+    {
+      "statement": "Review the embedded consulting examples and workbook for confidentiality or ownership constraints before changing repository visibility or reusing the material publicly.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "formatting-prototypes",
+        "workbook",
+        "metadata"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the primary objective Markdown linting, consulting-response reformatting, local-LLM experimentation, or stock analysis?",
+    "Is any workflow still used, or should the repository be archived as a June 2024 experiment?",
+    "Are the company-specific examples and evaluation workbook safe to retain and potentially describe outside the private repository?",
+    "Was the advanced stock-analysis example imported from another project, and is its attribution or licensing documented elsewhere?",
+    "Which local model and dependency versions, if any, last completed each workflow successfully?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/test",
+      "summary": "Supplied snapshot identifies a private repository on main with no description, open issues, or open pull requests and a last push on 2024-06-19; archival state was not available."
+    },
+    {
+      "id": "readmes",
+      "kind": "documentation",
+      "location": "crew-ai-local-llm/*/README.md",
+      "summary": "Two duplicated READMEs describe Markdown syntax review through CrewAI; the advanced README describes running CrewAI locally with Ollama."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The 43 tracked files include 16 Python files, three nested examples, three lockfiles, Ollama setup files, a notebook, a workbook, nine compiled bytecode files, an empty basellama.py, and no root documentation, tests, CI, license, or gitignore."
+    },
+    {
+      "id": "markdown-example",
+      "kind": "source_code",
+      "location": "crew-ai-local-llm/crewai-simple-example",
+      "summary": "main.py constructs a CrewAI agent and task around a PyMarkdown scan tool, accepting a Markdown path from the command line."
+    },
+    {
+      "id": "formatting-prototypes",
+      "kind": "source_code",
+      "location": "outputformatting.py and crew-ai-local-llm/crewai-formatting",
+      "summary": "Several prototypes use embedded few-shot consulting examples with Ollama, ChatOpenAI-compatible local endpoints, LangChain prompts, or CrewAI tasks to reformat text."
+    },
+    {
+      "id": "stock-example",
+      "kind": "source_code",
+      "location": "crew-ai-local-llm/crewai-advanced-example",
+      "summary": "A three-agent financial crew combines search, Yahoo Finance news, SEC filing retrieval, embeddings, and a calculator whose implementation uses eval."
+    },
+    {
+      "id": "ollama-setup",
+      "kind": "configuration",
+      "location": "crew-ai-local-llm/setup",
+      "summary": "Three Modelfiles and shell scripts configure and create local CrewAI model aliases for Llama 2, Llama 3, and Mistral."
+    },
+    {
+      "id": "manifests",
+      "kind": "dependency_manifest",
+      "location": "crew-ai-local-llm/*/pyproject.toml and poetry.lock",
+      "summary": "The two Markdown-oriented projects depend on CrewAI, PyMarkdown, and Python 3.10-3.11; the stock project adds finance, SEC, vector-search, document-processing, and OpenAI/LangChain packages."
+    },
+    {
+      "id": "notebook",
+      "kind": "notebook",
+      "location": "outputformatting.ipynb",
+      "summary": "The notebook contains eight cells, including six code cells; five code cells have execution counts, three stored output items are present, and no stored error output was reported."
+    },
+    {
+      "id": "workbook",
+      "kind": "data_artifact",
+      "location": "crew-ai-local-llm/crewai-formatting/config 12 evaluation.xlsx",
+      "summary": "A 139 KB Excel workbook is tracked as a possible evaluation or few-shot data source; only its package structure was inspected, not cell values."
+    },
+    {
+      "id": "static-verification",
+      "kind": "verification",
+      "location": "repository-wide static inspection",
+      "summary": "All tracked Python source files parsed successfully, but no test suite, CI workflow, or safe offline end-to-end verification path exists."
+    },
+    {
+      "id": "credential-review",
+      "kind": "security_review",
+      "location": "tracked-file inventory and environment-variable references",
+      "summary": "No credential-named tracked files were found. Source expects environment-provided search and SEC API credentials, while the READMEs refer to absent .env.example files; no credential values were read."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Five available commits were made within approximately 50 minutes on 2024-06-19, mostly as bulk file uploads followed by notebook, requirements, and formatting-script additions."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The implementation, manifests, notebook metadata, complete tracked tree, and available history consistently support classification as a prototype collection. Confidence is limited by absent tests and CI, unavailable model/API runtime verification, uninspected workbook values, inaccessible live GitHub metadata, and recent-history-only clone constraints."
+  },
+  "limitations": [
+    "No workflow was executed because runtime behavior depends on local models, external services, network access, and credentials.",
+    "The workbook's cell values and stored notebook output text were intentionally not inspected.",
+    "Live GitHub archival state and any server-side branches beyond the local remote references could not be verified.",
+    "Dependency lockfiles were summarized rather than audited package by package.",
+    "The supplied checkout is documented as a depth-50 clone, so history conclusions are limited to the commits available locally."
+  ]
+}

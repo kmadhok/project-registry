@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Pandas",
+  "analyzed_at": "2026-07-27T03:28:18Z",
+  "revision": "74ec1bd9aa5504395eeaabce6c2c82850c466a75",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata and activity snapshot",
+      "README.md and .gitignore",
+      "complete four-file tracked repository inventory",
+      "all cells, code, execution metadata, and output types in both Jupyter notebooks",
+      "dependency imports and referenced data paths",
+      "local branches and all three available commits"
+    ],
+    "missing": [
+      "CLAUDE.md, AGENTS.md, and substantive project documentation",
+      "Resources/purchase_data.csv",
+      "Resources/schools_complete.csv",
+      "Resources/students_complete.csv",
+      "dependency manifest or environment lockfile",
+      "automated tests",
+      "CI workflows",
+      "releases or deployable artifacts"
+    ],
+    "inaccessible": [],
+    "sampling_notes": "The repository was supplied as a shallow, depth-50 checkout containing recent history only, so history beyond that boundary was not assumed available. The repository itself is small: all four tracked files, every cell in both notebooks, and all three available commits were inspected rather than sampled."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The repository contains two Python Jupyter notebook exercises that use pandas to analyze provided CSV datasets about game-item purchases and school performance.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "heroes-notebook",
+        "schools-notebook"
+      ]
+    },
+    {
+      "statement": "The purchasing notebook implements dataframe calculations for player counts, purchase totals, gender and age demographics, top spenders, and popular items.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "heroes-notebook"
+      ]
+    },
+    {
+      "statement": "The school notebook partially implements district-wide and per-school budget, score, and passing-rate calculations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schools-notebook"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "Starter instructions in the school notebook call for top and bottom school rankings, scores by grade, and performance breakdowns by spending, school size, and school type, but the corresponding code cells are empty.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schools-notebook"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The implementation consists of two independent, stateful notebooks that directly load relative CSV paths and perform pandas transformations in sequential cells.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "heroes-notebook",
+        "schools-notebook"
+      ]
+    },
+    {
+      "statement": "pandas is used in both notebooks and NumPy is additionally imported by the school notebook; there is no package, command-line entry point, service, database, or reusable source module.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "heroes-notebook",
+        "schools-notebook"
+      ]
+    },
+    {
+      "statement": "Execution outputs are embedded in the notebooks, but the three referenced source CSV files are not tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "heroes-notebook",
+        "schools-notebook"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "All 11 code cells in the purchasing notebook have stored execution results and none stores an exception.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "heroes-notebook"
+      ]
+    },
+    {
+      "statement": "The notebooks demonstrate practical dataframe operations including CSV ingestion, joins, grouping, aggregation, binning, sorting, and formatted summary tables.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "heroes-notebook",
+        "schools-notebook"
+      ]
+    },
+    {
+      "statement": "The repository was assembled in three commits on 2022-04-09, with each notebook added in a separate upload commit.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The notebooks cannot be independently rerun from the checkout because none of their referenced Resources CSV files is present.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "heroes-notebook",
+        "schools-notebook"
+      ]
+    },
+    {
+      "statement": "The school analysis is incomplete: 9 of its 27 code cells are empty, and a stored ValueError prevents construction of the per-school summary dataframe.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schools-notebook"
+      ]
+    },
+    {
+      "statement": "Several purchasing calculations do not match their instructions: age purchase metrics use dataset-wide scalars instead of grouped calculations, percentage calculation aligns incompatible indexes, and the profitable-items section sorts by purchase count rather than total purchase value.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "heroes-notebook"
+      ]
+    },
+    {
+      "statement": "The eight-byte README supplies only the heading 'Pandas', and there are no setup instructions, dependency versions, tests, or automated validation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Stored notebook outputs may create an impression of validated completion even though some calculations are incorrect, one notebook stores an exception, and the absent inputs prevent reproduction.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "heroes-notebook",
+        "schools-notebook",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Unpinned pandas and NumPy dependencies make reproducibility and compatibility increasingly uncertain as library behavior changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "heroes-notebook",
+        "schools-notebook",
+        "history"
+      ]
+    },
+    {
+      "statement": "The repository appears dormant because all available commits occurred within minutes in April 2022, the supplied snapshot reports no subsequent push activity, and there are no open issues or pull requests indicating active work.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Archive the repository unless the notebooks remain useful as personal coursework reference.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata",
+        "readme",
+        "schools-notebook"
+      ]
+    },
+    {
+      "statement": "If retained as a reference, document the exercise and data provenance, provide reproducible access to distributable inputs, pin dependencies, correct the purchasing calculations, complete or clearly label the unfinished school analysis, and rerun the notebooks without stored errors.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "heroes-notebook",
+        "schools-notebook"
+      ]
+    }
+  ],
+  "questions": [
+    "Were these notebooks completed for a specific course or bootcamp assignment?",
+    "Are the referenced Resources CSV files available and permitted to be redistributed?",
+    "Does the owner expect to revisit these exercises, or can the repository be archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Pandas",
+      "summary": "Public repository on main with no description, no open issues or pull requests, and last reported push activity on 2022-04-10 UTC."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Eight-byte README containing only the heading '# Pandas' and no purpose, setup, or usage guidance."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains README.md, a generic Python .gitignore, and two notebooks; it contains no Resources directory, manifest, source package, tests, workflow, or credential-named file."
+    },
+    {
+      "id": "heroes-notebook",
+      "kind": "jupyter_notebook",
+      "location": "HeroesOfPymoli_starter.ipynb",
+      "summary": "Purchasing-analysis notebook with 19 markdown and 11 executed code cells using pandas. It stores output for every code cell, but several age and profitability calculations do not implement their stated requirements."
+    },
+    {
+      "id": "schools-notebook",
+      "kind": "jupyter_notebook",
+      "location": "PyCitySchools_starter.ipynb",
+      "summary": "School-analysis notebook with 18 markdown and 27 code cells using pandas and NumPy; 17 code cells were executed, 9 are empty, later assignment sections are unimplemented, and the stored school-summary execution ends with a duplicate-label ValueError."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Only three commits are available, all authored on 2022-04-09: an initial commit followed by two generic 'Add files via upload' commits."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Every tracked file and available commit was inspected, so the repository's contents and incompleteness are clear. Confidence is not high because the source datasets are absent, the notebooks could not be independently rerun, and the supplied checkout is limited to recent depth-50 history."
+  },
+  "limitations": [
+    "The referenced CSV datasets were absent, so stored notebook results and runtime compatibility could not be independently verified.",
+    "The checkout was supplied with a depth-50 recent-history limit; older history outside that window, if any, was not analyzed.",
+    "The GitHub activity assessment relies on the supplied registry snapshot rather than a broader historical issue, branch, release, or traffic record.",
+    "No meaningful stated purpose exists in repository documentation, so the coursework interpretation is a supported inference from notebook instructions and implementation."
+  ]
+}

@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/remote-workstation",
+  "analyzed_at": "2026-07-27T03:31:15Z",
+  "revision": "48a3691c021e387220f778baafb0fd9d1d11d1e0",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub and registry metadata",
+      "README.md",
+      "all tracked documentation under docs/ and mac-handoff/",
+      "complete tracked-file inventory and top-level structure",
+      "skills/pc-remote/SKILL.md",
+      "both executable shell scripts under skills/pc-remote/scripts/",
+      "dependency manifests, tests, workflows, notebooks, demos, tags, and release-artifact inventory",
+      "local and remote branch inventory",
+      "all 16 commits available in git history",
+      "shell syntax and whitespace checks"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "dependency manifest or lockfile",
+      "automated test suite",
+      "CI workflow",
+      "release tags or packaged releases",
+      "stored acceptance-test output for the pc-remote scripts"
+    ],
+    "inaccessible": [
+      "current live state of the Windows workstation, Tailscale network, Mac SSH configuration, and installed skill symlink",
+      "independent execution evidence for remote commands and Claude delegation at the analyzed revision"
+    ],
+    "sampling_notes": "The repository is small, so all 11 tracked files and all 16 locally available commits were inspected. The checkout was supplied under a depth-50 recent-history constraint; local Git reports it as non-shallow, but analysis remains limited to the available history and does not assume inaccessible older history. Live remote-control scripts were not executed because analysis is read-only and those scripts can change the workstation."
+  },
+  "stated_purpose": "Configure a Windows PC as a persistent Mac-accessed coding workstation and provide a Mac-side skill for quote-safe command execution and autonomous Claude task delegation over Tailscale SSH.",
+  "observed_capabilities": [
+    {
+      "statement": "The pc-exec.sh entry point transports commands through base64 and supports execution in either WSL Ubuntu bash or Windows PowerShell, with timeout handling and remote exit-code propagation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "pc-exec"
+      ]
+    },
+    {
+      "statement": "The pc-claude.sh entry point can ship a prompt to the Windows machine, invoke its Windows-native Claude executable, persist the report on the PC, fetch it to the Mac, and retry report retrieval by task identifier.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "pc-claude"
+      ]
+    },
+    {
+      "statement": "The skill documentation routes quick probes to pc-exec.sh and multi-step or judgment-heavy workstation tasks to pc-claude.sh.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "skill"
+      ]
+    },
+    {
+      "statement": "The repository records a real-PTY verification in which interactive SSH entered WSL tmux and a process survived detachment, demonstrating the core session-persistence workflow at the time of that test.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "resolution",
+        "history"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The Mac-side SSH configuration and a drop-and-reconnect acceptance test remain documented as unchecked client-side steps.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "mac-handoff",
+        "resolution"
+      ]
+    },
+    {
+      "statement": "Optional cleanup remains for a stale Tailscale node, while Mosh roaming is intentionally deferred unless the workstation moves to a Windows/WSL networking configuration that can support it cleanly.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "mac-handoff"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The system has two paths: interactive SSH passes through a Windows OpenSSH DefaultShell wrapper into WSL bash and tmux, while non-interactive automation uses the Mac-side pc-remote skill over the same ssh pc alias.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "resolution",
+        "skill",
+        "pc-exec"
+      ]
+    },
+    {
+      "statement": "pc-claude.sh composes pc-exec.sh rather than implementing a second transport; it stores task and report files under a dedicated Windows directory and copies reports into the Mac user's model-reports directory.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "pc-claude"
+      ]
+    },
+    {
+      "statement": "The implementation is deliberately machine-specific, depending on the ssh host alias pc, WSL distro Ubuntu, fixed Windows and WSL users, and a fixed path to claude.exe.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "skill",
+        "pc-exec",
+        "pc-claude",
+        "ssh-config"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The investigation preserved its initially incorrect PowerShell diagnosis, explicitly superseded it, and documented the real-PTY evidence that distinguished tmux terminal rendering from an actual shell failure.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "diagnosis",
+        "resolution"
+      ]
+    },
+    {
+      "statement": "The repository progressed from workstation setup documentation through a reviewed design and implementation plan to executable remote-command and Claude-delegation scripts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "root-readme",
+        "design",
+        "plan",
+        "history"
+      ]
+    },
+    {
+      "statement": "Follow-up commits hardened missing-file handling, timeout prerequisites, UTF-8 report transport, mid-run SSH failure reporting, and documentation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "pc-exec",
+        "pc-claude"
+      ]
+    },
+    {
+      "statement": "Both executable scripts pass bash syntax validation at the analyzed revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "syntax-check"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no automated test suite or CI workflow for argument parsing, cross-shell encoding, sentinel extraction, failure handling, or report decoding.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "syntax-check"
+      ]
+    },
+    {
+      "statement": "The repository contains acceptance-test instructions but no durable output proving that the pc-exec.sh and pc-claude.sh test matrix passed at the analyzed revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "design",
+        "plan",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The implementation plan retains unchecked task boxes even though its corresponding files and follow-up fixes were committed, leaving plan status stale.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "plan",
+        "history"
+      ]
+    },
+    {
+      "statement": "Installation depends on manually creating an absolute symlink and separately configuring SSH; there is no bootstrap or validation command for a fresh Mac.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "skill",
+        "plan",
+        "ssh-config"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Delegated tasks invoke Claude with --dangerously-skip-permissions, giving generated actions full authority on the workstation if an unsafe or misunderstood prompt is submitted.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "pc-claude",
+        "skill"
+      ]
+    },
+    {
+      "statement": "Task prompts and reports persist on both machines without an implemented retention or redaction policy, so delegated work could leave sensitive operational content behind.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "pc-claude",
+        "design"
+      ]
+    },
+    {
+      "statement": "Hard-coded usernames, workstation paths, Tailscale addresses, and topology details make the repository unsuitable for public release without sanitization and reduce portability to another workstation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "root-readme",
+        "mac-handoff",
+        "skill",
+        "pc-claude",
+        "ssh-config"
+      ]
+    },
+    {
+      "statement": "The Mac-side executor requires a command named timeout and only advises installing coreutils; availability under that exact command name depends on the Mac's PATH configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "pc-exec"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Run and record the complete acceptance matrix against the current workstation: WSL and Windows execution, quoting preservation, exit codes, unreachable and timeout handling, Claude round-trip, and report refetch.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "design",
+        "plan",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Add local tests using a controlled SSH stub plus CI shell linting so encoding, parsing, and failure branches can be verified without contacting the real workstation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "pc-exec",
+        "pc-claude",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Replace or supplement the manual symlink and SSH setup with an idempotent installer that validates prerequisites, including timeout or gtimeout availability, without embedding credentials.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "skill",
+        "pc-exec",
+        "ssh-config"
+      ]
+    },
+    {
+      "statement": "Reconsider full-autonomy delegation as the default and document report retention, cleanup, and secret-handling boundaries before broader use.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "pc-claude",
+        "skill"
+      ]
+    },
+    {
+      "statement": "Update the implementation-plan checkboxes or mark the plan historical so current completion status is unambiguous.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "plan",
+        "history"
+      ]
+    }
+  ],
+  "questions": [
+    "Is the pc-remote skill currently installed and used from the Mac, or was the repository only exercised during the July 2026 setup session?",
+    "Did every documented pc-exec.sh and pc-claude.sh acceptance test pass after the final hardening commits?",
+    "Should full-autonomy Claude delegation remain the default, or should it require an explicit per-run opt-in?",
+    "How long should task prompts and reports be retained on the Mac and PC?",
+    "Has the remaining Mac-side disconnect-and-resume test been completed against the actual workstation?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "registry_github_snapshot",
+      "location": "https://github.com/kmadhok/remote-workstation",
+      "summary": "Owner-supplied snapshot identifies a private main-branch repository pushed on 2026-07-12 with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "root-readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Initial workstation handoff specification covering Tailscale SSH, WSL, tmux persistence, keepalives, Mosh, power management, and verification gates."
+    },
+    {
+      "id": "mac-handoff",
+      "kind": "operational_documentation",
+      "location": "mac-handoff/README.md",
+      "summary": "Records the configured Windows and WSL state, remaining Mac setup and acceptance steps, and the decision not to wire up Mosh on Windows 10 WSL2."
+    },
+    {
+      "id": "diagnosis",
+      "kind": "diagnostic_record",
+      "location": "mac-handoff/DIAGNOSIS-ssh-lands-in-powershell.md",
+      "summary": "Preserves a detailed but explicitly superseded diagnosis caused by interpreting non-interactive tmux and ConPTY output as a PowerShell login."
+    },
+    {
+      "id": "resolution",
+      "kind": "verification_record",
+      "location": "mac-handoff/RESOLUTION.md",
+      "summary": "Records real-PTY verification that the wrapper entered WSL, created or attached tmux main, and preserved a sleep process after detachment; current live state was not independently rechecked."
+    },
+    {
+      "id": "ssh-config",
+      "kind": "configuration",
+      "location": "mac-handoff/ssh-config-snippet.conf",
+      "summary": "Defines the machine-specific Mac SSH alias and keepalive settings used by the scripts."
+    },
+    {
+      "id": "design",
+      "kind": "design_specification",
+      "location": "docs/specs/2026-07-11-pc-remote-skill-design.md",
+      "summary": "Approved design for base64-protected Windows and WSL execution plus autonomous Claude delegation, including error handling and six live acceptance tests."
+    },
+    {
+      "id": "plan",
+      "kind": "implementation_plan",
+      "location": "docs/plans/2026-07-11-pc-remote-skill.md",
+      "summary": "Three-task implementation plan containing complete script drafts and live test instructions; its checklist remains unchecked despite subsequent implementation commits."
+    },
+    {
+      "id": "skill",
+      "kind": "agent_skill",
+      "location": "skills/pc-remote/SKILL.md",
+      "summary": "Defines triggers, routing rules, workstation constraints, full-autonomy behavior, and the absolute-symlink installation caveat."
+    },
+    {
+      "id": "pc-exec",
+      "kind": "source_code",
+      "location": "skills/pc-remote/scripts/pc-exec.sh",
+      "summary": "Executable Bash transport for WSL or Windows commands using base64 encoding, SSH, timeout handling, and exit-code sentinels."
+    },
+    {
+      "id": "pc-claude",
+      "kind": "source_code",
+      "location": "skills/pc-remote/scripts/pc-claude.sh",
+      "summary": "Executable Bash orchestration for prompt transfer, unrestricted Windows-native Claude invocation, UTF-8 report persistence, and later report retrieval."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains 11 documentation, configuration, skill, and script files; it has no manifest, automated tests, CI workflows, notebooks, demos, release artifacts, or credential-like tracked filenames."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "All 16 available commits span one focused implementation session on 2026-07-11, progressing from setup and diagnosis through implementation and several review-driven fixes; HEAD and origin/main agree."
+    },
+    {
+      "id": "syntax-check",
+      "kind": "static_verification",
+      "location": "bash -n skills/pc-remote/scripts/pc-exec.sh; bash -n skills/pc-remote/scripts/pc-claude.sh; git diff --check",
+      "summary": "Both scripts pass Bash syntax validation and the repository passes Git's whitespace-error check; no live remote commands were executed."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository is small and was inspected completely; source, design, operational documentation, and commit history agree on the implemented architecture. Confidence is limited because the scripts have no automated verification artifacts, the final remote acceptance results are not stored, and the external Mac, Windows, Tailscale, SSH, and Claude environment could not be checked read-only."
+  },
+  "limitations": [
+    "The current workstation and Mac configuration were not accessed, so documented machine state may have changed since 2026-07-11.",
+    "Remote scripts were not executed because they can create files, run commands, and launch an unrestricted coding agent on the Windows PC.",
+    "No stored test transcript proves the final script revision passed its documented live acceptance matrix.",
+    "The supplied analysis context describes a depth-50 clone; only the 16 available commits were analyzed, even though local Git reports the checkout as non-shallow.",
+    "GitHub issue and pull-request conclusions rely on the supplied snapshot rather than a fresh network query.",
+    "No secret values were read; the review was limited to tracked filenames and ordinary source and documentation."
+  ]
+}

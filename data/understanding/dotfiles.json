@@ -1,0 +1,376 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/dotfiles",
+  "analyzed_at": "2026-07-27T03:16:41Z",
+  "revision": "5c81729e5937d787c924e47e18a872472e90375d",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub metadata snapshot",
+      "CLAUDE.md",
+      "docs/linkedin-mcp-bug-postmortem.md",
+      "complete tracked-file inventory and top-level structure",
+      "all hook implementations and hook configuration",
+      "all model-adapter implementations",
+      "settings.json structure and non-secret configuration",
+      "frontmatter and roles across all 18 agent definitions",
+      "roles and workflow structure across all 13 command definitions",
+      ".gitignore credential and generated-state exclusions",
+      "shell, Python, and JSON syntax",
+      "local branches, working-tree state, and git log --oneline -20"
+    ],
+    "missing": [
+      "README",
+      "AGENTS.md",
+      "installation or bootstrap script",
+      "dependency manifest or version lock",
+      "automated tests",
+      "CI workflows",
+      "release artifacts",
+      "notebooks or demos"
+    ],
+    "inaccessible": [
+      "external skills and hooks referenced through absolute user-specific paths",
+      "external Codex, Gemini, Claude, Synthetic.new, MCP, browser, and macOS runtime behavior",
+      "credential files and secret values, which were intentionally not inspected",
+      "remote history beyond the shallow clone"
+    ],
+    "sampling_notes": "This is a shallow clone with depth 50, so history analysis is limited to recent available commits. Only four commits are present, including the apparent initial commit, but full remote history was not independently proven. The repository is compact: every tracked filename, primary script, policy document, and documentation file was inspected; repetitive long-form agent and command prompts were structurally sampled after reviewing all names, descriptions, and roles. Credential-bearing configuration was limited to keys and types, and no secret values were read."
+  },
+  "stated_purpose": "A personal Claude Code configuration bundle for defining agent and slash-command workflows, enforcing global operating policies, running lifecycle hooks, and routing work through external model CLIs.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository defines 18 specialized Claude agents covering BMAD product delivery, requirements, implementation, debugging, optimization, review, testing, and external-model operation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "agents-commands"
+      ]
+    },
+    {
+      "statement": "Thirteen slash-command prompts orchestrate consultation, planning, implementation, debugging, bug fixing, documentation, optimization, refactoring, review, testing, and requirements-driven workflows.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "agents-commands"
+      ]
+    },
+    {
+      "statement": "Executable hooks block a small set of dangerous shell-command patterns, log up to 500 characters of submitted prompts into session files, and inject a non-blocking Codex-delegation reminder for implementation-shaped requests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "hooks"
+      ]
+    },
+    {
+      "statement": "Model adapters provide Codex execution, review, and computer-use modes; read-only Gemini research with concurrency and timeout controls; and Synthetic.new-backed implementation or review modes with scoped credentials and report generation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "model-adapters"
+      ]
+    },
+    {
+      "statement": "The checked-in settings configure plugins, lifecycle hooks, voice behavior, tool permissions, and a LinkedIn MCP server entry for the owner's Claude environment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "settings"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The LinkedIn MCP postmortem proposes registering the server through the runtime-supported path, verifying client attachment rather than only daemon health, and updating the policy, operations skill, and preflight checks accordingly.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "linkedin-postmortem"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "CLAUDE.md acts as the global policy layer, specifying reasoning discipline, persistence, testing expectations, communication rules, and a routing policy that favors external workers for defined work classes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "claude-policy"
+      ]
+    },
+    {
+      "statement": "Markdown files under agents and commands form the declarative workflow layer: commands coordinate multi-step activities while agent definitions provide specialist roles and output contracts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "agents-commands"
+      ]
+    },
+    {
+      "statement": "Python hooks and JSON event mappings form the automation layer, responding to prompt submission and tool lifecycle events.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "hooks",
+        "settings"
+      ]
+    },
+    {
+      "statement": "Shell adapters and the Codex app-server driver form an external-worker layer that validates arguments, applies permission modes, invokes model CLIs, retries eligible failures, and writes timestamped Markdown reports.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "model-adapters"
+      ]
+    },
+    {
+      "statement": "The repository depends on substantial machine-local infrastructure outside version control, including installed CLIs, plugins, skills, hooks, authentication, macOS permissions, and absolute paths under the owner's home directory.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "settings",
+        "model-adapters"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a substantive, integrated set of policies, workflows, hooks, and executable model adapters rather than only aspirational dotfile placeholders.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "claude-policy",
+        "agents-commands",
+        "hooks",
+        "model-adapters"
+      ]
+    },
+    {
+      "statement": "The adapters include concrete safeguards such as sandbox-value whitelisting, scoped provider credentials, read-only Gemini instructions, concurrency slots, timeout handling, retry limits, and no automatic retry for side-effecting computer-use sessions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "model-adapters"
+      ]
+    },
+    {
+      "statement": "Recent commits deliberately refined routing policy and added a hook to reinforce Codex delegation, demonstrating purposeful maintenance rather than a single untouched import.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "git-history"
+      ]
+    },
+    {
+      "statement": "All checked-in shell scripts passed bash syntax validation, all five Python files parsed successfully, both JSON files parsed successfully, and git diff --check reported no whitespace errors.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "syntax-verification"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no README, installation procedure, dependency declaration, or bootstrap script explaining how to deploy this configuration or satisfy its external requirements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There are no automated tests or CI workflows for hook matching, dangerous-command detection, adapter argument handling, report generation, or configuration validity.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "syntax-verification"
+      ]
+    },
+    {
+      "statement": "CLAUDE.md mandates an HTTP LinkedIn MCP configuration, while settings.json contains a command/arguments/environment-shaped LinkedIn entry, and the postmortem says the existing invariant was based on a wrong diagnosis and still needs updating.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "claude-policy",
+        "settings",
+        "linkedin-postmortem"
+      ]
+    },
+    {
+      "statement": "Numerous settings hooks refer to absolute owner-specific paths and external files absent from the repository, so the initial commit's description of the configuration as portable is not supported by the current tree alone.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "settings",
+        "git-history",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "settings.json contains duplicate Stop and SubagentStop hook commands, with no documentation indicating whether repeated execution is intentional.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "settings"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The combination of automatic permission mode, skipped permission warnings, unrestricted Bash allowance, computer-use file and command auto-approval, and an all-app default consent pattern creates a broad side-effect surface if prompts or connected applications are untrusted.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "settings",
+        "model-adapters"
+      ]
+    },
+    {
+      "statement": "The pre-Bash safety hook only performs literal substring checks for six patterns, so command variations or other destructive operations can bypass it; it should not be treated as a complete safety boundary.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "hooks"
+      ]
+    },
+    {
+      "statement": "The contradictory LinkedIn MCP policy, configuration shape, and postmortem could cause operators to restart or reconfigure the wrong component while the client remains unattached.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "claude-policy",
+        "settings",
+        "linkedin-postmortem"
+      ]
+    },
+    {
+      "statement": "Machine-specific absolute paths and undeclared CLI or plugin versions can make behavior fail or drift when the configuration is restored on another machine.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "settings",
+        "model-adapters",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Prompt and model-output reports may contain sensitive working context even though their generated locations are gitignored, so local retention and access controls still matter.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "hooks",
+        "model-adapters",
+        "gitignore"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Reconcile CLAUDE.md, settings.json, and the LinkedIn postmortem around the runtime actually in use, then add a client-attachment check as the success criterion.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "claude-policy",
+        "settings",
+        "linkedin-postmortem"
+      ]
+    },
+    {
+      "statement": "Add a concise README and bootstrap or validation command documenting installation location, required CLIs and plugins, authentication variables, macOS permissions, generated directories, and restoration steps.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "settings",
+        "model-adapters"
+      ]
+    },
+    {
+      "statement": "Replace owner-specific absolute hook paths with configurable roots or checked-in components, and remove or document duplicate hook registrations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "settings"
+      ]
+    },
+    {
+      "statement": "Add focused tests for hook classification and command blocking, adapter argument and permission handling, JSON validity, and mocked app-server protocol events, then run them in CI.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "hooks",
+        "model-adapters",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Review the permissive settings and computer-use defaults with the owner, narrowing automatic approvals and application consent where unattended access is unnecessary.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "settings",
+        "model-adapters"
+      ]
+    }
+  ],
+  "questions": [
+    "Is this repository deployed by symlink, manual copy, or an untracked bootstrap process?",
+    "Which Claude runtime is authoritative for the LinkedIn MCP integration, and is the checked-in settings entry current?",
+    "Are the duplicate Stop and SubagentStop hook registrations intentional?",
+    "Should machine-specific skill and hook dependencies be included here, parameterized, or documented as prerequisites?",
+    "Are the automatic permission and all-application computer-use defaults intentionally accepted for daily operation?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/dotfiles",
+      "summary": "Supplied snapshot identifies a private, unarchived repository on main with no description, no open issues or pull requests, and a latest push on 2026-07-16."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The revision tracks 43 files: CLAUDE.md, 18 agent prompts, 13 command prompts, one postmortem, four hook scripts plus hook JSON, four model-adapter files, settings.json, and .gitignore. It has no README, manifest, tests, CI, release configuration, notebook, or demo."
+    },
+    {
+      "id": "claude-policy",
+      "kind": "policy_document",
+      "location": "CLAUDE.md",
+      "summary": "Defines mandatory reasoning, safety, exploration, persistence, testing, communication, external-model routing, and a LinkedIn MCP HTTP invariant."
+    },
+    {
+      "id": "agents-commands",
+      "kind": "workflow_definitions",
+      "location": "agents/ and commands/",
+      "summary": "Markdown definitions provide specialist agents and orchestrated slash-command workflows for product delivery, requirements, coding, debugging, optimization, testing, review, and documentation."
+    },
+    {
+      "id": "hooks",
+      "kind": "automation_source",
+      "location": "hooks/",
+      "summary": "Contains prompt logging, literal dangerous-command blocking, implementation-routing reminders, a deprecated no-op spec hook, and event mappings for prompt and Bash activity."
+    },
+    {
+      "id": "settings",
+      "kind": "configuration",
+      "location": "settings.json",
+      "summary": "Configures automatic permissions, broad allowed tools, plugins, voice, lifecycle hooks, a LinkedIn MCP entry, repeated hook registrations, and multiple absolute owner-specific dependencies. Secret values were not inspected."
+    },
+    {
+      "id": "model-adapters",
+      "kind": "integration_source",
+      "location": "model-adapters/",
+      "summary": "Executable wrappers integrate Codex, Gemini, and Synthetic.new-backed Claude models, including permission selection, report generation, retries, concurrency control, and a JSON-RPC computer-use driver."
+    },
+    {
+      "id": "linkedin-postmortem",
+      "kind": "operational_documentation",
+      "location": "docs/linkedin-mcp-bug-postmortem.md",
+      "summary": "Documents that the observed LinkedIn failure was client-side non-registration rather than daemon disconnection, retracts an earlier FastMCP diagnosis, proposes runtime-specific registration paths, and lists policy and preflight updates that remain necessary."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes four commits from 2026-07-11: an initial configuration import followed by policy trimming, stronger Codex-default routing language, and a routing-enforcement hook. HEAD and origin/main both resolve to 5c81729."
+    },
+    {
+      "id": "syntax-verification",
+      "kind": "local_verification",
+      "location": "bash -n, Python ast.parse, jq empty, and git diff --check",
+      "summary": "All three shell adapters passed syntax checking, all five Python files parsed, both JSON files parsed, and the clean checkout had no whitespace errors."
+    },
+    {
+      "id": "gitignore",
+      "kind": "security_configuration",
+      "location": ".gitignore",
+      "summary": "Excludes common credential, environment, private-key, session, log, cache, report, backup, and machine-state paths; the tracked inventory contains no credential-named files."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository's purpose, components, and recent maintenance are well supported by complete local source inspection and syntax validation. Confidence is reduced because there are no automated tests, CI runs, setup documentation, or executable runtime evidence, and several essential integrations live outside the repository."
+  },
+  "limitations": [
+    "The depth-50 shallow clone limits historical conclusions even though only four commits are visible and the earliest is labeled as the initial commit.",
+    "The supplied GitHub snapshot was used for visibility, push timing, issue, and pull-request state; remote GitHub state was not independently refreshed.",
+    "External model CLIs, plugins, MCP services, runtime logs, macOS permissions, and absolute-path hooks were not executed.",
+    "Syntax validation does not prove that workflows operate correctly against current external CLI or protocol versions.",
+    "Secret and credential values were intentionally not read or summarized."
+  ]
+}

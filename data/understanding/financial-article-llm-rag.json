@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Financial-Article-LLM-RAG",
+  "analyzed_at": "2026-07-27T03:18:37Z",
+  "revision": "0088bc3981da6c62887123451ce0292c02e051c2",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata snapshot",
+      "README.md",
+      "complete tracked-file inventory and top-level structure",
+      "all seven tracked Python source files",
+      "requirements_final.txt",
+      "local branch, remote, tag, and working-tree state",
+      "all three available commits, including git log --oneline -20 and commit file statistics",
+      "static Python syntax and local-module reference checks",
+      "tracked credential-filename check without reading credential-file values"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs or architecture documentation",
+      "helper_functions.py required by rag_pipeline.py",
+      "tests",
+      "CI workflows",
+      "notebooks or demos",
+      "deployment configuration",
+      "release tags",
+      ".gitignore",
+      "license"
+    ],
+    "inaccessible": [
+      "live GitHub metadata because api.github.com was unreachable",
+      "runtime verification requiring external API credentials and services",
+      "remote state beyond the supplied GitHub snapshot and locally available refs"
+    ],
+    "sampling_notes": "The repository is small, so every tracked file was inspected. The working copy was described as a shallow clone with depth 50 and recent-history scope; local Git reports it as non-shallow and exposes only three commits, but remote history beyond the supplied snapshot was not independently verified."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The Streamlit entry point defines a stock portfolio interface that can select a ticker, request recent matching articles, display Finnhub quote and basic-financial data, and retain state within the user session.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app",
+        "market-data"
+      ]
+    },
+    {
+      "statement": "The source defines an article-analysis path that accepts a NewsAPI result or custom URL, uses an OpenAI-backed ScrapeGraph scraper to extract content, and asks a Gemini model to summarize it.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app",
+        "news-fetch",
+        "scraper",
+        "rag"
+      ]
+    },
+    {
+      "statement": "The source defines article question answering by rewriting each question with OpenAI, retrieving article chunks from a temporary Chroma vector index, and streaming a Gemini-generated response into the chat interface.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app",
+        "query-rewrite",
+        "rag",
+        "vector-state"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "app.py is the composition root and Streamlit UI; it delegates news retrieval, scraping, RAG construction, query rewriting, and session cleanup to separate single-purpose Python modules.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The intended data flow is ticker selection to NewsAPI and Finnhub retrieval, article URL to ScrapeGraph and OpenAI extraction, article chunks to Gemini embeddings and a temporary Chroma store, then rewritten questions to a LlamaIndex query engine using Gemini.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "app",
+        "market-data",
+        "news-fetch",
+        "scraper",
+        "query-rewrite",
+        "rag"
+      ]
+    },
+    {
+      "statement": "Each analyzed article receives a temporary persistent Chroma directory, and the session cleanup helper deletes and recreates vector-store paths when replacing prior data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "rag",
+        "vector-state"
+      ]
+    }
+  ],
+  "maturity": "scaffold",
+  "accomplishments": [
+    {
+      "statement": "The repository assembles UI, financial/news retrieval, LLM-assisted scraping, summarization, retrieval, and conversational answering into one compact application design.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app",
+        "tree"
+      ]
+    },
+    {
+      "statement": "A fully version-pinned dependency snapshot and basic environment setup instructions were committed alongside the implementation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "requirements"
+      ]
+    },
+    {
+      "statement": "All seven committed Python files pass static AST parsing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-checks"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The committed application cannot import successfully as-is because rag_pipeline.py imports chunking and Gemini loader functions from helper_functions, but no such tracked module exists.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "rag",
+        "tree",
+        "static-checks"
+      ]
+    },
+    {
+      "statement": "There are no tests, CI workflows, demos, notebooks, deployment artifacts, releases, or execution evidence proving that the primary workflow has run successfully from this revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "history",
+        "static-checks"
+      ]
+    },
+    {
+      "statement": "The README provides dependency and credential setup notes but does not explain the product, give an application launch command, document architecture, or describe expected behavior and limitations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    },
+    {
+      "statement": "The custom-URL path constructs an article record without source metadata, while the analysis view later accesses that field directly, creating a likely runtime failure for custom articles.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "app"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Multiple modules print loaded API credential variables to standard output, which can expose secrets in terminal or hosted-service logs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-review"
+      ]
+    },
+    {
+      "statement": "News retrieval places the NewsAPI credential in the request URL, increasing its potential exposure through HTTP diagnostics, proxies, or URL logging.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "news-fetch",
+        "security-review"
+      ]
+    },
+    {
+      "statement": "The application logs extracted article content, user questions, rewritten questions, and generated responses at debug level, creating privacy and log-volume risks if it is deployed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app",
+        "scraper",
+        "query-rewrite",
+        "security-review"
+      ]
+    },
+    {
+      "statement": "The 201-package frozen dependency snapshot is broad for the repository's size and has no automated update or vulnerability-checking workflow, making reproducibility and maintenance increasingly fragile as it ages.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "requirements",
+        "tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "The last available activity consists of the initial upload and README edits in February 2025, with no open issues or pull requests in the supplied snapshot, so there is no evidence of continued maintenance.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "metadata",
+        "history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Restore the missing helper_functions implementation or replace its imports with tracked equivalents, then add an import-level smoke test before treating the application as runnable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "rag",
+        "static-checks"
+      ]
+    },
+    {
+      "statement": "Remove all credential printing, avoid credential-bearing request URLs where the provider supports header authentication, add a credential-safe .gitignore and example configuration, and review logging before any deployment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-review",
+        "news-fetch",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Add deterministic tests around NewsAPI filtering, custom-URL article records, session cleanup, and RAG setup, with external services mocked or isolated behind adapters.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "app",
+        "news-fetch",
+        "vector-state",
+        "static-checks"
+      ]
+    },
+    {
+      "statement": "Document the launch command, external-service requirements, architecture, data handling, and known limitations, and reduce the dependency file to intentional runtime requirements with a repeatable lock process.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "requirements"
+      ]
+    },
+    {
+      "statement": "If development will not resume, preserve the repository as an archived experiment rather than presenting it as a working financial-analysis application.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata",
+        "static-checks"
+      ]
+    }
+  ],
+  "questions": [
+    "Was helper_functions.py accidentally omitted from the initial upload, and is its original implementation still available?",
+    "Was this application ever run successfully outside the repository, and are there screenshots or evaluation results that could verify the intended workflow?",
+    "Is the project meant to be resumed as a maintained tool, retained as an experiment, or formally archived?",
+    "Were the credential-printing statements temporary debugging code, and could any historical execution logs still contain exposed credentials?",
+    "Should extracted third-party article text and user questions be sent to both OpenAI and Google services under the intended data-handling policy?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata_snapshot",
+      "location": "https://github.com/kmadhok/Financial-Article-LLM-RAG",
+      "summary": "Public repository on main with no description, no open issues or pull requests in the supplied snapshot, and last recorded push on 2025-02-06."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Twenty-two-line setup note covering a virtual environment, dependency installation, browser and NLTK setup, and required environment-variable names; it contains no purpose, launch, architecture, or usage explanation."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Nine tracked files comprise one README, one pinned requirements file, and seven Python modules; no helper_functions module, tests, workflows, docs, deployment files, .gitignore, or license are present."
+    },
+    {
+      "id": "app",
+      "kind": "source",
+      "location": "app.py",
+      "summary": "Streamlit composition root implementing portfolio selection, news and market-data actions, article selection, analysis, summary display, and streamed article Q&A."
+    },
+    {
+      "id": "market-data",
+      "kind": "source",
+      "location": "app.py",
+      "summary": "Finnhub integration performs symbol lookup and fetches quotes and basic company financial metrics for the selected ticker."
+    },
+    {
+      "id": "news-fetch",
+      "kind": "source",
+      "location": "fetch_urls_newsapi.py",
+      "summary": "Requests popular NewsAPI articles from the preceding ten days and retains articles whose titles contain the supplied stock symbol."
+    },
+    {
+      "id": "scraper",
+      "kind": "source",
+      "location": "scraper_llm.py",
+      "summary": "Configures a headless SmartScraperGraph using an OpenAI model to extract full article content from a selected URL."
+    },
+    {
+      "id": "query-rewrite",
+      "kind": "source",
+      "location": "query_rewritting.py",
+      "summary": "Uses a LlamaIndex OpenAI chat client to rewrite user questions for stock-news retrieval before querying the article index."
+    },
+    {
+      "id": "rag",
+      "kind": "source",
+      "location": "rag_pipeline.py",
+      "summary": "Defines Gemini-backed summarization and a LlamaIndex/Chroma retrieval pipeline with 512-unit chunks and a custom article-analysis prompt, but imports required helpers from an absent module."
+    },
+    {
+      "id": "vector-state",
+      "kind": "source",
+      "location": "vector_store.py and streamlit_actions.py",
+      "summary": "Implements deletion and recreation of vector-store directories plus Streamlit session-state cleanup between analyzed articles."
+    },
+    {
+      "id": "requirements",
+      "kind": "dependency_manifest",
+      "location": "requirements_final.txt",
+      "summary": "Contains 201 exact package pins, including Streamlit, LlamaIndex, ChromaDB, OpenAI, Google Gemini, ScrapeGraphAI, Finnhub, Playwright, NLTK, and many transitive packages."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 0088bc3981da6c62887123451ce0292c02e051c2",
+      "summary": "The available history contains three commits: one bulk source upload on 2025-02-05 and two README commits on 2025-02-06; main matches the locally cached origin/main and no tags are present."
+    },
+    {
+      "id": "static-checks",
+      "kind": "static_analysis",
+      "location": "local checkout at 0088bc3981da6c62887123451ce0292c02e051c2",
+      "summary": "All seven Python files parse successfully, but local import analysis confirms that helper_functions is referenced and absent; runtime execution was not attempted because the required module and external credentials are unavailable."
+    },
+    {
+      "id": "security-review",
+      "kind": "security_review",
+      "location": "README.md and tracked Python modules",
+      "summary": "No credential file is tracked, but several modules print credential variables, the news client places a credential in a request URL, debug logging captures content and prompts, and no .gitignore is present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Every tracked file and all available commits were inspected, and the source provides strong evidence for the intended architecture and the missing-module startup blocker. Confidence is limited because there are no tests or execution artifacts, runtime depends on several external services, and live GitHub state could not be queried."
+  },
+  "limitations": [
+    "No runtime verification was possible because a required tracked module is missing and the workflow requires external credentials and network services.",
+    "The supplied GitHub snapshot does not state archival status, releases, or other branches, and live GitHub access failed.",
+    "The analysis can establish implemented code paths but cannot prove output quality, retrieval accuracy, scraper reliability, financial-data correctness, or historical successful use.",
+    "Credential-file values were not inspected; only tracked filenames, configuration requirements, and unsafe handling patterns in source were reviewed.",
+    "History analysis is limited to the three commits available in the provided depth-50 checkout."
+  ]
+}

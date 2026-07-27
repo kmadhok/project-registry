@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/AutoResearch",
+  "analyzed_at": "2026-07-27T03:11:40Z",
+  "revision": "1f2a7ae3f7cffeda0827f6d42a733dff4ed616a7",
+  "analysis_scope": {
+    "inspected": [
+      "supplied registry and GitHub metadata snapshot",
+      "README.md, autoscraping.md, program.md, and RALPH_IMPLEMENTATION_STATUS.md",
+      "complete tracked-file inventory and top-level structure",
+      "pyproject.toml, .python-version, dependency lock presence, schema, targets, and ignore configuration",
+      "loop.py, scraper.py, evaluate.py, HTTP infrastructure, response analyzer, and circuit breaker",
+      "all test modules, fake agent, fixture roles, and notebook cell inventory",
+      "local branches, tags, generated-output directories, credential-filename inventory, and git status",
+      "git log --oneline -20 and statistics for every available commit"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "CI workflows",
+      "release tags or deployable artifacts",
+      "committed results.tsv, run logs, scrape output, or progress chart",
+      "deployment or scheduled-operation configuration"
+    ],
+    "inaccessible": [
+      "live private GitHub state beyond the supplied snapshot, including the current archival flag, releases, checks, and any branches not present in the shallow clone"
+    ],
+    "sampling_notes": "The checkout is shallow with depth 50, so historical conclusions are limited to the three available commits. The repository is small: all 33 tracked files were inventoried, and all substantive source, documentation, and tests were inspected. The generated HTML fixtures and uv.lock were not reviewed line by line."
+  },
+  "stated_purpose": "Provide a Codex-driven autonomous experiment loop that improves one web scraper by editing scraper.py, executing and scoring each hypothesis, and retaining only score-improving commits.",
+  "observed_capabilities": [
+    {
+      "statement": "The CLI can initialize isolated Git worktree sessions, bootstrap an HTML cache, run bounded cached or live optimization iterations, and report session status.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "loop",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Each iteration prompts Codex with the target contract and recent results, rejects changes outside scraper.py, compiles and executes the scraper, scores its output, and keeps or resets the resulting commit.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "loop",
+        "iteration-schema"
+      ]
+    },
+    {
+      "statement": "The evaluator scores record yield, required and optional field coverage, type castability, uniqueness, and observed HTTP block rate using fixed weights.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "evaluation"
+      ]
+    },
+    {
+      "statement": "The included Books to Scrape baseline extracts 40 fixture-backed records with required title, price, currency, and availability fields, while deliberately withholding already-computed rating and URL candidates from its output.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "scraper",
+        "scraper-tests"
+      ]
+    },
+    {
+      "statement": "SmartClient combines deterministic disk caching, adaptive per-domain delays, proxy selection, browser-header rotation, response block classification, retries, statistics, and optional Playwright fetching.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "infra",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "Agent responses are analyzed for structured RALPH_STATUS fields and completion signals, which feed a dual-condition loop exit gate and subsequent prompt feedback.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "loop",
+        "response-analyzer"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The implementation-status document lists circuit-breaker integration, resumable session continuity, API-call limiting, monitoring, and broader integration and end-to-end testing as pending work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ralph-status"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "Human-controlled strategy and target configuration are separated from the agent-editable scraper and from frozen orchestration, evaluation, schema, and HTTP infrastructure.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "program",
+        "loop"
+      ]
+    },
+    {
+      "statement": "loop.py is the orchestration entry point; it creates per-session worktrees and generated run artifacts, invokes Codex, delegates fetching and parsing to scraper.py, and calls evaluate.py before committing or rolling back experiments.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "loop",
+        "scraper",
+        "evaluation"
+      ]
+    },
+    {
+      "statement": "The architecture is intentionally reusable for other scraping targets through targets.py, program.md, and a new baseline scraper, although only the Books to Scrape campaign is implemented and fixture-tested here.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "targets",
+        "scraper-tests"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains an end-to-end autonomous experimentation harness rather than only a specification or generated scaffold.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "loop",
+        "evaluation",
+        "scraper"
+      ]
+    },
+    {
+      "statement": "Thirty test functions cover evaluator behavior, cached fixture parsing, HTTP defense components, browser-mode boundaries, loop keep/discard/crash flows, forbidden edits, timeouts, response analysis, and the standalone circuit breaker.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests",
+        "scraper-tests",
+        "ralph-tests"
+      ]
+    },
+    {
+      "statement": "The analysis notebook provides code for summarizing experiment outcomes, improvements, and progress plots from a generated results.tsv file.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No committed experiment history, scrape result, run log, or progress visualization demonstrates that the autonomous workflow has completed a real campaign.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-artifacts",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The circuit-breaker implementation is imported only by its standalone test script and is not constructed or consulted by loop.py.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "circuit-breaker",
+        "loop",
+        "ralph-tests"
+      ]
+    },
+    {
+      "statement": "There is no CI, release, deployment, scheduling, or monitoring configuration to establish repeatable operational use.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "The baseline intentionally omits all optional output fields even though it already computes candidate values for them, leaving the checked-in scraper below the evaluator's attainable score.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "scraper",
+        "evaluation"
+      ]
+    },
+    {
+      "statement": "Documentation calls the Ralph-enhanced system production-grade while simultaneously recording missing circuit-breaker integration, continuity, monitoring, and enhanced testing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ralph-status"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Codex runs in full-auto mode before changed paths are checked; the post-execution Git diff guard proves file-scope cleanup but does not prove that command, network, or other side effects were constrained during execution.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "loop",
+        "program"
+      ]
+    },
+    {
+      "statement": "The autonomous loop lacks the stronger circuit-breaker safeguard described in the status document because that component is not integrated into the runtime path.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "circuit-breaker",
+        "loop",
+        "ralph-status"
+      ]
+    },
+    {
+      "statement": "README setup requires OPENAI_API_KEY, but .gitignore has no .env pattern; this increases accidental credential-commit risk even though no credential file is currently tracked.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "ignore-security"
+      ]
+    },
+    {
+      "statement": "Live-mode scores depend on an external website and block-detection heuristics, so fixture-backed success alone would not establish reliable behavior against changing or protected targets.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "targets",
+        "infra",
+        "tests"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Confirm whether the latest commit's explicit archive intent is final; if so, archive the repository with a short note that it is a scraper-autoresearch prototype and leave the current implementation unchanged.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history"
+      ]
+    },
+    {
+      "statement": "If development resumes, integrate the existing circuit breaker into run_loop and add tests proving that repeated no-progress, repeated-error, and permission-denial conditions halt agent execution.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "circuit-breaker",
+        "loop",
+        "ralph-status"
+      ]
+    },
+    {
+      "statement": "Run and preserve one reproducible cached campaign plus a controlled live validation, recording dependency versions, scores, and artifacts so the primary workflow has execution evidence.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "generated-artifacts",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Add .env and common credential-file patterns to .gitignore before any further local API-key setup.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "ignore-security"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the July 11 commit intended to precede permanent GitHub archival, and has that archival action been completed?",
+    "Was an autonomous cached or live campaign ever run successfully outside the repository, and are its results worth preserving?",
+    "Should the unintegrated circuit breaker and Ralph status work remain as reference code or be completed?",
+    "Is the framework expected to support targets beyond Books to Scrape, or was it a one-off autoresearch experiment?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "registry_github_snapshot",
+      "location": "kmadhok/AutoResearch",
+      "summary": "Owner-supplied snapshot identifies a private main-branch repository pushed on 2026-07-11 with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes the autonomous edit-run-score-keep/discard loop, prerequisites, CLI, evaluation model, exit conditions, operating modes, and adaptation workflow."
+    },
+    {
+      "id": "program",
+      "kind": "agent_strategy",
+      "location": "program.md",
+      "summary": "Restricts the inner agent to scraper.py, prioritizes optional Books to Scrape fields, and defines the RALPH_STATUS response convention."
+    },
+    {
+      "id": "ralph-status",
+      "kind": "implementation_status",
+      "location": "RALPH_IMPLEMENTATION_STATUS.md",
+      "summary": "Marks response analysis, dual-condition exit logic, and a standalone circuit breaker complete while listing breaker integration, session continuity, rate limiting, monitoring, and enhanced testing as pending."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "pyproject.toml",
+      "summary": "Defines Python 3.12+, scraping and analysis dependencies, optional Playwright browser support, pytest development support, and a Hatch-built autoscrape package."
+    },
+    {
+      "id": "targets",
+      "kind": "configuration",
+      "location": "targets.py",
+      "summary": "Configures two Books to Scrape pages, a 40-record seven-field schema, runtime and delay bounds, caching, and disabled-by-default browser automation."
+    },
+    {
+      "id": "loop",
+      "kind": "primary_source",
+      "location": "loop.py",
+      "summary": "Implements session worktrees, Codex invocation, post-run edit-scope validation, compilation, execution, scoring, commit retention or reset, live validation, result logging, and bounded exit conditions."
+    },
+    {
+      "id": "iteration-schema",
+      "kind": "json_schema",
+      "location": "schemas/codex_iteration.schema.json",
+      "summary": "Constrains the inner agent's final result to a description, hypothesis, risk level, and expected score effect."
+    },
+    {
+      "id": "scraper",
+      "kind": "primary_source",
+      "location": "scraper.py",
+      "summary": "Implements the Books to Scrape baseline using SmartClient and BeautifulSoup; required fields are emitted while computed rating, image URL, and detail URL candidates are removed before output."
+    },
+    {
+      "id": "evaluation",
+      "kind": "primary_source",
+      "location": "evaluate.py",
+      "summary": "Implements the six-component weighted score and resilient loading of scrape JSON and SmartClient statistics."
+    },
+    {
+      "id": "infra",
+      "kind": "source_package",
+      "location": "infra/",
+      "summary": "Provides HTTP caching, requests or Playwright fetching, adaptive delays, proxy health management, browser-header rotation, retries, block classification, and request statistics."
+    },
+    {
+      "id": "response-analyzer",
+      "kind": "source_module",
+      "location": "lib/response_analyzer.py",
+      "summary": "Parses RALPH_STATUS blocks and classifies completion indicators, exit signals, work type, no-work patterns, test-only behavior, and errors."
+    },
+    {
+      "id": "circuit-breaker",
+      "kind": "source_module",
+      "location": "lib/circuit_breaker.py",
+      "summary": "Implements a persistent CLOSED, OPEN, and HALF_OPEN breaker for no progress, repeated errors, output decline, and permission failures, but is not referenced by loop.py."
+    },
+    {
+      "id": "tests",
+      "kind": "test_suite",
+      "location": "tests/",
+      "summary": "Contains evaluator, infrastructure, browser-mode, and autonomous-loop tests, including mocked keep, discard, crash, forbidden-edit, and timeout flows."
+    },
+    {
+      "id": "scraper-tests",
+      "kind": "test_fixtures",
+      "location": "tests/test_scraper.py and tests/fixtures/",
+      "summary": "Two saved listing pages support assertions that the parser finds 40 records with normalized required fields and recognizes star ratings."
+    },
+    {
+      "id": "ralph-tests",
+      "kind": "standalone_test_script",
+      "location": "test_ralph_components.py",
+      "summary": "Exercises response analysis and the standalone persistent circuit breaker, including cooldown recovery."
+    },
+    {
+      "id": "notebook",
+      "kind": "analysis_notebook",
+      "location": "analysis.ipynb",
+      "summary": "Contains Python 3.12 cells for loading results.tsv, summarizing outcomes, ranking kept improvements, and plotting experiment progress."
+    },
+    {
+      "id": "generated-artifacts",
+      "kind": "artifact_inventory",
+      "location": "output/, cached_pages/, results.tsv, run.log, progress.png",
+      "summary": "Only .gitkeep placeholders are present; experiment history and generated run artifacts are ignored and absent from the checkout."
+    },
+    {
+      "id": "ignore-security",
+      "kind": "security_configuration",
+      "location": ".gitignore",
+      "summary": "Ignores generated results, worktrees, proxy configuration, caches, and output, but does not ignore .env files; no credential-named file is tracked."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The 33-file tracked tree contains Python source, tests, two HTML fixtures, documentation, a notebook, and dependency metadata, with no CI, deployment, or release configuration."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow clone exposes three commits: the March 12 scaffold and cache fix, followed by 1f2a7ae on 2026-07-11 titled 'Save latest changes before archiving'; only main/origin-main and no tags are present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, documentation, fixtures, and extensive test code agree that this is a substantive autonomous-scraping prototype, and the unintegrated breaker and absent artifacts are directly observable. Confidence is limited because read-only constraints prevented executing the write-heavy tests or workflow, no CI or run artifacts provide independent verification, live private GitHub state was unavailable, and history is shallow."
+  },
+  "limitations": [
+    "Tests and the end-to-end workflow were not executed because they create temporary repositories, caches, commits, and output files, which conflicts with the read-only analysis constraint.",
+    "No generated experiment evidence was available to establish achieved scores, real Codex behavior, live-site reliability, or actual usage.",
+    "The shallow clone contains only three commits, so earlier or removed development history cannot be assessed.",
+    "The supplied metadata does not state whether GitHub's archived flag is currently enabled.",
+    "No secret values were read; credential analysis was limited to filenames, tracked-file inventory, documentation requirements, and ignore rules."
+  ]
+}

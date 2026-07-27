@@ -1,0 +1,402 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/finance-tracking",
+  "analyzed_at": "2026-07-27T03:19:12Z",
+  "revision": "ef5e77a31d7bfc335b7d69d2ddaa2cd5e01a3c22",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub metadata, including private visibility, default branch, timestamps, and zero open issues or pull requests",
+      "README.md",
+      "complete tracked-file inventory and top-level structure",
+      "npm and Cargo manifests, lockfile presence, TypeScript configuration, Vite configuration, Tauri configuration, and capability configuration",
+      "React entry point, Tauri invocation layer, onboarding, transaction, rule, split, dashboard, and settings UI",
+      "Rust entry point, command handlers, application state, Teller client and mapping code, Keychain wrapper, SQLite migrations, and repositories",
+      "all located Rust unit tests",
+      "tracked credential-shaped filename scan without reading secret values",
+      "local branches, tags, repository shallowness status, and git log --oneline -20"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory or architecture specification",
+      "frontend tests",
+      "end-to-end or live Teller integration tests",
+      "continuous-integration workflows",
+      "release artifacts or tags",
+      "deployment or distribution documentation",
+      "notebooks and demos"
+    ],
+    "inaccessible": [
+      "live Teller accounts, API responses, and Keychain-backed credentials",
+      "runtime, build, and packaging results under the required read-only analysis"
+    ],
+    "sampling_notes": "The checkout was supplied as a depth-50 clone, so history analysis is bounded to recent history; only one commit exists locally, and git reports the checkout itself as non-shallow. The repository is small, so the complete tree and all major frontend, backend, storage, security, configuration, and test modules were inspected. Binary icons and generated lockfile bodies were not reviewed."
+  },
+  "stated_purpose": "The README describes a Phase 1 Tauri and React TypeScript desktop application for local-first finance tracking with Teller synchronization.",
+  "observed_capabilities": [
+    {
+      "statement": "The application provides Teller Connect onboarding plus a manual enrollment fallback, then stores access tokens in macOS Keychain while retaining institution metadata in SQLite.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "frontend-onboarding",
+        "backend-enrollment"
+      ]
+    },
+    {
+      "statement": "Manual synchronization fetches active Teller institutions, accounts, and up to 120 days of paginated transactions, normalizes cash flow and merchant names, evaluates categorization rules, upserts records, and records per-institution sync outcomes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sync",
+        "teller-client",
+        "transaction-store"
+      ]
+    },
+    {
+      "statement": "The transaction interface supports date, category, merchant, and split filters; pagination; manual category overrides; and validated expense splits whose total must equal the transaction outflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "frontend-transactions",
+        "transaction-store"
+      ]
+    },
+    {
+      "statement": "Users can create, update, activate, and delete ordered categorization rules using contains, equals, or regular-expression matching against descriptions, normalized merchants, or Teller categories.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "rules",
+        "transaction-store"
+      ]
+    },
+    {
+      "statement": "A monthly dashboard calculates grocery spending, non-grocery spending, total outflow, and the eight largest effective categories, including split allocations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dashboard"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "Complete and verify Teller Connect onboarding as an end-to-end workflow; the README still characterizes embedded onboarding as unfinished even though the current UI contains a Connect implementation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "frontend-onboarding"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "A React 19 and TypeScript frontend invokes Rust commands through Tauri's IPC layer; the Rust backend coordinates Teller HTTP requests, Keychain access, and a local SQLite database.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifests",
+        "frontend-shell",
+        "backend-entry"
+      ]
+    },
+    {
+      "statement": "SQLite initialization applies three embedded migrations covering institutions, accounts, transactions, categories, category rules, splits, sync runs, and migration history, then seeds system categories and grocery rules.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "database"
+      ]
+    },
+    {
+      "statement": "Effective categorization follows split allocations first, then manual overrides, then the first matching active rule ordered by priority and ID, and finally other-expense or other-income fallback categories.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "transaction-store",
+        "dashboard"
+      ]
+    },
+    {
+      "statement": "The application is primarily macOS-oriented because credential storage uses the Apple-native Keychain backend, despite Tauri configuration requesting bundle targets for all platforms.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifests",
+        "backend-enrollment",
+        "tauri-config"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The sole commit delivers a substantive vertical slice spanning onboarding, synchronization, persistent storage, categorization, transaction editing, rules, and reporting rather than only generated scaffolding.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "frontend-shell",
+        "backend-entry",
+        "database"
+      ]
+    },
+    {
+      "statement": "Access tokens are deliberately separated from the SQLite database and stored through the operating-system Keychain.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-enrollment",
+        "database"
+      ]
+    },
+    {
+      "statement": "Six Rust unit tests cover database initialization and seed data, monthly range calculation, transaction-flow normalization, and basic rule evaluation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no repository evidence that the frontend builds, the Tauri application launches, or a real Teller enrollment and synchronization completes successfully.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tests",
+        "history"
+      ]
+    },
+    {
+      "statement": "Automated verification is limited to six focused Rust unit tests; there are no frontend, command-layer, database workflow, HTTP integration, or end-to-end tests and no CI workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The README's claim that embedded Teller Connect is not automated is inconsistent with the current onboarding source, leaving the supported setup path unclear.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "frontend-onboarding"
+      ]
+    },
+    {
+      "statement": "Synchronization is manual and limited to a rolling 120-day window; no scheduler, historical backfill workflow, or documented reconciliation behavior is present.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sync",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Changing a categorization rule does not directly recalculate stored rule assignments; existing transactions appear to be updated only when fetched again by synchronization.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "rules",
+        "sync",
+        "transaction-store"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The local SQLite database stores complete raw Teller account and transaction JSON alongside personal financial history, with no repository evidence of database encryption, retention controls, secure backup guidance, or deletion tooling.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "database",
+        "transaction-store"
+      ]
+    },
+    {
+      "statement": "The sensitive desktop webview loads Teller Connect from a remote CDN while Tauri's content security policy is disabled, increasing exposure to compromised remote content or overly broad webview behavior.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "frontend-onboarding",
+        "tauri-config"
+      ]
+    },
+    {
+      "statement": "Non-success Teller response bodies can be incorporated into application errors, persisted as sync error summaries, and displayed in the UI; unexpected sensitive provider content could therefore be retained locally.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "teller-client",
+        "sync",
+        "frontend-shell"
+      ]
+    },
+    {
+      "statement": "The single-commit history, absence of CI and releases, and lack of runtime verification make regressions and packaging failures difficult to detect.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "tests",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Run and document a repeatable sandbox acceptance test covering Teller Connect, Keychain persistence, account and transaction synchronization, categorization, splits, and dashboard totals.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "frontend-onboarding",
+        "sync",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Add CI for the frontend build and Rust checks/tests, then add command-layer database tests and an end-to-end sandbox workflow before treating the application as functional.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifests",
+        "tests",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Perform a privacy and webview threat review covering raw financial-data retention, database protection, error sanitization, remote script trust, CSP restrictions, credential revocation, and local data deletion.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "database",
+        "teller-client",
+        "tauri-config",
+        "frontend-onboarding"
+      ]
+    },
+    {
+      "statement": "Reconcile the README with the current onboarding implementation and document platform support, Teller prerequisites, sync-window behavior, rule recalculation semantics, and recovery from revoked credentials.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "frontend-onboarding",
+        "sync",
+        "rules"
+      ]
+    }
+  ],
+  "questions": [
+    "Has the current revision successfully completed Teller Connect and a live or sandbox synchronization on macOS?",
+    "Is this intended for ongoing personal use, or is it an exploratory Phase 1 prototype?",
+    "Should the application retain complete raw Teller payloads, and what deletion, backup, and at-rest protection requirements apply?",
+    "Should rule edits immediately recategorize existing transactions, including transactions older than the 120-day synchronization window?",
+    "Is macOS the only supported platform despite the all-target Tauri bundle configuration?",
+    "Is automatic synchronization or historical backfill required before the project is considered usable?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/finance-tracking",
+      "summary": "Supplied snapshot identifies a private repository on main, pushed 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a Phase 1 local-first Tauri and React finance tracker, implemented commands and workflows, setup and validation commands, Keychain and SQLite locations, and an allegedly unfinished embedded Teller Connect flow."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Compact React/Tauri repository with npm and Cargo manifests, frontend pages, Rust commands and repositories, three SQL migrations, icons, and no CI, standalone test directories, documentation directory, notebooks, or release artifacts."
+    },
+    {
+      "id": "manifests",
+      "kind": "dependency_manifests",
+      "location": "package.json; src-tauri/Cargo.toml",
+      "summary": "Uses React 19, TypeScript, Vite 7, Tauri 2, rusqlite, reqwest with rustls, regex, chrono, and keyring configured with the Apple-native backend."
+    },
+    {
+      "id": "tauri-config",
+      "kind": "application_configuration",
+      "location": "src-tauri/tauri.conf.json; src-tauri/capabilities/default.json",
+      "summary": "Defines a bundled desktop application targeting all platforms, disables CSP, and grants default core/opener permissions plus webview-window creation."
+    },
+    {
+      "id": "frontend-shell",
+      "kind": "source",
+      "location": "src/App.tsx; src/lib/tauri.ts",
+      "summary": "Implements application bootstrap, tab navigation, manual synchronization, institution status display, and typed IPC calls for backend commands."
+    },
+    {
+      "id": "frontend-onboarding",
+      "kind": "source",
+      "location": "src/pages/Onboarding.tsx",
+      "summary": "Loads Teller Connect from its CDN, configures sandbox/development/production enrollment, parses successful enrollment data, and provides a manual token-entry fallback."
+    },
+    {
+      "id": "frontend-transactions",
+      "kind": "source",
+      "location": "src/pages/Transactions.tsx; src/components/SplitModal.tsx",
+      "summary": "Implements filtered and paginated transaction browsing, manual category edits, and client-side validation and editing of expense splits."
+    },
+    {
+      "id": "backend-entry",
+      "kind": "source",
+      "location": "src-tauri/src/lib.rs; src-tauri/src/state.rs",
+      "summary": "Creates the application data directory and SQLite database, initializes migrations, registers application state, and exposes eleven Tauri commands."
+    },
+    {
+      "id": "backend-enrollment",
+      "kind": "source",
+      "location": "src-tauri/src/commands/teller_connect.rs; src-tauri/src/security/keychain.rs; src-tauri/src/db/repositories/institutions.rs",
+      "summary": "Validates enrollment input, saves the access token through Keychain, and upserts institution metadata containing only a Keychain lookup key."
+    },
+    {
+      "id": "sync",
+      "kind": "source",
+      "location": "src-tauri/src/commands/sync.rs; src-tauri/src/db/repositories/sync_runs.rs",
+      "summary": "Runs a manual 120-day per-institution sync, updates accounts and transactions, and records success, partial, or failure outcomes and error summaries."
+    },
+    {
+      "id": "teller-client",
+      "kind": "source",
+      "location": "src-tauri/src/teller/client.rs; src-tauri/src/teller/mapper.rs",
+      "summary": "Calls Teller using HTTP Basic authentication, paginates transaction requests, normalizes amounts and merchants, and serializes complete provider records for storage."
+    },
+    {
+      "id": "database",
+      "kind": "database_schema",
+      "location": "src-tauri/src/db/mod.rs; src-tauri/src/db/migrations/",
+      "summary": "Applies versioned SQLite migrations for institutions, accounts, transactions, categories, rules, splits, and sync runs, including raw provider JSON columns and seeded grocery categories and rules."
+    },
+    {
+      "id": "transaction-store",
+      "kind": "source",
+      "location": "src-tauri/src/db/repositories/transactions.rs; src-tauri/src/commands/transactions.rs",
+      "summary": "Implements account and transaction upserts, ordered rule matching, effective category precedence, parameterized filters, manual category updates, and transactional split replacement."
+    },
+    {
+      "id": "rules",
+      "kind": "source",
+      "location": "src/pages/Rules.tsx; src-tauri/src/commands/rules.rs; src-tauri/src/db/repositories/rules.rs",
+      "summary": "Provides UI and backend CRUD for validated, ordered categorization rules; rule mutation does not invoke a stored-transaction recalculation routine."
+    },
+    {
+      "id": "dashboard",
+      "kind": "source",
+      "location": "src/pages/Dashboard.tsx; src-tauri/src/commands/dashboard.rs; src-tauri/src/db/repositories/dashboard.rs",
+      "summary": "Calculates and displays monthly grocery, non-grocery, total-outflow, and top-category totals using split, manual, rule, and fallback categorization."
+    },
+    {
+      "id": "tests",
+      "kind": "automated_tests",
+      "location": "src-tauri/src/db/mod.rs; src-tauri/src/db/repositories/dashboard.rs; src-tauri/src/db/repositories/transactions.rs; src-tauri/src/teller/mapper.rs",
+      "summary": "Six Rust unit tests cover schema initialization, month boundaries, contains and equals rule matching, and credit and depository flow normalization; no execution result is committed."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "History contains one commit, ef5e77a dated 2026-07-11 with subject 'Initial commit'; main is the only local and remote branch and there are no tags."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The compact implementation was inspected across frontend, backend, persistence, security, configuration, tests, and history, and these artifacts agree on the main feature set. Confidence is limited because the repository contains no build, runtime, packaging, CI, frontend-test, or live Teller verification evidence, and the README conflicts with the onboarding source."
+  },
+  "limitations": [
+    "No commands that would write build, test, or package artifacts were run because the analysis was required to remain read-only.",
+    "Live Teller behavior, Keychain integration, network failure handling, and the correctness of real provider payload mapping could not be independently verified.",
+    "The supplied depth-50 history boundary can hide older commits in general, although this checkout contains only one commit and reports itself as non-shallow.",
+    "GitHub conclusions are limited to the supplied registry snapshot and local refs; no independent remote API refresh was performed.",
+    "Credential values were neither read nor inspected; only tracked filenames and credential-handling source were examined."
+  ]
+}

@@ -1,0 +1,425 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/join-codex",
+  "analyzed_at": "2026-07-27T03:22:27Z",
+  "revision": "cb66436b0ea1a7bec6cfb79e6a871b1d81e21ac2",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub and registry metadata snapshot",
+      "README.md, CLAUDE.md, and the complete prd.md",
+      "complete tracked-file inventory and top-level structure",
+      "pyproject.toml, .gitignore, package entry point, and configuration",
+      "all eleven Python source files under safe_join/",
+      "committed report schemas, representative report rows, and aggregate artifact counts from both recorded runs",
+      "test, CI, notebook, demo, deployment, credential-filename, and release-tag inventory",
+      "local and remote-tracking branch inventory",
+      "git log --oneline -20 and the complete available one-commit history",
+      "dependency-limited CLI import smoke check"
+    ],
+    "missing": [
+      "unit and integration tests",
+      "CI workflows",
+      "release tags",
+      "deployment or scheduling artifacts",
+      "notebooks or a dedicated demo",
+      "measured accuracy benchmark against known joins",
+      "recorded runtime and BigQuery billing verification",
+      "implementation of the PRD's query-augmented Pipeline B"
+    ],
+    "inaccessible": [
+      "live GitHub state beyond the supplied snapshot because api.github.com was unreachable",
+      "independent execution against BigQuery because credentials and installed project dependencies were unavailable"
+    ],
+    "sampling_notes": "The supplied analysis scope describes the clone as shallow with depth 50, so upstream history beyond the checkout must be treated as potentially truncated. Locally, git reports a non-shallow repository containing only one commit. This is a small repository: all documentation and Python source were inspected. Generated reports were sampled and aggregated, while raw profile top-value fields were intentionally not read to minimize exposure to dataset values."
+  },
+  "stated_purpose": "The README and PRD describe a Safe Join Discovery Engine that profiles BigQuery datasets, proposes and samples possible cross-table join keys, and emits an analyst-facing report with confidence evidence and optional Gemini commentary.",
+  "observed_capabilities": [
+    {
+      "statement": "The package exposes a safe-join-engine CLI with dataset selection, sampling, candidate, validation, cost, table-filtering, dry-run, and optional LLM settings.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "cli-config"
+      ]
+    },
+    {
+      "statement": "The profiling layer queries BigQuery INFORMATION_SCHEMA, samples each table, computes column null and distinct rates plus top values, and persists table and column profiles as JSONL.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bigquery-profiler"
+      ]
+    },
+    {
+      "statement": "Candidate generation compares compatible columns across different tables using normalized-name similarity, TF-IDF lexical similarity, and Jaccard overlap of sampled top values, then applies a weighted threshold.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "candidate-validation"
+      ]
+    },
+    {
+      "statement": "The validator resamples values for the highest-ranked pairs, computes overlap and one-sided containment, and marks pairs as passing when overlap reaches the configured threshold.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "candidate-validation"
+      ]
+    },
+    {
+      "statement": "The reporting path merges candidates and validations into CSV and JSONL artifacts and attaches either Gemini-generated or heuristic commentary.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "orchestration-reporting"
+      ]
+    },
+    {
+      "statement": "Committed artifacts demonstrate that the pipeline was run on a two-table subset and an eight-table dataset, producing 7 and 48 candidate reports respectively.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "BigQuery queries are dry-run-estimated against a cumulative byte budget before execution when a budget is configured.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bigquery-profiler",
+        "cli-config"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The PRD defines a query-augmented Pipeline B that mines historical SQL joins, but no query-history implementation is present.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The PRD lists incremental profiling, foreign-key directionality, drift alerts, an interactive UI, and Cloud Run scheduling as future enhancements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd"
+      ]
+    },
+    {
+      "statement": "CLAUDE.md proposes unit, integration, and acceptance testing, while the README explicitly says tests are not yet bundled.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "claude",
+        "tree"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "SafeJoinEngine constructs and sequences BigQueryService, DatasetProfiler, CandidateGenerator, CandidateValidator, ReportCompiler, and LLMEnhancer in a single synchronous Python process.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "orchestration-reporting"
+      ]
+    },
+    {
+      "statement": "BigQuery is the remote metadata and sample source; pandas DataFrames are the in-process interchange format; CSV and JSONL files under the configured artifact directory are the persistence layer.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bigquery-profiler",
+        "orchestration-reporting"
+      ]
+    },
+    {
+      "statement": "The implemented candidate search is an all-pairs comparison across profiled columns after same-table and datatype filtering; FAISS is exposed as an optional dependency/configuration concept but is not used by the generator.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "cli-config",
+        "candidate-validation"
+      ]
+    },
+    {
+      "statement": "Gemini is optional and disabled by default; without a configured client, the report receives fixed heuristic commentary.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "orchestration-reporting"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A complete modular implementation exists for the schema-based path from metadata collection through local report generation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "bigquery-profiler",
+        "candidate-validation",
+        "orchestration-reporting"
+      ]
+    },
+    {
+      "statement": "Two committed execution artifact sets include profiles, candidates, validations, and final reports rather than documentation alone.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "The project is packaged with Python 3.10+ metadata, declared dependencies, optional LLM and FAISS extras, and a console entry point.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest"
+      ]
+    },
+    {
+      "statement": "No tracked .env or credential-like file was found, and .env is explicitly ignored.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No automated tests or CI workflows exist, so scoring, SQL generation, dry-run behavior, failure handling, and report correctness are not regression-checked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The PRD acceptance targets of at least 80% true-join detection, under 30 minutes, and at most $50 per run have no committed benchmark, timing, or billing evidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd",
+        "tree",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "BigQueryService.list_tables assigns zero to every row count, so the profiler cannot use actual table sizes when calculating target sample rows and percentages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bigquery-profiler"
+      ]
+    },
+    {
+      "statement": "The runtime timeout, profile-cache flag, and FAISS index setting are accepted as configuration but are not enforced or consumed by the pipeline, and the PRD's one-gigabyte per-query cap is not implemented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd",
+        "cli-config",
+        "bigquery-profiler",
+        "orchestration-reporting"
+      ]
+    },
+    {
+      "statement": "CLAUDE.md still describes the repository as planning-stage and names a future safe_join_engine.py entry point, contradicting the installed package and current CLI documented by the README.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "claude",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "The repository tracks Python __pycache__ bytecode alongside source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The current pass rule can label shared categorical attributes as safe join keys: committed reports mark status-to-status, gender-to-gender, traffic-source-to-traffic-source, and retail-price-to-retail-price pairs as passing or high-confidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifacts",
+        "candidate-validation",
+        "orchestration-reporting"
+      ]
+    },
+    {
+      "statement": "Because overlap alone does not establish uniqueness, key direction, multiplicity, or expected row expansion, consumers could create many-to-many joins and incorrect analyses if they treat validation_pass as proof of join safety.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "candidate-validation",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "Committed profile artifacts may expose sampled source values because the profiler persists top values for every sampled column; those artifacts require data-sensitivity review before sharing or publishing the repository.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "bigquery-profiler",
+        "artifacts",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The advertised runtime and cost safeguards may give stronger assurance than the implementation provides because timeout enforcement and the per-query cap are absent, while all candidate validations can trigger additional sampled queries.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "prd",
+        "cli-config",
+        "bigquery-profiler",
+        "candidate-validation"
+      ]
+    },
+    {
+      "statement": "Naive quadratic candidate enumeration can become slow or memory-intensive on datasets with many columns.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "candidate-validation",
+        "readme"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Replace the current overlap-only safety decision with explicit uniqueness, containment direction, cardinality, null-rate, and estimated row-expansion checks, and label descriptive-field matches separately from key candidates.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "candidate-validation",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "Create a labeled BigQuery fixture or benchmark of known valid and invalid joins, then add unit and integration tests that measure precision and recall against the PRD's accuracy target.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "prd",
+        "tree",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "Implement actual row-count metadata, timeout enforcement, per-query byte caps, and profile-cache reuse before presenting the tool as cost- or runtime-bounded.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "bigquery-profiler",
+        "cli-config",
+        "prd"
+      ]
+    },
+    {
+      "statement": "Review generated profiles for sensitive values and either exclude run artifacts from version control, redact persisted examples, or document that only approved public datasets may be committed.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "bigquery-profiler",
+        "artifacts",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Add CI, remove tracked bytecode, expand .gitignore for Python-generated files, and update CLAUDE.md to match the implemented package and CLI.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "claude",
+        "manifest"
+      ]
+    }
+  ],
+  "questions": [
+    "Is this prototype still being actively explored, or was the single initial commit a one-off experiment?",
+    "Which joins in the committed thelook reports are known ground truth, and what precision or recall did the run achieve?",
+    "Should validation_pass mean a technically executable match or a genuinely safe relationship with controlled join cardinality?",
+    "Are all values stored in the committed profile JSONL files approved for retention and possible sharing?",
+    "Is query-history mining still required, or should the scope be narrowed to the implemented schema-based pipeline?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/join-codex",
+      "summary": "Supplied snapshot identifies a private repository on main, pushed on 2026-07-11, with no description, open issues, or open pull requests; live GitHub verification was unavailable."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Documents the implemented profiling, candidate, validation, cost-control, optional Gemini, artifact, CLI, and packaging behavior while explicitly noting that tests are not bundled."
+    },
+    {
+      "id": "claude",
+      "kind": "development_guidance",
+      "location": "CLAUDE.md",
+      "summary": "Describes the intended five-layer architecture and future testing but is stale about project status, dependencies, and the expected entry point."
+    },
+    {
+      "id": "prd",
+      "kind": "product_requirements",
+      "location": "prd.md",
+      "summary": "Defines schema-based and query-augmented pipelines, acceptance targets, cost and runtime controls, architecture, outputs, and v2 enhancements."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "pyproject.toml",
+      "summary": "Defines safe-join-engine 0.1.0 for Python 3.10+, BigQuery and dataframe/ML dependencies, optional FAISS and Gemini extras, and the safe-join-engine console script."
+    },
+    {
+      "id": "cli-config",
+      "kind": "source_code",
+      "location": "safe_join/cli.py and safe_join/config.py",
+      "summary": "Implements command-line parsing and runtime configuration, including sampling, thresholds, output, cost, timeout, table filtering, dry-run, and LLM options."
+    },
+    {
+      "id": "bigquery-profiler",
+      "kind": "source_code",
+      "location": "safe_join/bigquery_service.py and safe_join/profiling.py",
+      "summary": "Implements BigQuery metadata queries, dry-run byte guarding, table and column sampling, profile metrics, and JSONL persistence; table row counts are hard-coded to zero."
+    },
+    {
+      "id": "candidate-validation",
+      "kind": "source_code",
+      "location": "safe_join/candidates.py, safe_join/validation.py, and safe_join/utils.py",
+      "summary": "Implements quadratic cross-table candidate comparison, datatype filtering, weighted lexical/value-overlap scoring, sampled overlap validation, and threshold-based pass decisions."
+    },
+    {
+      "id": "orchestration-reporting",
+      "kind": "source_code",
+      "location": "safe_join/orchestrator.py, safe_join/reporting.py, and safe_join/llm.py",
+      "summary": "Sequences the pipeline, writes CSV and JSONL reports, and adds optional Gemini or fallback heuristic commentary."
+    },
+    {
+      "id": "artifacts",
+      "kind": "generated_outputs",
+      "location": "artifacts/orders_order_items/ and artifacts/thelook_full/",
+      "summary": "Two committed run sets contain 2/20 and 8/75 table/column profiles, 7 and 48 candidates and validations, and final reports. The reports mark 1 and 8 pairs as passing, including several same-domain categorical or measure columns that are not evident keys."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The 37 tracked files include documentation, eleven Python source files, generated artifacts, and tracked bytecode; no tests, workflows, notebooks, deployment definitions, or credential-like tracked files were found, and .env is ignored."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at cb66436b0ea1a7bec6cfb79e6a871b1d81e21ac2",
+      "summary": "The complete available history consists of one initial commit dated 2026-07-11; main and origin/main point to that commit, and no tags are present."
+    },
+    {
+      "id": "smoke",
+      "kind": "local_verification",
+      "location": "python3 -m safe_join.cli --help",
+      "summary": "The CLI could not be imported in the analysis environment because pandas was not installed, so independent execution was not performed."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "All documentation and implementation source were inspected, and committed outputs prove that the prototype has run. Confidence is reduced because there are no automated tests or acceptance measurements, the analysis environment lacked dependencies and BigQuery access, the live GitHub API was unreachable, and the generated reports themselves reveal unresolved correctness problems."
+  },
+  "limitations": [
+    "The supplied GitHub snapshot could not be refreshed, so current archival state, remote-only branches, releases, and post-snapshot activity were not independently verified.",
+    "The checkout was described as depth-50 and recent-history-only; although local git reports non-shallow, conclusions about historical maintenance are limited to its single available commit.",
+    "No BigQuery-backed run was performed, and the local CLI smoke check stopped at a missing pandas dependency.",
+    "Raw JSONL profile values were deliberately not inspected because they may contain sampled dataset values.",
+    "No labeled ground truth exists in the repository for independently evaluating whether reported joins are valid."
+  ]
+}

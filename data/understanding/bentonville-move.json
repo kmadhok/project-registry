@@ -1,0 +1,363 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/bentonville-move",
+  "analyzed_at": "2026-07-27T03:11:42Z",
+  "revision": "c1202917969c1dd01099d3e91f5d99221f549fb4",
+  "analysis_scope": {
+    "inspected": [
+      "Registry-supplied GitHub metadata snapshot",
+      "README.md",
+      "All six supporting Markdown documents",
+      "Complete tracked-file inventory and top-level structure",
+      "Dependency, source, test, notebook, demo, and CI filename scans",
+      "Tracked credential-like filenames without reading secret values",
+      "All available local branches and tags",
+      "git log --oneline -20 and commit statistics"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency manifests",
+      "executable source or entry points",
+      "automated tests",
+      "CI workflows",
+      "notebooks and demos",
+      "releases and deployable artifacts",
+      "tags"
+    ],
+    "inaccessible": [
+      "Independent verification of retailer prices and availability",
+      "Facebook Marketplace results requiring a logged-in, location-configured session"
+    ],
+    "sampling_notes": "The checkout was supplied as a shallow clone with depth 50, so history may be truncated; only two commits are reachable locally. The repository is small\u2014eight tracked files totaling about 500 lines\u2014and every tracked file was inspected rather than sampled. No secret values were read."
+  },
+  "stated_purpose": "Maintain a Bentonville apartment move-in shopping plan containing tiered checklists, a budget ledger, purchasing strategy, research requirements, and product-price recommendations.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository provides a three-tier move-in checklist organized around day-one, first-week, and first-month purchasing needs, with estimated subtotals and item-level status boxes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "shopping-list"
+      ]
+    },
+    {
+      "statement": "It provides a manually updated spending ledger that compares purchases with approximately $3,100 in documented funding and discounts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "budget-tracker"
+      ]
+    },
+    {
+      "statement": "It defines purchase timing and sourcing rules based on discount eligibility, apartment measurements, relocation benefits, mover restrictions, Walmart, and Facebook Marketplace.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "buying-strategy"
+      ]
+    },
+    {
+      "statement": "It contains ranked product research for a queen bed frame and fourteen additional durable-goods categories, including prices, ratings or review counts, budget caps, recommendations, and caveats.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bed-frame-research",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "The documents calculate a researched furniture-and-durables scenario of $1,943.69, leaving approximately $1,150 for commodities and other fill-ins within the stated $3,100 funding pool.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "price-research",
+        "budget-tracker"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "Purchases are intended to be recorded in the spend log, but the checklist remains unchecked and the ledger reports no purchases.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "shopping-list",
+        "budget-tracker"
+      ]
+    },
+    {
+      "statement": "Large furniture, rugs, and curtains remain gated on apartment, doorway, room, and window measurements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "buying-strategy",
+        "research-queue"
+      ]
+    },
+    {
+      "statement": "The queue leaves router research on hold and calls for a supervised Bentonville-area Facebook Marketplace pass.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "research-queue"
+      ]
+    },
+    {
+      "statement": "The owner still needs to reconcile whether an existing mattress and 50-inch television are moving before buying the newly researched replacements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "research-queue",
+        "price-research",
+        "shopping-list"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "This is a documentation-only system composed of seven interlinked Markdown files plus a .gitignore; there is no executable application, dependency graph, database, or automation layer.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "README.md acts as the index, while Shopping List.md is the operational checklist, Budget Tracker.md is the manual ledger, Buying Strategy.md records decision rules, Research Queue.md defines requirements, and the two research reports contain findings.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "shopping-list",
+        "budget-tracker",
+        "buying-strategy",
+        "research-queue",
+        "bed-frame-research",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "Status and budget synchronization depend on manual edits across multiple files.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "shopping-list",
+        "budget-tracker",
+        "research-queue"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A coherent move-in workflow was documented across checklist, budgeting, timing, sourcing, and research artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "shopping-list",
+        "budget-tracker",
+        "buying-strategy"
+      ]
+    },
+    {
+      "statement": "The documented research queue was substantially completed on 2026-07-21, producing recommendations and a consolidated budget scenario.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "research-queue",
+        "price-research",
+        "history"
+      ]
+    },
+    {
+      "statement": "The bed-frame report explicitly corrected an earlier inaccurate price estimate after rendered-store-page research.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bed-frame-research"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The primary shopping workflow has not been demonstrated through recorded purchases: every checklist item is open and actual spending remains zero.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "shopping-list",
+        "budget-tracker"
+      ]
+    },
+    {
+      "statement": "Several recommendations were researched using a browser delivery location other than Bentonville, while Wayfair, Best Buy, and Facebook Marketplace coverage was incomplete.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bed-frame-research",
+        "price-research",
+        "research-queue"
+      ]
+    },
+    {
+      "statement": "The documents conflict over whether the mattress and existing 50-inch television are being brought or replaced.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "shopping-list",
+        "research-queue",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "There is no automated mechanism to recalculate totals, detect inconsistencies, refresh prices, or synchronize checklist and ledger status.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "budget-tracker",
+        "shopping-list"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Prices, ratings, discounts, and inventory may change before purchase, and some recorded availability was not checked for Bentonville ZIP code 72712.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "bed-frame-research",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "Unresolved mattress and television scope could lead to duplicate or unnecessary purchases.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "shopping-list",
+        "research-queue",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "Manual duplication of estimates and statuses across files creates a risk of budget drift as purchases occur.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "shopping-list",
+        "budget-tracker",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "The private documents contain personal relocation, employer-benefit, financial, and household details that would require redaction before broader publication.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "shopping-list",
+        "budget-tracker",
+        "buying-strategy"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Resolve the mattress and television decisions before placing orders, then update the bringing list, research queue, and budget scenario consistently.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "shopping-list",
+        "research-queue",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "Measure the apartment and set retailer delivery locations to Bentonville before validating and purchasing measurement-sensitive or location-sensitive recommendations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "buying-strategy",
+        "research-queue",
+        "price-research"
+      ]
+    },
+    {
+      "statement": "Record purchases in both the checklist and spend ledger, including actual net cost and discount usage, so the budget becomes evidence of execution rather than a forecast.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "shopping-list",
+        "budget-tracker"
+      ]
+    },
+    {
+      "statement": "Keep the repository private or create a redacted public summary that omits employer-benefit, financial, timing, and household details.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "budget-tracker",
+        "buying-strategy"
+      ]
+    }
+  ],
+  "questions": [
+    "Are the existing queen mattress and 50-inch television moving to Bentonville, being replaced, or serving a different room?",
+    "What are the apartment, doorway, window, and room measurements needed to finalize the sectional, dining set, desk, rug, and curtains?",
+    "Should this remain a short-lived move checklist, or should the manual ledger be retained as a household inventory and warranty record after setup?",
+    "Which retailer prices and employee-discount assumptions have been reconfirmed for Bentonville immediately before purchase?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/bentonville-move",
+      "summary": "Registry-supplied snapshot identifies a private, unarchived repository on main, pushed 2026-07-22, with no open issues or pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Indexes the planning files, states the apartment-setup purpose, summarizes constraints, and reports all shopping tiers as not started."
+    },
+    {
+      "id": "shopping-list",
+      "kind": "operational_checklist",
+      "location": "Shopping List.md",
+      "summary": "Contains the tiered move-in checklist, estimated costs, items being brought, and purchasing rules; all checkboxes remain open."
+    },
+    {
+      "id": "budget-tracker",
+      "kind": "budget_document",
+      "location": "Budget Tracker.md",
+      "summary": "Documents funding assumptions, an empty spend ledger, tier estimates, and the researched scenario; spent-to-date is $0."
+    },
+    {
+      "id": "buying-strategy",
+      "kind": "decision_document",
+      "location": "Buying Strategy.md",
+      "summary": "Defines timing, discount stacking, relocation-point usage, sourcing, measurement gates, and mover restrictions."
+    },
+    {
+      "id": "bed-frame-research",
+      "kind": "research_report",
+      "location": "Bed Frame Research.md",
+      "summary": "Ranks queen wood-frame options under $250 and records method limitations, corrected estimates, location caveats, and an AllModern recommendation."
+    },
+    {
+      "id": "research-queue",
+      "kind": "research_plan",
+      "location": "Research Queue.md",
+      "summary": "Defines product requirements and caps, marks the main sweep complete, records held and dropped items, and identifies unresolved mattress, television, router, and Marketplace work."
+    },
+    {
+      "id": "price-research",
+      "kind": "research_report",
+      "location": "Price Research 2026-07.md",
+      "summary": "Records rendered-page price research and recommendations across fourteen categories, a $1,943.69 durables scenario, and retailer, location, and capture caveats."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains .gitignore and seven Markdown files, with no manifests, source code, tests, workflows, notebooks, demos, credential-like filenames, or generated artifacts."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Only two commits are reachable: the initial planning and bed-frame research commit, followed 25 minutes later on 2026-07-21 by the full price-research sweep and catalog update."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Every tracked artifact and all reachable history were inspected, and they consistently support the conclusion that this is a recently created, usable but manually operated move-planning prototype. Confidence is reduced because no purchases demonstrate the workflow, retailer claims were not independently reverified, some searches were incomplete, and the supplied shallow clone may omit older history."
+  },
+  "limitations": [
+    "The clone was shallow with depth 50, although only two commits were reachable.",
+    "GitHub state beyond the supplied metadata snapshot was not independently refreshed.",
+    "Retailer prices, ratings, stock, delivery eligibility, and discount applicability were not independently reverified.",
+    "No purchase receipts or external relocation-benefit documents were available to validate financial assumptions.",
+    "The analysis evaluated repository artifacts, not whether the recommended products are objectively suitable or safe."
+  ]
+}

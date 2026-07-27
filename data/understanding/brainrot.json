@@ -1,0 +1,269 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Brainrot",
+  "analyzed_at": "2026-07-27T03:12:59Z",
+  "revision": "cbf0ee7ee96393c9bd3bf3b6316578075122a64a",
+  "analysis_scope": {
+    "inspected": [
+      "Supplied GitHub repository metadata and issue-title snapshot",
+      "Complete tracked-file inventory and all six tracked files",
+      "All three Python entry-point scripts",
+      "All three dependency manifests",
+      "Local branches, tags, remotes, and the available three-commit history",
+      "Test, CI, notebook, demo, release, and credential-like filename inventories",
+      "Static Python AST parsing"
+    ],
+    "missing": [
+      "README, CLAUDE.md, AGENTS.md, and docs",
+      "Tests and test configuration",
+      "CI/CD workflows",
+      "Package or application entry-point configuration",
+      "Integrated video assembly implementation",
+      "Notebooks, demos, releases, and generated output artifacts",
+      ".gitignore and example environment configuration"
+    ],
+    "inaccessible": [
+      "GitHub issue bodies and live issue metadata because api.github.com was unreachable during analysis"
+    ],
+    "sampling_notes": "The checkout is shallow (depth 50), so history before the available three commits may be truncated; this repository is small enough that all six tracked files and all three available commits were inspected, with no source sampling required. Remote issue inspection failed, so issue evidence is limited to the supplied nine-title GitHub snapshot."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The transcript script defines a prompt for a 30-to-60-second, high-energy social-video script with a hook, value section, and call to action, and attempts to generate it through a LlamaIndex OpenAI adapter.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "transcript-source"
+      ]
+    },
+    {
+      "statement": "The audio script calls Amazon Polly neural speech synthesis and writes the returned audio stream to an MP3 file, although it synthesizes a fixed sentence rather than its text argument.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "audio-source"
+      ]
+    },
+    {
+      "statement": "The subtitle script submits a hard-coded local MP3 path to AssemblyAI and writes exported SRT subtitles to another hard-coded local path.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "subtitles-source"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The supplied open-issue snapshot describes plans for educational content generation, refined and cloned character voices, voice-sample collection and evaluation, improved mobile captions, split-screen video assembly, and Family Guy character overlays.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "issues-snapshot"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The repository consists of three independent top-level Python scripts that map to content generation, speech synthesis, and speech-to-subtitle conversion; there is no orchestrator or shared application module connecting them.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "transcript-source",
+        "audio-source",
+        "subtitles-source"
+      ]
+    },
+    {
+      "statement": "The scripts depend on three external hosted services\u2014OpenAI through LlamaIndex, Amazon Polly through boto3, and AssemblyAI\u2014and use local files as the implied handoff boundary.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "transcript-source",
+        "audio-source",
+        "subtitles-source",
+        "dependencies"
+      ]
+    }
+  ],
+  "maturity": "scaffold",
+  "accomplishments": [
+    {
+      "statement": "Initial code exists for each of the transcript, narration, and subtitle stages of a possible short-form content pipeline.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "transcript-source",
+        "audio-source",
+        "subtitles-source"
+      ]
+    },
+    {
+      "statement": "Dependencies are pinned in separate manifests, and all three Python files pass static AST parsing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "static-check"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The transcript script references OPENAI_API_KEY without assigning it, so execution reaches a NameError before model initialization in the checked-in revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "transcript-source"
+      ]
+    },
+    {
+      "statement": "The audio function ignores its text parameter, the subtitle script requires machine-specific absolute paths, and no code assembles transcript, audio, subtitles, gameplay, or character overlays into a video.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "audio-source",
+        "subtitles-source",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There is no setup or usage documentation, test suite, CI workflow, release, demo, or checked-in output proving that the primary workflow runs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The transcript script is written to print the API-key variable, which could disclose a credential in console logs if the variable is repaired and populated.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "transcript-source"
+      ]
+    },
+    {
+      "statement": "Blank inline AWS credential arguments, an untracked local .env expectation, and direct paid-service calls create fragile credential handling and accidental-cost risk, although no credential-like file is tracked in the inspected revision.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "audio-source",
+        "transcript-source",
+        "subtitles-source",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The two stage-specific dependency manifests are UTF-16 encoded and contain broad environment snapshots, making repeatable installation and dependency maintenance more fragile than a minimal unified project manifest.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies"
+      ]
+    },
+    {
+      "statement": "The last available commit is from March 2025 and there is no automation or execution evidence, so the open backlog may overstate the project's present readiness or activity.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "issues-snapshot",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "First decide whether the concept is still active; if not, archive it with a concise status note, and if it is, define one supported end-to-end workflow before expanding the issue backlog.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "issues-snapshot",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "If development resumes, remove credential logging and inline credential parameters, use environment-based provider configuration, replace absolute paths with arguments, and add a single orchestrator plus a no-network test layer.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "transcript-source",
+        "audio-source",
+        "subtitles-source",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Reduce and normalize the dependency manifests, document setup and cost-bearing external calls, and add one verified sample output before treating the repository as functional.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "repository-tree",
+        "static-check"
+      ]
+    }
+  ],
+  "questions": [
+    "Was an end-to-end short-form video ever produced from these scripts outside the repository?",
+    "Is the Family Guy and gameplay format still the intended product direction, or was it an experiment?",
+    "Which TTS provider and voice-rights approach should be authoritative if work resumes?",
+    "Should this dormant scaffold be archived, or is there current work stored elsewhere that should be linked or merged?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Brainrot",
+      "summary": "Supplied snapshot identifies a public, unarchived repository on main with no GitHub description, no open pull requests, nine open issues, and a last push on 2025-03-08 UTC."
+    },
+    {
+      "id": "issues-snapshot",
+      "kind": "github_issues_snapshot",
+      "location": "https://github.com/kmadhok/Brainrot/issues",
+      "summary": "The supplied nine open issue titles propose content-format improvements, TTS and XTTS-v2 voice work, sample acquisition and evaluation, captions, split-screen assembly, and character overlays; issue bodies could not be retrieved."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains only audio.py, subtitles.py, transcript.py, and three requirements files; it contains no documentation, tests, workflows, orchestration, media assets, outputs, or tracked credential-like filenames."
+    },
+    {
+      "id": "transcript-source",
+      "kind": "source_code",
+      "location": "transcript.py",
+      "summary": "A 45-line top-level script loads a machine-specific dotenv path, references and prints an undefined OPENAI_API_KEY, configures a LlamaIndex OpenAI model, and prompts for a short-form social-video transcript."
+    },
+    {
+      "id": "audio-source",
+      "kind": "source_code",
+      "location": "audio.py",
+      "summary": "A 30-line script creates an Amazon Polly client with blank inline credential parameters, synthesizes a hard-coded sentence using Joanna neural voice at 8 kHz, and writes an MP3."
+    },
+    {
+      "id": "subtitles-source",
+      "kind": "source_code",
+      "location": "subtitles.py",
+      "summary": "A 19-line top-level script reads an AssemblyAI key from the environment, transcribes a hard-coded macOS audio path, prints SRT text, and writes it to another hard-coded path."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_manifests",
+      "location": "requirements.txt; audio_requirements.txt; transcript_requirements.txt",
+      "summary": "Pinned dependencies cover AssemblyAI, boto3, LlamaIndex, OpenAI, dotenv, and transitive packages; the audio and transcript manifests are UTF-16 environment snapshots rather than minimal project definitions."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at cbf0ee7ee96393c9bd3bf3b6316578075122a64a",
+      "summary": "The shallow checkout exposes only three commits, all file additions or a subtitle edit, dated 2025-02-22 through 2025-03-07; only main/origin-main is present and there are no tags."
+    },
+    {
+      "id": "static-check",
+      "kind": "verification",
+      "location": "local AST parse of audio.py, subtitles.py, and transcript.py",
+      "summary": "All Python files parsed successfully without execution; transcript.py emitted an invalid-escape SyntaxWarning for its Windows path. External-service execution was intentionally not attempted."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Every tracked file and available commit was inspected, and the small codebase clearly supports the scaffold assessment. Confidence is limited by absent run artifacts and tests, intentionally unexecuted paid external integrations, shallow history, and inaccessible live GitHub issue details."
+  },
+  "limitations": [
+    "The checkout is shallow at depth 50; only three commits are available, so earlier or unreachable history was not inspected.",
+    "GitHub API access failed, so issue bodies, timestamps, labels, comments, and any remote branches not represented in the checkout were not independently inspected.",
+    "External OpenAI, AWS Polly, and AssemblyAI calls were not executed because doing so would require credentials, network access, and potentially billable operations.",
+    "No README, project description, tests, demos, or output artifacts exist to confirm owner intent or successful execution.",
+    "Credential values were not read; no credential-like filenames were tracked in the inspected revision."
+  ]
+}

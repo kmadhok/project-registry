@@ -1,0 +1,477 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Automate_Job_Search",
+  "analyzed_at": "2026-07-27T03:12:35Z",
+  "revision": "5e4ec5142c4da22bb305f860f3db0acf746e14c8",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and open-item snapshot",
+      "README.md",
+      "top-level tracked-file inventory and dependency manifest",
+      "entry points and orchestration scripts",
+      "representative job ingestion, scraping, fit evaluation, workspace, resume, contact, email, Gmail, and Google Sheets source",
+      "credential filename exclusions without reading credential values",
+      "test, CI, notebook, demo, release, and generated-output presence checks",
+      "all 31 Python files through AST parsing and function inventory",
+      "both shell entry points through bash syntax validation",
+      "git log --oneline -20, dated local history, branches, tags, and HEAD change summary"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "automated tests",
+      "CI workflows",
+      "notebooks",
+      "checked-in demos or execution fixtures",
+      "generated pipeline outputs",
+      "standalone LICENSE file",
+      "release artifacts"
+    ],
+    "inaccessible": [
+      "live GitHub issue bodies and current remote metadata because GitHub API access failed",
+      "the external Job Search workspace and its registry, reports, and generated resumes",
+      "Gmail, Google Sheets, OpenAI, Serper, Hunter.io, and target job sites",
+      "credential and token values, which were deliberately not read"
+    ],
+    "sampling_notes": "The checkout was supplied as a shallow depth-50 clone, so remote history beyond the available sample was not relied upon. Local Git reported a non-shallow repository containing seven commits, and git log -20 therefore covered every locally visible commit. The approximately 10,800-line, top-level script collection was sampled by inspecting every filename and function inventory plus representative implementations from each major path; repetitive Google Sheets upload variants were not read line by line."
+  },
+  "stated_purpose": "Automate a personal job-search workflow from Gmail alerts, daily reports, or manual URLs through job extraction, fit scoring, tailored resumes, contact discovery, outreach drafting, and Google Sheets tracking.",
+  "observed_capabilities": [
+    {
+      "statement": "The code ingests LinkedIn job-alert emails, markdown daily reports, and URL lists, normalizes and deduplicates job links, and extracts postings with deterministic HTML/JSON-LD parsing plus optional OpenAI enrichment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "gmail-ingestion",
+        "scraper",
+        "orchestrator"
+      ]
+    },
+    {
+      "statement": "Jobs are scored into green, yellow, and red fit tiers using hard-coded title, keyword, company, and location rules, with an optional GPT-4o refinement for yellow results.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "fit-evaluator",
+        "configuration"
+      ]
+    },
+    {
+      "statement": "The workspace integration maintains a JSON job registry, deduplicates by company/title and LinkedIn job ID, creates per-job folders and job information files, and generates keyword-reordered resume PDFs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workspace-resume"
+      ]
+    },
+    {
+      "statement": "The outreach path searches for managers, recruiters, team members, and networking contacts through Serper, discovers or guesses email addresses, generates personalized messages, and creates reviewable Gmail drafts without sending them.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "outreach",
+        "email-discovery",
+        "gmail-drafts"
+      ]
+    },
+    {
+      "statement": "Separate upload scripts materialize jobs, contacts, messages, draft metadata, resume suggestions, networking results, and pipeline-run statistics into Google Sheets tabs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sheets",
+        "orchestrator"
+      ]
+    },
+    {
+      "statement": "A daily shell wrapper supports unattended execution with environment loading, prerequisite checks, logging, non-interactive OAuth behavior, and a stale-lock recovery mechanism.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cron-wrapper"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The supplied GitHub snapshot lists three open issues covering a NoneType/configuration fix, Gmail draft and email-discovery integration, and workspace registration with tailored resume PDFs.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "issues-snapshot"
+      ]
+    },
+    {
+      "statement": "All three open-issue themes are already represented in the analyzed revision, so the issue list appears to mix completed integration notes with genuinely outstanding work and should not be treated as a reliable backlog without owner review.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "issues-snapshot",
+        "fit-evaluator",
+        "configuration",
+        "orchestrator",
+        "workspace-resume",
+        "gmail-drafts"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The repository uses a script-oriented batch architecture: a central Python orchestrator launches specialized CLI programs as subprocesses and exchanges timestamped JSON and CSV files through an ignored output directory.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifest",
+        "orchestrator"
+      ]
+    },
+    {
+      "statement": "Persistent state is split between local output files for processed message, job, and report identifiers and an external workspace containing seen_jobs.json plus per-job folders.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "gmail-ingestion",
+        "workspace-resume",
+        "configuration"
+      ]
+    },
+    {
+      "statement": "External boundaries comprise Gmail read/compose OAuth, Google Sheets OAuth, OpenAI model calls, crawl4ai browser scraping, Serper search, and Hunter.io email discovery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "requirements",
+        "scraper",
+        "outreach",
+        "email-discovery",
+        "gmail-drafts",
+        "sheets"
+      ]
+    },
+    {
+      "statement": "The implementation is highly owner-specific: career paths, company preferences, outreach hooks, resume content, and a default local workspace path are embedded directly in source or expected from a separate personal workspace.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "configuration",
+        "fit-evaluator",
+        "workspace-resume",
+        "outreach"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The latest commit added or substantially integrated fit evaluation, job registration, tailored resume generation, contact-email discovery, Gmail drafts, URL/report ingestion, and pipeline-run logging across 22 changed files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history"
+      ]
+    },
+    {
+      "statement": "Safety controls include draft-only Gmail behavior, a configurable per-run draft cap, dry-run support, API-key redaction in displayed subprocess commands, deduplication, and cron locking.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "gmail-drafts",
+        "orchestrator",
+        "cron-wrapper"
+      ]
+    },
+    {
+      "statement": "All 31 Python files parsed successfully, both shell wrappers passed bash syntax checking, and a direct fit-evaluation smoke check handled null job fields without crashing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "Expected environment, OAuth credential, token, output, virtual-environment, and log files are excluded from the tracked tree at HEAD.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-files"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no automated tests, CI workflows, checked-in execution fixtures, or generated outputs proving that the complete external-service workflow succeeds.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifest",
+        "verification"
+      ]
+    },
+    {
+      "statement": "The README says fit rules are parsed from career_preferences.md, but evaluate_job_fit.py defines its title, keyword, company, and location preferences directly in source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "fit-evaluator"
+      ]
+    },
+    {
+      "statement": "Gmail-discovered jobs are registered in the workspace before the complete pipeline evaluates their fit, so they can receive unscored folders and resumes before the documented resume threshold is applied.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "gmail-ingestion",
+        "orchestrator",
+        "workspace-resume"
+      ]
+    },
+    {
+      "statement": "When no green-tier jobs are found, the complete orchestrator leaves its outreach input pointed at the full evaluated job file, contrary to the documented green-only outreach rule.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "orchestrator",
+        "readme"
+      ]
+    },
+    {
+      "statement": "requirements.txt pins crawl4ai 0.3.74 while recent commit messages describe fixes for crawl4ai 0.8 configuration APIs, leaving the intended and verified dependency version unclear.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "requirements",
+        "history",
+        "scraper"
+      ]
+    },
+    {
+      "statement": "The README declares an MIT license, but no standalone license text is tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tree-manifest"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The registration-before-evaluation and empty-green fallback behaviors can apply resume or outreach processing to jobs below the intended thresholds.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "gmail-ingestion",
+        "orchestrator",
+        "readme"
+      ]
+    },
+    {
+      "statement": "When Hunter.io does not return an address, the email-discovery component selects a low-confidence pattern guess that the draft creator accepts without a minimum-confidence check; drafts are not sent automatically, but they may be prepared for an incorrect recipient.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "email-discovery",
+        "gmail-drafts"
+      ]
+    },
+    {
+      "statement": "Hard-coded personal resume history, outreach context, and profile-specific targeting in a public repository create privacy and staleness exposure even though credential files are ignored.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "workspace-resume",
+        "outreach",
+        "security-files"
+      ]
+    },
+    {
+      "statement": "The unverified crawl4ai version mismatch and absence of dependency or end-to-end CI make scraping regressions likely to be discovered only during a live run.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "requirements",
+        "history",
+        "scraper",
+        "verification"
+      ]
+    },
+    {
+      "statement": "Successful operation requires several paid or quota-limited APIs and local OAuth tokens, so cost, quota exhaustion, token expiry, and upstream API changes remain operational dependencies.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "requirements",
+        "orchestrator"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Move fit evaluation ahead of workspace registration and explicitly skip outreach when the green-tier collection is empty, with tests covering red-only, yellow-only, and mixed-tier runs.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "gmail-ingestion",
+        "orchestrator",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Add unit tests for URL normalization, fit scoring, registry deduplication, email confidence handling, message validation, and Sheets row materialization, then run them in a minimal CI workflow.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree-manifest",
+        "verification"
+      ]
+    },
+    {
+      "statement": "Choose and verify one crawl4ai version, align requirements and compatibility code with it, and introduce a reproducible dependency lock or constraints file.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "requirements",
+        "history",
+        "scraper"
+      ]
+    },
+    {
+      "statement": "Require an explicit confidence threshold or review marker for pattern-guessed addresses before creating Gmail drafts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "email-discovery",
+        "gmail-drafts"
+      ]
+    },
+    {
+      "statement": "Move personal resume content, company hooks, and career targeting rules into ignored workspace templates or configuration so the public engine remains reusable and profile data can be updated independently.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "configuration",
+        "fit-evaluator",
+        "workspace-resume",
+        "outreach"
+      ]
+    },
+    {
+      "statement": "Reconcile or close the three open issues and replace any still-needed work with acceptance criteria that distinguish implemented code from verified end-to-end behavior.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "issues-snapshot",
+        "history",
+        "verification"
+      ]
+    }
+  ],
+  "questions": [
+    "Is run_complete_career_daily.sh installed in an active cron configuration, and are there successful run logs outside the repository?",
+    "Should the pipeline skip outreach completely when no green-tier jobs exist?",
+    "Should Gmail-discovered jobs be registered only after fit evaluation and the resume threshold check?",
+    "Are the three open issues stale records of the latest integration commit, or do they represent unresolved failures in actual runs?",
+    "Which crawl4ai release is the intended production dependency: the pinned 0.3.74 version or the 0.8 API referenced by recent commits?",
+    "Should personal resume and outreach-profile content remain embedded in this public repository?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Automate_Job_Search",
+      "summary": "Supplied snapshot identifies a public main-branch repository, last pushed on 2026-03-31, with no description, three open issues, and no open pull requests."
+    },
+    {
+      "id": "issues-snapshot",
+      "kind": "github_issues_snapshot",
+      "location": "https://github.com/kmadhok/Automate_Job_Search/issues",
+      "summary": "Supplied issue titles cover a NoneType/configuration change, Gmail draft integration, and workspace registration with tailored resumes; live issue bodies could not be fetched."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Documents the intended end-to-end workflow, setup, tier gates, workspace model, cron usage, Sheets tabs, safety controls, and troubleshooting."
+    },
+    {
+      "id": "tree-manifest",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "HEAD tracks 37 files: 31 Python scripts, two shell wrappers, one README, requirements.txt, .gitignore, and .env.example; no tests, workflows, notebooks, docs directory, or output artifacts are tracked."
+    },
+    {
+      "id": "requirements",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Pins Google API clients, crawl4ai 0.3.74, OpenAI 1.58.1, pandas, dotenv, PyArrow, pypdf, and ReportLab."
+    },
+    {
+      "id": "configuration",
+      "kind": "configuration_source",
+      "location": "config.py",
+      "summary": "Loads environment-backed API, Gmail, workspace, tier-threshold, resume-feature, draft-cap, and output settings, with owner-specific default workspace paths."
+    },
+    {
+      "id": "gmail-ingestion",
+      "kind": "source_code",
+      "location": "main.py and email_processor.py",
+      "summary": "Implements Gmail label querying, LinkedIn link extraction, incremental deduplication, scraping, result persistence, and pre-evaluation workspace registration."
+    },
+    {
+      "id": "scraper",
+      "kind": "source_code",
+      "location": "job_scraper.py",
+      "summary": "Combines deterministic JSON-LD and DOM parsing with crawl4ai and schema-based OpenAI extraction, including compatibility branching for LLM configuration."
+    },
+    {
+      "id": "fit-evaluator",
+      "kind": "source_code",
+      "location": "evaluate_job_fit.py",
+      "summary": "Implements hard-coded deterministic fit rules, green/yellow/red scoring, optional yellow-tier LLM refinement, and JSON/CSV output."
+    },
+    {
+      "id": "workspace-resume",
+      "kind": "source_code",
+      "location": "job_manager.py and generate_tailored_resume.py",
+      "summary": "Implements external registry persistence, deduplication, per-job folders, job metadata, and PDF resumes assembled from embedded profile content and keyword-ranked bullets."
+    },
+    {
+      "id": "outreach",
+      "kind": "source_code",
+      "location": "find_outreach_contacts.py, find_networking_contacts.py, generate_outreach_messages.py, and generate_networking_messages.py",
+      "summary": "Implements Serper-backed candidate discovery, heuristic ranking, profile-aware personalization, message generation, and basic message-quality validation."
+    },
+    {
+      "id": "email-discovery",
+      "kind": "source_code",
+      "location": "find_contact_emails.py",
+      "summary": "Uses Hunter.io as the primary email source and falls back to company-domain pattern guesses with confidence values as low as 10."
+    },
+    {
+      "id": "gmail-drafts",
+      "kind": "source_code",
+      "location": "gmail_auth.py and create_gmail_drafts.py",
+      "summary": "Uses Gmail readonly and compose scopes to create, but not send, messages; supports dry runs and a configurable draft count."
+    },
+    {
+      "id": "sheets",
+      "kind": "source_code",
+      "location": "upload_jobs_to_sheets.py and related upload_*_to_sheets.py scripts",
+      "summary": "Implements OAuth-backed tab creation, header management, append/replace modes, value normalization, cell truncation, and pipeline-stat uploads."
+    },
+    {
+      "id": "orchestrator",
+      "kind": "source_code",
+      "location": "run_complete_career_pipeline.py",
+      "summary": "Coordinates discovery, daily-report merging, evaluation, Sheets uploads, workspace registration, contact and email discovery, message and draft creation, resume tailoring, networking, and run logging."
+    },
+    {
+      "id": "cron-wrapper",
+      "kind": "operational_script",
+      "location": "run_complete_career_daily.sh and run_openclaw_daily.sh",
+      "summary": "Provides non-interactive daily execution, environment loading, locking with TTL recovery, prerequisite checks, and timestamped logs; both scripts passed bash syntax checking."
+    },
+    {
+      "id": "security-files",
+      "kind": "security_configuration",
+      "location": ".gitignore and tracked-file inventory",
+      "summary": "Expected .env, OAuth credential, token, output, log, and virtual-environment files are ignored, and none of those credential or token files are tracked at HEAD; no secret values were inspected."
+    },
+    {
+      "id": "verification",
+      "kind": "local_verification",
+      "location": "read-only local analysis at revision 5e4ec5142c4da22bb305f860f3db0acf746e14c8",
+      "summary": "All 31 Python files passed AST parsing, both shell scripts passed bash syntax checking, git diff checking found no patch errors, and evaluate_job handled null title, company, location, description, requirements, and responsibilities in a smoke check. No external-service or end-to-end execution was performed."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 5e4ec5142c4da22bb305f860f3db0acf746e14c8",
+      "summary": "Seven locally visible commits span 2026-01-25 through 2026-03-31. HEAD is a 22-file, 4,494-line integration commit; earlier commits include Sheets cell truncation and two crawl4ai compatibility fixes."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The architecture and implemented capabilities are strongly supported by source, documentation, static parsing, and recent history. Confidence is limited because there are no automated tests, CI results, generated outputs, external workspace artifacts, or successful end-to-end run evidence, and live GitHub issue details were inaccessible."
+  },
+  "limitations": [
+    "No credential, token, or .env values were read.",
+    "External APIs and target sites were not contacted, so scraping, OAuth, quotas, and integration behavior were not verified.",
+    "The external Job Search workspace was unavailable, preventing validation of registry contents, daily reports, folders, resumes, or operational usage.",
+    "Only issue titles from the supplied snapshot were available; issue bodies, comments, timestamps, and live resolution context could not be inspected.",
+    "The checkout was supplied as depth 50, so conclusions about history are limited to locally available commits even though local Git reported the seven-commit checkout as non-shallow.",
+    "Repetitive upload implementations were sampled rather than inspected line by line."
+  ]
+}

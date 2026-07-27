@@ -1,0 +1,334 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/DriveStorage",
+  "analyzed_at": "2026-07-27T03:16:35Z",
+  "revision": "890820df130b20837d2430e157e810e4a2296380",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata for the private main branch",
+      "all tracked documentation",
+      "complete top-level and tracked-file inventories",
+      "static-site HTML, JavaScript, and CSS entry points",
+      "all 12 bundled fast-food CSV datasets",
+      "source cells and execution metadata from all three notebooks, excluding credential values",
+      "tests, CI, dependency-manifest, deployment, and credential-filename inventories",
+      "all locally available branches, tags, and commit history"
+    ],
+    "missing": [
+      "root README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency manifests",
+      "automated tests",
+      "CI workflows",
+      "release artifacts",
+      "deployment configuration",
+      "license",
+      "current project plan or TODO backlog"
+    ],
+    "inaccessible": [
+      "independent verification of the externally linked GitHub Pages deployment",
+      "live Nutritionix, Spoonacular, browser-scraping, and notebook execution"
+    ],
+    "sampling_notes": "The checkout was supplied as a shallow, depth-50 recent-history sample, so history before the available snapshot cannot be assumed complete. The repository is small enough that all 20 tracked files were inventoried and all source and notebook cells were inspected; only one commit was locally available. Notebook outputs were inspected only through execution/error metadata, and credential values were excluded."
+  },
+  "stated_purpose": "The fast-food-fitness README states that the project compares fast-food menu items to find the best calories-to-protein ratio using Nutritionix-derived CSV data.",
+  "observed_capabilities": [
+    {
+      "statement": "A browser-based static page lets a user select one of 12 restaurant datasets and displays menu items ordered by ascending calories-per-gram-of-protein ratio.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-site",
+        "datasets"
+      ]
+    },
+    {
+      "statement": "The page filters out menu rows with four or fewer grams of protein, deduplicates items by name, adds a chicken-breast comparison row, and changes the background palette for the selected restaurant.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "table-logic"
+      ]
+    },
+    {
+      "statement": "A separate JavaScript utility queries the Nutritionix search API in batches, calculates calories-to-protein ratios, filters results, and downloads restaurant data as CSV.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nutritionix-utility"
+      ]
+    },
+    {
+      "statement": "One pandas notebook combines restaurant CSV files and interactively filters the resulting table by maximum calories and minimum protein.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "filter-notebook"
+      ]
+    },
+    {
+      "statement": "Two additional notebooks experiment with nutrient-based recipe lookup and browser-driven scraping of Oddschecker and Mars-themed sites.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nutrition-notebook",
+        "scraping-notebook"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The primary workflow is a client-only HTML page whose JavaScript synchronously loads local CSV files through XMLHttpRequest, parses them into in-memory objects, and renders an HTML table without a backend or build step.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-site",
+        "table-logic",
+        "datasets"
+      ]
+    },
+    {
+      "statement": "Data acquisition is separated from presentation: nutritionixAPIInterface.js can generate CSV downloads, while tablePopulate.js consumes committed CSV snapshots.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nutritionix-utility",
+        "table-logic",
+        "datasets"
+      ]
+    },
+    {
+      "statement": "The Nutrition and scrape_odds notebooks are standalone experiments with no demonstrated integration into the static-site workflow.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "nutrition-notebook",
+        "scraping-notebook",
+        "static-site"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a complete static comparison interface and 1,573 bundled data rows covering 12 fast-food restaurants.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-site",
+        "datasets"
+      ]
+    },
+    {
+      "statement": "The repository preserves both a data-extraction utility and a pandas-based exploratory filtering workflow alongside the presentation layer.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nutritionix-utility",
+        "filter-notebook"
+      ]
+    },
+    {
+      "statement": "All three notebooks contain executed cells, showing that their exploratory workflows were run at least partially in their original environments.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-metadata"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no automated tests, CI workflows, dependency manifests, release artifacts, or repository-owned deployment configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification-inventory"
+      ]
+    },
+    {
+      "statement": "The only README documents the fast-food subdirectory; the repository has no root-level explanation for its DriveStorage name or for the unrelated notebooks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The README and page link to an external user's GitHub Pages site and source repository rather than documenting a deployment owned by kmadhok/DriveStorage.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "static-site"
+      ]
+    },
+    {
+      "statement": "The scraping notebook retains an AttributeError output, and no successful end-to-end verification artifact is present for the web page, API utilities, or notebooks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-metadata",
+        "verification-inventory"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A tracked nutrition notebook contains a hard-coded API-credential-shaped literal; its value should be treated as exposed even though it was not reproduced in this analysis.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "credential-scan"
+      ]
+    },
+    {
+      "statement": "The absence of pinned dependencies or a reproducible environment makes the older pandas, Splinter, ChromeDriver, Beautiful Soup, and external-API workflows vulnerable to dependency and service drift.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "nutrition-notebook",
+        "scraping-notebook",
+        "verification-inventory",
+        "history"
+      ]
+    },
+    {
+      "statement": "The static page depends on synchronous local XMLHttpRequests, naive comma-splitting, and external Bootstrap, jQuery, and Popper assets, which creates browser-compatibility and data-parsing fragility.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "static-site",
+        "table-logic"
+      ]
+    },
+    {
+      "statement": "A single bulk-upload commit from 2022 with no subsequent activity provides no evidence that the data, external endpoints, or workflows remain current.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Revoke or verify revocation of the credential represented by the hard-coded notebook literal, remove it from tracked content and history where appropriate, and replace it with documented environment-based configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "credential-scan"
+      ]
+    },
+    {
+      "statement": "If the fast-food prototype is worth retaining, separate or remove the unrelated notebooks, add a root README and license, pin its environments, and add a small automated test for CSV loading and ratio ordering.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "readme",
+        "verification-inventory",
+        "table-logic"
+      ]
+    },
+    {
+      "statement": "If the repository is only an old file snapshot, archive it after addressing the credential exposure and record the externally hosted fast-food project as provenance rather than implying an active deployment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "readme",
+        "metadata",
+        "credential-scan"
+      ]
+    }
+  ],
+  "questions": [
+    "Was DriveStorage intended only as a backup of coursework and experiments, or should the fast-food prototype remain runnable?",
+    "Does the externally linked ewang098 fast-food-fitness project represent the original source or a collaborator-owned deployment?",
+    "Has the API credential represented in Nutrition/Nutrition_Pull.ipynb been revoked?",
+    "Should the Nutrition and scrape_odds notebooks be retained here, moved to separate repositories, or deleted?",
+    "Are the 2020-era restaurant nutrition snapshots still useful, or should they be explicitly labeled historical?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/DriveStorage",
+      "summary": "Registry snapshot identifies a private repository on main with no description, no open issues or pull requests, and its last push on 2022-08-08."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "fast-food-fitness/README.md",
+      "summary": "Describes a HTML/CSS/JavaScript calorie-to-protein comparison project using Nutritionix-derived CSV data and links to an ewang098 GitHub Pages deployment."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Twenty tracked files are divided among Nutrition, fast-food-fitness, and scrape_odds; file types comprise 12 CSVs, three notebooks, two JavaScript files, one HTML file, one CSS file, and one README."
+    },
+    {
+      "id": "static-site",
+      "kind": "entry_point",
+      "location": "fast-food-fitness/index.html",
+      "summary": "Defines a Bootstrap-based restaurant selector and nutrition table for 12 restaurant choices, loading tablePopulate.js as the application logic."
+    },
+    {
+      "id": "table-logic",
+      "kind": "source",
+      "location": "fast-food-fitness/tablePopulate.js",
+      "summary": "Synchronously loads local restaurant CSVs, filters and deduplicates menu items, computes display objects, sorts by fitness ratio, applies restaurant palettes, and renders the table."
+    },
+    {
+      "id": "nutritionix-utility",
+      "kind": "source",
+      "location": "fast-food-fitness/nutritionixAPIInterface.js",
+      "summary": "Implements paginated Nutritionix API retrieval, result filtering, ratio calculation, and browser-based CSV download using placeholder credential fields."
+    },
+    {
+      "id": "datasets",
+      "kind": "data",
+      "location": "fast-food-fitness/*.csv",
+      "summary": "Twelve restaurant CSV files contain 1,573 data rows with Brand, Item, Calories, Protein, and Fitness Ratio columns."
+    },
+    {
+      "id": "filter-notebook",
+      "kind": "notebook",
+      "location": "fast-food-fitness/Untitled.ipynb",
+      "summary": "Loads 11 restaurant CSVs into pandas, outer-merges them, and filters interactively by calorie and protein thresholds; Jack in the Box is not included in its merge."
+    },
+    {
+      "id": "nutrition-notebook",
+      "kind": "notebook",
+      "location": "Nutrition/Nutrition_Pull.ipynb",
+      "summary": "Explores a Spoonacular nutrient-based recipe request with pandas, NumPy, requests, and JSON, including an API-credential-shaped assignment whose value was excluded from this brief."
+    },
+    {
+      "id": "scraping-notebook",
+      "kind": "notebook",
+      "location": "scrape_odds/Mission_to_Mars.ipynb",
+      "summary": "Uses Splinter, Beautiful Soup, pandas, and ChromeDriverManager to visit Oddschecker and several Mars-themed sites, extract page data, and assemble a result dictionary."
+    },
+    {
+      "id": "notebook-metadata",
+      "kind": "verification_artifact",
+      "location": "**/*.ipynb",
+      "summary": "The notebooks contain executed cells and saved outputs; the scraping notebook has one saved AttributeError, while the other two contain no saved error outputs."
+    },
+    {
+      "id": "verification-inventory",
+      "kind": "repository_inventory",
+      "location": ".",
+      "summary": "No tests, CI workflows, dependency manifests, containers, releases, or deployment configuration were found."
+    },
+    {
+      "id": "credential-scan",
+      "kind": "security_scan",
+      "location": "Nutrition/Nutrition_Pull.ipynb",
+      "summary": "A source-cell pattern scan found one hard-coded API-key-shaped assignment. The credential value was not retained or reproduced."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Only commit 890820d, dated 2022-08-08 and titled 'Add files via upload,' is available; it added all 20 tracked files. No tags or additional branches are present beyond main and its remote-tracking branch."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The complete small tracked tree, implementation paths, datasets, notebook structure, and all locally available history were inspected and agree that this is a dormant prototype/storage snapshot. Confidence is limited by the supplied recent-history checkout, lack of tests or reproducible environments, inaccessible live services, and absence of owner context explaining provenance."
+  },
+  "limitations": [
+    "The supplied checkout was described as depth 50, so history outside the available revision window may be absent even though only one commit is visible locally.",
+    "The static page and notebooks were not executed because their external services, browser environment, and unpinned dependencies were outside this read-only evidence pass.",
+    "GitHub metadata and issue/PR status came from the supplied registry snapshot rather than a fresh remote query.",
+    "Notebook outputs were not semantically reviewed because they can contain large generated content or sensitive values; only execution and error metadata were inspected.",
+    "The purpose and provenance of the unrelated notebooks cannot be established from repository documentation."
+  ]
+}

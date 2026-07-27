@@ -1,0 +1,480 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/interview-prep",
+  "analyzed_at": "2026-07-27T03:21:49Z",
+  "revision": "e0fee7906523c4b41f14f9d6383db379be37f2ea",
+  "analysis_scope": {
+    "inspected": [
+      "repository metadata supplied in the GitHub snapshot",
+      "CLAUDE.md and AGENTS.md",
+      "top-level tracked-file and directory inventory",
+      "pipeline, reusable-content, architecture, operations, and two-orchestrator documentation",
+      "PowerShell runner and Task Scheduler entry points",
+      "representative deterministic Python components for worklists, apply packets, digests, watchdogs, and dashboards",
+      "jd-to-ready and stage-outreach skill definitions",
+      "Python test inventory and representative unit and lifecycle tests",
+      "representative active, fully prepared, deeply prepared, and archived role-folder structures",
+      "generated application-packet, classification, trace, outreach, and resume artifact counts",
+      "recent 20-commit history and available local branches",
+      "credential-file names and ignore rules without reading credential values"
+    ],
+    "missing": [
+      "root README",
+      "dependency manifest or pinned Python environment",
+      "GitHub Actions or other repository-hosted CI workflow",
+      "release history and tagged deployable releases"
+    ],
+    "inaccessible": [
+      "live GitHub PR details and remote branch state because api.github.com was unreachable",
+      "external Gmail, LinkedIn, Google Drive, ntfy, rclone, Windows Task Scheduler, and cloud-routine runtime state",
+      "local secret files outside version control"
+    ],
+    "sampling_notes": "This is a shallow clone with depth 50, so history before the available recent window was not inspected. The repository is large: 1,188 tracked files across about 14.4 MB, including 99 active role directories, 25 archived role directories, 141 PDFs, 10 DOCX files, 92 JSONL files, and hundreds of Markdown artifacts. Automation entry points, principal skills, architecture documents, representative tests, and three contrasting role folders were inspected; most role-specific prose, binary PDFs/DOCX files, all trace records, and the contents of verified-email or credential-bearing artifacts were not individually reviewed."
+  },
+  "stated_purpose": "A personal job-search and interview-preparation workspace that reduces time-to-application and time-to-recruiter-outreach by preparing role-specific application packets and draft outreach while preserving human approval for applying and sending.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository tracks a live application pipeline and organizes preparation by role, with 14 Active, 83 Considering, and 28 Closed/On hold rows at the analyzed revision, alongside 99 active and 25 archived role directories.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "pipeline",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The prep workflow can file a job description, classify it into a constrained role taxonomy, tailor a resume from canonical achievements, render a PDF, prepare application answers, and upload a mobile-ready apply packet through rclone.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "jd-to-ready-skill",
+        "apply-packet-source",
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "The apply-side workflow selects Active roles marked Applied but not STAGED, performs recruiter research and email verification, writes cold-outreach artifacts, and creates Gmail drafts without sending them.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "stage-outreach-skill",
+        "worklist-source",
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "A Windows-oriented unattended runner supports saved-job preparation, email-queue ingestion, hourly outreach polling, heartbeat commits, daemon health probes, apply-queue reconciliation, and daily notification digests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runner-source",
+        "scheduler-source",
+        "watchdog-tests",
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "The workspace includes shared resume achievements, interview stories, self-introduction variants, AI-build walkthroughs, demo descriptions, and outreach templates that feed role-specific artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "agent-guide",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Dashboard and rendering scripts derive actionable views from Pipeline.md and role-folder artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dashboard-source",
+        "repository-tree"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "Design documents still call for completing or confirming the separation of cloud Gmail reconciliation from PC-side outreach drafting, although scheduler code and recent automated commits indicate that parts of this plan have advanced beyond those documents.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "two-orchestrator-docs",
+        "scheduler-source",
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "The email-ingestion path still documents a Gmail filter that does not reliably match self-sent queue messages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runner-readme"
+      ]
+    },
+    {
+      "statement": "An open PR titled \"Proposal: steal list from aravindpranav/job-agent\" represents unresolved exploratory work, but its implementation and intent could not be inspected.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "github-snapshot"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "Repository files are the state model: role folders, Pipeline.md prose markers, classification records, apply-packet records, trace JSONL files, and STAGED markers replace a separate state database.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "agent-guide",
+        "worklist-source",
+        "apply-packet-source"
+      ]
+    },
+    {
+      "statement": "The system is divided at an apply gate: jd-to-ready handles save-side preparation, while stage-outreach handles LinkedIn and Gmail work only after a role is marked Applied.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "jd-to-ready-skill",
+        "stage-outreach-skill",
+        "two-orchestrator-docs"
+      ]
+    },
+    {
+      "statement": "Deterministic Python readers and reconciliation utilities are composed with agent-driven skills and external Gmail, LinkedIn, Google Drive/rclone, and ntfy integrations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runner-source",
+        "apply-packet-source",
+        "digest-source",
+        "worklist-source"
+      ]
+    },
+    {
+      "statement": "Human approval is intentionally retained at the two outward-action boundaries: submitting an application and sending recruiter outreach.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "purpose-doc",
+        "stage-outreach-skill"
+      ]
+    },
+    {
+      "statement": "Closed roles are moved intact from Roles/ to _Archived/, preserving their job descriptions, preparation, contact research, resumes, and traces.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recent-history",
+        "repository-tree"
+      ]
+    }
+  ],
+  "maturity": "operational",
+  "accomplishments": [
+    {
+      "statement": "The repository contains substantial produced output: 127 job descriptions, 98 classifications, 82 apply-packet records, 90 orchestration traces, 82 application-answer files, 77 cold-outreach files, and 52 verified-email artifacts across production, archive, and isolated test areas.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifact-inventory"
+      ]
+    },
+    {
+      "statement": "Recent automated commits show repeated six-role saved-job preparation runs, apply-packet generation, outreach reconciliation, heartbeat updates, and rejection-driven archival rather than only planned automation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "The repository includes 129 discovered Python test functions covering deterministic readers, lifecycle transitions, packet upload and reconciliation, trace verification, watchdog thresholds, job parsing, deduplication, ledgers, and digest composition.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "test-inventory",
+        "watchdog-tests"
+      ]
+    },
+    {
+      "statement": "The outreach-writing evaluation records nine passing fixture emails across three agent implementations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "outreach-scoreboard"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No dependency manifest, lockfile for the Python runtime, container definition, or repository-hosted CI workflow establishes a reproducible verification environment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "test-inventory"
+      ]
+    },
+    {
+      "statement": "Operational documentation is stale or contradictory: two-orchestrator and runner READMEs describe cron wiring as pending or disabled, while install-tasks.ps1 declares the daily and hourly tasks enabled and recent drip-runner commits demonstrate execution.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "two-orchestrator-docs",
+        "runner-readme",
+        "scheduler-source",
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "Recent commits report a backlog of more than 30 unsent drafts and paused staging, showing that the automated preparation rate can exceed the human review-and-send rate.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "Tests were present and extensively documented but could not be executed during this read-only analysis, and important end-to-end behavior depends on external services unavailable from the checkout.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "test-inventory",
+        "runner-source"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The repository contains resumes, application-profile data, recruiter correspondence, verified contact information, interview materials, and internal work-artifact descriptions; an accidental visibility change or broad sharing could expose personal, third-party, or employer-confidential information.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "artifact-inventory",
+        "agent-guide"
+      ]
+    },
+    {
+      "statement": "The unattended runner invokes an agent with bypassPermissions and repository settings allow broad read, write, shell, Gmail, and LinkedIn access; a malformed prompt, compromised dependency, or unexpected agent action could alter or push repository state even though outbound messages remain human-gated.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "runner-source",
+        "claude-settings"
+      ]
+    },
+    {
+      "statement": "LinkedIn browser automation is explicitly recognized as rate-limited and account-risking, making scheduler overlap or gate regressions capable of harming the owner's LinkedIn account.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "purpose-doc",
+        "scheduler-source",
+        "stage-outreach-skill"
+      ]
+    },
+    {
+      "statement": "Multiple automated and interactive writers can race on main; the repository documents prior pull/index-lock failures and a 34-hour silent deadlock despite later autostash, scheduling offsets, and watchdog mitigations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runner-source",
+        "scheduler-source",
+        "purpose-doc"
+      ]
+    },
+    {
+      "statement": "External integration versions and setup are mostly documented operationally rather than pinned in machine-readable manifests, increasing rebuild and drift risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "runner-readme",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Reconcile the automation documentation with the actual July runtime state, clearly identifying which PC tasks and cloud routines are enabled, who owns drafting, and which legacy instructions are retired.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "two-orchestrator-docs",
+        "runner-readme",
+        "scheduler-source",
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "Add a minimal pinned dependency definition and read-only CI checks for deterministic Python tests, JSON/schema validity, documentation contradictions, and sensitive-file denylisting.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "test-inventory",
+        "claude-settings"
+      ]
+    },
+    {
+      "statement": "Review the unattended bypassPermissions design and narrow its filesystem, Git, Gmail, and LinkedIn authority where possible; consider a dedicated automation branch or protected merge path for machine-generated changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "runner-source",
+        "claude-settings",
+        "recent-history"
+      ]
+    },
+    {
+      "statement": "Resolve the unsent-draft backlog and tune preparation or staging throughput to the owner's realistic review capacity before increasing ingestion volume.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "recent-history",
+        "purpose-doc"
+      ]
+    },
+    {
+      "statement": "Perform a deliberate privacy inventory and retention review for verified emails, recruiter messages, application answers, old resumes, traces, and internal work artifacts while keeping credential files ignored.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "artifact-inventory",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "Inspect and decide the open job-agent proposal PR after live GitHub access is restored, recording whether it belongs in this repository's supported workflow.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "github-snapshot"
+      ]
+    }
+  ],
+  "questions": [
+    "Are the daily saved-job runner, hourly outreach runner, and cloud Gmail secretary all currently enabled, and which component is now the sole Gmail drafter?",
+    "Is the 30-plus draft backlog intentional history, or should ingestion and staging pause until it is cleared?",
+    "Should verified contact data, recruiter correspondence, application answers, and internal Walmart artifacts have explicit retention or encryption rules?",
+    "Should machine-generated commits continue landing directly on main, or move through a dedicated automation branch and validation gate?",
+    "Is the self-sent Gmail queue filter still needed now that saved-job ingestion is the primary path?",
+    "What change does PR #7 propose, and is it still desired?"
+  ],
+  "evidence": [
+    {
+      "id": "github-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/interview-prep",
+      "summary": "Supplied snapshot identifies a private main-branch repository with one open PR, no open issue titles, and recent repository activity."
+    },
+    {
+      "id": "agent-guide",
+      "kind": "repository_documentation",
+      "location": "CLAUDE.md and AGENTS.md",
+      "summary": "Defines the workspace as personal interview preparation, documents reusable assets and role-folder conventions, and describes the two-orchestrator automation and human gates."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The 1,188-file tree is dominated by role artifacts, archived roles, reusable Markdown libraries, agent skills, Python utilities, PowerShell scheduling, tests, PDFs, DOCX files, and generated JSON/JSONL state."
+    },
+    {
+      "id": "pipeline",
+      "kind": "data_store",
+      "location": "Pipeline.md",
+      "summary": "File-backed application tracker containing 14 Active, 83 Considering, and 28 Closed/On hold role rows at the analyzed revision."
+    },
+    {
+      "id": "purpose-doc",
+      "kind": "architecture_document",
+      "location": "Automation Design - Two-Orchestrator/Automation Architecture - Purpose.md",
+      "summary": "Defines the conveyor-belt goal, apply and send human gates, LinkedIn rationing, no-babysitting and fail-loud invariants, and file-backed state."
+    },
+    {
+      "id": "two-orchestrator-docs",
+      "kind": "design_documentation",
+      "location": "Automation Design - Two-Orchestrator/",
+      "summary": "Specifies the save-side and apply-side split, apply detection, machine watchdog, apply packet, and a partially built status that is older than some implementation evidence."
+    },
+    {
+      "id": "jd-to-ready-skill",
+      "kind": "agent_workflow",
+      "location": ".claude/skills/jd-to-ready/SKILL.md",
+      "summary": "Implements the prep orchestration contract for intake, constrained classification, canonical resume tailoring, PDF verification, application answers, Drive packet creation, and trace logging."
+    },
+    {
+      "id": "stage-outreach-skill",
+      "kind": "agent_workflow",
+      "location": ".claude/skills/stage-outreach/SKILL.md",
+      "summary": "Implements the Applied-only outreach contract, including LinkedIn research, enrichment, verification, cold-outreach artifacts, Gmail drafts, hard-gate checks, and STAGED markers."
+    },
+    {
+      "id": "runner-source",
+      "kind": "entry_point",
+      "location": "scripts/drip_runner/run.ps1",
+      "summary": "Task Scheduler entry point for saved, email, and outreach modes; performs pull/rebase, unattended agent invocation, heartbeat handling, packet reconciliation, digest delivery, logging, and push-related operations."
+    },
+    {
+      "id": "scheduler-source",
+      "kind": "operational_configuration",
+      "location": "scripts/drip_runner/install-tasks.ps1",
+      "summary": "Registers an at-logon LinkedIn daemon, daily saved-job runner, and hourly outreach runner with overlap suppression and execution limits."
+    },
+    {
+      "id": "runner-readme",
+      "kind": "operations_documentation",
+      "location": "scripts/drip_runner/README.md",
+      "summary": "Documents saved-job and email ingestion, deterministic worklist readers, dependencies, manual commands, tests, a known Gmail-filter issue, and status notes that conflict with newer scheduler code."
+    },
+    {
+      "id": "worklist-source",
+      "kind": "source_code",
+      "location": "scripts/drip_runner/outreach_worklist.py",
+      "summary": "Deterministically selects Active roles marked Applied while excluding not-yet-applied, STAGED, and parked-error rows."
+    },
+    {
+      "id": "apply-packet-source",
+      "kind": "source_code",
+      "location": "scripts/drip_runner/apply_packet.py",
+      "summary": "Builds and reconciles the Drive Apply Queue projection, hashes resume PDFs, shells out to rclone, detects repost similarity, and persists packet state."
+    },
+    {
+      "id": "digest-source",
+      "kind": "source_code",
+      "location": "scripts/drip_runner/apply_digest.py",
+      "summary": "Composes apply-queue and staleness summaries and optionally sends them through ntfy using an untracked local topic file."
+    },
+    {
+      "id": "dashboard-source",
+      "kind": "source_code",
+      "location": "scripts/build_application_dashboard.py",
+      "summary": "Parses Pipeline.md and role-folder artifacts into Markdown and HTML action dashboards."
+    },
+    {
+      "id": "test-inventory",
+      "kind": "tests",
+      "location": "scripts/drip_runner/ and .claude/skills/*/scripts/test_*.py",
+      "summary": "Contains 129 discovered test functions across worklists, lifecycle integration, packets, watchdogs, parsers, ledgers, trace behavior, digest composition, and end-to-end artifact verification."
+    },
+    {
+      "id": "watchdog-tests",
+      "kind": "tests",
+      "location": "scripts/drip_runner/test_watchdog.py",
+      "summary": "Tests pass-A/pass-B staleness, daemon health, cloud-sweep weekday thresholds, abort streaks, anti-flapping, and CLI behavior with deterministic clocks."
+    },
+    {
+      "id": "outreach-scoreboard",
+      "kind": "evaluation_output",
+      "location": "Write Outreach Test/runs/SCOREBOARD.md",
+      "summary": "Records passing outreach-email evaluations across Claude, Codex, and Gemini fixture runs."
+    },
+    {
+      "id": "artifact-inventory",
+      "kind": "generated_artifacts",
+      "location": "Roles/, _Archived/, and _jd-to-ready-test/",
+      "summary": "Inventory includes 127 job descriptions, 98 classifications, 82 apply-packet records, 90 traces, 82 application-answer files, 77 cold-outreach files, and 52 verified-email files."
+    },
+    {
+      "id": "recent-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at e0fee7906523c4b41f14f9d6383db379be37f2ea",
+      "summary": "Recent commits are predominantly drip-runner outputs: multi-role preparation, packet generation, heartbeat updates, outreach reconciliation, draft-backlog pauses, and rejection-driven archival."
+    },
+    {
+      "id": "claude-settings",
+      "kind": "configuration",
+      "location": ".claude/settings.json",
+      "summary": "Enables broad repository tools plus Gmail and LinkedIn integrations; the unattended runner separately invokes the agent with bypassPermissions."
+    },
+    {
+      "id": "gitignore",
+      "kind": "security_configuration",
+      "location": ".gitignore",
+      "summary": "Ignores .env, local Claude settings, caches, generated HTML, Python bytecode, and a derived email-verification cache."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The purpose and architecture are supported by primary documentation, implemented skills, deterministic source, scheduler entry points, extensive generated artifacts, and recent automated commits. Operational status is evidenced strongly enough for an operational maturity rating, although live external integrations and tests could not be exercised and some status documentation is stale."
+  },
+  "limitations": [
+    "The checkout is shallow with depth 50, so conclusions about historical evolution are limited to recent history.",
+    "The repository was sampled because of its size; most role-specific prose, traces, PDFs, DOCX files, and generated outputs were not individually inspected.",
+    "Tests were inspected but not executed because the analysis was strictly read-only and test fixtures require temporary writes.",
+    "External Gmail, LinkedIn, Google Drive, rclone, ntfy, Windows Task Scheduler, and cloud-routine behavior could not be independently verified.",
+    "Live GitHub PR details and remote activity were inaccessible, so PR information is limited to the supplied snapshot.",
+    "No secret values were read. The analysis only identified ignore rules and credential-related filenames or requirements."
+  ]
+}

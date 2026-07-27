@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/firstmate-sandbox",
+  "analyzed_at": "2026-07-27T03:18:43Z",
+  "revision": "ae6cdbc09bc0612409dc067bd7f5cc8d7c1e72ce",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "README.md",
+      "complete tracked-file inventory and top-level structure",
+      "calc.py",
+      "test, CI, dependency-manifest, documentation, notebook, demo, deployment, and credential-filename presence checks",
+      "all available local branches and commit history"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency manifest",
+      "automated tests",
+      "CI workflows",
+      "package or installation metadata",
+      "release or deployment artifacts",
+      "open issues",
+      "open pull requests"
+    ],
+    "inaccessible": [],
+    "sampling_notes": "The working copy was supplied as a shallow clone with depth 50, so historical conclusions are bounded to recent history even though Git reports this one-commit checkout as non-shallow. The repository contains only two tracked files and one available commit; every tracked file and all available history were inspected."
+  },
+  "stated_purpose": "The README describes this as a throwaway repository for safely practicing the firstmate workflow by making small changes to a deliberately minimal calculator module.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository provides Python functions that add and subtract two supplied operands.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "calc-source"
+      ]
+    },
+    {
+      "statement": "The minimal module can serve as a target for small practice changes such as adding a function, fixing a bug, or introducing a test.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "calc-source"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The entire implementation is a single dependency-free Python source file containing two standalone functions; there is no application entry point, package structure, persistence layer, service boundary, or external integration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "calc-source"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The initial commit established an explicit disposable-practice purpose and a small, readable calculator implementation suitable for controlled workflow exercises.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "calc-source",
+        "git-history"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No automated tests verify the addition or subtraction behavior.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "calc-source"
+      ]
+    },
+    {
+      "statement": "There is no dependency manifest, packaging metadata, setup procedure, CI workflow, or executable entry point.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The repository contains no implementation or configuration of the firstmate workflow itself; it is only a practice target for that external workflow.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "repository-tree",
+        "calc-source"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Practice edits can silently regress the arithmetic functions because no automated verification or CI safeguard exists.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "calc-source",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The deliberately disposable framing and absence of maintenance artifacts make this repository unsuitable as a dependable calculator library or operational project.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "repository-tree",
+        "git-history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "If the sandbox will be reused, add a minimal test file and a documented test command so workflow exercises have an objective success check.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "calc-source",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "If the firstmate exercise is complete, have the owner confirm archival rather than adding production-oriented structure to a repository explicitly designated as throwaway.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "readme",
+        "git-history"
+      ]
+    }
+  ],
+  "questions": [
+    "Has the intended firstmate practice exercise been completed?",
+    "Should the sandbox remain available for repeated workflow drills or be archived?",
+    "If it remains available, should a small automated test suite define the baseline behavior participants must preserve?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/firstmate-sandbox",
+      "summary": "Supplied snapshot identifies a private, unarchived repository on main, last pushed on 2026-06-28, described as a throwaway firstmate-workflow practice repository, with no open issues or pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "States that the repository is disposable and intended for practicing small, safe changes to a minimal calculator module."
+    },
+    {
+      "id": "calc-source",
+      "kind": "source_code",
+      "location": "calc.py",
+      "summary": "Contains six lines defining standalone add and subtract functions with no imports or external dependencies."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree consists only of README.md and calc.py; no tests, manifests, workflows, docs, demos, notebooks, deployment files, or credential-like filenames were found."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Available history contains one commit, ae6cdbc, dated 2026-06-28 and titled 'Seed sandbox with README and calc module'; only main and its origin tracking references are present."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The repository is small enough to inspect exhaustively, and its complete source tree, README, supplied GitHub metadata, and sole available commit consistently support the conclusion that it is a disposable workflow-practice sandbox. Confidence about older activity is bounded by the supplied depth-50 history."
+  },
+  "limitations": [
+    "Commit-history analysis is bounded by the supplied depth-50 repository snapshot, although the available checkout contains only one commit and reports itself as non-shallow.",
+    "No execution or automated-test evidence exists, so arithmetic behavior was assessed by direct source inspection rather than a repository-provided verification process.",
+    "The supplied GitHub snapshot establishes issue and pull-request state, but no broader evidence of how the external firstmate workflow was exercised is present in the repository."
+  ]
+}

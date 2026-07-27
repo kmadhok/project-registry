@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/leaflet-challenge",
+  "analyzed_at": "2026-07-27T03:24:13Z",
+  "revision": "e011a66557ccd6ea31f850d8d4bbdcf57bb9c0e3",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata and issue/PR snapshot",
+      "current README.md",
+      "historical assignment README from commit 3e9395e",
+      "complete tracked-file inventory and top-level structure",
+      "index.html entry point",
+      "static/js/logic.js",
+      "static/css/style.css",
+      "static/js/homework.code-workspace",
+      "dependency, test, workflow, and credential-filename presence checks",
+      "all five commits visible in git history",
+      "local and remote branch inventory"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency manifest or lockfile",
+      "automated tests",
+      "CI/CD workflows",
+      "deployment configuration",
+      "release artifacts",
+      "license file",
+      "referenced static/js/config.js",
+      "current implementation instructions or TODO backlog",
+      "GitHub description"
+    ],
+    "inaccessible": [
+      "live browser verification against the external USGS, OpenStreetMap, unpkg, and D3 endpoints",
+      "history older than the shallow clone boundary, if any"
+    ],
+    "sampling_notes": "The checkout is shallow at depth 50 and therefore represents recent history only, although only five commits are visible. The repository is small: all 13 tracked files were inventoried, every text/source file was inspected, and the eight image assets were inventoried without pixel-level review."
+  },
+  "stated_purpose": "The README presents this as a USGS-themed earthquake-data visualization exercise using Leaflet to make recent seismic activity more meaningful to the public and government organizations.",
+  "observed_capabilities": [
+    {
+      "statement": "The browser application requests the USGS all-earthquakes-for-the-past-week GeoJSON feed and plots its point features on a Leaflet map.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "logic",
+        "html"
+      ]
+    },
+    {
+      "statement": "Earthquake marker radius is derived from magnitude, while fill color is selected from depth thresholds based on the third GeoJSON coordinate.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "logic"
+      ]
+    },
+    {
+      "statement": "Each marker opens a popup containing the reported place, magnitude, and depth.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "logic"
+      ]
+    },
+    {
+      "statement": "The map uses OpenStreetMap tiles, starts centered over the contiguous United States, and exposes one earthquake overlay through a Leaflet layer control.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "logic"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The historical assignment specification called for a legend and optionally proposed tectonic-plate data, additional base maps, independently switchable overlays, and expanded layer controls.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "historical-readme"
+      ]
+    },
+    {
+      "statement": "No current TODO, open issue, pull request, or recent commit evidence establishes that the historical optional enhancements remain planned work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "metadata",
+        "current-readme",
+        "history"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The project is a build-free static web page consisting of one HTML entry point, one JavaScript implementation file, and minimal full-page map CSS.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "html",
+        "logic",
+        "css"
+      ]
+    },
+    {
+      "statement": "At runtime the page loads Leaflet 1.6.0 and D3 v5 from third-party CDNs; D3 retrieves live USGS GeoJSON, Leaflet converts the features to circle markers, and OpenStreetMap supplies the base tiles.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html",
+        "logic"
+      ]
+    },
+    {
+      "statement": "There is no local server, backend, persistent data store, package-management layer, or build pipeline in the tracked tree.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The implementation covers most of the assignment's core Part 1 behavior: fetching live earthquake data, plotting geographic markers, encoding magnitude and depth, and providing informational popups.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "historical-readme",
+        "logic"
+      ]
+    },
+    {
+      "statement": "The repository includes a directly loadable map page and responsive full-viewport styling without requiring a compilation step.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html",
+        "css",
+        "tree"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The required depth-color legend described by the historical assignment is not implemented, leaving the marker colors unexplained in the interface.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "historical-readme",
+        "logic",
+        "html"
+      ]
+    },
+    {
+      "statement": "The optional tectonic-plate visualization and multiple base-map choices were not implemented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "historical-readme",
+        "logic"
+      ]
+    },
+    {
+      "statement": "The HTML references static/js/config.js, but that file is not tracked and the inspected implementation does not otherwise require an API key.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html",
+        "tree",
+        "logic"
+      ]
+    },
+    {
+      "statement": "There are no tests, automated checks, dependency manifests, setup instructions, deployment artifacts, or runtime verification records.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "current-readme"
+      ]
+    },
+    {
+      "statement": "The current README was reduced to background prose and no longer explains how to run the page, what was implemented, or which assignment requirements remain incomplete.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "current-readme",
+        "history",
+        "historical-readme"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Successful rendering depends on several live third-party services and older CDN-loaded library versions, with no local dependency pinning beyond the Leaflet URL and integrity attribute.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html",
+        "logic"
+      ]
+    },
+    {
+      "statement": "The missing config.js reference will produce an avoidable failed resource request and may mislead maintainers into believing a secret-bearing configuration file is required.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html",
+        "tree",
+        "logic"
+      ]
+    },
+    {
+      "statement": "Without tests or a documented verification procedure, changes in browser behavior, remote APIs, or GeoJSON data characteristics could break the visualization without detection.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "html",
+        "logic"
+      ]
+    },
+    {
+      "statement": "The tracked VS Code workspace file contains repository-external relative paths referring to local Projects, Downloads, and other repositories, which is unnecessary environment-specific metadata in a public coursework repository.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workspace"
+      ]
+    },
+    {
+      "statement": "No credential-named files were found in the tracked project tree, and the referenced config.js file is absent; no secret values were inspected.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "html"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Treat the repository as dormant coursework and archive it after owner review unless there is a concrete reason to preserve it as an actively usable example.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "history",
+        "historical-readme"
+      ]
+    },
+    {
+      "statement": "If retained as a reference, add concise run instructions and an implementation-status note, remove the stale config.js script reference and local workspace file, and add the missing depth legend.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "current-readme",
+        "historical-readme",
+        "html",
+        "workspace"
+      ]
+    },
+    {
+      "statement": "Before presenting the project as functional, verify it in a browser against the current USGS feed and CDN dependencies and record that verification.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html",
+        "logic",
+        "tree"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository solely a completed coursework submission, or is it intended to remain a reusable Leaflet example?",
+    "Was the depth legend intentionally omitted, or was the submission unfinished?",
+    "Should the tracked VS Code workspace file and stale config.js reference be removed?",
+    "Is there a deployed copy or screenshot of the implemented map that could provide runtime evidence?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/leaflet-challenge",
+      "summary": "Provided snapshot identifies a public repository on main, last pushed on 2022-08-06, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "current-readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Current README contains only the USGS-themed background and motivation for visualizing earthquake data."
+    },
+    {
+      "id": "historical-readme",
+      "kind": "historical_documentation",
+      "location": "README.md at commit 3e9395e",
+      "summary": "The earlier Unit 15 homework specification requires an earthquake map with magnitude-sized and depth-colored markers, popups, and a legend; it describes tectonic plates and additional layers as optional Part 2 work."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": "repository root at e011a66557ccd6ea31f850d8d4bbdcf57bb9c0e3",
+      "summary": "Thirteen tracked files comprise README.md, index.html, eight instructional images, one CSS file, one JavaScript implementation, and one VS Code workspace file; no manifest, tests, workflow, deployment configuration, credential-named file, or config.js is present."
+    },
+    {
+      "id": "html",
+      "kind": "entry_point",
+      "location": "index.html",
+      "summary": "Static page creates a map container and loads Leaflet 1.6.0, D3 v5, a missing local config.js file, and logic.js."
+    },
+    {
+      "id": "logic",
+      "kind": "source_code",
+      "location": "static/js/logic.js",
+      "summary": "Fetches the USGS all-week GeoJSON feed, creates magnitude-sized and depth-colored Leaflet circle markers with popups, and places them over OpenStreetMap with a layer control."
+    },
+    {
+      "id": "css",
+      "kind": "source_code",
+      "location": "static/css/style.css",
+      "summary": "Removes page spacing and sizes the map, body, and HTML elements to the full viewport height."
+    },
+    {
+      "id": "workspace",
+      "kind": "editor_configuration",
+      "location": "static/js/homework.code-workspace",
+      "summary": "VS Code workspace configuration references several repository-external relative paths associated with local Projects, Downloads, and other repositories."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at e011a66557ccd6ea31f850d8d4bbdcf57bb9c0e3",
+      "summary": "All five visible commits occurred on 2022-08-06 and consist of uploaded files, directory relocation, and README reductions; no later maintenance history is present in the shallow checkout."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The complete small source tree, historical specification, and visible commit history support the implementation and dormancy conclusions. Confidence is limited because the live, internet-dependent visualization was not executed, there are no tests or deployment artifacts, and the checkout is shallow."
+  },
+  "limitations": [
+    "The live application was not executed, so successful rendering and current compatibility with external services are not proven.",
+    "The checkout is shallow at depth 50; history beyond that boundary would not be available, although only five commits are visible.",
+    "Image assets were inventoried but not reviewed pixel by pixel.",
+    "The supplied metadata does not independently establish whether GitHub's archive flag is enabled.",
+    "Suggested lifecycle and cleanup actions require owner review."
+  ]
+}

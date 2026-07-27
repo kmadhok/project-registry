@@ -1,0 +1,386 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Looker_Text_to_SQL",
+  "analyzed_at": "2026-07-27T03:25:16Z",
+  "revision": "7047324000800ea54c391252fb31b4927d21ae0e",
+  "analysis_scope": {
+    "inspected": [
+      "Supplied GitHub repository metadata and issue/PR snapshot",
+      "Complete tracked-file inventory and top-level structure",
+      "README and both .gitignore files",
+      "Python dependency manifest",
+      "All seven Python modules, including entry point, orchestration, schema parsing, embeddings, vector storage, and Gemini integration",
+      "LookML model and representative orders, line_items, customers, and shipments views",
+      "Structural metadata and coverage of the tracked schema cache without inspecting credential values",
+      "Test, CI, notebook, packaging, deployment, tag, and branch artifact inventory",
+      "All four commits reachable from the shallow checkout"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "Automated tests",
+      "CI workflows",
+      "Notebooks or separate demos",
+      "Deployment or container configuration",
+      "Release tags",
+      "Top-level README",
+      "Tracked FAISS index or demonstrated SQL output"
+    ],
+    "inaccessible": [
+      "Live end-to-end execution requiring an Ollama service, downloaded embedding model, Gemini credentials, and external API access",
+      "Live GitHub state beyond the supplied snapshot"
+    ],
+    "sampling_notes": "The repository is small: all tracked files and all seven Python modules were inventoried, with core implementation paths inspected directly. The model and four representative views were read in detail; the remaining sixteen view files were inventoried but not examined field by field. The checkout is shallow at depth 50, so history before the four reachable commits may be unavailable."
+  },
+  "stated_purpose": "Convert natural-language questions into SQL for a retail LookML schema using retrieval-augmented generation.",
+  "observed_capabilities": [
+    {
+      "statement": "The command-line entry point supports interactive questions, single-question execution, schema summaries, static question suggestions, statistics, cache clearing, and vector-store rebuilding.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entrypoint"
+      ]
+    },
+    {
+      "statement": "The implementation parses LookML through Gemini, embeds generated schema knowledge through Ollama's nomic-embed-text model, retrieves context from a FAISS index, and asks Gemini to generate, validate, and explain SQL.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "orchestration",
+        "parser",
+        "embedding-vector",
+        "gemini"
+      ]
+    },
+    {
+      "statement": "The included retail LookML defines 20 views and three explores covering orders, web sessions, and support tickets, with declared joins and analytics measures.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "lookml",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The application persists parsed schema JSON and can persist a FAISS index plus pickled retrieval metadata for reuse.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "parser",
+        "embedding-vector",
+        "cache"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The README lists SQL execution, result visualization, join-path optimization, performance analysis, exports, a web interface, and BI-tool integration as future enhancements.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "main.py is the CLI boundary and constructs TextToSQLGenerator, which coordinates LLMSchemaParser, OllamaEmbeddingModel, FAISSVectorStore, and GeminiLLM.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entrypoint",
+        "orchestration"
+      ]
+    },
+    {
+      "statement": "LLMSchemaParser sends the model and individual view files to Gemini, concurrently processes view files, builds business-term and schema chunks, and caches the resulting structured representation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "parser"
+      ]
+    },
+    {
+      "statement": "Query processing embeds the question, retrieves up to ten schema chunks within a character budget, generates SQL with Gemini, then performs LLM-backed validation and explanation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "orchestration",
+        "embedding-vector",
+        "gemini"
+      ]
+    },
+    {
+      "statement": "The system depends on two separate model runtimes: local Ollama for embeddings and Google's Gemini API for schema parsing and SQL work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "orchestration",
+        "gemini"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A complete CLI-to-retrieval-to-generation implementation skeleton exists around a substantive sample retail LookML model.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entrypoint",
+        "orchestration",
+        "lookml"
+      ]
+    },
+    {
+      "statement": "A tracked cache dated 2025-08-19 records successful structured parsing of three explores and 16 views, providing evidence that at least part of the Gemini parsing workflow was exercised.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cache",
+        "history"
+      ]
+    },
+    {
+      "statement": "The seven current Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "The most recent commit introduced concurrent API use in the schema parser after the preceding Gemini migration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no automated tests, CI workflows, release tags, deployment artifacts, tracked vector index, or captured end-to-end SQL results.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The tracked cache covers only 16 of the 20 view files; customers, line_items, sessions, and support_tickets are absent even though partial parsing is treated as successful and the unchanged cache can subsequently be accepted.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cache",
+        "parser",
+        "lookml"
+      ]
+    },
+    {
+      "statement": "The README still documents an Ollama Phi3 generator and files named schema_processor.py and llm_model.py, while the current implementation uses Gemini and files named llm_schema_parser.py and gemini_llm.py.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tree",
+        "orchestration"
+      ]
+    },
+    {
+      "statement": "SQL validation is primarily another Gemini prompt, with only shallow fallback checks for SELECT, FROM, and balanced parentheses; no SQL parser or database execution verifies semantic correctness.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "gemini"
+      ]
+    },
+    {
+      "statement": "The manifest declares google-generativeai while the client imports google.genai and uses genai.Client, so reproducible installation compatibility needs verification.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "gemini"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "An incomplete LLM-produced cache can remain valid solely because source hashes match, causing omitted views to be silently excluded from retrieval and generated SQL context.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "parser",
+        "cache"
+      ]
+    },
+    {
+      "statement": "Generated SQL is not executed or validated against a database, so plausible-looking output may reference incorrect joins, fields, or dialect behavior.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "gemini",
+        "readme",
+        "verification"
+      ]
+    },
+    {
+      "statement": "The workflow sends full LookML contents and generated SQL context to an external Gemini service, which may require data-governance review for private schemas.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "parser",
+        "gemini"
+      ]
+    },
+    {
+      "statement": "The Gemini diagnostic function is coded to display the final four characters of the configured API key, creating avoidable partial credential disclosure in terminal logs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "gemini",
+        "security"
+      ]
+    },
+    {
+      "statement": "Pinned 2023-era numerical and FAISS dependencies plus an experimental Gemini model identifier may make setup brittle on current Python environments.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "gemini"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Create a clean-environment smoke test that installs the declared dependencies, initializes both model clients, parses all 20 views, builds the index, and generates one known query.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "cache",
+        "verification"
+      ]
+    },
+    {
+      "statement": "Make cache creation fail or explicitly record degraded status unless every expected view and explore parses successfully.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "parser",
+        "cache"
+      ]
+    },
+    {
+      "statement": "Add deterministic parser, retrieval, SQL-extraction, and fallback-validation tests that do not require live model calls, followed by an opt-in integration test for Ollama and Gemini.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "verification",
+        "parser",
+        "gemini"
+      ]
+    },
+    {
+      "statement": "Align the dependency package and Gemini API usage, replace the experimental default model with a supported configurable value, and update the README to describe the hybrid Ollama/Gemini implementation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "gemini",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Remove API-key suffix logging and document that private LookML is transmitted to Gemini before any future use.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "gemini",
+        "security"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the prototype ever used successfully to generate SQL beyond the tracked partial schema cache?",
+    "Were the four missing cached views rejected by Gemini, rate-limited during concurrent parsing, or intentionally excluded?",
+    "Is the hybrid Ollama-and-Gemini design still desired, or should inference be fully local or fully hosted?",
+    "Is the sample analytics schema synthetic and approved for transmission to Gemini?",
+    "Should this dormant experiment be retained as a reference or archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Looker_Text_to_SQL",
+      "summary": "Supplied snapshot identifies a private main-branch repository with no description, open issues, or open pull requests and a last push on 2025-08-20."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "text_to_sql_rag/README.md",
+      "summary": "Describes a LookML-aware text-to-SQL RAG CLI, setup and commands, example questions, and seven future enhancements, but still documents the superseded Ollama Phi3 design."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Tracks seven Python modules, one requirements file, one schema cache, a 105-line LookML model, and 20 LookML view files; no tests, workflows, notebooks, packaging, or deployment files were found."
+    },
+    {
+      "id": "lookml",
+      "kind": "schema_source",
+      "location": "retail.model.lkml and views/",
+      "summary": "Defines three retail analytics explores and 20 views with joins, dimensions, measures, filters, and analytics table names."
+    },
+    {
+      "id": "entrypoint",
+      "kind": "source",
+      "location": "text_to_sql_rag/main.py",
+      "summary": "Implements argument parsing, system initialization, interactive and one-shot query modes, schema display, statistics, rebuild, and cache-clearing commands."
+    },
+    {
+      "id": "orchestration",
+      "kind": "source",
+      "location": "text_to_sql_rag/sql_generator.py",
+      "summary": "Connects Gemini schema parsing and SQL generation to Ollama embeddings and FAISS retrieval, then returns SQL, explanation, and validation data."
+    },
+    {
+      "id": "parser",
+      "kind": "source",
+      "location": "text_to_sql_rag/llm_schema_parser.py",
+      "summary": "Concurrently submits LookML model and view contents to Gemini, converts JSON responses into schema knowledge, builds retrieval chunks, and validates cache reuse using source hashes."
+    },
+    {
+      "id": "embedding-vector",
+      "kind": "source",
+      "location": "text_to_sql_rag/embedding_model.py and text_to_sql_rag/vector_store.py",
+      "summary": "Uses Ollama for nomic-embed-text vectors and an in-process FAISS L2 index with pickled metadata persistence and top-k context assembly."
+    },
+    {
+      "id": "gemini",
+      "kind": "source",
+      "location": "text_to_sql_rag/gemini_client.py and text_to_sql_rag/gemini_llm.py",
+      "summary": "Wraps Gemini API-key authentication, retries, SQL generation, prompt-based validation and explanation, basic fallback validation, and diagnostic connection tests."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "text_to_sql_rag/requirements.txt",
+      "summary": "Pins faiss-cpu 1.7.4, ollama 0.3.3, numpy 1.24.3, pandas 2.0.3, and regex 2023.6.3 while declaring google-generativeai >=0.5.0."
+    },
+    {
+      "id": "cache",
+      "kind": "generated_artifact",
+      "location": "text_to_sql_rag/schema_cache.json",
+      "summary": "Tracked cache dated 2025-08-19 contains three parsed explores and 16 parsed views; customers, line_items, sessions, and support_tickets are missing."
+    },
+    {
+      "id": "verification",
+      "kind": "verification_evidence",
+      "location": "local checkout",
+      "summary": "All seven Python files passed AST syntax parsing, but no automated tests, CI, live integration run, tracked vector index, or generated-query fixture exists."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes four commits from 2025-08-17 through 2025-08-20: initial LookML, initial RAG implementation, Gemini migration with a generated cache, and concurrent API parsing."
+    },
+    {
+      "id": "security",
+      "kind": "security_configuration",
+      "location": ".gitignore and text_to_sql_rag/.gitignore",
+      "summary": "Environment files, virtual environments, vector indexes, pickle metadata, and logs are ignored; no credential-named tracked file was found. Source requires GEMINI_API_KEY and includes a diagnostic that would print a masked suffix."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The architecture and implementation gaps are directly supported by the complete small source tree, LookML, cache structure, and reachable history. Confidence is limited because the credentialed Ollama/Gemini workflow could not be executed, there are no automated verification artifacts, and the checkout contains only shallow recent history."
+  },
+  "limitations": [
+    "No credential values were read, displayed, or tested.",
+    "The external-model workflow was not executed, so the tracked cache is the only evidence of prior runtime behavior.",
+    "The Git clone is shallow at depth 50 and exposes only four commits.",
+    "The supplied GitHub snapshot was not independently refreshed.",
+    "Sixteen of the twenty view files were inventoried but not inspected field by field."
+  ]
+}

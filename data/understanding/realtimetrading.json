@@ -1,0 +1,368 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/RealTimeTrading",
+  "analyzed_at": "2026-07-27T03:31:07Z",
+  "revision": "5b52723e9b200d38730627c8e0ee02263a325d49",
+  "analysis_scope": {
+    "inspected": [
+      "Registry-provided GitHub metadata and default-branch snapshot",
+      "Complete tracked-file inventory at the analyzed revision",
+      "All tracked Python source files",
+      "All four top-level HTML variants and their duplicate static copies",
+      "Python dependency manifest",
+      "Headers and representative rows from all three tracked CSV datasets",
+      "Test, notebook, CI, deployment, and configuration-file presence",
+      "Credential-assignment locations with values redacted",
+      "All four commits reachable from the local default branch"
+    ],
+    "missing": [
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "license",
+      ".gitignore",
+      "configuration example",
+      "automated tests",
+      "CI workflows",
+      "deployment configuration",
+      "release artifacts",
+      "tracked notebooks"
+    ],
+    "inaccessible": [
+      "Live Alpaca API behavior and credential status",
+      "Original Google Colab notebooks referenced by generated Python files",
+      "Independent runtime verification requiring external services"
+    ],
+    "sampling_notes": "The working copy was supplied under a depth-50 recent-history constraint. Analysis covered all 18 tracked files and all four commits reachable locally, but does not assume older or unreachable history was available."
+  },
+  "stated_purpose": "The source and interface titles describe a real-time Bitcoin trading demonstration that combines BTC market data with Twitter sentiment analysis.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository contains data-preparation code that requests daily BTC/USD bars from Alpaca for 2021 through early 2023, joins them with a tracked daily sentiment dataset, and exports merged trading data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-pipeline",
+        "datasets"
+      ]
+    },
+    {
+      "statement": "The strategy code calculates 20-day and 50-day moving averages, combines their relationship with a binary positive-sentiment field, and exports buy and sell instructions to signals.csv.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "strategy",
+        "datasets"
+      ]
+    },
+    {
+      "statement": "The Flask application exposes a server-sent-events stream that reads signal rows sequentially, attempts an Alpaca paper order for each row, and delays one second between events.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "server",
+        "trading-client"
+      ]
+    },
+    {
+      "statement": "The static D3 interfaces contain code for a streaming price chart, buy and sell markers, and a scrolling event list.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "frontend"
+      ]
+    },
+    {
+      "statement": "The tracked CSV outputs demonstrate that the data-merging and signal-generation stages were run at least once outside the current analysis.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "datasets",
+        "history"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The intended pipeline is Alpaca historical BTC data plus tracked sentiment data, followed by moving-average signal generation, CSV persistence, Flask server-sent-events replay, Alpaca paper-order submission, and D3 browser visualization.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "data-pipeline",
+        "strategy",
+        "server",
+        "trading-client",
+        "frontend"
+      ]
+    },
+    {
+      "statement": "server.py is the apparent application entry point: importing it initializes the trading modules, invokes tradestrategy(), redirects the root route to static/index_new.html, and exposes /stream.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "server"
+      ]
+    },
+    {
+      "statement": "The four files under static are byte-identical duplicates of the four top-level HTML files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "frontend"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A small end-to-end prototype structure connects market-data acquisition, sentiment merging, strategy generation, paper-trading order submission, event streaming, and browser visualization.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "data-pipeline",
+        "strategy",
+        "server",
+        "trading-client",
+        "frontend"
+      ]
+    },
+    {
+      "statement": "The repository includes sample sentiment, merged trade-data, and generated signal datasets that make the strategy inputs and intermediate output inspectable.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "datasets"
+      ]
+    },
+    {
+      "statement": "Alpaca order submission is explicitly configured for paper trading rather than live trading.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "trading-client"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no setup guide, architectural documentation, configuration example, test suite, CI workflow, deployment definition, or release artifact.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    },
+    {
+      "statement": "The tracked signals.csv schema contains date, symbol, side, order type, quantity, and position fields, while the selected D3 page expects Date and Price fields and other variants expect Action, Trend, Volume, and Symbol; the repository contains no adapter between these schemas.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "datasets",
+        "server",
+        "frontend"
+      ]
+    },
+    {
+      "statement": "The selected dashboard displays a fixed BTC holding amount and randomly chooses its profit status instead of deriving either value from account or market data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "frontend"
+      ]
+    },
+    {
+      "statement": "One alternative live-strategy script depends on an absolute path from the author's workstation and calls an undefined execute_order function, making that path non-portable and incomplete.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "alternate-client"
+      ]
+    },
+    {
+      "statement": "The 204-entry requirements file appears to capture a broad development environment, including notebooks and NLP tooling not imported by the application, rather than a minimal runtime dependency set.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "tree"
+      ]
+    },
+    {
+      "statement": "No repository artifact verifies that the assembled Flask, Alpaca, CSV, and D3 workflow runs successfully at the analyzed revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Multiple tracked Python files contain hard-coded API credential assignments in a public repository; their values must be presumed exposed even though validity was not tested.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "metadata",
+        "credential-scan"
+      ]
+    },
+    {
+      "statement": "Requesting the streaming endpoint causes order-submission attempts for every streamed signal row, so merely consuming the dashboard stream has trading-account side effects.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "server",
+        "trading-client"
+      ]
+    },
+    {
+      "statement": "The application enables Flask debug mode and permissive cross-origin access for the stream, which would be unsafe defaults for an exposed deployment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "server"
+      ]
+    },
+    {
+      "statement": "Signal generation runs during server import and overwrites signals.csv, coupling application startup to an external API call and a local generated file.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "server",
+        "strategy"
+      ]
+    },
+    {
+      "statement": "The absence of tests, dependency automation, and operational documentation makes regressions and unsafe order behavior difficult to detect before execution.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "manifest",
+        "server"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Immediately revoke or rotate any credentials ever committed here, replace hard-coded assignments with environment-based configuration, and have the owner decide whether repository history should be remediated.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "credential-scan"
+      ]
+    },
+    {
+      "statement": "If retaining the prototype as a reference, add a concise README that labels it as paper-trading coursework or experimentation, documents safe setup, and warns that stream consumption currently submits orders.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "server",
+        "trading-client",
+        "history"
+      ]
+    },
+    {
+      "statement": "Separate data acquisition, strategy generation, streaming, and order execution so that starting the server and viewing the dashboard cannot regenerate files or submit orders implicitly.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "server",
+        "strategy",
+        "trading-client"
+      ]
+    },
+    {
+      "statement": "Define one event schema shared by signals.csv, the Flask stream, and the D3 client, then replace fixed and random account displays with either real paper-account data or clearly labeled fixtures.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "datasets",
+        "server",
+        "frontend"
+      ]
+    },
+    {
+      "statement": "Add unit tests for crossover and inventory rules plus an integration test that stubs order submission before considering the application runnable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "strategy",
+        "trading-client",
+        "tree"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository created as coursework, a one-time demonstration, or the beginning of a trading tool?",
+    "Have all credentials committed to the repository been revoked or rotated?",
+    "Should the stream replay historical paper orders, visualize signals without trading, or operate on genuinely live data?",
+    "Which HTML variant and event schema were intended to be canonical?",
+    "What is the provenance and permitted reuse status of the tracked Twitter sentiment dataset?",
+    "Should this dormant prototype be retained as a reference or archived after credential remediation?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/RealTimeTrading",
+      "summary": "Registry snapshot identifies a public, unarchived repository on main with no description, no open issues or pull requests, and its last push on 2024-03-03."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The revision contains 18 tracked files: seven Python files, eight HTML files, three CSV datasets, and requirements.txt; it has no README, docs, tests, CI, deployment files, or configuration example."
+    },
+    {
+      "id": "data-pipeline",
+      "kind": "source_code",
+      "location": "data_load_and_clean_btc_+_twitter.py",
+      "summary": "Colab-generated Python requests daily Alpaca BTC/USD bars, merges df_sentiment_by_day.csv on date, and writes trade_data.csv plus an untracked bitcoin_data.csv output."
+    },
+    {
+      "id": "strategy",
+      "kind": "source_code",
+      "location": "updatedmodelclean.py",
+      "summary": "Defines tradestrategy(), which fetches historical BTC bars, joins sentiment, applies 20-day and 50-day moving-average conditions, creates fixed-size order records, and overwrites signals.csv."
+    },
+    {
+      "id": "server",
+      "kind": "source_code",
+      "location": "server.py",
+      "summary": "Flask entry point invokes strategy generation at import, serves static/index_new.html, streams signals.csv through /stream, calls perform_trade for every row, enables stream CORS, and starts in debug mode."
+    },
+    {
+      "id": "trading-client",
+      "kind": "source_code",
+      "location": "autotradewithfunction.py",
+      "summary": "Initializes an Alpaca TradingClient with paper mode enabled and submits OrderRequest objects constructed from streamed row fields."
+    },
+    {
+      "id": "frontend",
+      "kind": "frontend_source",
+      "location": "static/index_new.html and sibling HTML variants",
+      "summary": "D3-based streaming dashboard variants expect price-oriented event fields; the selected variant also contains a fixed holdings display and randomized profit indicator. Static copies match top-level files byte for byte."
+    },
+    {
+      "id": "alternate-client",
+      "kind": "source_code",
+      "location": "trade_logic_client_(updated).py",
+      "summary": "Alternative Colab-generated strategy client reads from an author-specific absolute path and attempts to call an execute_order function that is not defined in the file."
+    },
+    {
+      "id": "datasets",
+      "kind": "generated_data",
+      "location": "df_sentiment_by_day.csv, trade_data.csv, and signals.csv",
+      "summary": "Tracked samples contain 222 sentiment records, 221 merged BTC records, and 30 generated order records; the signal columns differ from the fields consumed by the D3 pages."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Pins 204 Python packages, including Flask, pandas, two Alpaca clients, Jupyter, NLP, visualization, and ML packages, without separating runtime from exploratory dependencies."
+    },
+    {
+      "id": "credential-scan",
+      "kind": "security_review",
+      "location": "tracked Python source files",
+      "summary": "Redacted inspection found hard-coded API credential assignments in server.py, autotradewithfunction.py, data_load_and_clean_btc_+_twitter.py, updatedmodelclean.py, and updated_model&backtesting.py; no credential values are included in this brief."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 5b52723e9b200d38730627c8e0ee02263a325d49",
+      "summary": "All four reachable commits were generic 'Add files via upload' commits made within approximately sixteen minutes on 2024-03-03; no later maintenance evidence is present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "All tracked files and reachable commits were inspected, providing strong evidence about the prototype's structure and static defects. Confidence is limited because there are no tests, documentation, or verification artifacts, and safe analysis did not execute code or contact external trading services."
+  },
+  "limitations": [
+    "The repository was analyzed read-only and was not executed because startup performs external API work, rewrites a tracked CSV, and the stream attempts paper orders.",
+    "Credential values were intentionally excluded from analysis output, and their validity or account scope was not tested.",
+    "The supplied GitHub snapshot was used for issue, pull-request, visibility, and activity metadata; no independent live GitHub refresh was performed.",
+    "The depth-50 working-copy constraint means conclusions about historical development are limited to the four commits reachable locally.",
+    "The original Colab notebooks and the origin, methodology, and licensing of the sentiment dataset were not available for verification."
+  ]
+}

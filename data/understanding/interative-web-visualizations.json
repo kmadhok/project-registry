@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Interative-Web-Visualizations",
+  "analyzed_at": "2026-07-27T03:20:54Z",
+  "revision": "9c0f3018e3311cc6849a52a9df6e0fdb3e582f2e",
+  "analysis_scope": {
+    "inspected": [
+      "Registry-provided GitHub metadata snapshot",
+      "README.md",
+      "Complete tracked-file inventory and top-level structure",
+      "index.html entry point",
+      "static/js/app.js implementation",
+      "samples.json structure and record counts without reproducing dataset contents",
+      "Dependency-loading declarations in index.html",
+      "Tests, CI, notebooks, demos, deployment artifacts, tags, and credential-like filenames",
+      "All five commits available from git log"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "Dependency manifest or lockfile",
+      "Automated tests",
+      "CI workflow",
+      "Deployment configuration",
+      "Notebook",
+      "Release tags",
+      "Referenced static/js/bonus.js file"
+    ],
+    "inaccessible": [
+      "Runtime verification in a browser was not performed"
+    ],
+    "sampling_notes": "The checkout was supplied as a shallow clone with depth 50, so history beyond the available clone is not guaranteed; only five commits were present and all were inspected. The repository is small, so every tracked source and documentation file was inspected. Dataset values were not exhaustively reviewed; only its schema, counts, and representative array lengths were examined."
+  },
+  "stated_purpose": "The README states that the repository contains an interactive dashboard for exploring the Belly Button Biodiversity dataset and the microbial OTUs found in human navels.",
+  "observed_capabilities": [
+    {
+      "statement": "The page defines containers for a subject selector, demographic panel, horizontal bar chart, bubble chart, and gauge.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html-entry"
+      ]
+    },
+    {
+      "statement": "The JavaScript fetches subject metadata and microbial sample data, then constructs an initial bubble chart and top-ten horizontal OTU bar chart for subject 940 with Plotly.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-js"
+      ]
+    },
+    {
+      "statement": "The bundled JSON dataset contains aligned names, metadata, and samples collections for 153 subjects.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dataset"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The implementation is a static client-side page comprising one HTML entry point, one application script, and a bundled JSON dataset.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "html-entry",
+        "app-js",
+        "dataset"
+      ]
+    },
+    {
+      "statement": "Bootstrap, D3 v5, and Plotly are loaded from public CDNs rather than managed through a package manifest.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html-entry",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Although samples.json is tracked locally, app.js fetches a separate copy from an external curriculum S3 URL.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-js",
+        "repository-tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A compact static visualization prototype was implemented with two Plotly chart types and data for 153 test subjects.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-js",
+        "dataset"
+      ]
+    },
+    {
+      "statement": "The repository includes a README that identifies the domain, dataset, and principal frontend technologies.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The interactive subject-selection workflow is incomplete: the HTML calls optionChanged, but no such function is defined, and app.js selects a nonexistent DataSet element instead of the selDataset element.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html-entry",
+        "app-js",
+        "selector-audit"
+      ]
+    },
+    {
+      "statement": "Demographic rendering targets nonexistent sample_data elements rather than the sample-metadata container defined in the HTML.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html-entry",
+        "app-js",
+        "selector-audit"
+      ]
+    },
+    {
+      "statement": "The page reserves a gauge container and loads static/js/bonus.js, but that script is not tracked and no gauge implementation exists in app.js.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "html-entry",
+        "repository-tree",
+        "selector-audit"
+      ]
+    },
+    {
+      "statement": "There are no automated tests, CI checks, dependency manifests, deployment instructions, or repeatable verification artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The dashboard depends on network access to an external dataset and three CDN-hosted frontend resources, so upstream removal or incompatibility could prevent it from rendering.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html-entry",
+        "app-js"
+      ]
+    },
+    {
+      "statement": "Using the moving plotly-latest CDN target without a lockfile makes behavior less reproducible over time.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html-entry",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The selector mismatches, undefined event handler, and missing script are likely to produce visible runtime errors and prevent the advertised interactivity.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html-entry",
+        "app-js",
+        "selector-audit"
+      ]
+    },
+    {
+      "statement": "No credential-like tracked filenames were found, but the absence of CI or dependency tooling leaves no automated safeguard for future changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-scan",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "If the dashboard is retained as a reference, repair the DOM selectors, define optionChanged, and either implement the gauge or remove its missing script reference.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html-entry",
+        "app-js",
+        "selector-audit"
+      ]
+    },
+    {
+      "statement": "Choose one documented data source, preferably the bundled dataset for a self-contained example, and pin frontend dependency versions.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "html-entry",
+        "app-js",
+        "dataset"
+      ]
+    },
+    {
+      "statement": "Add a minimal browser smoke test if the project is expected to remain runnable; otherwise archive it explicitly as a historical visualization prototype.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "git-history",
+        "selector-audit"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the dashboard ever deployed somewhere that should be preserved in the README?",
+    "Was static/js/bonus.js omitted accidentally, or was the gauge intentionally unfinished?",
+    "Should this remain a worked visualization reference, or can it be archived as completed coursework?",
+    "Is the external curriculum dataset intentionally preferred over the bundled samples.json file?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Interative-Web-Visualizations",
+      "summary": "Registry snapshot identifies a public repository on main, last pushed on 2022-09-19, with no open issues or pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a Belly Button Biodiversity dashboard and names samples.json, JavaScript, Plotly, HTML/CSS, Bootstrap, and D3."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains README.md, index.html, samples.json, and static/js/app.js; no manifests, tests, workflows, deployment files, notebooks, or bonus.js are tracked."
+    },
+    {
+      "id": "html-entry",
+      "kind": "source",
+      "location": "index.html",
+      "summary": "Defines the dashboard layout, selector and visualization containers, loads Bootstrap 3.3.7, D3 v5, an unversioned Plotly latest bundle, app.js, and a missing bonus.js."
+    },
+    {
+      "id": "app-js",
+      "kind": "source",
+      "location": "static/js/app.js",
+      "summary": "Fetches a remote samples.json file and defines bubble, bar, demographic-summary, and initialization functions, with initial charts requested for subject 940."
+    },
+    {
+      "id": "dataset",
+      "kind": "data",
+      "location": "samples.json",
+      "summary": "A roughly 449 KB JSON object with names, metadata, and sample collections containing 153 entries each; sample records include OTU IDs, labels, and values."
+    },
+    {
+      "id": "selector-audit",
+      "kind": "static_analysis",
+      "location": "index.html and static/js/app.js",
+      "summary": "Cross-file search found HTML IDs selDataset and sample-metadata but JavaScript selectors DataSet and sample_data; optionChanged is referenced only by HTML, and no gauge implementation was found."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available history contains five commits: one bulk file upload in August 2022 followed by README creation and edits on September 19, 2022; HEAD is 9c0f3018e3311cc6849a52a9df6e0fdb3e582f2e."
+    },
+    {
+      "id": "security-scan",
+      "kind": "filename_scan",
+      "location": ".",
+      "summary": "A filename-only scan found no tracked .env files, keys, tokens, secrets, PEM files, or PKCS#12 files; no secret values were read."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository is small and every tracked implementation file was inspected, allowing high-confidence static findings about its structure and defects. Overall confidence is medium because no browser execution, deployment, automated test, or owner context confirms whether the partial dashboard works in its intended environment."
+  },
+  "limitations": [
+    "The clone was supplied with a depth-50 history limit, so older history would be absent if more than 50 commits existed, although only five commits were available.",
+    "No runtime browser verification was performed, so chart behavior is inferred from source rather than observed execution.",
+    "The GitHub activity assessment relies on the supplied metadata snapshot and local branches; no live remote query was performed.",
+    "Dataset inspection was structural and sampled rather than a review of every value.",
+    "There is no documentation explaining whether the missing gauge and broken subject-selection wiring were known limitations."
+  ]
+}

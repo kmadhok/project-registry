@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/CodingFun",
+  "analyzed_at": "2026-07-27T03:14:20Z",
+  "revision": "d29a62cf59e9edd8771206d8dbc74f57def42a6b",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata",
+      "complete tracked-file inventory and top-level structure",
+      "both tracked Python source files",
+      "README, CLAUDE.md, AGENTS.md, documentation, manifest, test, workflow, notebook, and demo presence checks",
+      "Python syntax parsing without bytecode generation",
+      "all available commit history and branch references",
+      "credential-like filenames without reading their contents"
+    ],
+    "missing": [
+      "README or other purpose documentation",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency manifest",
+      "tests",
+      "CI workflows",
+      "notebooks or demos",
+      "release or deployment artifacts",
+      "license"
+    ],
+    "inaccessible": [
+      "runtime verification requiring microphone and audio-output hardware",
+      "runtime verification requiring external speech-recognition, YouTube, Wikipedia, or SMTP services"
+    ],
+    "sampling_notes": "The analysis context describes a shallow clone with depth 50, so older history could ordinarily be truncated. This repository was inspected exhaustively because it contains only two tracked files and one reachable commit; the local checkout currently reports itself as non-shallow."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "One standalone Python script implements a continuously running voice-assistant experiment that captures microphone input, uses Google speech recognition, produces synthesized speech, and handles commands for YouTube playback, the current time, Wikipedia summaries, jokes, and canned responses.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "alexa-script"
+      ]
+    },
+    {
+      "statement": "A second standalone Python script connects to Gmail's SMTP endpoint using TLS and attempts to send the same short email five times.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "email-script"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The repository consists of two independent, directly executable Python scripts with no shared modules, package structure, configuration layer, command-line interface, or application entry-point guards.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "alexa-script",
+        "email-script"
+      ]
+    },
+    {
+      "statement": "The voice-assistant script depends on speech_recognition, pyttsx3, pywhatkit, wikipedia, and pyjokes, while the email script uses Python's standard smtplib module; the third-party dependencies are not declared in a manifest.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "alexa-script",
+        "email-script",
+        "repository-tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains concrete implementations of two small automation experiments rather than only plans or generated scaffolding.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "alexa-script",
+        "email-script"
+      ]
+    },
+    {
+      "statement": "Both tracked Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "syntax-check"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no documentation explaining setup, intended use, supported Python version, required system packages, or safe configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There is no dependency manifest, automated test suite, CI workflow, release, or deployable artifact.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The voice-assistant command variable may be referenced before assignment when speech capture or recognition fails, because exceptions are suppressed without establishing a fallback value.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "alexa-script"
+      ]
+    },
+    {
+      "statement": "Neither script provides structured error handling, resource cleanup, configuration separation, or an explicit safe entry point.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "alexa-script",
+        "email-script"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The email script contains a hard-coded email address and password credential in tracked source history.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "email-script",
+        "git-history"
+      ]
+    },
+    {
+      "statement": "Running the email script directly attempts multiple outbound messages immediately, creating accidental-send and account-abuse risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "email-script"
+      ]
+    },
+    {
+      "statement": "The voice assistant's infinite loop, broad exception suppression, and dependence on external services make failures difficult to diagnose and operation difficult to control.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "alexa-script"
+      ]
+    },
+    {
+      "statement": "The absence of pinned dependencies and verification artifacts makes the scripts unlikely to be reproducible reliably in a fresh environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "alexa-script",
+        "syntax-check"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Immediately revoke or rotate the exposed email credential and remove it from both the current source and Git history before any future sharing or use.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "email-script",
+        "git-history"
+      ]
+    },
+    {
+      "statement": "Confirm whether these 2021 experiments retain reference value; absent a current use case, archive the repository after addressing the credential exposure.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "github-metadata",
+        "git-history",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "If the scripts are retained for execution, move configuration to environment-based inputs, add dependency and setup documentation, introduce explicit entry points and error handling, and replace live-send testing with mocked tests.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "alexa-script",
+        "email-script",
+        "repository-tree"
+      ]
+    }
+  ],
+  "questions": [
+    "Were these scripts created as learning exercises, or were they intended for recurring personal use?",
+    "Has the hard-coded email credential already been revoked or rotated?",
+    "Does the voice-assistant experiment contain any technique worth preserving as a reference?",
+    "Should the repository be archived after its credential history is remediated?"
+  ],
+  "evidence": [
+    {
+      "id": "github-metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/CodingFun",
+      "summary": "Registry snapshot identifies a private repository with no description, no open issues or pull requests, and a latest push dated 2021-11-09."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains only Alexa Attempt.py and EmailBot_2.py; documentation, manifests, tests, workflows, notebooks, demos, releases, and deployment configuration are absent."
+    },
+    {
+      "id": "alexa-script",
+      "kind": "source_code",
+      "location": "Alexa Attempt.py",
+      "summary": "A 66-line continuous-loop voice-assistant experiment using microphone recognition, speech synthesis, YouTube playback, Wikipedia lookup, time reporting, jokes, and canned replies."
+    },
+    {
+      "id": "email-script",
+      "kind": "source_code",
+      "location": "EmailBot_2.py",
+      "summary": "A 13-line SMTP automation experiment that embeds an email login credential and attempts five immediate sends through Gmail using TLS."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available history contains one commit, d29a62c, titled 'Add files via upload' and dated 2021-11-09; it added both tracked scripts."
+    },
+    {
+      "id": "syntax-check",
+      "kind": "static_verification",
+      "location": "Python ast.parse of both tracked scripts",
+      "summary": "Both source files parsed successfully without executing application behavior or generating bytecode."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository is small enough for exhaustive source and history inspection, and its two implementations are unambiguous. Confidence is limited because there is no stated purpose, dependency manifest, test evidence, or safe way to verify hardware- and service-dependent runtime behavior."
+  },
+  "limitations": [
+    "No owner-authored description establishes why the scripts were created or whether either was ever used successfully.",
+    "External integrations and microphone/audio behavior were not executed.",
+    "The GitHub metadata was supplied as a registry snapshot rather than independently refreshed.",
+    "The analysis context describes a depth-50 clone, although the local repository reports non-shallow and exposes only one commit.",
+    "No secret value is reproduced or characterized beyond identifying the tracked credential exposure."
+  ]
+}

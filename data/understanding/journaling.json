@@ -1,0 +1,391 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/journaling",
+  "analyzed_at": "2026-07-27T03:23:05Z",
+  "revision": "96d87f4a5c602abba1912f4a5ea714c51b7b3ee9",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata",
+      "top-level tracked-file inventory and repository structure",
+      "project plans, architecture notes, API documentation, quick-start guide, MVP stories, and completion summaries",
+      "Python dependency manifest and configuration filenames without credential values",
+      "FastAPI entry point, authentication, theme, chat, coach, privacy, database, and migration implementation",
+      "representative unit and integration test source",
+      "CI, deployment, release, notebook, and demo artifact inventory",
+      "local branches and git log --oneline -20",
+      "tracked generated artifacts and frontend git entry"
+    ],
+    "missing": [
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "configured frontend source",
+      "CI workflow",
+      "deployment configuration",
+      "dependency lockfile",
+      "release artifacts",
+      "notebooks",
+      "demonstrable UI"
+    ],
+    "inaccessible": [
+      "frontend gitlink content because the checkout has no .gitmodules configuration",
+      "runtime test results because pytest and declared application dependencies are not installed"
+    ],
+    "sampling_notes": "The repository is moderate in size, so all tracked paths were inventoried and representative implementation files across every major backend component were inspected. Documentation and tests were sampled rather than read line-by-line. Per the supplied analysis constraint, Git history should be treated as recent-only from a depth-50 clone; the local checkout reports one visible commit. The tracked SQLite database was identified but its records were deliberately not inspected because they may contain private journal or credential-derived data."
+  },
+  "stated_purpose": "The documentation describes a privacy-first AI journaling application that pseudonymizes personal information before sending journal context to a Gemini-powered coach and returns structured Mirror, Questions, and Options responses.",
+  "observed_capabilities": [
+    {
+      "statement": "The FastAPI backend implements registration, login, current-user lookup, health checks, authenticated theme CRUD, chat CRUD, paginated message retrieval, message storage, and server-sent coach-response streaming.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-api"
+      ]
+    },
+    {
+      "statement": "SQLAlchemy models and three Alembic migrations define users, themes, chats, messages, privacy settings, pseudonymized message content, and audit-log storage, with SQLite used as the default local database and PostgreSQL-compatible configuration available.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-layer"
+      ]
+    },
+    {
+      "statement": "Privacy modules implement PII detection, deterministic per-user pseudonymization, date shifting, output scanning, and refusal handling for selected requests for sensitive information.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "privacy-source"
+      ]
+    },
+    {
+      "statement": "The coach layer provides Gemini and mock LLM providers, three configurable coaching tones, prompt construction, recent-message context budgeting, structured-response validation, retry behavior for non-streaming output, and streaming generation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "coach-source"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The frontend plans and stories specify a Next.js application with authentication, theme management, chat transcripts, streaming responses, accessibility, telemetry, dark mode, and frontend tests, but no accessible frontend implementation is present.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "frontend-plans",
+        "frontend-entry"
+      ]
+    },
+    {
+      "statement": "The LLM testing plan leaves environment verification, streaming, privacy, tone, end-to-end, error, and performance testing as unchecked work; only one basic LLM integration-test module is tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "llm-test-plan",
+        "tests"
+      ]
+    },
+    {
+      "statement": "The broader project stories propose later capabilities including rolling summaries, mini-RAG over uploaded artifacts, richer context orchestration, retention handling, and production deployment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-stories"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "HTTP routes in app/main.py delegate persistence and authorization behavior to ThemeService and ChatService, which use SQLAlchemy sessions and models from core.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-api",
+        "data-layer"
+      ]
+    },
+    {
+      "statement": "The intended coach pipeline is user input to PII detection and pseudonymization, recent-context selection, tone-specific prompt construction, Gemini generation, response-format validation, output scrubbing, and message persistence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chat-service",
+        "coach-source",
+        "privacy-source"
+      ]
+    },
+    {
+      "statement": "The intended client is a separate Next.js frontend communicating with the FastAPI API through authenticated REST calls and server-sent events.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "frontend-plans",
+        "api-integration"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a connected backend prototype rather than only plans: database models, migrations, authentication, API services, privacy transformations, coach orchestration, and Gemini integration are all implemented in source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-api",
+        "data-layer",
+        "privacy-source",
+        "coach-source"
+      ]
+    },
+    {
+      "statement": "Approximately 4,000 lines of test source cover authentication, models, theme and chat CRUD, optional verbatim storage, PII detection, pseudonymization, date shifting, output scrubbing, and basic live-LLM checks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "Completion summaries document implementation through MVP-008, while source and tests additionally include theme, chat, and optional-verbatim-storage work corresponding to later MVP stories.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "completion-summaries",
+        "backend-api",
+        "tests"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no usable frontend in this checkout: frontend is a gitlink, its target content is absent, and no .gitmodules file identifies how to retrieve it.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "frontend-entry"
+      ]
+    },
+    {
+      "statement": "The documented end-to-end LLM, streaming, error, concurrency, and performance verification remains largely unimplemented, and the existing test suite has no CI workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "llm-test-plan",
+        "tests",
+        "automation-inventory"
+      ]
+    },
+    {
+      "statement": "The current environment cannot import the application or collect tests because FastAPI, pytest, and the declared dependencies are not installed, so repository behavior was not independently executed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "The dependency manifest is unpinned and app/auth.py imports a top-level jwt module even though the manifest declares python-jose rather than an explicit provider for that import.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "backend-api"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The optional-verbatim-storage path assigns raw user input directly to pseudonymized_content, so disabling verbatim storage does not prove that plaintext PII is excluded from the database.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "chat-service"
+      ]
+    },
+    {
+      "statement": "Streaming coach output is sent to the client before format validation and PII scrubbing; the implementation explicitly acknowledges that detected leakage cannot be withdrawn after streaming.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "coach-source"
+      ]
+    },
+    {
+      "statement": "A development SQLite database and 42 compiled Python bytecode files are committed, and one test module creates and drops tables in the tracked development database path. This creates privacy, repository-hygiene, and accidental-data-loss risks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tracked-artifacts",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Authentication falls back to an embedded development JWT secret when configuration is absent, which could make an accidentally deployed default instance forgeable.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-api",
+        "configuration"
+      ]
+    },
+    {
+      "statement": "Only one bulk initial commit is visible, so the July 2026 push does not establish continued use, review history, or deliberate maintenance despite the amount of implementation present.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Before using the application with real journal content, make pseudonymization occur before persistence and buffer or incrementally sanitize streamed output so unsafe content is never emitted.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "chat-service",
+        "coach-source"
+      ]
+    },
+    {
+      "statement": "Determine whether reflection_dev.db contains any real or credential-derived data, remove it from version control if so, rotate affected credentials where appropriate, and replace it with a clearly synthetic fixture outside the production data path.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tracked-artifacts",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Remove tracked bytecode, expand .gitignore for Python caches and local databases, and isolate every database test in a temporary or in-memory database.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tracked-artifacts",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Repair or remove the unconfigured frontend gitlink, then add a reproducible dependency lock and CI checks for backend unit tests, privacy regressions, migrations, and a mocked end-to-end API flow.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "frontend-entry",
+        "dependencies",
+        "automation-inventory",
+        "tests"
+      ]
+    }
+  ],
+  "questions": [
+    "Does the tracked reflection_dev.db contain only synthetic test data, or has it ever held real journal entries or account records?",
+    "Where is the frontend repository identified by gitlink commit 71cbfc74c8d84b59cacb9c5e1adf1c300d736a70, and should it remain a submodule?",
+    "Is this project still being explored, or was the July 2026 initial commit primarily an import of work completed in November 2025?",
+    "Which privacy guarantee is intended when store_verbatim is false: no raw content anywhere, or only a null value in the content column?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/journaling",
+      "summary": "Supplied snapshot identifies a private, unarchived main-branch repository with no description, open issues, or open pull requests and a last push on 2026-07-11."
+    },
+    {
+      "id": "project-stories",
+      "kind": "planning_documentation",
+      "location": "mvp_stories.md and project_stories.md",
+      "summary": "Defines a privacy-first reflection application and staged work spanning data, authentication, privacy, coach orchestration, API streaming, summaries, retrieval, and deployment."
+    },
+    {
+      "id": "completion-summaries",
+      "kind": "implementation_documentation",
+      "location": "MVP-001_COMPLETION_SUMMARY.md through MVP-007_008_COMPLETION_SUMMARY.md",
+      "summary": "Claims implementation of data, authentication, PII detection, pseudonymization, date shifting, output scrubbing, coach formatting, and context management, while noting pending coach tests and several partial criteria."
+    },
+    {
+      "id": "backend-api",
+      "kind": "source_code",
+      "location": "app/main.py, app/auth.py, app/theme_service.py",
+      "summary": "Implements the FastAPI application, authentication, rate-limited login, theme endpoints, chat endpoints, message endpoints, streaming, and health routes."
+    },
+    {
+      "id": "chat-service",
+      "kind": "source_code",
+      "location": "app/chat_service.py",
+      "summary": "Connects chat persistence to coach generation but stores incoming text directly as pseudonymized_content and persists streamed coach output after generation."
+    },
+    {
+      "id": "coach-source",
+      "kind": "source_code",
+      "location": "coach/",
+      "summary": "Implements Gemini and mock providers, three tones, prompts, response validation, token-budgeted recent context, and coach orchestration; streaming validation and scrubbing occur only after chunks are emitted."
+    },
+    {
+      "id": "privacy-source",
+      "kind": "source_code",
+      "location": "privacy/",
+      "summary": "Implements PII detection, whitelisting, deterministic pseudonym generation, date shifting, output scanning, and selected refusal behavior."
+    },
+    {
+      "id": "data-layer",
+      "kind": "source_code",
+      "location": "core/database.py, core/models.py, alembic/versions/",
+      "summary": "Defines SQLite/PostgreSQL-aware SQLAlchemy setup, five persisted entity types, privacy-related fields, relationships, indexes, and a three-migration chain."
+    },
+    {
+      "id": "tests",
+      "kind": "test_source",
+      "location": "tests/",
+      "summary": "Ten Python test modules cover backend and privacy behavior; the basic Gemini integration test requires a live credential, and the optional-verbatim test points at reflection_dev.db and drops its tables during teardown."
+    },
+    {
+      "id": "llm-test-plan",
+      "kind": "testing_plan",
+      "location": "LLM_INTEGRATION_TESTING_PLAN.md",
+      "summary": "Describes planned connectivity, streaming, privacy, tone, end-to-end, error, and performance checks; its implementation checklist remains unchecked."
+    },
+    {
+      "id": "frontend-plans",
+      "kind": "architecture_and_planning",
+      "location": "FRONTEND_IMPLEMENTATION_PLAN.md, FRONTEND_ARCHITECTURE_DIAGRAM.md, FRONT_END_STORIES.md, FRONTEND_TECHNICAL_SPECS.md",
+      "summary": "Specifies a Next.js, TypeScript, Zustand, TanStack Query, Axios, Zod, and Tailwind client, but describes intended rather than locally accessible implementation."
+    },
+    {
+      "id": "frontend-entry",
+      "kind": "repository_tree",
+      "location": "frontend",
+      "summary": "Git records frontend as gitlink commit 71cbfc74c8d84b59cacb9c5e1adf1c300d736a70; the directory is empty and .gitmodules is absent."
+    },
+    {
+      "id": "api-integration",
+      "kind": "architecture_documentation",
+      "location": "API_INTEGRATION_ANALYSIS.md and API_ENDPOINTS.md",
+      "summary": "Maps the proposed frontend journeys to implemented backend endpoints and identifies the backend as the API surface for the planned client."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Declares unpinned lower-bound dependencies for SQLAlchemy, Alembic, PostgreSQL, FastAPI, authentication, spaCy, Gemini, and pytest, with no lockfile."
+    },
+    {
+      "id": "configuration",
+      "kind": "configuration_inventory",
+      "location": ".env.example and .gitignore",
+      "summary": "An example credential/configuration file exists and names database, JWT, HMAC, Gemini, coach, and logging settings; values were not inspected or recorded. The ignore file covers .env, macOS metadata, and node_modules only."
+    },
+    {
+      "id": "tracked-artifacts",
+      "kind": "repository_hygiene",
+      "location": "reflection_dev.db and tracked __pycache__ directories",
+      "summary": "A 90,112-byte SQLite development database and 42 compiled Python bytecode files are committed. Database records were not inspected."
+    },
+    {
+      "id": "automation-inventory",
+      "kind": "repository_tree",
+      "location": ".github/, Dockerfile*, docker-compose*",
+      "summary": "No CI workflow, container definition, or deployment artifact is tracked."
+    },
+    {
+      "id": "verification",
+      "kind": "local_verification",
+      "location": "local Python 3.14 environment",
+      "summary": "pytest is unavailable and importing app.main fails because FastAPI is not installed; no files were modified while checking."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 96d87f4a5c602abba1912f4a5ea714c51b7b3ee9",
+      "summary": "The visible history contains one commit, 96d87f4 Initial commit, dated 2026-07-11; local main and origin/main point to it and no other branches are present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary implementation, schema, plans, and extensive test source consistently establish a substantial backend prototype and expose several concrete privacy flaws. Confidence is reduced because dependencies are unavailable, tests could not be executed, the frontend target is inaccessible, the database was intentionally not inspected, and only one bulk commit is visible."
+  },
+  "limitations": [
+    "No README or repository description provides a concise authoritative purpose statement.",
+    "The frontend gitlink cannot be resolved from this checkout.",
+    "Tests and application startup were not executed because required packages are absent; the full suite was also avoided because a test targets the tracked development database destructively.",
+    "The SQLite database contents were not inspected to avoid exposing potentially private journal, account, or credential-derived data.",
+    "Open issue and pull-request conclusions rely on the supplied GitHub snapshot rather than an independent remote refresh.",
+    "History is treated as recent-only under the supplied depth-50 analysis constraint, and only one commit is visible."
+  ]
+}

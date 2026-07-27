@@ -1,0 +1,472 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Daily_Apartment_Pull",
+  "analyzed_at": "2026-07-27T03:14:52Z",
+  "revision": "48cf390e675a77fcce1cb607d6d9e3b2fc50f76b",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "README.md, README_DEPLOY.md, CLAUDE.md, and PERFORMANCE_FIXES.md",
+      "top-level tracked-file inventory and dependency manifest",
+      "GitHub Actions workflows",
+      "primary Aston Chicago extraction, notification, CSV, and BigQuery paths",
+      "multi-site Crawl4AI configuration, schema cache, validation, and fallback extraction paths",
+      "Optima Signature scraper structure and BigQuery integration",
+      "simple_checker orchestration, manifests, CSV outputs, and representative logs",
+      "test scripts and generated test outputs",
+      "committed output structures and row/listing counts without reading credential values",
+      "credential-like filenames and credential-pattern file locations without copying values",
+      "local branches and git log --oneline -20"
+    ],
+    "missing": [
+      "formal package metadata or pinned dependency versions",
+      "automated assertion-based test suite",
+      "test coverage report",
+      "license",
+      "release artifacts",
+      "current GitHub Actions run results",
+      "explicit GitHub archival-state confirmation"
+    ],
+    "inaccessible": [
+      "live GitHub repository and Actions metadata because api.github.com was unreachable",
+      "live target websites and external OpenAI, Groq, Slack, and Google Cloud services"
+    ],
+    "sampling_notes": "The supplied clone was described as shallow with depth 50, so recent history may be truncated; 12 local commits were available and all were inspected through the requested 20-commit log. The repository has 161 tracked files, including 61 artifact files, nine debug files, seven cached schemas, 30 simple_checker files, and large captured HTML pages. Representative implementation paths were read in depth, while generated HTML, large Crawl4AI reference notes, logs, and output datasets were sampled by structure and metadata rather than exhaustively reviewed. No secret value was read or reproduced."
+  },
+  "stated_purpose": "The repository describes an apartment-listing monitoring system that scrapes several Chicago property websites, extracts and validates floor-plan or unit data, records results in CSV and BigQuery, and optionally sends Slack notifications.",
+  "observed_capabilities": [
+    {
+      "statement": "The primary Aston Chicago pipeline crawls a configurable floor-plans URL, asks GPT-4o-mini to produce structured floor-plan records, saves crawl artifacts and daily CSV history, detects price and availability changes, optionally writes to BigQuery, and sends a Slack notification when configured.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "primary-pipeline",
+        "crawler",
+        "bigquery-sink",
+        "slack-notifier"
+      ]
+    },
+    {
+      "statement": "A separate Playwright-based Optima Signature scraper extracts floor availability, available units, and floor-plan types and can transform and upload those records to BigQuery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "optima-scraper",
+        "optima-output",
+        "bigquery-schema"
+      ]
+    },
+    {
+      "statement": "The Crawl4AI configuration layer defines seven concrete apartment sites plus a generic template, with cached schemas, regex fallbacks, normalization, and a command-line scraper that saves combined JSON results.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "site-config",
+        "universal-scraper",
+        "schema-cache",
+        "multi-site-output"
+      ]
+    },
+    {
+      "statement": "The simple_checker workflow runs eleven Aston floor plans with retries, captures per-plan HTML and logs, aggregates unit records to CSV, and can append the CSV to BigQuery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "simple-checker",
+        "simple-checker-manifests",
+        "bigquery-sink"
+      ]
+    },
+    {
+      "statement": "Three GitHub Actions workflows schedule the primary extractor, Optima scraper, and simple checker, and provide a manually triggered BigQuery initialization job.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workflows"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The performance note calls for regenerating site-specific schemas, running an end-to-end scraper test, and then using the optimized schema-generation path in production.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "performance-notes"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The repository contains three overlapping execution paths: an LLM-assisted Aston monitoring pipeline, a schema/regex-based multi-site Crawl4AI engine, and direct Playwright scrapers for Optima Signature and per-plan Aston unit checks.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "primary-pipeline",
+        "universal-scraper",
+        "optima-scraper",
+        "simple-checker"
+      ]
+    },
+    {
+      "statement": "Persistence is split between committed JSON/CSV/HTML artifacts and two BigQuery sinks: streamed floor-plan rows and bulk-loaded unit CSV rows.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "primary-pipeline",
+        "bigquery-sink",
+        "generated-artifacts"
+      ]
+    },
+    {
+      "statement": "Scheduled GitHub Actions provision Chromium and credentials at runtime, then invoke the Python entry points against external apartment sites and cloud services.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workflows",
+        "requirements"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The repository contains complete executable workflows for crawling, extraction, normalization, change detection, local persistence, cloud persistence, and notifications rather than only design documents.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "primary-pipeline",
+        "bigquery-sink",
+        "slack-notifier",
+        "workflows"
+      ]
+    },
+    {
+      "statement": "Committed outputs provide historical execution evidence: the Optima output contains 44 floor-availability entries, two available units, and two floor-plan types, while the multi-site output records successful results for all seven configured sites.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "optima-output",
+        "multi-site-output"
+      ]
+    },
+    {
+      "statement": "Two committed simple-checker manifests record repeatable eleven-plan runs with six successes and five failures each, making partial failure visible rather than hiding it.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "simple-checker-manifests"
+      ]
+    },
+    {
+      "statement": "The most recent commit expanded the multi-site configuration and cached schemas to five additional Chicago properties and committed a corresponding combined output.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "git-history",
+        "site-config",
+        "multi-site-output"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The test scripts are demonstration programs that print results and write files; no pytest/unittest suite, assertions, coverage configuration, or test-running CI job was found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests",
+        "workflows"
+      ]
+    },
+    {
+      "statement": "Dependencies are unpinned, so scheduled executions are not reproducible against a known Crawl4AI, OpenAI, Playwright, or Google Cloud client version.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "requirements"
+      ]
+    },
+    {
+      "statement": "The README documents only Aston Chicago and Deco Lakeshore even though the current configuration and output cover seven sites, and CLAUDE.md emphasizes different primary paths than README.md.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "claude-guidance",
+        "site-config"
+      ]
+    },
+    {
+      "statement": "No current Actions result or live external-service execution could be verified, so the scheduled workflows' present operational health is unproven.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "github-access",
+        "workflows"
+      ]
+    },
+    {
+      "statement": "The two historical simple-checker manifests each show five failures out of eleven plans, and no newer committed manifest demonstrates that those failures were resolved.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "simple-checker-manifests",
+        "git-history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A credential-shaped Slack webhook is committed as a constant in extract_details.py even though the active notifier uses an environment variable; because the repository is public, it should be treated as exposed and rotated without inspecting or reproducing its value.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "credential-scan",
+        "primary-pipeline",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "test_llm_setup.py prints part of the configured Groq API key when run, which can disclose credential material through developer terminals or CI logs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "The universal scraper's schema path does not consume the extracted structured content; when fetched HTML contains a currency indicator, it can instead return a synthetic placeholder listing. Consequently, a reported successful site and listing count does not by itself prove accurate apartment extraction.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "universal-scraper",
+        "multi-site-output"
+      ]
+    },
+    {
+      "statement": "Large captured pages, logs, bytecode, operating-system metadata, and generated datasets are committed, increasing repository size and the chance of retaining stale or unintentionally sensitive third-party content.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "generated-artifacts"
+      ]
+    },
+    {
+      "statement": "The scheduled jobs depend on mutable website markup, browser automation, several unpinned libraries, and multiple external credentials, making silent extraction drift and dependency breakage likely without semantic validation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "workflows",
+        "requirements",
+        "tests",
+        "universal-scraper"
+      ]
+    },
+    {
+      "statement": "The latest commit message says the changes were saved before archiving, while scheduled workflows remain tracked; absent live archival and Actions state, the repository's intended operational status is ambiguous.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "workflows",
+        "github-access"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Immediately revoke or rotate the committed Slack webhook, remove it from the current tree and reachable history as appropriate, and replace credential-prefix logging with presence-only checks.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "credential-scan",
+        "tests"
+      ]
+    },
+    {
+      "statement": "If the project is being retired, disable scheduled workflows, archive the repository explicitly, and preserve only sanitized summary datasets needed for reference.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "workflows",
+        "generated-artifacts"
+      ]
+    },
+    {
+      "statement": "If monitoring is still desired, choose one canonical extraction architecture, make schema extraction consume and validate extracted records, and add fixture-based assertions for field accuracy and failure behavior before relying on success counts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "universal-scraper",
+        "tests",
+        "multi-site-output"
+      ]
+    },
+    {
+      "statement": "Pin dependencies and add CI checks for unit tests, static validation, credential scanning, and representative parser fixtures that do not require live websites or secret values.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "requirements",
+        "tests",
+        "credential-scan",
+        "workflows"
+      ]
+    },
+    {
+      "statement": "Stop tracking generated HTML, logs, bytecode, and routine scrape outputs; retain compact, sanitized fixtures or publish time-bound artifacts outside the source tree instead.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "generated-artifacts"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the July 2026 commit intended to precede formal repository archival, and should the scheduled workflows now be disabled?",
+    "Is the committed Slack webhook still active, and has it already been revoked or rotated?",
+    "Which of the LLM-assisted, cached-schema, simple-checker, and Optima pipelines is the canonical implementation?",
+    "Are the seven configured properties still intended monitoring targets?",
+    "Were the five repeated simple-checker plan failures expected website limitations or unresolved defects?",
+    "Should historical raw pages and apartment datasets remain publicly committed, or can they be replaced by sanitized fixtures?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Daily_Apartment_Pull",
+      "summary": "Supplied snapshot identifies a public repository on main, pushed 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a Crawl4AI apartment scraping system with cached schemas, regex fallbacks, validation, and support documentation for Aston Chicago and Deco Lakeshore."
+    },
+    {
+      "id": "claude-guidance",
+      "kind": "documentation",
+      "location": "CLAUDE.md",
+      "summary": "Describes the LLM-assisted Aston pipeline and Playwright-based Optima Signature pipeline, including BigQuery and GitHub Actions integration."
+    },
+    {
+      "id": "performance-notes",
+      "kind": "documentation",
+      "location": "PERFORMANCE_FIXES.md",
+      "summary": "Claims fixes to schema generation and wait behavior and lists schema regeneration and end-to-end execution as next steps."
+    },
+    {
+      "id": "requirements",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Lists eight unpinned dependencies: Crawl4AI, OpenAI, dotenv, requests, pandas, Google Cloud BigQuery, Playwright, and Beautiful Soup."
+    },
+    {
+      "id": "primary-pipeline",
+      "kind": "source",
+      "location": "extract_details.py",
+      "summary": "Orchestrates crawl, artifact capture, GPT-4o-mini JSON extraction, CSV history and change detection, optional BigQuery insertion, trend calculation, and Slack notification."
+    },
+    {
+      "id": "crawler",
+      "kind": "source",
+      "location": "simple_markdown_extractor.py",
+      "summary": "Uses Crawl4AI to fetch markdown and HTML from a configurable URL with JavaScript readiness and full-page scanning."
+    },
+    {
+      "id": "slack-notifier",
+      "kind": "source",
+      "location": "send_slack.py",
+      "summary": "Posts messages to an environment-provided Slack webhook and safely skips notification when it is absent."
+    },
+    {
+      "id": "bigquery-sink",
+      "kind": "source",
+      "location": "bigquery_sink.py",
+      "summary": "Creates or retrieves BigQuery datasets and tables, streams floor-plan records with retry-oriented row IDs, and bulk-loads aggregated unit CSV files."
+    },
+    {
+      "id": "optima-scraper",
+      "kind": "source",
+      "location": "optima_signature_scraper.py",
+      "summary": "Implements headless Playwright extraction for Optima Signature, structured summaries, BigQuery record transformation, and optional upload."
+    },
+    {
+      "id": "bigquery-schema",
+      "kind": "database_schema",
+      "location": "bigquery_optima_schema.sql",
+      "summary": "Defines a partitioned and clustered Optima apartment table with unit, floor-plan, building-summary, provenance, and data-quality fields."
+    },
+    {
+      "id": "site-config",
+      "kind": "source",
+      "location": "apartment_site_config.py",
+      "summary": "Defines seven concrete Chicago apartment-site configurations, a generic template, and cached-schema loading and saving."
+    },
+    {
+      "id": "universal-scraper",
+      "kind": "source",
+      "location": "apartment_scraper_engine.py",
+      "summary": "Runs cached-schema, regex, and direct-HTML fallback strategies across configured sites, validates records, and writes combined JSON; its schema path can substitute a placeholder listing based on HTML currency text."
+    },
+    {
+      "id": "schema-cache",
+      "kind": "generated_configuration",
+      "location": "schema_cache/",
+      "summary": "Contains seven committed JSON extraction schemas corresponding to configured apartment sites."
+    },
+    {
+      "id": "simple-checker",
+      "kind": "source",
+      "location": "simple_checker/",
+      "summary": "Contains per-plan Playwright scraping, retry orchestration, log parsing, CSV aggregation, and optional BigQuery upload code."
+    },
+    {
+      "id": "tests",
+      "kind": "verification",
+      "location": "test_crawl4ai_system.py; test_llm_setup.py",
+      "summary": "Script-style checks exercise configuration, regex extraction, validation, and live LLM schema generation, but use printed outcomes rather than assertions; the LLM script prints a credential prefix when configured."
+    },
+    {
+      "id": "workflows",
+      "kind": "ci_workflow",
+      "location": ".github/workflows/",
+      "summary": "Contains scheduled daily extractor and simple-checker jobs plus manual BigQuery initialization; no automated test job was found."
+    },
+    {
+      "id": "optima-output",
+      "kind": "generated_output",
+      "location": "optima_signature_data.json",
+      "summary": "Committed structured output contains 44 floor-availability records, two available units, and two floor-plan types."
+    },
+    {
+      "id": "multi-site-output",
+      "kind": "generated_output",
+      "location": "apartment_listings.json",
+      "summary": "Committed output dated 2025-10-26 reports successful results for all seven configured sites, with eight to ten listings per site; source behavior limits its value as accuracy evidence."
+    },
+    {
+      "id": "simple-checker-manifests",
+      "kind": "execution_artifact",
+      "location": "simple_checker/manifests/",
+      "summary": "Two manifests from 2025-09-11 each record eleven attempted plans, six successes, and five failures."
+    },
+    {
+      "id": "generated-artifacts",
+      "kind": "repository_artifacts",
+      "location": "artifacts/; debug/; simple_checker/out/; committed CSV and JSON files",
+      "summary": "The repository tracks raw and processed crawl pages, debug captures, logs, bytecode, CSV histories, manifests, and JSON outputs; generated files dominate the approximately 12.6 MB working tree."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Inventory found 161 tracked files, including 61 artifact files, nine debug files, seven cached schemas, 30 simple-checker files, three workflows, compiled bytecode, and a tracked .DS_Store."
+    },
+    {
+      "id": "credential-scan",
+      "kind": "security_observation",
+      "location": "extract_details.py",
+      "summary": "A credential-shaped Slack webhook literal exists in tracked source. Its value was neither read into the brief nor reproduced."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 48cf390e675a77fcce1cb607d6d9e3b2fc50f76b",
+      "summary": "Twelve local commits were available. Most implementation activity occurred in September 2025; the 2026-07-11 head commit is titled 'Save latest changes before archiving' and adds multi-site configuration, schemas, output data, and analysis HTML."
+    },
+    {
+      "id": "github-access",
+      "kind": "access_limitation",
+      "location": "api.github.com",
+      "summary": "Attempts to inspect live repository and Actions state failed because the GitHub API was unreachable."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, workflows, historical manifests, and committed outputs establish substantial implemented behavior. Confidence is reduced because external services and current Actions status could not be verified, tests lack assertions, the generic scraper's success signal can represent placeholder data, documentation is inconsistent, and the intended post-archive operational state is unclear."
+  },
+  "limitations": [
+    "Analysis was read-only and did not execute scrapers, notification delivery, LLM calls, or BigQuery writes.",
+    "Live GitHub archival state, branches beyond the local clone, workflow runs, releases, and remote history were unavailable because the GitHub API could not be reached.",
+    "The clone was supplied as depth 50, so history older than the available recent commits may be absent even though all 12 locally available commits were inspected.",
+    "Large generated HTML pages, reference notes, logs, and datasets were sampled rather than exhaustively read.",
+    "No credential value was read, copied, summarized, or stored; credential findings are based only on filenames, source structure, and pattern presence.",
+    "Suggested lifecycle and security actions require owner review."
+  ]
+}

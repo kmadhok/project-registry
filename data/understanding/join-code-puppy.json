@@ -1,0 +1,501 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/join-code-puppy",
+  "analyzed_at": "2026-07-27T03:22:19Z",
+  "revision": "34d0e6ee0371b78e7cf1ce082dcd37a3406a445f",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub and registry metadata",
+      "README.md and prd.md",
+      "complete tracked-file and top-level directory inventory",
+      "requirements.txt, .gitignore, configuration, CLI entry points, and data models",
+      "all Python source under the repository root, layers, models, and utils",
+      "test_two_tables.py, example_usage.py, and demo_results.py",
+      "tracked run histories and the structure and row counts of generated JSON and CSV reports",
+      "local branches, tags, and the available commit history",
+      "Python source syntax using AST parsing"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      ".env.example referenced by README.md",
+      "LICENSE file referenced by README.md",
+      "automated unit or integration test suite",
+      "CI workflow",
+      "package metadata or lockfile",
+      "deployment configuration",
+      "release or version tag"
+    ],
+    "inaccessible": [
+      "repository history older than the shallow clone's available depth",
+      "independent execution against BigQuery or Gemini without external credentials and services"
+    ],
+    "sampling_notes": "This is a shallow clone with depth 50, so older history may be truncated; only one commit is available locally. The repository is small, and all approximately 4,019 lines of Python source were inspected. Generated JSON/CSV status and structure were checked, while binary bytecode and every line of generated HTML were not inspected. No secret values were read."
+  },
+  "stated_purpose": "The README and PRD describe a Safe Join Discovery Engine intended to discover, statistically validate, rank, and report candidate join keys across tables in a BigQuery dataset, with optional Gemini reasoning.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository implements a Python CLI and orchestrator that connect profiling, candidate generation, validation, optional LLM analysis, and local report generation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entrypoints",
+        "orchestrator",
+        "layers"
+      ]
+    },
+    {
+      "statement": "The BigQuery layer lists tables and schemas, dry-runs queries, tracks estimated and actual scan cost, and samples table data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "bigquery-utils"
+      ]
+    },
+    {
+      "statement": "Candidate generation combines normalized column-name similarity, lexical similarity, datatype compatibility, sampled top-value overlap, and FAISS-backed sentence-transformer or TF-IDF retrieval.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "candidate-layer",
+        "embedding-utils"
+      ]
+    },
+    {
+      "statement": "Validation compares sampled distinct values using overlap and containment thresholds, while the reporting layer can emit JSON, CSV, or Parquet records for candidates it classifies as safe.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "validation-layer",
+        "reporting-layer"
+      ]
+    },
+    {
+      "statement": "The optional Gemini path sends schema context, profile statistics, and up to five sampled top values per column for semantic assessment and stores responses in a local pickle cache.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "llm-utils",
+        "llm-layer"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The PRD proposes incremental profiling, historical-query mining, foreign-key direction inference, join-drift alerts, a Streamlit or React UI, and Cloud Run plus Scheduler deployment as future work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd"
+      ]
+    },
+    {
+      "statement": "The PRD acceptance checklist still calls for successful profile generation, detection of at least 80% of known joins, runtime below 30 minutes, cost below $50, and absence of runtime or schema errors.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "SafeJoinEngine is the central in-process orchestrator and maintains profiles, candidates, validations, LLM analyses, reports, and run history in memory.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "orchestrator"
+      ]
+    },
+    {
+      "statement": "Profiling reads BigQuery metadata and samples into Pydantic TableProfile and ColumnProfile objects; candidate, validation, LLM, and reporting layers transform those objects sequentially.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "profiling-layer",
+        "models",
+        "layers"
+      ]
+    },
+    {
+      "statement": "Runtime configuration is loaded from environment variables through pydantic-settings, including BigQuery project information, credential location, Gemini key, sampling limits, and local cache paths.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "config"
+      ]
+    },
+    {
+      "statement": "Despite the PRD describing persisted profiles, candidate tables, validation tables, and run-history storage, the implemented pipeline persists only local reports, run-history JSON, optional LLM analysis JSON, embeddings, and LLM cache files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd",
+        "orchestrator",
+        "reporting-layer",
+        "embedding-utils",
+        "llm-utils"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a substantial multi-layer prototype with typed domain models, cost checks, two similarity backends, statistical validation, optional LLM reasoning, and several export formats.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "layers",
+        "models",
+        "requirements"
+      ]
+    },
+    {
+      "statement": "One tracked run artifact records profiling 62 columns and generating and validating 41 candidates against the public thelook_ecommerce dataset.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "run-artifacts"
+      ]
+    },
+    {
+      "statement": "All inspected Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "syntax-check"
+      ]
+    },
+    {
+      "statement": "A clearly labeled simulation provides example JSON, HTML, and SQL output for three illustrative ecommerce joins.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "demo"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No tracked real run demonstrates a discovered safe join: both real report JSON files are empty, their CSV files contain only a header, and the separate three-join demo is explicitly simulated.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "run-artifacts",
+        "demo"
+      ]
+    },
+    {
+      "statement": "Validation loses the target dataset context because candidates retain only bare table names; it then parses each table name as a dataset reference, which can direct sampling toward an incorrect project.dataset.table path.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "candidate-layer",
+        "validation-layer",
+        "bigquery-utils"
+      ]
+    },
+    {
+      "statement": "The LLM layer stores raw dictionaries returned by LLMManager, while reporting expects LLMAnalysis objects with attributes, making LLM-assisted report construction internally inconsistent.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "llm-layer",
+        "llm-utils",
+        "reporting-layer",
+        "models"
+      ]
+    },
+    {
+      "statement": "Reporting reads confidence thresholds as attributes of the Config instance even though they are module-level constants, so creation of a qualifying SafeJoinReport can fail with an attribute error.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "config",
+        "reporting-layer"
+      ]
+    },
+    {
+      "statement": "The only test-like file is a credentialed live BigQuery script that returns status codes but contains no assertions; there is no isolated automated regression suite or CI workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "test-script",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The save_to_bigquery and custom output-directory options are accepted by configuration or CLI code but are not implemented by the orchestrator.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entrypoints",
+        "models",
+        "orchestrator"
+      ]
+    },
+    {
+      "statement": "The README's production-ready, performance, accuracy, scalability, and example-cost claims are not substantiated by tracked verification artifacts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "run-artifacts",
+        "test-script"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Sampled top values may contain sensitive or personally identifiable data and are transmitted to Gemini and incorporated into locally cached request context without an evident redaction or classification step.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "profiling-layer",
+        "llm-layer",
+        "llm-utils"
+      ]
+    },
+    {
+      "statement": "Incorrect dataset resolution in validation can produce failed checks, query unintended tables, or incur avoidable BigQuery cost.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "validation-layer",
+        "bigquery-utils",
+        "run-artifacts"
+      ]
+    },
+    {
+      "statement": "Profiling samples each table once for table profiles and again for column profiles, increasing scans and cost relative to reusing the first sample.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "profiling-layer"
+      ]
+    },
+    {
+      "statement": "The tracked run histories remain marked running with no end time because results are saved before the orchestrator changes the in-memory status to completed, making operational evidence misleading.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "orchestrator",
+        "run-artifacts"
+      ]
+    },
+    {
+      "statement": "Generated reports and Python bytecode are committed, while the ignore rules cover only .env, .DS_Store, and node_modules, creating repository hygiene and stale-artifact risk.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "Dependency versions are pinned to an older 2023-era stack without a lockfile or automated dependency-update workflow, increasing reproducibility and maintenance risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "requirements",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Preserve the complete dataset identifier in every candidate and repair validation table-reference construction before spending further BigQuery credits.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "candidate-layer",
+        "validation-layer",
+        "bigquery-utils"
+      ]
+    },
+    {
+      "statement": "Convert LLM responses into validated LLMAnalysis models and import confidence thresholds consistently before treating report generation as usable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "llm-layer",
+        "reporting-layer",
+        "models",
+        "config"
+      ]
+    },
+    {
+      "statement": "Add deterministic unit tests for name normalization, scoring, overlap metrics, dataset resolution, confidence calculation, and serialization, followed by one guarded end-to-end test against a small public dataset.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "candidate-layer",
+        "validation-layer",
+        "reporting-layer",
+        "test-script"
+      ]
+    },
+    {
+      "statement": "Redact or disable sampled values in external LLM prompts by default and document the data-handling boundary before using the engine on private datasets.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "llm-utils",
+        "profiling-layer",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Replace unsupported production and accuracy claims with measured results, add the referenced environment example and license, and clearly distinguish simulated demonstrations from verified executions.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "demo",
+        "run-artifacts",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Remove generated bytecode and stale run artifacts from source control or document them as fixtures, and expand ignore rules for caches, logs, results, and local model data.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "gitignore"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the July 2026 initial commit a fresh active experiment, or an import of the November 2025 prototype for archival or reference purposes?",
+    "Did either tracked thelook_ecommerce run complete successfully outside the status recorded in its run_history.json?",
+    "Should sampled column values ever be sent to Gemini when analyzing private datasets, and what redaction policy is intended?",
+    "Is BigQuery persistence of profiles and join results still required, or should the PRD be revised to describe local-only output?",
+    "Which join relationships and datasets should serve as the authoritative accuracy benchmark?",
+    "Are save_to_bigquery, custom output directories, historical-query mining, and a user interface still desired?"
+  ],
+  "evidence": [
+    {
+      "id": "registry-metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/join-code-puppy",
+      "summary": "Private repository on main with no description, open issues, or open pull requests; the supplied snapshot records its latest push on 2026-07-11."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes a production-ready BigQuery safe-join engine, setup requirements, five processing layers, performance and accuracy claims, and example results."
+    },
+    {
+      "id": "prd",
+      "kind": "product_specification",
+      "location": "prd.md",
+      "summary": "Defines schema-based and query-augmented pipelines, success criteria, persistence targets, acceptance checks, and proposed v2 enhancements."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Contains 48 tracked files: Python source, documentation, generated bytecode, simulated demo outputs, two real-run output directories, and no CI, package metadata, license, or docs directory."
+    },
+    {
+      "id": "gitignore",
+      "kind": "configuration",
+      "location": ".gitignore",
+      "summary": "Ignores .env, .DS_Store, and node_modules but not Python caches, results, logs, model data, or local LLM caches."
+    },
+    {
+      "id": "requirements",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Pins BigQuery, Gemini, FAISS, pandas, scikit-learn, Pydantic, FastAPI, sentence-transformers, and supporting Python dependencies without a lockfile."
+    },
+    {
+      "id": "config",
+      "kind": "configuration",
+      "location": "config.py",
+      "summary": "Loads credential and project settings from the environment and defines sampling, cost, cache, scoring, and confidence settings; confidence thresholds are module-level constants."
+    },
+    {
+      "id": "entrypoints",
+      "kind": "entry_point",
+      "location": "main.py and safe_join_engine.py",
+      "summary": "Provide overlapping command-line entry points for live and dry-run BigQuery analysis."
+    },
+    {
+      "id": "orchestrator",
+      "kind": "source",
+      "location": "safe_join_engine.py",
+      "summary": "Coordinates metadata collection, profiling, candidate generation, validation, optional LLM analysis, report compilation, and local result saving."
+    },
+    {
+      "id": "models",
+      "kind": "source",
+      "location": "models/data_models.py",
+      "summary": "Defines Pydantic models for profiles, candidates, validations, LLM assessments, reports, run histories, and engine configuration."
+    },
+    {
+      "id": "layers",
+      "kind": "source_collection",
+      "location": "layers/",
+      "summary": "Contains separate profiling, candidate-generation, validation, LLM-reasoning, and reporting modules."
+    },
+    {
+      "id": "profiling-layer",
+      "kind": "source",
+      "location": "layers/profiling_layer.py",
+      "summary": "Collects BigQuery metadata, samples tables, and calculates null rate, distinct rate, unique counts, and up to ten top values per column."
+    },
+    {
+      "id": "candidate-layer",
+      "kind": "source",
+      "location": "layers/candidate_layer.py",
+      "summary": "Retrieves and scores cross-table column pairs using names, table context, datatypes, and overlap among sampled top values."
+    },
+    {
+      "id": "validation-layer",
+      "kind": "source",
+      "location": "layers/validation_layer.py",
+      "summary": "Samples candidate tables and applies overlap and containment thresholds, but reconstructs dataset references from candidate table-name fields."
+    },
+    {
+      "id": "reporting-layer",
+      "kind": "source",
+      "location": "layers/reporting_layer.py",
+      "summary": "Combines candidate, validation, and optional LLM evidence into reports and exports JSON, CSV, or Parquet."
+    },
+    {
+      "id": "bigquery-utils",
+      "kind": "source",
+      "location": "utils/bigquery_utils.py",
+      "summary": "Implements BigQuery table and schema lookup, sampling, dry-run cost checks, execution, and in-memory query caching."
+    },
+    {
+      "id": "embedding-utils",
+      "kind": "source",
+      "location": "utils/faiss_utils.py",
+      "summary": "Builds FAISS indexes from sentence-transformer embeddings with a TF-IDF fallback and supports local index persistence."
+    },
+    {
+      "id": "llm-utils",
+      "kind": "source",
+      "location": "utils/llm_utils.py",
+      "summary": "Calls Gemini 1.5 Flash for borderline candidates, includes sampled top values in prompts, returns dictionaries, and pickles response caches locally."
+    },
+    {
+      "id": "llm-layer",
+      "kind": "source",
+      "location": "layers/llm_layer.py",
+      "summary": "Selects ambiguous candidates for Gemini and passes column profiles and sampled statistics to LLMManager, retaining its raw dictionary responses."
+    },
+    {
+      "id": "test-script",
+      "kind": "test_or_demo",
+      "location": "test_two_tables.py",
+      "summary": "A manually invoked, credential-dependent live test script for two public-dataset tables; it has no assertions and writes local results."
+    },
+    {
+      "id": "demo",
+      "kind": "simulated_demo",
+      "location": "demo_results.py and demo_results_20251102_093631/",
+      "summary": "Explicitly simulates a successful run with three ecommerce joins and generates example JSON, HTML, and SQL."
+    },
+    {
+      "id": "run-artifacts",
+      "kind": "generated_output",
+      "location": "results/ and test_results_20251102_093501/",
+      "summary": "Two tracked run histories remain in running state; the larger records 62 profiled columns and 41 candidates and validations, but every tracked real safe-join JSON is empty."
+    },
+    {
+      "id": "syntax-check",
+      "kind": "static_verification",
+      "location": "all tracked Python source files",
+      "summary": "Python 3 AST parsing succeeded for every inspected .py file; runtime imports and external integrations were not executed."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available shallow history contains only commit 34d0e6e, titled Initial commit, dated 2026-07-11; no tags or additional branches are present beyond main and origin/main."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The repository is small enough that all Python source, documentation, configuration, test/demo code, tracked execution summaries, tree structure, and available history were inspected. The implementation and real output artifacts consistently support prototype maturity and expose concrete integration defects. Confidence does not extend to live BigQuery or Gemini behavior because external execution was not performed."
+  },
+  "limitations": [
+    "The clone is shallow at depth 50, and only one commit is available, so prior development history or removed evidence cannot be assessed.",
+    "No BigQuery or Gemini calls were executed; external permissions, current API compatibility, actual cost, and runtime behavior were not independently verified.",
+    "The supplied GitHub snapshot, rather than a live network query, was used for issue and pull-request state.",
+    "Generated binary bytecode was inventoried but not reverse-engineered, and generated HTML was sampled through its generator rather than inspected line by line.",
+    "No secret values were read; therefore credential correctness and any untracked local configuration were intentionally not assessed."
+  ]
+}

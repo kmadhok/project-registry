@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/deep-learning-challenge",
+  "analyzed_at": "2026-07-27T03:15:35Z",
+  "revision": "634340a29b19fc651816b89d247676911a697506",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "root README.md",
+      "complete tracked-file inventory and top-level structure",
+      "all 18 cells, source code, metadata, execution counts, and saved outputs in DeepLearning/Starter_Code.ipynb",
+      "Resources/charity_data.csv header, dimensions, representative rows, and target distribution",
+      "embedded architecture and training configuration plus hashes for all four HDF5 model artifacts",
+      "absence of dependency manifests, tests, CI workflows, deployment configuration, license, and credential-like filenames",
+      "all four commits available in the local history, branches, remotes, and tags",
+      "DeepLearning/README.md from the parent revision to determine what the latest commit deleted"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency or environment manifest",
+      "automated tests",
+      "CI workflow",
+      "deployment or operational configuration",
+      "license and dataset provenance documentation",
+      "separate optimization notebooks",
+      "completed model-performance report"
+    ],
+    "inaccessible": [],
+    "sampling_notes": "The task context identifies the checkout as shallow with depth 50, so historical conclusions are limited to recent history; all four commits available locally were inspected. The compact seven-file tracked tree was fully inventoried and the notebook was inspected cell by cell. The 34,299-row CSV was sampled structurally rather than reviewed record by record, and HDF5 model configurations and hashes were inspected without semantically analyzing every learned weight."
+  },
+  "stated_purpose": "Build and optimize a neural-network binary classifier that predicts whether an Alphabet Soup funding applicant will use awarded funds successfully.",
+  "observed_capabilities": [
+    {
+      "statement": "The notebook loads the included charity dataset, drops EIN and NAME, bins infrequent application types and classifications, one-hot encodes categorical fields, splits the data, and standardizes the training and test features.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "dataset"
+      ]
+    },
+    {
+      "statement": "The implemented Keras classifier accepts 42 features, uses ReLU hidden layers with 50 and 20 units, and produces a sigmoid binary prediction using Adam and binary cross-entropy.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "models"
+      ]
+    },
+    {
+      "statement": "Saved notebook output reports test loss of 0.5587 and accuracy of approximately 73.07 percent.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "Four distinct HDF5 files preserve trained instances of the same recorded 42-50-20-1 model architecture and training configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "models"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The assignment README calls for at least three optimization attempts targeting accuracy above 75 percent, periodic weight checkpoints, separate optimized-model work, and a written performance report.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The repository is a notebook-centered, offline machine-learning workflow: an included CSV feeds pandas preprocessing and scikit-learn splitting/scaling, which feeds a TensorFlow/Keras sequential classifier exported as HDF5 files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "notebook",
+        "dataset",
+        "models"
+      ]
+    },
+    {
+      "statement": "There is no application, service, package boundary, inference entry point, or deployment layer beyond manually executing the notebook.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a complete dataset-to-model demonstration with preprocessing, training code, held-out evaluation output, and serialized model artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "dataset",
+        "models"
+      ]
+    },
+    {
+      "statement": "The preprocessing reduces the source data to 42 model features after identifier removal, categorical binning, and one-hot encoding.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The included dataset has 34,299 records, with 18,261 successful and 16,038 unsuccessful target outcomes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dataset"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "A clean top-to-bottom notebook run is not demonstrated: the unique-value cell references an undefined variable named x, saved execution counts contain gaps, the training cell has no execution count, and its stored output stops during epoch 45 although the code requests 100 epochs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The only recorded held-out accuracy is approximately 73.07 percent, below the README's optimization target of greater than 75 percent.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "Although four model files suggest multiple training attempts, the repository does not preserve separate optimization code, parameters, metrics, or comparisons that explain those attempts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "models",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The implementation lacks the requested five-epoch checkpoint callback and the current revision lacks a completed analysis report.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "notebook",
+        "tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "No dependency manifest, automated test, CI workflow, setup procedure, or inference interface supports reproducible reuse.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Stale notebook state can conceal the undefined-variable defect and make the recorded results difficult to reproduce from a fresh kernel.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The public repository commits organization names and EIN identifiers without a license or documented dataset source, creating unresolved provenance, redistribution, and privacy-review concerns.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "dataset",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Four opaque model binaries with identical architectures but undocumented experimental differences can be mistaken for validated optimization results.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "models",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The absence of pinned TensorFlow, pandas, and scikit-learn versions makes future execution sensitive to dependency and serialization compatibility changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Treat the repository as archived coursework unless the owner expects to reuse it as a learning reference.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "history",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "If retained as a reference, repair the undefined-variable cell, add a pinned environment, rerun from a clean kernel, and preserve complete outputs for the baseline and each optimization attempt.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "tree",
+        "models"
+      ]
+    },
+    {
+      "statement": "Document the dataset's source and redistribution terms and decide whether the committed EIN and organization-name columns should remain public.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "dataset",
+        "tree"
+      ]
+    },
+    {
+      "statement": "If model quality remains relevant, compare the neural network against reproducible tabular baselines and report validation metrics beyond a single accuracy value.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "readme"
+      ]
+    }
+  ],
+  "questions": [
+    "Were the four HDF5 files intended to represent distinct optimization attempts, and what changed between them?",
+    "Is the 73.07 percent notebook result the final accepted result, or were better metrics produced but not committed?",
+    "What is the source and redistribution status of charity_data.csv, particularly its organization names and EIN identifiers?",
+    "Should this remain a coursework archive or be cleaned up as a reusable machine-learning reference?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/deep-learning-challenge",
+      "summary": "Supplied snapshot identifies a public repository on main, last pushed on 2022-09-19, with no open issues or pull requests and a description about predicting successful Alphabet Soup funding."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Assignment instructions define the charity-funding classifier, preprocessing and neural-network tasks, a greater-than-75-percent optimization target, model exports, and a required written report."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains one notebook, four HDF5 model files, one CSV dataset, and the root README; it has no manifest, tests, workflow, deployment configuration, license, or credential-like filenames."
+    },
+    {
+      "id": "notebook",
+      "kind": "implementation_notebook",
+      "location": "DeepLearning/Starter_Code.ipynb",
+      "summary": "An 18-cell Python notebook implements pandas/scikit-learn preprocessing and a TensorFlow/Keras 42-50-20-1 classifier, with saved evaluation output of 0.5587 loss and 0.7307 accuracy; execution-state inconsistencies and an undefined x reference prevent clean reproducibility evidence."
+    },
+    {
+      "id": "dataset",
+      "kind": "data_artifact",
+      "location": "Resources/charity_data.csv",
+      "summary": "A 12-column CSV contains 34,299 organization funding records, including EIN, NAME, applicant metadata, requested amount, and a binary IS_SUCCESSFUL target with 18,261 positive and 16,038 negative rows."
+    },
+    {
+      "id": "models",
+      "kind": "generated_model_artifacts",
+      "location": "DeepLearning/*.h5",
+      "summary": "Four distinct 70,496-byte HDF5 files embed the same Sequential model configuration: 42 inputs, 50- and 20-unit ReLU layers, sigmoid output, Adam optimizer, binary cross-entropy, and accuracy metric."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "All four locally available commits were inspected: an August 2022 bulk file upload followed by three September 2022 README commits, the latest deleting DeepLearning/README.md; no later maintenance is present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The compact implementation, data schema, saved outputs, model configurations, and all locally available commits were inspected and agree that this is a coursework prototype. Confidence is limited by the inability to establish a clean reproducible run, missing dependency and experiment records, opaque differences among exported models, sampled rather than record-level dataset review, and history constrained to the supplied recent checkout."
+  },
+  "limitations": [
+    "The repository was not executed because it provides no pinned environment and the analysis was read-only.",
+    "Saved notebook outputs may reflect stale or out-of-order interactive state rather than a clean run.",
+    "The semantic differences among learned HDF5 weights were not analyzed.",
+    "The dataset was inspected structurally and statistically, not row by row.",
+    "Git-history conclusions are limited to the four commits available within the supplied depth-50 checkout.",
+    "Current GitHub metadata was taken from the supplied snapshot rather than independently refreshed."
+  ]
+}

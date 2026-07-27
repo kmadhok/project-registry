@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/ToTry",
+  "analyzed_at": "2026-07-27T03:34:10Z",
+  "revision": "no-default-branch",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata snapshot",
+      "complete local non-Git file inventory",
+      "local branch, reference, object, and tracked-file state",
+      "README, CLAUDE.md, AGENTS.md, and docs presence",
+      "entry point, dependency manifest, configuration, and data-store presence",
+      "source, test, CI, notebook, demo, release, and generated-output presence",
+      "git log --oneline -20 availability",
+      "credential-related filename presence without reading secret values"
+    ],
+    "missing": [
+      "resolvable default-branch revision",
+      "tracked files",
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "documentation",
+      "dependency manifests",
+      "configuration",
+      "source implementation",
+      "tests",
+      "CI workflows",
+      "notebooks",
+      "demos",
+      "releases",
+      "deployable artifacts",
+      "commit history"
+    ],
+    "inaccessible": [
+      "live GitHub repository state because api.github.com was unreachable"
+    ],
+    "sampling_notes": "The working directory was described as a shallow, depth-50 clone, so any available history would ordinarily be truncated to recent commits. In practice, Git reports no commits, refs, objects, or tracked files and does not mark the empty repository as shallow; therefore there was no implementation or history to sample."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [],
+  "planned_work": [],
+  "architecture": [],
+  "maturity": "empty",
+  "accomplishments": [],
+  "gaps": [
+    {
+      "statement": "The local repository contains no commit, tracked file, implementation, documentation, dependency manifest, test, workflow, notebook, demo, or deployable artifact.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-tree",
+        "git-state"
+      ]
+    },
+    {
+      "statement": "No repository evidence states what ToTry was intended to contain or accomplish.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-tree",
+        "metadata-snapshot"
+      ]
+    },
+    {
+      "statement": "The supplied snapshot's 2022 push timestamp cannot be reconciled with the object-free local checkout because live GitHub access was unavailable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata-snapshot",
+        "git-state",
+        "github-access"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The empty checkout may represent either a genuinely empty upstream repository or an incomplete clone, so irreversible lifecycle action should wait for owner verification of the upstream state.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-state",
+        "metadata-snapshot",
+        "github-access"
+      ]
+    },
+    {
+      "statement": "Keeping an unexplained empty repository in the registry adds ambiguity without preserving implementation or reference value.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "local-tree",
+        "metadata-snapshot"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Verify the upstream repository directly to confirm that its default branch is also empty and that the local checkout did not omit historical objects.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-state",
+        "metadata-snapshot",
+        "github-access"
+      ]
+    },
+    {
+      "statement": "If no intended work or missing upstream history exists, archive or remove the repository from the active registry; otherwise document its purpose before adding implementation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "local-tree",
+        "git-state"
+      ]
+    }
+  ],
+  "questions": [
+    "What was ToTry intended to contain or evaluate?",
+    "Does the upstream GitHub repository have commits that were omitted from this checkout?",
+    "Should this repository be initialized for future work, retained as a placeholder, or archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata-snapshot",
+      "kind": "owner_supplied_github_metadata",
+      "location": "https://github.com/kmadhok/ToTry",
+      "summary": "The supplied registry snapshot identifies a private repository named ToTry, default branch main, no description, no open issues or pull requests, and last push and update timestamps of 2022-12-24."
+    },
+    {
+      "id": "local-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete working tree contains only the .git administrative directory and no non-Git files."
+    },
+    {
+      "id": "git-state",
+      "kind": "git_repository_state",
+      "location": ".git",
+      "summary": "Git reports an unborn main branch with no commits, refs, tracked files, loose objects, or packed objects; git log cannot run because the branch has no commits."
+    },
+    {
+      "id": "credential-scan",
+      "kind": "security_filename_scan",
+      "location": ".",
+      "summary": "A filename-only scan found no working-tree environment, key, token, secret, or credential files; no secret values were read."
+    },
+    {
+      "id": "github-access",
+      "kind": "access_limitation",
+      "location": "https://api.github.com/repos/kmadhok/ToTry",
+      "summary": "A read-only live repository lookup failed because the environment could not connect to api.github.com."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The complete local inventory and Git object database agree that the analyzed checkout has no substantive content. Purpose and upstream equivalence remain unknown and are explicitly recorded as limitations rather than inferred."
+  },
+  "limitations": [
+    "Live GitHub metadata, branches, archival state, and commit history could not be independently verified.",
+    "The supplied 2022 push timestamp conflicts with the absence of all local Git objects and cannot be explained from available evidence.",
+    "There is no repository content from which to determine an intended purpose, architecture, capability, or planned workflow.",
+    "The nominal depth-50 history limit could not be evaluated because the checkout contains no commits."
+  ]
+}

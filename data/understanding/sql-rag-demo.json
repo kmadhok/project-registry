@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Sql_Rag_Demo",
+  "analyzed_at": "2026-07-27T03:32:18Z",
+  "revision": "d34308a69cf23fd95607c30b0796515f9966b1df",
+  "analysis_scope": {
+    "inspected": [
+      "supplied repository and GitHub metadata snapshot",
+      "complete tracked-file inventory",
+      "the one-line Readme",
+      "top-level structure and available remote refs",
+      "dependency, source, test, CI, notebook, demo, release, and credential-file presence",
+      "all locally available commit history",
+      "all eight supplied open issue titles"
+    ],
+    "missing": [
+      "substantive README or setup documentation",
+      "CLAUDE.md, AGENTS.md, and docs",
+      "source code and entry points",
+      "dependency manifests",
+      "tests and CI workflows",
+      "notebooks and demos",
+      "deployable artifacts and releases",
+      "license",
+      "tracked credential or environment files"
+    ],
+    "inaccessible": [
+      "live GitHub repository metadata, issue bodies, issue timestamps, and complete server-side branch history because GitHub API and page requests failed"
+    ],
+    "sampling_notes": "The supplied checkout was described as shallow with depth 50, so history conclusions are limited to the provided recent-history clone. Locally, Git reports a non-shallow checkout containing only one commit, one tracked file, and one remote branch; the complete available tree and history were inspected."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [],
+  "planned_work": [
+    {
+      "statement": "The supplied issue titles propose a SQL query-search workflow that samples up to 100 rows from BigQuery tables, excludes tables through Markdown, validates generated SQL, and captures good-query or bad-query feedback.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "issue-snapshot"
+      ]
+    },
+    {
+      "statement": "The backlog also proposes making API-based model providers swappable, streamlining query search, testing prompts, and cleaning codebase clutter.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "issue-snapshot"
+      ]
+    }
+  ],
+  "architecture": [],
+  "maturity": "empty",
+  "accomplishments": [
+    {
+      "statement": "The default branch was initialized with a Readme file.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "history"
+      ]
+    },
+    {
+      "statement": "Eight supplied open issue titles outline prospective functionality and engineering improvements.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "metadata-snapshot",
+        "issue-snapshot"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The analyzed revision contains no substantive implementation: its only tracked file is a one-line Readme containing 'Readme here'.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tracked-tree"
+      ]
+    },
+    {
+      "statement": "There is no repository evidence of entry points, dependencies, configuration, architecture, data access, tests, CI, demonstrations, releases, or deployment procedures.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tracked-tree"
+      ]
+    },
+    {
+      "statement": "Neither the repository description nor the Readme states the project's purpose, requirements, setup process, or intended users.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "metadata-snapshot",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The supplied issue backlog is not matched by any implementation artifact on the analyzed default branch.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "issue-snapshot",
+        "tracked-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The repository name and detailed backlog may create the impression that a SQL-RAG demonstration exists even though the default branch contains no runnable code.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "issue-snapshot",
+        "tracked-tree"
+      ]
+    },
+    {
+      "statement": "The supplied 2026-07-11 pushed-at timestamp is not explained by the locally available default-branch history, whose sole commit dates to 2025-06-20.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "metadata-snapshot",
+        "history"
+      ]
+    },
+    {
+      "statement": "If development proceeds, executing model-generated SQL without the proposed validation and bounded sampling controls could expose data or incur unintended query cost.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "issue-snapshot"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Confirm whether this remains an active experiment; if not, close or transfer the issue backlog and archive the repository.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tracked-tree",
+        "issue-snapshot",
+        "history"
+      ]
+    },
+    {
+      "statement": "If work is continuing, replace the placeholder Readme with a precise purpose, architecture, supported data source, setup instructions, and an intentionally small runnable workflow.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "tracked-tree",
+        "issue-snapshot"
+      ]
+    },
+    {
+      "statement": "Implement read-only database permissions, bounded BigQuery sampling, SQL parsing and validation, dry-run or cost checks, and tests before permitting generated queries to execute.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "issue-snapshot"
+      ]
+    },
+    {
+      "statement": "Reconcile the recent pushed-at timestamp with the archived-looking default branch and verify whether relevant implementation exists on an unprovided or deleted branch.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata-snapshot",
+        "history",
+        "remote-refs"
+      ]
+    }
+  ],
+  "questions": [
+    "Was implementation developed on another branch that is absent from this checkout?",
+    "Is main_archive intentionally the long-term default branch, or should another branch be restored or selected?",
+    "Are the eight open issues current product plans or remnants of an earlier experiment?",
+    "Which model providers and SQL engines should the proposed system support beyond BigQuery?",
+    "Should this repository remain active, become a reference to another project, or be archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata-snapshot",
+      "kind": "provided_github_metadata",
+      "location": "https://github.com/kmadhok/Sql_Rag_Demo",
+      "summary": "The supplied snapshot describes a public repository with no GitHub description, default branch main_archive, eight open issues, no open pull requests, pushed_at 2026-07-11, and updated_at 2025-06-20."
+    },
+    {
+      "id": "readme",
+      "kind": "repository_document",
+      "location": "Readme",
+      "summary": "The repository's only tracked document consists solely of the text 'Readme here' and provides no purpose or setup information."
+    },
+    {
+      "id": "tracked-tree",
+      "kind": "repository_tree",
+      "location": "git tree at d34308a69cf23fd95607c30b0796515f9966b1df",
+      "summary": "The complete tracked tree contains exactly one regular file, Readme; no source, manifests, configuration, tests, workflows, notebooks, demos, releases, license, or credential files are tracked."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --all --oneline -20",
+      "summary": "All locally available history consists of commit d34308a, 'Create Readme', authored and committed on 2025-06-20."
+    },
+    {
+      "id": "remote-refs",
+      "kind": "git_refs",
+      "location": "local and remote branch inventory",
+      "summary": "The checkout exposes only main_archive and origin/main_archive at d34308a, with origin/HEAD pointing to origin/main_archive; no tags or additional remote branches are available."
+    },
+    {
+      "id": "issue-snapshot",
+      "kind": "provided_github_issues",
+      "location": "https://github.com/kmadhok/Sql_Rag_Demo/issues",
+      "summary": "Eight supplied open issue titles propose model-provider modularity, streamlined query search, Markdown-based table exclusion, bounded BigQuery sampling, query-quality feedback, code cleanup, SQL validation, and prompt testing; live bodies and timestamps could not be inspected."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The complete available tree, refs, and history strongly establish that the analyzed default-branch revision has no substantive implementation. Confidence is reduced because the detailed plans come only from a supplied issue-title snapshot, live GitHub inspection failed, and the recent pushed-at timestamp is unexplained by the available history."
+  },
+  "limitations": [
+    "The provided clone was described as depth 50, so deleted branches and history outside the supplied recent-history window may be absent.",
+    "Live GitHub access failed, preventing independent verification of issue bodies, timestamps, labels, comments, archival state, and server-side refs.",
+    "The supplied pushed_at and updated_at values appear inconsistent with the sole locally available commit and cannot be reconciled from repository evidence.",
+    "Issue titles indicate intended work but do not prove requirements, design decisions, implementation progress, or continued owner commitment.",
+    "No runnable artifact exists, so behavior, correctness, security controls, and operational readiness could not be tested."
+  ]
+}

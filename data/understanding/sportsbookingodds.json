@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/SportsBookingOdds",
+  "analyzed_at": "2026-07-27T03:31:59Z",
+  "revision": "fbc03f6209c43bdf227cbec0fc90aa6ede6f27b0",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata snapshot",
+      "complete tracked-file inventory and top-level structure",
+      "all four cells, notebook metadata, and saved output in ScraperCode.ipynb",
+      "empty tracked Jupyter checkpoint notebook",
+      "local branches, tags, remotes, commit metadata, and git log --oneline -20",
+      "credential-file filename scan without reading any credential values"
+    ],
+    "missing": [
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs",
+      "dependency manifest or lockfile",
+      "standalone application entry point",
+      "tests",
+      "CI workflows",
+      "release or deployment artifacts",
+      "license",
+      "planning documents or TODO backlog"
+    ],
+    "inaccessible": [
+      "live GitHub metadata, archival state, and remote activity verification because api.github.com was unreachable",
+      "current Covers.com behavior and a fresh end-to-end execution"
+    ],
+    "sampling_notes": "The task identifies the checkout as a depth-50 shallow clone, so history older than the available recent window must be treated as truncated. Git locally reports a non-shallow repository, but only one commit is present. The repository contains only two tracked files, so every tracked artifact was inspected rather than sampled."
+  },
+  "stated_purpose": "The supplied GitHub description says the repository uses a web scraper to collect odds from Covers.com across different bookmakers.",
+  "observed_capabilities": [
+    {
+      "statement": "The notebook sends an HTTP GET request to the Covers.com NBA odds page and parses the returned HTML with BeautifulSoup.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    },
+    {
+      "statement": "It extracts paired away and home team names, a bookmaker identifier, and away and home odds from site-specific HTML elements, then constructs a pandas DataFrame.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    },
+    {
+      "statement": "Saved notebook output demonstrates one historical execution that produced 22 NBA odds rows for PointsBet, including moneyline-like and spread-like values.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-output"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The entire implementation is a linear four-cell Python notebook: import requests, BeautifulSoup, and pandas; fetch one fixed URL; locate rows using hard-coded CSS classes; zip team and odds rows; parse fields; and display an in-memory DataFrame.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-code",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There is no persistence layer, API, user interface, reusable module, scheduler, or deployment component.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "notebook-code"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A compact proof of concept was implemented and executed successfully enough to save a populated odds table in the notebook.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-code",
+        "notebook-output"
+      ]
+    },
+    {
+      "statement": "The prototype associates bookmaker, matchup, and two-sided odds fields in one tabular result.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-output"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The repository has no setup instructions, dependency versions, automated tests, CI workflow, or reproducible command-line entry point.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The request has no timeout, status-code validation, retry policy, headers, or structured error reporting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    },
+    {
+      "statement": "Parsing failures caused by missing nested elements are silently discarded through an AttributeError handler.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    },
+    {
+      "statement": "The resulting table does not identify the betting market, even though its saved rows mix moneyline-like values with spread-like values.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-code",
+        "notebook-output"
+      ]
+    },
+    {
+      "statement": "The saved evidence shows only PointsBet results and therefore does not demonstrate the stated goal of collecting odds across multiple bookmakers.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "metadata",
+        "notebook-output"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The scraper is likely to break when Covers.com changes its generated CSS classes or page structure because parsing depends on several long, site-specific class names.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    },
+    {
+      "statement": "Using zip on independently selected team and odds row collections can silently truncate results when their lengths differ.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    },
+    {
+      "statement": "Silent parsing skips can produce incomplete data that still appears successful because no completeness checks or diagnostics are present.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    },
+    {
+      "statement": "Unpinned dependencies and the absence of a setup manifest make the 2023 notebook difficult to reproduce reliably.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "notebook-metadata",
+        "history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Decide whether this was a completed one-off experiment; if so, archive it with a short README explaining its historical purpose and limitations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "If retaining the scraper, extract the parsing logic into testable functions and add dependency pins, HTTP error handling, timeouts, parsing diagnostics, and fixture-based tests.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-code",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Add an explicit market-type field and validation that confirms expected games, bookmakers, and paired rows before treating scraped results as usable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-code",
+        "notebook-output"
+      ]
+    },
+    {
+      "statement": "Before reviving automated collection, confirm that the intended request frequency and use comply with Covers.com's current access rules and terms.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook-code"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this notebook a one-time scraping experiment or was it intended to become a maintained data pipeline?",
+    "Was support for bookmakers beyond PointsBet ever verified?",
+    "Which betting markets should be collected and how should they be distinguished in the output?",
+    "Should the data be persisted or exported, and what downstream analysis was originally intended?",
+    "Has the owner confirmed that continued scraping is permitted under Covers.com's current terms and access rules?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata_snapshot",
+      "location": "https://github.com/kmadhok/SportsBookingOdds",
+      "summary": "Public main-branch repository described as a Covers.com bookmaker-odds scraper, with no open issues or pull requests in the supplied snapshot and last pushed on 2023-03-23."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": "repository root",
+      "summary": "Exactly two tracked files exist: ScraperCode.ipynb and an empty .ipynb_checkpoints/ScraperCode-checkpoint.ipynb; no documentation, manifest, tests, workflows, application modules, or credential files were found."
+    },
+    {
+      "id": "notebook-code",
+      "kind": "source_notebook",
+      "location": "ScraperCode.ipynb",
+      "summary": "Four-cell Python notebook using requests, BeautifulSoup, and pandas to fetch a fixed Covers.com NBA URL, parse hard-coded row classes, extract teams, bookmaker, and odds, and display a DataFrame."
+    },
+    {
+      "id": "notebook-output",
+      "kind": "generated_notebook_output",
+      "location": "ScraperCode.ipynb cell 2 output",
+      "summary": "Saved execution output contains 22 rows for 11 NBA matchups, all labeled PointsBet, with both moneyline-like and spread-like values but no market-type column."
+    },
+    {
+      "id": "notebook-metadata",
+      "kind": "runtime_metadata",
+      "location": "ScraperCode.ipynb metadata",
+      "summary": "Notebook format 4.5 identifies a Python 3 ipykernel and Python 3.8.0; three code cells have execution counts and one is empty."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at fbc03f6209c43bdf227cbec0fc90aa6ede6f27b0",
+      "summary": "Only one commit is available: fbc03f6, 'Added Scraper,' authored and committed on 2023-03-23; local and origin references all point to main and no tags are present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The complete implementation and saved historical output clearly establish the prototype's structure and past behavior. Confidence is limited because there is no fresh execution, automated verification, documentation, or accessible live GitHub metadata, and the scraper depends on an external page that may have changed since 2023."
+  },
+  "limitations": [
+    "The current Covers.com page and scraper execution were not tested, so present-day functionality is unknown.",
+    "Live GitHub access failed, so the supplied snapshot is the only evidence for issue, pull-request, update, visibility, and remote activity status.",
+    "The analysis is constrained to the supplied depth-50 recent-history context; any history outside that context was not available for review.",
+    "No documentation or owner-authored context explains whether the notebook was coursework, an experiment, or intended production work.",
+    "No credential values were read or stored."
+  ]
+}

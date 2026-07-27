@@ -1,0 +1,452 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Autonomous-Data-Analyst",
+  "analyzed_at": "2026-07-27T03:11:52Z",
+  "revision": "2d792caa62d644750a33b23e7a6e290c36c1b6d9",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata and issue-title snapshot",
+      "README.md and autonomous_data_analyst_architecture.md",
+      "docs and semantic-layer overview, relationship, pattern, dataset, and representative table documentation",
+      "complete tracked-file inventory and top-level structure",
+      "requirements.txt, Python entry points, BigQuery execution scripts, backend package structure, and static dashboard",
+      "Claude commands and analysis workflow skills",
+      "all 15 idea statuses and all standard run-folder inventories",
+      "representative run logs, findings, both audit reports, overview, execution metadata, and saved-result structure",
+      "test source and attempted local test execution",
+      "git branches, tags, tracked credential-related filenames, and git log --oneline -20"
+    ],
+    "missing": [
+      "root CLAUDE.md",
+      "root AGENTS.md",
+      "CI workflows",
+      "release tags",
+      "deployment configuration",
+      "notebooks",
+      "implemented four-agent backend classes",
+      "FastAPI application",
+      "React application source",
+      "state-store implementation"
+    ],
+    "inaccessible": [
+      "live BigQuery datasets and query re-execution because credentials were intentionally not accessed and required packages were unavailable",
+      "GitHub issue bodies and current remote state because api.github.com was unreachable",
+      "test execution because pytest was not installed in the analysis environment"
+    ],
+    "sampling_notes": "The checkout is shallow at depth 50 as supplied, so history before the available three commits may be truncated. The repository has 111 tracked files and was sampled by inspecting all major documentation and entry-point categories, all idea and run inventories, representative source scripts, both available audits, and run logs 003-009. Large generated JSON result files, every result row, every table document, and every line of repetitive analysis scripts were not exhaustively inspected. No credential or secret values were read."
+  },
+  "stated_purpose": "The architecture draft describes an autonomous four-agent system that proposes Kalshi analyses, executes BigQuery SQL, audits results, repairs problems, and presents finished insights through a real-time dashboard.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository provides a structured semantic layer for a Kalshi BigQuery warehouse, including dataset and table documentation, join rules, data-gap warnings, standard metrics, and query patterns.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "semantic-layer",
+        "data-docs"
+      ]
+    },
+    {
+      "statement": "Claude-oriented skills and commands define repeatable workflows for generating analysis ideas, dry-running and executing SQL, recording results, auditing completed work, and generating Mermaid diagrams.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "workflow-skills"
+      ]
+    },
+    {
+      "statement": "Nine of fifteen idea files are marked completed and have corresponding run logs and findings; the logs record successful BigQuery executions for analyses such as spread dynamics, momentum, lifecycle activity, liquidity, anomaly detection, ingestion reliability, whale detection, and cross-market pricing.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "idea-run-inventory",
+        "representative-runs"
+      ]
+    },
+    {
+      "statement": "Standalone Python scripts execute hard-coded BigQuery analyses with dry-run byte checks and serialize results to JSON, CSV, or metadata files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analysis-scripts",
+        "saved-results"
+      ]
+    },
+    {
+      "statement": "A self-contained HTML dashboard presents stored findings, pipeline stages, and audit summaries, but it contains static embedded content rather than a live API or BigQuery integration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dashboard"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The architecture proposes Pydantic contracts, four agent implementations, orchestration, SQLite or Firestore persistence, FastAPI REST and WebSocket endpoints, scheduled and on-demand triggers, and a React/TypeScript frontend.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "architecture-design"
+      ]
+    },
+    {
+      "statement": "The supplied open-issue snapshot identifies planned agent implementations, a portable configuration layer, secure credential handling, tests, scheduling, multiple LLM providers, a frontend dashboard, SQL self-healing, and a BigQuery-backed four-agent backend.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "issues-snapshot"
+      ]
+    },
+    {
+      "statement": "Six idea files remain marked proposed, covering stale markets, intraday patterns, orderbook impact, settlement predictability, event fragmentation, and ingestion cadence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "idea-run-inventory"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The implemented analysis workflow is repository-driven: semantic-layer Markdown supplies schema context, Claude skill instructions coordinate analysis and auditing, standalone Python scripts query BigQuery, and Markdown or JSON artifacts persist findings.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "semantic-layer",
+        "workflow-skills",
+        "analysis-scripts",
+        "saved-results"
+      ]
+    },
+    {
+      "statement": "The proposed product architecture is a sequential Ideation \u2192 Analysis \u2192 Audit \u2192 Fixer pipeline backed by BigQuery, persistent run state, FastAPI/WebSockets, and React.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "architecture-design",
+        "pipeline-diagram"
+      ]
+    },
+    {
+      "statement": "The proposed product architecture is not implemented in the backend tree: backend/agents, backend/api, backend/data, and backend/pipeline contain only empty package initializers.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "source-tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository documents 23 warehouse tables and their important join paths and known data-quality pitfalls.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "semantic-layer"
+      ]
+    },
+    {
+      "statement": "Nine analysis topics have recorded run logs and findings, providing evidence of meaningful BigQuery-backed exploratory analysis rather than planning alone.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "idea-run-inventory",
+        "representative-runs"
+      ]
+    },
+    {
+      "statement": "Two analyses received formal audit reports: spread dynamics scored 95/WARN and taker-side imbalance scored 85/WARN, with limitations and recommendations recorded.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "audit-reports",
+        "run-overview"
+      ]
+    },
+    {
+      "statement": "The analysis scripts consistently attempt dry runs and enforce a per-query byte threshold before BigQuery execution.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analysis-scripts",
+        "representative-runs"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The four advertised agents, orchestrator, state store, API, real-time transport, scheduling, and React frontend are absent from the implementation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "source-tree",
+        "architecture-design"
+      ]
+    },
+    {
+      "statement": "The primary src/main.py entry point is a no-op, and its only unit test merely asserts that the no-op returns None.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entrypoint-test"
+      ]
+    },
+    {
+      "statement": "Only two of the nine standard completed run folders contain formal audit reports, despite documentation recommending an audit after every run.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "idea-run-inventory",
+        "workflow-skills"
+      ]
+    },
+    {
+      "statement": "The run overview is stale or internally inconsistent: it reports two completed runs and thirteen remaining ideas, while nine idea files are marked completed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "run-overview",
+        "idea-run-inventory"
+      ]
+    },
+    {
+      "statement": "Ideas 010 and 012 remain marked proposed even though tracked execution metadata or result artifacts exist for them, leaving lifecycle state ambiguous.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "idea-run-inventory",
+        "saved-results"
+      ]
+    },
+    {
+      "statement": "requirements.txt omits google-cloud-bigquery and google-auth even though the executable analysis scripts import them.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependency-manifest",
+        "analysis-scripts"
+      ]
+    },
+    {
+      "statement": "There is no CI, meaningful automated coverage, deployment configuration, or repeatable evidence that a fresh checkout can execute the analysis workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "source-tree",
+        "entrypoint-test",
+        "dependency-manifest"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Multiple scripts depend on a specifically named local service-account file, and several embed an absolute owner-machine credential path; this is a portability and credential-handling risk even though the credential file itself is ignored and was not found tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analysis-scripts",
+        "gitignore-security"
+      ]
+    },
+    {
+      "statement": "The tracked '=1.50.0' file contains pip installation output and owner-machine filesystem paths, which exposes local environment details and appears to be an accidental generated artifact.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "accidental-artifact"
+      ]
+    },
+    {
+      "statement": "The static dashboard labels the system active and visualizes a multi-stage pipeline even though the live backend is not implemented, which can overstate operational maturity.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dashboard",
+        "source-tree"
+      ]
+    },
+    {
+      "statement": "Several findings identify inconsistent counts, sparse data, ambiguous volume semantics, and inconclusive price-impact evidence; unaudited analyses could propagate incorrect conclusions.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "audit-reports",
+        "representative-runs"
+      ]
+    },
+    {
+      "statement": "Hard-coded project and dataset identifiers throughout documentation and scripts prevent straightforward reuse against another BigQuery environment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-docs",
+        "analysis-scripts"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Choose and document the repository's near-term identity: either stabilize the existing Claude-assisted analysis toolkit or implement the separately designed autonomous service, because the current tree presents both at different maturity levels.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "architecture-design",
+        "source-tree",
+        "workflow-skills",
+        "representative-runs"
+      ]
+    },
+    {
+      "statement": "Introduce validated configuration for project, dataset, credential, budget, and output locations; use application-default credentials or an environment-provided path instead of owner-machine paths.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "analysis-scripts",
+        "gitignore-security"
+      ]
+    },
+    {
+      "statement": "Correct the dependency manifest, add a genuine command-line entry point, and create tests for SQL construction, dry-run guards, state transitions, and artifact generation before adding scheduling.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependency-manifest",
+        "entrypoint-test",
+        "analysis-scripts"
+      ]
+    },
+    {
+      "statement": "Reconcile idea statuses and regenerate the run overview, then audit runs 003-009 and any valid 010/012 results before treating their findings as curated output.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "idea-run-inventory",
+        "run-overview",
+        "audit-reports",
+        "saved-results"
+      ]
+    },
+    {
+      "statement": "Remove the accidental pip-output artifact and review private identifiers and stored analytical findings before any public release.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "accidental-artifact",
+        "data-docs",
+        "saved-results"
+      ]
+    }
+  ],
+  "questions": [
+    "Is the intended product the existing Claude-assisted analysis workspace, the proposed autonomous four-agent application, or both?",
+    "Should ideas 010 and 012 be marked completed, rerun, or discarded given their tracked execution artifacts but proposed statuses?",
+    "Are runs 003-009 considered trustworthy before formal audits are added?",
+    "Which BigQuery projects and dataset mappings must the portable configuration layer support?",
+    "Is the static dashboard intended only as a report snapshot or as the visual specification for a future live frontend?",
+    "Should saved result datasets remain tracked, or should the repository retain only reproducible queries and summarized findings?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Autonomous-Data-Analyst",
+      "summary": "Owner-supplied snapshot identifies a private main-branch repository pushed on 2026-03-31, with no description, twelve open issues, and no open pull requests."
+    },
+    {
+      "id": "issues-snapshot",
+      "kind": "github_issues",
+      "location": "https://github.com/kmadhok/Autonomous-Data-Analyst/issues",
+      "summary": "Owner-supplied titles describe twelve open work items covering the four agents, backend, frontend, configuration, credentials, testing, scheduling, providers, and SQL self-healing; issue bodies were inaccessible."
+    },
+    {
+      "id": "architecture-design",
+      "kind": "architecture_document",
+      "location": "autonomous_data_analyst_architecture.md",
+      "summary": "Draft version 0.1 defines the four-agent vision, data contracts, orchestration, FastAPI/React architecture, persistence model, implementation phases, and open questions."
+    },
+    {
+      "id": "pipeline-diagram",
+      "kind": "architecture_diagram",
+      "location": "agent_pipeline_flow.mermaid",
+      "summary": "Mermaid source depicts the intended Ideation, Analysis, Audit, and Fixer pipeline."
+    },
+    {
+      "id": "source-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The checkout contains 111 tracked files; backend component directories contain empty initializers while substantive content is concentrated in documentation, skills, scripts, run artifacts, and a static dashboard."
+    },
+    {
+      "id": "semantic-layer",
+      "kind": "data_documentation",
+      "location": "semantic-layer/",
+      "summary": "Structured knowledge base contains four dataset summaries, 23 table documents, relationship rules, query patterns, fifteen ideas, and analysis run artifacts."
+    },
+    {
+      "id": "data-docs",
+      "kind": "documentation",
+      "location": "docs/",
+      "summary": "Kalshi data guide and table catalog document the prediction-market domain, warehouse layers, named BigQuery resources, cadence, row estimates, and known data gaps."
+    },
+    {
+      "id": "workflow-skills",
+      "kind": "agent_workflow",
+      "location": ".claude/",
+      "summary": "Commands and four skills specify idea generation, analysis execution, audit checks, diagram creation, dry-run budgets, and artifact conventions."
+    },
+    {
+      "id": "idea-run-inventory",
+      "kind": "artifact_inventory",
+      "location": "semantic-layer/ideas/ and semantic-layer/runs/",
+      "summary": "Ideas 001-009 are marked completed and have standard run logs/findings; 010-015 are marked proposed. Only runs 001 and 002 contain audit reports and diagrams."
+    },
+    {
+      "id": "representative-runs",
+      "kind": "execution_artifacts",
+      "location": "semantic-layer/runs/001-spread-dynamics-by-series/ through semantic-layer/runs/009-cross-market-price-correlation-within-events/",
+      "summary": "Representative logs record context loading, SQL validation, BigQuery dry runs, row counts, processed bytes, interpretation, limitations, and written findings."
+    },
+    {
+      "id": "audit-reports",
+      "kind": "quality_artifacts",
+      "location": "semantic-layer/runs/001-spread-dynamics-by-series/audit-report.md and semantic-layer/runs/002-taker-side-imbalance-as-directional-signal/audit-report.md",
+      "summary": "The two audits return WARN scores of 95 and 85, identifying an inconsistent market-count claim, missing full SQL, zero-row queries, and inconclusive predictive evidence."
+    },
+    {
+      "id": "run-overview",
+      "kind": "generated_summary",
+      "location": "semantic-layer/runs/overview.md",
+      "summary": "Generated overview reports two audited completed runs, fourteen queries, 1.84 GB processed, and thirteen proposed ideas, conflicting with the current idea statuses."
+    },
+    {
+      "id": "analysis-scripts",
+      "kind": "source_code",
+      "location": "run_analysis*.py, execute_analysis*.py, execute_query*.py, and semantic-layer/runs/012-analysis-runner.py",
+      "summary": "Standalone scripts build and run BigQuery SQL with dry-run thresholds, but use hard-coded project identifiers and credential filenames or absolute paths."
+    },
+    {
+      "id": "saved-results",
+      "kind": "generated_outputs",
+      "location": "query1_results.json, query2_results.json, analysis_010_metadata.json, and semantic-layer/runs/012-results.json",
+      "summary": "Tracked JSON artifacts provide stored query results or execution metadata, including evidence that analyses 010 and 012 were executed despite their idea statuses remaining proposed."
+    },
+    {
+      "id": "dashboard",
+      "kind": "demo_artifact",
+      "location": "dashboard.html",
+      "summary": "A 1,059-line self-contained HTML report visualizes two analysis runs and audit statuses with static content and small client-side tab and reveal interactions; no data-fetching integration was found."
+    },
+    {
+      "id": "entrypoint-test",
+      "kind": "test_evidence",
+      "location": "src/main.py and tests/test_main.py",
+      "summary": "The main function contains only pass, and the sole test asserts that it returns None; pytest could not be executed because it was unavailable."
+    },
+    {
+      "id": "dependency-manifest",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Lists pandas, numpy, matplotlib, scikit-learn, and pytest, but omits the Google BigQuery and authentication packages imported by operational scripts."
+    },
+    {
+      "id": "gitignore-security",
+      "kind": "security_configuration",
+      "location": ".gitignore",
+      "summary": "Ignores .env files and credentials_brainrot.json; no credential file matching the inspected name patterns was tracked or present."
+    },
+    {
+      "id": "accidental-artifact",
+      "kind": "generated_file",
+      "location": "=1.50.0",
+      "summary": "Tracked file contains pip installation output and absolute local virtual-environment paths rather than project source."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes three commits from 2026-03-27 through 2026-03-30; the latest bulk-added documentation, skills, scripts, result artifacts, tests, and the dashboard."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, documentation, run logs, audits, saved outputs, and recent history strongly support the distinction between a working analysis prototype and an unimplemented autonomous application. Confidence is reduced because live BigQuery execution, credential-dependent setup, remote issue bodies, CI behavior, and local tests could not be verified."
+  },
+  "limitations": [
+    "The Git checkout is shallow at depth 50, although only three commits were visible.",
+    "GitHub issue bodies, timestamps, and current remote metadata could not be independently inspected.",
+    "Stored run logs and results were reviewed as repository evidence but were not re-executed against BigQuery.",
+    "No credential values were read; credential-dependent behavior therefore remains unverified.",
+    "Large generated result files and repetitive scripts were sampled rather than exhaustively reviewed row by row.",
+    "The test suite could not be run because pytest was unavailable in the analysis environment."
+  ]
+}

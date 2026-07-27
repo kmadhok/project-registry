@@ -1,0 +1,435 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Autonomous-Semantic-Layer",
+  "analyzed_at": "2026-07-27T03:12:08Z",
+  "revision": "e5e90850e512b212c56edeb66c5f32ca9b0c30bd",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue-title snapshot",
+      "complete tracked-file inventory and top-level structure",
+      "CLI entry points generate.py and generate_example.py",
+      "requirements.txt",
+      "all four substantive semantic_layer_generator modules",
+      "generated semantic-layer indexes, relationship reports, query patterns, and representative table documentation",
+      "mock pipeline execution without filesystem writes",
+      "CLI help execution",
+      "available branches, tags, repository status, and git log --oneline -20",
+      "credential-related filenames without reading credential values"
+    ],
+    "missing": [
+      "README",
+      "repository-level CLAUDE.md or AGENTS.md",
+      "docs directory",
+      "automated tests",
+      "CI workflows",
+      "packaging metadata",
+      "lockfile",
+      "release tags",
+      "deployment or scheduled-operation artifacts"
+    ],
+    "inaccessible": [
+      "GitHub issue bodies and other live GitHub state because network access to api.github.com failed",
+      "a live BigQuery environment and credentials for independent end-to-end verification"
+    ],
+    "sampling_notes": "The repository is small: every tracked filename and all four core Python modules were inspected, while generated table documents were sampled rather than reviewed line by line. The supplied checkout scope is shallow depth 50 and therefore represents recent history only; local Git reports the checkout as non-shallow but exposes just two commits, so conclusions about older history remain limited."
+  },
+  "stated_purpose": "Generate a Claude Code-oriented Markdown semantic layer from BigQuery metadata, with optional sampled-data validation of inferred joins.",
+  "observed_capabilities": [
+    {
+      "statement": "The CLI accepts billing and data project IDs, optional dataset filters, an output directory, sample size, verbose mode, and an opt-in sampled-value validation mode.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "cli-help"
+      ]
+    },
+    {
+      "statement": "The introspector retrieves BigQuery datasets, tables, columns, descriptions, row counts, storage sizes, partitioning, clustering, labels, and timestamps into Python dataclasses.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "introspector"
+      ]
+    },
+    {
+      "statement": "The analyzer uses schema metadata and naming heuristics to classify table and column roles, flag potential PII, infer relationships, and construct direct and two-hop join paths.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analyzer"
+      ]
+    },
+    {
+      "statement": "The optional validator samples eligible BigQuery columns, compares value overlap in memory, and performs targeted one-sided checks for ambiguous matches.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "validator"
+      ]
+    },
+    {
+      "statement": "The generator writes a hierarchical Markdown package containing Claude instructions, project and dataset indexes, table-level documentation, inferred relationships, join paths, PII notices, and suggested queries.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generator",
+        "generated-example",
+        "generated-public-data"
+      ]
+    },
+    {
+      "statement": "An in-memory execution of the mock schema and validation pipeline completed successfully, producing analysis for three datasets, seven tables, 27 relationships, and 17 join paths.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runtime-check"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The supplied GitHub snapshot lists open work for BigQuery introspection, join validation, semantic analysis, Markdown generation, a full end-to-end skill, and persistence of intermediate phase results.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "issues-snapshot"
+      ]
+    },
+    {
+      "statement": "Two open issue titles specifically identify the lack of intermediate persistence and propose caching results between pipeline phases.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "issues-snapshot"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "generate.py coordinates a sequential pipeline of BigQueryIntrospector, optional JoinValidator, SemanticAnalyzer, and MarkdownGenerator.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "introspector",
+        "validator",
+        "analyzer",
+        "generator"
+      ]
+    },
+    {
+      "statement": "Schema, semantic-analysis, validation, relationship, and join-path state is represented by Python dataclasses and passed directly in memory between phases.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "introspector",
+        "analyzer",
+        "validator",
+        "cli"
+      ]
+    },
+    {
+      "statement": "The only persisted product output is generated Markdown; there is no implemented serialized intermediate-state or cache layer.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "generator",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The implementation is a compact Python module set with google-cloud-bigquery as its sole declared dependency.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "requirements"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains an end-to-end CLI implementation and a no-BigQuery mock demonstration rather than planning artifacts alone.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "demo",
+        "runtime-check"
+      ]
+    },
+    {
+      "statement": "Checked-in mock output demonstrates the intended 16-file semantic-layer structure for an e-commerce schema.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-example"
+      ]
+    },
+    {
+      "statement": "A second checked-in output documents six tables from the dimensions_ai_covid19 dataset in bigquery-public-data, indicating that the pipeline was exercised against a real external schema at least once.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "generated-public-data"
+      ]
+    },
+    {
+      "statement": "The CLI imports successfully and renders its complete help interface in the inspected environment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli-help"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no README, setup guide beyond CLI comments, automated test suite, CI workflow, package configuration, or dependency lockfile.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "requirements"
+      ]
+    },
+    {
+      "statement": "Intermediate schema, validation, and analysis results cannot be resumed or reused independently because phase state remains in memory.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "analyzer",
+        "validator",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The relationship heuristics generate false or semantically unsafe joins: checked examples treat shared platform and country values as many-to-one relationships and include several 60%-confidence mappings from foreign-key columns to unrelated id columns.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-example",
+        "analyzer",
+        "validator"
+      ]
+    },
+    {
+      "statement": "The public-data output contains implausible joins such as organization establishment or closure values to publication page and volume fields.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-public-data"
+      ]
+    },
+    {
+      "statement": "PII detection relies on column-name substring patterns and consequently flags fields such as state codes and copyright statements as addresses.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analyzer",
+        "generated-public-data"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Consumers could execute incorrect SQL or produce duplicated and misleading results if high-overlap categorical fields are presented as join keys without cardinality or uniqueness validation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "validator",
+        "generated-example",
+        "generated-public-data"
+      ]
+    },
+    {
+      "statement": "The generated documentation can overstate confidence because it labels all relationships as inferred from naming conventions even when some were discovered solely through sampled-data overlap.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generator",
+        "generated-example",
+        "generated-public-data"
+      ]
+    },
+    {
+      "statement": "Second-pass relationships record a zero target sample size, while relationship descriptions divide presentation by the minimum side, producing misleading strings such as 100/0 sampled values in checked output.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "validator",
+        "analyzer",
+        "generated-public-data"
+      ]
+    },
+    {
+      "statement": "Opt-in sampling and statistics queries read BigQuery table data without dry-run estimates, byte limits, or explicit cost controls, creating an operational cost risk on large datasets.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "introspector",
+        "validator",
+        "cli"
+      ]
+    },
+    {
+      "statement": "Tracked Python bytecode for multiple interpreter versions and tracked .DS_Store files create repository hygiene and stale-artifact risk.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "The sole dependency uses only a minimum version bound, so future installations are not reproducible and may encounter incompatible upstream changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "requirements"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Add unit and snapshot tests for table-role classification, PII detection, relationship direction, cardinality, confidence calculation, second-pass reporting, and generated Markdown.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "analyzer",
+        "validator",
+        "generator",
+        "generated-example"
+      ]
+    },
+    {
+      "statement": "Require key-like naming, uniqueness or cardinality evidence, and compatible semantic roles before promoting sampled overlap to a join; shared categorical values should be reported separately from join relationships.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "validator",
+        "generated-example",
+        "generated-public-data"
+      ]
+    },
+    {
+      "statement": "Implement a versioned serialized intermediate format so introspection, validation, analysis, and generation can be resumed, inspected, and tested independently.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "issues-snapshot",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Document installation, authentication, BigQuery permissions, data-access behavior, expected query costs, limitations, and an explicit review step before generated joins are trusted.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "introspector",
+        "validator",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Add ignore rules, remove generated bytecode and operating-system metadata from version control, and adopt reproducible dependency and CI configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "history",
+        "requirements"
+      ]
+    }
+  ],
+  "questions": [
+    "Is the generated layer intended to be advisory context that always receives human review, or should joins eventually be safe enough for direct query generation?",
+    "Should checked-in generated outputs serve as regression fixtures, examples, or current documentation snapshots?",
+    "What precision threshold is acceptable for relationship and PII detection, and should uncertain findings be omitted or explicitly quarantined?",
+    "What intermediate serialization format and invalidation rules are intended for the persistence issues?",
+    "Is the skill-oriented issue backlog still the desired architecture, or should the existing Python CLI remain the primary interface?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Autonomous-Semantic-Layer",
+      "summary": "Supplied snapshot describes a private main-branch repository pushed on 2026-03-29 with seven open issues and no open pull requests or GitHub description."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The tracked tree contains two CLI scripts, four core Python modules, one dependency manifest, two generated semantic-layer trees, Python bytecode for several interpreter versions, and .DS_Store files; no README, tests, workflows, or packaging files are present."
+    },
+    {
+      "id": "cli",
+      "kind": "source",
+      "location": "generate.py",
+      "summary": "Argparse entry point runs schema introspection, optional sampled-data join validation, semantic analysis, and Markdown generation."
+    },
+    {
+      "id": "cli-help",
+      "kind": "runtime_check",
+      "location": "python3 -B generate.py --help",
+      "summary": "The command exited successfully and exposed project, data-project, dataset, output, sampling, sample-size, and verbose options."
+    },
+    {
+      "id": "introspector",
+      "kind": "source",
+      "location": "semantic_layer_generator/introspector.py",
+      "summary": "Defines schema dataclasses and BigQuery API and INFORMATION_SCHEMA extraction for datasets, tables, columns, storage, partitioning, clustering, descriptions, labels, samples, and statistics."
+    },
+    {
+      "id": "analyzer",
+      "kind": "source",
+      "location": "semantic_layer_generator/analyzer.py",
+      "summary": "Implements regex and metadata heuristics for semantic roles and PII, foreign-key inference, validation-result merging, and join-path construction."
+    },
+    {
+      "id": "validator",
+      "kind": "source",
+      "location": "semantic_layer_generator/validator.py",
+      "summary": "Implements candidate filtering, distinct-value sampling, cross-table overlap matching, and targeted second-pass BigQuery checks."
+    },
+    {
+      "id": "generator",
+      "kind": "source",
+      "location": "semantic_layer_generator/generator.py",
+      "summary": "Writes Claude instructions, semantic indexes, dataset and table documentation, relationships, join paths, PII summaries, and query patterns."
+    },
+    {
+      "id": "demo",
+      "kind": "demo_source",
+      "location": "generate_example.py",
+      "summary": "Builds a seven-table mock e-commerce schema and mock validation result, runs semantic analysis, and generates demonstration Markdown."
+    },
+    {
+      "id": "runtime-check",
+      "kind": "runtime_check",
+      "location": "in-memory mock analysis invocation",
+      "summary": "Mock schema and validation construction plus SemanticAnalyzer execution succeeded without writes, yielding 3 datasets, 7 tables, 27 relationships, and 17 join paths."
+    },
+    {
+      "id": "generated-example",
+      "kind": "generated_output",
+      "location": "example-output/semantic-layer",
+      "summary": "Checked-in e-commerce output contains 16 Markdown files and exposes both plausible key joins and questionable categorical or unrelated-id relationships."
+    },
+    {
+      "id": "generated-public-data",
+      "kind": "generated_output",
+      "location": "semantic-layer",
+      "summary": "Checked-in output dated 2026-03-29 documents six dimensions_ai_covid19 tables from bigquery-public-data, including seven sampled-data relationships and four tables flagged for PII."
+    },
+    {
+      "id": "requirements",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Declares only google-cloud-bigquery>=3.0.0, without an upper bound or lockfile."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available history contains two commits: an initial generate.py commit and a 2026-03-29 commit adding the implementation, examples, generated output, bytecode, and OS metadata."
+    },
+    {
+      "id": "issues-snapshot",
+      "kind": "github_issues",
+      "location": "https://github.com/kmadhok/Autonomous-Semantic-Layer/issues",
+      "summary": "The owner-supplied snapshot lists seven open issues covering four pipeline-phase skills, a full pipeline skill, and two intermediate-persistence concerns; live issue bodies were inaccessible."
+    },
+    {
+      "id": "credential-filename-scan",
+      "kind": "security_check",
+      "location": "repository filename inventory",
+      "summary": "No tracked or visible files with .env, credential, secret, token, or key-style names were identified; no credential values were read."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, generated outputs, CLI execution, and an in-memory mock run consistently demonstrate a substantive prototype. Confidence is limited because no automated tests or CI exist, a live BigQuery run was not possible, generated results expose correctness problems, and live issue details were inaccessible."
+  },
+  "limitations": [
+    "The BigQuery-backed workflow was not independently executed, so authentication, permissions, query compatibility, cost, and current API behavior were not verified.",
+    "GitHub API access failed; issue bodies, timestamps, discussion, and live state could not be checked beyond the supplied snapshot.",
+    "The supplied analysis scope is depth-50 recent history, and only two commits were available, so older or omitted history cannot inform conclusions.",
+    "Generated indexes, relationships, patterns, and representative table documents were inspected, but every generated table document was not reviewed line by line.",
+    "Credential safety checks were limited to filenames; secret-bearing file values were intentionally never inspected."
+  ]
+}

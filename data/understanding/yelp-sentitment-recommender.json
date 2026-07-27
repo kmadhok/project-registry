@@ -1,0 +1,392 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Yelp_Sentitment_Recommender",
+  "analyzed_at": "2026-07-27T03:36:33Z",
+  "revision": "53b1300192714cec8dabaa7800601b180c804f60",
+  "analysis_scope": {
+    "inspected": [
+      "owner-supplied registry and GitHub metadata snapshot",
+      "README.md",
+      "complete tracked-file and top-level structure inventory",
+      "all nine PySpark notebooks, including cell structure, imports, data flow, representative code, saved metrics, and saved error outputs",
+      "dependency, test, CI, configuration, credential-filename, and deployable-artifact searches",
+      "local branches and tags",
+      "git log --oneline -20 and the sole available commit summary"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency or environment manifest",
+      "automated tests",
+      "CI workflows",
+      "release artifacts",
+      "deployment configuration",
+      "sample data",
+      "setup and execution instructions"
+    ],
+    "inaccessible": [
+      "live GitHub API metadata, branches, and archival-state verification because network access to api.github.com failed",
+      "referenced Google Cloud Storage datasets and model outputs",
+      "the original Spark/YARN execution environment"
+    ],
+    "sampling_notes": "The checkout is shallow with depth 50, so history before the available revision may be truncated; only one commit is present locally. All ten tracked files were inspected. Large embedded notebook outputs were sampled for metrics, failures, schemas, and execution evidence rather than reproduced exhaustively, and no credential values were read."
+  },
+  "stated_purpose": "Develop a group-coursework pipeline that processes the Yelp academic dataset with PySpark, derives aspect-level review sentiment, explores restaurant and user behavior, and experiments with rating prediction and restaurant recommendation.",
+  "observed_capabilities": [
+    {
+      "statement": "The notebooks load Yelp business, review, user, and check-in data, flatten nested business attributes, engineer temporal and behavioral fields, join aspect-sentiment results, and write intermediate Parquet datasets to Google Cloud Storage.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-pipeline",
+        "nlp"
+      ]
+    },
+    {
+      "statement": "The NLP workflow uses Spark NLP sentence embeddings and a tokenization/count-vectorization logistic-regression alternative to classify review sentences into price, opinion, food, atmosphere, and service aspects, then aggregates sentiment scores by review.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nlp"
+      ]
+    },
+    {
+      "statement": "The EDA notebooks calculate distributions, null rates, correlations between ratings and business or user attributes, sentiment-rating correlations, and a Folium map of highly rated Tucson restaurants.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "eda"
+      ]
+    },
+    {
+      "statement": "The classification notebook trains cross-validated random-forest and decision-tree models to classify reviews as high versus low ratings and retains saved evaluation output.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "classification"
+      ]
+    },
+    {
+      "statement": "The recommender notebook demonstrates frequent-pattern recommendations and an ALS collaborative-filtering model, including parameter experiments and functions for user- and business-specific recommendations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recommender"
+      ]
+    },
+    {
+      "statement": "The graph notebook constructs a bipartite user-restaurant GraphFrame from review edges and runs degree analysis, connected components, strongly connected components, and PageRank.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "graph"
+      ]
+    },
+    {
+      "statement": "The notebook named forecasting implements regression and decision-tree experiments for predicting business star ratings rather than a clearly defined time-series forecasting workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "forecasting"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The repository is an analysis pipeline composed entirely of Jupyter notebooks running a PySpark kernel; it has no packaged application, service, command-line entry point, or user-facing runtime.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    },
+    {
+      "statement": "The principal data flow is Yelp JSON data to cleansed Parquet tables, aspect and sentiment enrichment, a joined review-business-user dataset, and separate EDA, classification, recommendation, graph, and rating-regression experiments.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "data-pipeline",
+        "nlp",
+        "eda",
+        "classification",
+        "recommender",
+        "graph",
+        "forecasting"
+      ]
+    },
+    {
+      "statement": "Google Cloud Storage paths form the notebooks' shared data store and handoff mechanism, making execution dependent on external datasets, permissions, and artifacts not contained in the repository.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-pipeline",
+        "nlp",
+        "classification",
+        "recommender",
+        "graph",
+        "forecasting"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository preserves executed evidence for a multi-stage, distributed Yelp analysis spanning data preparation, NLP, EDA, supervised learning, collaborative filtering, association mining, and graph analysis.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-pipeline",
+        "nlp",
+        "eda",
+        "classification",
+        "recommender",
+        "graph"
+      ]
+    },
+    {
+      "statement": "Saved classification output reports approximately 0.91 accuracy on 532,068 held-out records for the binary high-versus-low rating task.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "classification"
+      ]
+    },
+    {
+      "statement": "The NLP notebook retains evaluation output for aspect and sentiment classifiers, including approximately 0.80 sentiment accuracy on 2,298 records, while also exposing weak results for several aspect categories.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nlp"
+      ]
+    },
+    {
+      "statement": "The recommender notebook completed an ALS parameter grid and a larger sampled fit whose saved output reports RMSE of approximately 1.11.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recommender"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The README contains only the heading 'msca31013-group7' and provides no purpose, prerequisites, environment specification, notebook order, data-access instructions, or interpretation of results.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    },
+    {
+      "statement": "There is no dependency manifest, automated test suite, CI workflow, reusable source package, model artifact, sample dataset, or deployment configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    },
+    {
+      "statement": "The notebooks cannot be reproduced from the repository alone because their inputs and outputs reside in an external Google Cloud Storage bucket and required Spark, Spark NLP, GraphFrames, and Python package versions are not documented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "data-pipeline",
+        "nlp",
+        "graph"
+      ]
+    },
+    {
+      "statement": "The forecasting notebook has saved AnalysisException and NameError outputs, and it does not establish a time-indexed forecasting target or evaluation design.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "forecasting"
+      ]
+    },
+    {
+      "statement": "The recommender defines recommendation helper functions but does not retain a compact end-to-end example mapping a real user to human-readable recommended restaurants and validating recommendation quality.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recommender"
+      ]
+    },
+    {
+      "statement": "No explicit roadmap, current TODO list, or planned follow-up work was found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The undocumented external data and cluster dependencies make the demonstrated workflow difficult to rerun, audit, or maintain.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "tree",
+        "data-pipeline"
+      ]
+    },
+    {
+      "statement": "The GraphFrames configuration explicitly targets Spark 2.4 and Scala 2.11, while other package versions are unspecified, creating substantial compatibility risk in a current environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "graph",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Saved resource failures in the recommender, a note that a large EDA join killed the kernel, and saved forecasting errors indicate that important workflows were fragile even in the original distributed environment.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recommender",
+        "eda",
+        "forecasting"
+      ]
+    },
+    {
+      "statement": "The ALS grid results are sorted by RMSE in descending order even though lower RMSE is preferable, which could cause model-selection mistakes if the table is read as a best-first ranking.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "recommender"
+      ]
+    },
+    {
+      "statement": "The repository has only one available bulk-upload commit and no subsequent maintenance evidence, so notebook results may become increasingly difficult to interpret as dependencies and external data change.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "No credential files or common embedded-secret patterns were found in tracked files, although public cloud bucket paths and original cluster hostnames are retained in notebook code and outputs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-scan",
+        "recommender",
+        "data-pipeline"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Treat the repository as dormant coursework unless the owner still intends to develop it; if retained, add a concise README explaining the course context, notebook execution order, datasets, results, and known failures.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "git-history",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Add a pinned environment specification and a small public or synthetic dataset that can exercise the core sentiment and recommendation paths without access to the original cloud bucket.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "data-pipeline",
+        "nlp",
+        "recommender"
+      ]
+    },
+    {
+      "statement": "If the work is meant to serve as a reference, extract reusable transformations and model evaluation into modules, add smoke tests, fix the forecasting failures and RMSE ordering, and document which saved metrics are trustworthy.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "forecasting",
+        "recommender",
+        "classification",
+        "nlp",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Review notebook outputs before any polished public presentation because they contain verbose Spark/YARN logs and original cluster hostnames, even though no credentials were detected.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-scan",
+        "recommender"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository solely the final deliverable for MSCA 31013, or was it intended to become a reusable recommendation system?",
+    "Does the referenced Google Cloud Storage dataset or execution environment still exist, and should either remain supported?",
+    "Which result was considered the final project outcome: aspect sentiment, high/low rating classification, ALS recommendations, graph ranking, or the combination?",
+    "Was the forecasting notebook intended to forecast future ratings over time, or merely predict business star ratings from attributes?",
+    "Should this remain public coursework, be converted into a reproducible reference example, or be archived as a historical submission?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "registry_github_snapshot",
+      "location": "https://github.com/kmadhok/Yelp_Sentitment_Recommender",
+      "summary": "Owner-supplied snapshot identifies a public repository on main with no description, no open issues or pull requests, and its last push on 2023-11-15."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "The entire README is the heading '# msca31013-group7' with no setup or project explanation."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The tracked tree contains README.md and nine .ipynb files only; searches found no source package, manifest, tests, CI, documentation directory, configuration, data, or deployment artifact."
+    },
+    {
+      "id": "data-pipeline",
+      "kind": "notebook_implementation",
+      "location": "BDP_FinalProject_Group7_DataCleansing.ipynb; BDP_FinalProject_Group7_Combined_Data.ipynb",
+      "summary": "PySpark notebooks read business, review, user, and aspect-sentiment Parquet data from GCS, normalize fields, join datasets, and write a combined Parquet result."
+    },
+    {
+      "id": "nlp",
+      "kind": "notebook_implementation_and_output",
+      "location": "BDP_FinalProject_Group7_Feature_Engineering_NLP.ipynb",
+      "summary": "Executed Spark NLP workflow performs sentence segmentation, aspect classification, sentiment classification, evaluation, score aggregation, and GCS persistence; saved outputs show uneven aspect accuracy and about 0.80 sentiment accuracy."
+    },
+    {
+      "id": "eda",
+      "kind": "notebook_implementation_and_output",
+      "location": "BDP_FinalProject_Group7_EDA.ipynb; BDP_FinalProject_Group7_EDA_User.ipynb",
+      "summary": "Executed notebooks contain data-quality checks, descriptive analysis, user and business attribute correlations, sentiment correlations, visualizations, and a Tucson restaurant map; one markdown note reports that the full joined table killed the kernel."
+    },
+    {
+      "id": "classification",
+      "kind": "notebook_implementation_and_output",
+      "location": "BDP_FinalProject_Group7_Classification.ipynb",
+      "summary": "Cross-validated PySpark random-forest and decision-tree classification code with saved predictions and reports; retained output reports roughly 0.91 accuracy across 532,068 records."
+    },
+    {
+      "id": "recommender",
+      "kind": "notebook_implementation_and_output",
+      "location": "BDP_FinalProject_Group7_Recommender.ipynb",
+      "summary": "FPGrowth association mining and ALS collaborative-filtering implementation with saved parameter-grid results, recommendation helper functions, final RMSE near 1.11, and extensive Spark/YARN resource warnings and failures."
+    },
+    {
+      "id": "graph",
+      "kind": "notebook_implementation_and_output",
+      "location": "BDP_FinalProject_Group7_Graph.ipynb",
+      "summary": "GraphFrames notebook builds user and restaurant vertices linked by reviews, runs component and PageRank algorithms, filters Nashville restaurants, and writes results to GCS."
+    },
+    {
+      "id": "forecasting",
+      "kind": "notebook_implementation_and_output",
+      "location": "BDP_FinalProject_Group7_Forecasting_v1.ipynb",
+      "summary": "Notebook engineers business features and attempts linear and decision-tree rating regression; saved outputs include an unresolved attribute AnalysisException and a NameError for predictions."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes one commit, 53b1300 ('Add files via upload'), authored and committed on 2023-11-15, which added all ten tracked files at once."
+    },
+    {
+      "id": "security-scan",
+      "kind": "non_secret_repository_scan",
+      "location": "tracked-file names and pattern matches",
+      "summary": "No credential-like filenames or tracked matches for common API-key, password, client-secret, access-token, or private-key patterns were found; notebook code does expose GCS paths and saved execution logs expose cluster hostnames."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Every tracked file and the available history were inspected, and substantial executed notebook evidence supports the prototype classification. Confidence is limited because the project cannot be rerun without external cloud data and an undocumented distributed environment, live GitHub verification was unavailable, some notebooks retain failures, and the checkout history is shallow."
+  },
+  "limitations": [
+    "The checkout is shallow at depth 50, so earlier or removed history may be absent.",
+    "Only one commit is available locally, preventing analysis of development progression.",
+    "Live GitHub API access failed, so the supplied GitHub snapshot could not be independently refreshed and archival state could not be verified.",
+    "External GCS data, models, and outputs were not accessible, and no cloud credentials were inspected.",
+    "The notebooks were not executed because dependencies, data, permissions, and the original Spark/YARN environment are unavailable.",
+    "Large saved notebook outputs were sampled for decisive results and failures rather than reproduced exhaustively."
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/my_website",
+  "analyzed_at": "2026-07-27T03:26:54Z",
+  "revision": "ee8926afb382182a80577c64a90e37fffaaf8a35",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata and issue/PR snapshot",
+      "CLAUDE.md",
+      "complete tracked-file inventory and top-level structure",
+      "application entry points, package manifest, lockfile dependency records, and TypeScript, Next.js, PostCSS, and Tailwind configuration",
+      "all page, layout, stylesheet, and reusable component source files",
+      "structure and exports of the custom SVG illustration components",
+      "prototype design documentation and structural markers from its HTML implementation",
+      "test, CI, notebook, demo, release, deployment-configuration, and credential-like filename inventories",
+      "local and remote-tracking branches",
+      "git log and file statistics for all four available commits"
+    ],
+    "missing": [
+      "README",
+      "AGENTS.md",
+      "docs directory",
+      "automated tests",
+      "CI workflows",
+      "release artifacts or release automation",
+      "repository-owned Vercel deployment configuration",
+      "dependency-update automation",
+      "current build, lint, accessibility, or browser-test results"
+    ],
+    "inaccessible": [
+      "live GitHub metadata because the GitHub API connection failed",
+      "live Vercel deployment and Cloudflare DNS state",
+      "runtime verification requiring dependency installation or generated build output"
+    ],
+    "sampling_notes": "The repository is small, so every application page and ordinary component was inspected. Large inline SVG implementations and prototype HTML were structurally sampled, while binary ZIP, PNG, and PDF contents were not extracted or summarized. The task context identifies the clone as shallow with depth 50; locally, git reports a non-shallow checkout containing only four commits, so git log --oneline -20 returned all available history."
+  },
+  "stated_purpose": "A personal portfolio website for Kanu Madhok, built with Next.js to present data science and AI engineering experience, selected projects, a r\u00e9sum\u00e9, and contact links.",
+  "observed_capabilities": [
+    {
+      "statement": "The implemented home page presents a hero, selected-work gallery, professional background, contact call to action, and footer as one anchor-navigated portfolio page.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-shell",
+        "portfolio-components"
+      ]
+    },
+    {
+      "statement": "The interface includes a responsive navigation menu and viewport-triggered animations implemented with React state and Framer Motion.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "portfolio-components",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "The selected-work section displays seven hard-coded data, AI, and software project summaries using custom graphics or Material Symbols; one entry links to a Cloud Run application and most others link to the owner's general GitHub profile.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "selected-work",
+        "illustrations"
+      ]
+    },
+    {
+      "statement": "Visitors can open a tracked r\u00e9sum\u00e9 PDF, initiate an email, and follow GitHub and LinkedIn links.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "portfolio-components",
+        "tracked-artifacts"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The project is a Next.js 15 App Router application whose root layout supplies fonts, global styling, metadata, and navigation, while the root page composes section-level React components.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-shell",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "Presentation is implemented with Tailwind CSS, a custom editorial color and typography theme, global CSS utilities, Framer Motion, Material Symbols, and repository-native SVG illustration components.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "style-config",
+        "portfolio-components",
+        "illustrations"
+      ]
+    },
+    {
+      "statement": "Portfolio content and outbound links are embedded directly in React component constants; no backend, API route, content management system, database, or form-submission service is present.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "source-inventory",
+        "selected-work"
+      ]
+    },
+    {
+      "statement": "The tracked prototype bundle appears to be design-source material for the May 2026 homepage redesign rather than a runtime dependency of the Next.js application.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "prototype",
+        "history",
+        "source-inventory"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "A substantive homepage redesign introduced a cohesive editorial design system, responsive sections, custom SVG graphics, animated interactions, refreshed portfolio content, and a r\u00e9sum\u00e9 asset.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "style-config",
+        "portfolio-components",
+        "illustrations"
+      ]
+    },
+    {
+      "statement": "The repository contains a complete application structure and production start/build scripts for its primary portfolio-viewing workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "app-shell",
+        "source-inventory"
+      ]
+    },
+    {
+      "statement": "Project documentation records a Vercel and custom-domain deployment procedure with production deployment triggered from main.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-doc"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No automated tests, CI workflows, checked-in verification reports, or current build and lint results substantiate that the application remains executable.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification-inventory"
+      ]
+    },
+    {
+      "statement": "CLAUDE.md still lists app/portfolio/page.tsx even though that route was deleted by the homepage redesign.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-doc",
+        "history",
+        "source-inventory"
+      ]
+    },
+    {
+      "statement": "ProjectGallery.tsx is no longer connected to a page and contains placeholder project records, generic links, nonexistent image paths, and utility classes outside the current Tailwind theme.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-gallery",
+        "app-shell",
+        "style-config",
+        "source-inventory"
+      ]
+    },
+    {
+      "statement": "Six of the seven visible selected-work cards do not link to a project-specific repository or case study, limiting the site's ability to substantiate the displayed project claims.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "selected-work"
+      ]
+    },
+    {
+      "statement": "The deployment claims in CLAUDE.md could not be independently confirmed from repository-owned deployment artifacts or live service access.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-doc",
+        "verification-inventory"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Without automated build, lint, link, or browser checks, dependency changes and content edits can silently break the public portfolio.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "verification-inventory",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "The latest commit message explicitly says the changes were saved before archiving, so an active deployment may become stale as dependencies and professional content age.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "project-doc"
+      ]
+    },
+    {
+      "statement": "A personal email address, r\u00e9sum\u00e9 PDF, employment details, education details, and quantitative work claims are intentionally embedded in public-facing application assets and should be periodically reviewed for desired disclosure.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "portfolio-components",
+        "tracked-artifacts",
+        "app-shell"
+      ]
+    },
+    {
+      "statement": "The repository contains both unused legacy portfolio code and a duplicate prototype bundle, increasing the chance that future edits target stale material.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "project-gallery",
+        "prototype",
+        "source-inventory"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Confirm whether the archive intent recorded in the latest commit should also govern the GitHub repository, custom domain, and Vercel deployment, then document that owner decision.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "project-doc"
+      ]
+    },
+    {
+      "statement": "If the site will remain deployed, run and record a clean dependency install, production build, lint check, responsive browser smoke test, and link check before treating it as operational.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "verification-inventory",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "Update the documentation to match the single-page architecture and either remove or deliberately rehabilitate the unused ProjectGallery component and prototype bundle.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "project-doc",
+        "project-gallery",
+        "prototype",
+        "app-shell"
+      ]
+    },
+    {
+      "statement": "Replace generic GitHub-profile destinations with project-specific repositories or case studies where disclosure is appropriate, and review the r\u00e9sum\u00e9 and professional claims for continued public accuracy.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "selected-work",
+        "tracked-artifacts",
+        "portfolio-components"
+      ]
+    }
+  ],
+  "questions": [
+    "Did the July 2026 archive intent result in archiving the GitHub repository, and should kanumadhok.com remain deployed?",
+    "Are the general GitHub-profile links temporary placeholders for private or forthcoming project pages?",
+    "Should the tracked prototype bundle and unused ProjectGallery component be retained as references or removed from the maintained source tree?",
+    "Are the r\u00e9sum\u00e9, direct email address, employment metrics, and project-performance claims still intended for unrestricted public distribution?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata_snapshot",
+      "location": "https://github.com/kmadhok/my_website",
+      "summary": "Registry-provided snapshot identifies a private repository on main, pushed on 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "project-doc",
+      "kind": "project_documentation",
+      "location": "CLAUDE.md",
+      "summary": "Describes kanumadhok.com as a Next.js personal portfolio and records local commands, Vercel hosting, Cloudflare DNS, and main-branch auto-deployment."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "package.json",
+      "summary": "Defines a private Next.js application with development, build, start, and lint scripts plus React, Framer Motion, React Hook Form, Tailwind, TypeScript, and ESLint dependencies."
+    },
+    {
+      "id": "app-shell",
+      "kind": "application_entry_points",
+      "location": "app/layout.tsx; app/page.tsx; app/globals.css",
+      "summary": "The App Router root provides metadata, fonts, navigation, global styling, and a single home page composed from five portfolio sections."
+    },
+    {
+      "id": "portfolio-components",
+      "kind": "representative_source",
+      "location": "components/Hero.tsx; components/Navigation.tsx; components/AboutSection.tsx; components/CTASection.tsx; components/Footer.tsx",
+      "summary": "Implements responsive navigation, animated professional introduction, skill and experience content, r\u00e9sum\u00e9 access, email contact, and social links."
+    },
+    {
+      "id": "selected-work",
+      "kind": "representative_source",
+      "location": "components/SelectedWork.tsx",
+      "summary": "Implements a seven-item hard-coded project gallery covering data engineering, AI development, journaling, job automation, market analytics, scraping, and text-to-SQL work."
+    },
+    {
+      "id": "project-gallery",
+      "kind": "legacy_source",
+      "location": "components/ProjectGallery.tsx",
+      "summary": "Contains an unused filterable gallery with placeholder projects, nonexistent image destinations, and styles inherited from the earlier site design."
+    },
+    {
+      "id": "illustrations",
+      "kind": "visual_source",
+      "location": "components/illustrations/HeroGraphic.tsx; components/illustrations/ProjectGraphics.tsx",
+      "summary": "Defines repository-native SVG artwork for the hero and four selected project cards, including join discovery, voice journaling, market analytics, and text-to-SQL diagrams."
+    },
+    {
+      "id": "style-config",
+      "kind": "configuration",
+      "location": "tailwind.config.ts; next.config.ts; tsconfig.json; postcss.config.mjs",
+      "summary": "Defines the editorial palette and typography, Google-hosted remote image allowance, strict TypeScript settings, path aliases, and Tailwind/PostCSS processing."
+    },
+    {
+      "id": "prototype",
+      "kind": "prototype_artifacts",
+      "location": "prototype_website/DESIGN.md; prototype_website/code.html; prototype_website/screen.png; prototype_website.zip",
+      "summary": "Contains an editorial design-system specification, standalone Tailwind HTML mockup, screenshot, and ZIP added together by the latest commit."
+    },
+    {
+      "id": "tracked-artifacts",
+      "kind": "public_artifacts",
+      "location": "public/Kanu_Madhok_2026.pdf",
+      "summary": "A tracked r\u00e9sum\u00e9 PDF is exposed through a link in the About section; its binary contents were not extracted during this analysis."
+    },
+    {
+      "id": "source-inventory",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The compact tracked tree contains the Next.js application, reusable components, two illustration modules, configuration, lockfile, prototype bundle, and r\u00e9sum\u00e9; no backend, API routes, tests, workflows, notebooks, or additional documentation were found."
+    },
+    {
+      "id": "verification-inventory",
+      "kind": "verification_evidence",
+      "location": ".",
+      "summary": "No tests, CI workflows, releases, checked-in build output, dependency automation, or deployment configuration were found, and runtime commands were not executed in the read-only checkout."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "All four available commits were inspected: initial portfolio creation and documentation in March 2026, a substantial homepage redesign in May, and prototype artifacts saved on July 11 in a commit titled 'Save latest changes before archiving.'"
+    },
+    {
+      "id": "credential-filename-scan",
+      "kind": "security_inventory",
+      "location": ".gitignore; git ls-files",
+      "summary": "No tracked credential-like filenames were identified. The ignore rules cover local environment files and PEM files; no credential values were read."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository is compact and its implementation, configuration, design artifacts, and entire available history consistently support the conclusion that it is a substantially implemented portfolio site. Confidence is limited by the absence of automated verification, inability to install dependencies in the read-only checkout, inaccessible live GitHub and deployment state, and unverified public project claims."
+  },
+  "limitations": [
+    "The live GitHub API was unreachable, so visibility, archival state, branches, issues, and pull requests beyond the supplied snapshot could not be refreshed.",
+    "The Vercel deployment, custom domain, Cloudflare DNS records, and linked Cloud Run application were not accessed.",
+    "No build, lint, test, accessibility, link, or browser verification was run because the checkout is read-only and contains no installed dependencies.",
+    "Binary ZIP, PNG, and PDF contents were not extracted or summarized.",
+    "Credential analysis was limited to filenames, ignore rules, and ordinary source references; no secret or environment-file values were read.",
+    "The repository contains portfolio claims about external projects and professional outcomes that cannot be independently proven from this repository."
+  ]
+}

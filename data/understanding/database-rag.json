@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/database-rag",
+  "analyzed_at": "2026-07-27T03:15:05Z",
+  "revision": "9004830879a44bc8f704835b81ff4c1354621c4d",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata snapshot",
+      "all 10 tracked files",
+      "both Python entry points",
+      "UTF-16 dependency manifest",
+      "all seven Markdown database-description files",
+      "complete available local commit history",
+      "local and remote branch references",
+      "tracked credential-filename inventory",
+      "test, workflow, notebook, demo, release, and deployment artifact inventory",
+      "static Python syntax parsing"
+    ],
+    "missing": [
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "markdown_files directory expected by both entry points",
+      "tests",
+      "CI workflows",
+      "notebooks or demos",
+      "license",
+      "deployment or release artifacts",
+      "database connection, DDL, or sample data",
+      ".gitignore"
+    ],
+    "inaccessible": [
+      "live GitHub API metadata because network access was unavailable"
+    ],
+    "sampling_notes": "The supplied checkout was described as shallow with depth 50, so historical analysis is limited to recent history. The local checkout exposes only one commit and reports itself as non-shallow; all 10 tracked files and the entire available history were inspected, so no source sampling was necessary."
+  },
+  "stated_purpose": "The repository presents an \"E-Commerce Database\" schema and two interactive RAG scripts intended to answer questions from Markdown database documentation.",
+  "observed_capabilities": [
+    {
+      "statement": "The tracked Markdown corpus describes participant, demographic, reward, survey, survey-activity, and transaction tables, along with proposed joins between them.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schema-docs"
+      ]
+    },
+    {
+      "statement": "The OpenAI entry point defines a command-line retrieval pipeline that loads Markdown, chunks it, creates OpenAI embeddings, indexes chunks in FAISS, retrieves three similar chunks, and invokes a gpt-3.5-turbo RetrievalQA chain.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "openai-entrypoint"
+      ]
+    },
+    {
+      "statement": "The local entry point defines an alternative pipeline using all-MiniLM-L6-v2 embeddings and the Cerebras BTLM 3B base model through a Transformers text-generation pipeline.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-entrypoint"
+      ]
+    },
+    {
+      "statement": "The repository implements retrieval over schema documentation rather than querying or modifying a live database.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "local-entrypoint",
+        "repository-tree"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "Both entry points share the flow Markdown globbing \u2192 Unstructured loading \u2192 recursive chunking \u2192 embedding \u2192 in-memory FAISS indexing \u2192 similarity retrieval with k=3 \u2192 a stuff-style RetrievalQA chain \u2192 an interactive terminal loop.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "local-entrypoint"
+      ]
+    },
+    {
+      "statement": "The hosted variant requires an OPENAI_API_KEY loaded from the environment, while the local variant downloads and runs Hugging Face embedding and language models.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "local-entrypoint"
+      ]
+    },
+    {
+      "statement": "The knowledge base is represented only by Markdown descriptions; no persistent vector index, application service, database connector, or user interface beyond the terminal loop is implemented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "openai-entrypoint",
+        "local-entrypoint"
+      ]
+    }
+  ],
+  "maturity": "scaffold",
+  "accomplishments": [
+    {
+      "statement": "Two syntactically valid Python implementations cover hosted and local-model variants of the same retrieval design.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "local-entrypoint",
+        "static-verification"
+      ]
+    },
+    {
+      "statement": "A small, relationally connected schema-documentation corpus was created for six database tables.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schema-docs"
+      ]
+    },
+    {
+      "statement": "The dependency snapshot pins the LangChain, FAISS, OpenAI, Transformers, Sentence Transformers, Torch, and Unstructured packages used by the two scripts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "Both scripts hard-code folder_path as markdown_files, but that directory is absent and all Markdown files are stored at the repository root; the checked-in entry points therefore load zero documents and cannot build the intended FAISS index without manual rearrangement or a code change.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "local-entrypoint",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "database_overview.md also links to nonexistent markdown_files paths, so its six table links are broken in the checked-in layout.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schema-docs",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There is no README or setup guide explaining installation, model requirements, expected questions, platform constraints, or how to supply the corpus.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There are no tests, CI workflows, demos, notebooks, generated answers, or other artifacts demonstrating successful end-to-end execution or answer quality.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "The repository contains schema prose but no SQL DDL, database connection, sample records, or validation tying the documentation to a real database.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "schema-docs"
+      ]
+    },
+    {
+      "statement": "No current planned work is recorded through TODO documents, open issues, or open pull requests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "github-snapshot",
+        "repository-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The corpus-path mismatch prevents the primary workflow from operating from a fresh checkout and may be overlooked because no smoke test exercises document discovery.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "local-entrypoint",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "requirements.txt is a 105-package UTF-16 environment snapshot containing CUDA-specific Torch builds, which is likely to be less portable and harder to reproduce than separate minimal dependency sets for hosted and local execution.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies"
+      ]
+    },
+    {
+      "statement": "The local path depends on downloading and running a 3-billion-parameter base language model, but the repository gives no resource guidance or evidence that its generated answers follow the retrieval prompt reliably.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "local-entrypoint",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The hosted script directs users to place an API key in a .env file, but the repository has no .gitignore; although no credential file is currently tracked, a future local .env could be committed accidentally.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "A single bulk-upload commit from February 2025, with no later commits, open issues, or pull requests, provides no evidence of continuing maintenance.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "github-snapshot"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "If the experiment is retained, make corpus discovery match the tracked layout and add a smoke test that fails clearly when no Markdown documents are found.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "local-entrypoint",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Add a concise README that distinguishes documentation retrieval from live database querying and records setup, example questions, expected output, model requirements, and limitations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "openai-entrypoint",
+        "local-entrypoint"
+      ]
+    },
+    {
+      "statement": "Replace the full environment dump with minimal hosted and local dependency groups, and document any platform-specific model or CUDA installation steps.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "openai-entrypoint",
+        "local-entrypoint"
+      ]
+    },
+    {
+      "statement": "Add .gitignore coverage for .env and generated model or vector-index artifacts before further experimentation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "openai-entrypoint",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Ask the owner whether this dormant prototype should be repaired for reference or formally archived; any lifecycle change remains an owner decision.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "github-snapshot",
+        "repository-tree"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the intended product limited to answering questions about schema documentation, or was it supposed to connect to and query a real database?",
+    "Was the missing markdown_files directory an upload-layout mistake or an untracked preprocessing step?",
+    "Did either entry point ever complete an end-to-end run, and are any representative questions and answers available?",
+    "Is the resource-heavy local BTLM variant still useful, or was it only a one-time comparison with the OpenAI path?",
+    "Should this dormant experiment be repaired as a reference example or archived?"
+  ],
+  "evidence": [
+    {
+      "id": "github-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/database-rag",
+      "summary": "Supplied snapshot identifies a public, unarchived repository on main with no description, no open issues or pull requests, and its last push on 2025-02-10."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": "repository tree at 9004830879a44bc8f704835b81ff4c1354621c4d",
+      "summary": "The complete tracked tree contains two Python scripts, seven root-level Markdown files, and one requirements file; it contains no markdown_files directory, README, tests, workflow, database artifact, credential file, or .gitignore."
+    },
+    {
+      "id": "schema-docs",
+      "kind": "documentation",
+      "location": "database_overview.md and six root-level table Markdown files",
+      "summary": "The documents describe six participant, survey, reward, demographic, and transaction tables plus proposed joins; the overview's links incorrectly target a nonexistent markdown_files directory."
+    },
+    {
+      "id": "openai-entrypoint",
+      "kind": "source",
+      "location": "main.py",
+      "summary": "Defines a terminal RAG flow using Unstructured Markdown loading, recursive splitting, OpenAI embeddings, FAISS, gpt-3.5-turbo, RetrievalQA, and an OPENAI_API_KEY, while hard-coding the absent markdown_files directory."
+    },
+    {
+      "id": "local-entrypoint",
+      "kind": "source",
+      "location": "local_main.py",
+      "summary": "Defines a parallel terminal RAG flow using MiniLM embeddings, FAISS, and Cerebras BTLM through Transformers, also hard-coding the absent markdown_files directory."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "A UTF-16, CRLF, 105-package environment snapshot pins LangChain 0.3.17, FAISS CPU, OpenAI, Transformers, Sentence Transformers, Unstructured, and CUDA 11.8-specific Torch packages."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log at 9004830879a44bc8f704835b81ff4c1354621c4d",
+      "summary": "The entire available history is one commit, \"Add files via upload,\" dated 2025-02-09; main is the only available branch and no tags are present."
+    },
+    {
+      "id": "static-verification",
+      "kind": "verification",
+      "location": "main.py and local_main.py at analyzed revision",
+      "summary": "Both scripts parse successfully as Python ASTs, but required third-party packages are unavailable in the analysis environment and no end-to-end runtime verification artifact exists."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository is small and every tracked artifact was inspected, making its structure and checked-in path defect clear. Confidence is limited because dependencies were unavailable, no test or demonstration proves execution, live GitHub access failed, and the supplied clone constrains historical evidence."
+  },
+  "limitations": [
+    "The supplied checkout was described as depth-50, so history older than the available clone cannot be ruled out even though only one commit is exposed.",
+    "Live GitHub API access failed; archival state, branches, issues, and pull requests rely on the supplied snapshot and local references.",
+    "Third-party dependencies were not installed, so analysis was limited to source inspection and syntax parsing rather than full execution.",
+    "No credential values were read; no credential files are tracked in the inspected revision."
+  ]
+}

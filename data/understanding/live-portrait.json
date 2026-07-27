@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/live-portrait",
+  "analyzed_at": "2026-07-27T03:24:43Z",
+  "revision": "381d5c389e4177f8a2b71d1c0b57054a9a5b598a",
+  "analysis_scope": {
+    "inspected": [
+      "supplied repository metadata and GitHub snapshot",
+      "all tracked files: living-portrait-spec.md and .gitignore",
+      "top-level structure and tracked-file inventory",
+      "documented architecture, dependencies, API contracts, implementation phases, testing strategy, and future enhancements",
+      "local and remote branch references",
+      "git log --oneline -20 and detailed metadata for the available commit",
+      "tracked credential-file and ignore-rule indicators"
+    ],
+    "missing": [
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "source implementation",
+      "dependency manifests or lockfiles",
+      "tests or test results",
+      "CI workflows",
+      "notebooks",
+      "demos or generated outputs",
+      "releases",
+      "deployable artifacts",
+      "runtime or latency measurements"
+    ],
+    "inaccessible": [],
+    "sampling_notes": "The checkout is shallow with depth 50, so history before the available recent window may be truncated. Only one commit and two tracked files exist at the analyzed revision; both tracked files were inspected in full, so no implementation sampling was necessary."
+  },
+  "stated_purpose": "The specification describes a planned real-time web application in which users speak with an animated Abraham Lincoln portrait that answers through historically grounded retrieval, an in-character language model, cloned speech, and lip-synchronized video.",
+  "observed_capabilities": [],
+  "planned_work": [
+    {
+      "statement": "The proposed streaming pipeline captures microphone audio, transcribes it with Deepgram, retrieves Lincoln source passages with OpenAI embeddings and FAISS, streams an in-character response from Claude, synthesizes speech with ElevenLabs, and animates a portrait through D-ID.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-architecture",
+        "spec-components"
+      ]
+    },
+    {
+      "statement": "The planned client is a React application with Web Audio, WebSocket, WebRTC, portrait presentation, and idle, listening, thinking, and speaking states; the planned backend is a FastAPI service that orchestrates the external AI services.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-components",
+        "spec-project-structure"
+      ]
+    },
+    {
+      "statement": "The specification lays out eight implementation phases covering corpus construction, retrieval, persona generation, speech recognition, speech synthesis, avatar animation, orchestration, frontend integration, error handling, and polish.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-implementation-plan"
+      ]
+    },
+    {
+      "statement": "Future ideas include additional historical figures, conversational memory, emotion detection, 3D animation, museum kiosk packaging, multilingual conversations, and classroom controls.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-future-work"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The specification defines a browser client connected to a backend conversation WebSocket, with a sequentially dependent but internally streamed STT-to-RAG/LLM-to-TTS-to-avatar data flow and WebRTC delivery for animated video.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-architecture",
+        "spec-api-contracts"
+      ]
+    },
+    {
+      "statement": "The proposed retrieval layer uses a local FAISS IndexFlatIP index over approximately 5,000 chunks of public-domain Lincoln writings, with OpenAI embeddings and top-three retrieval.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-components"
+      ]
+    },
+    {
+      "statement": "The proposed repository layout separates backend pipeline adapters, knowledge ingestion and generated indexes, persona prompts, React components and hooks, WebRTC support, and utility scripts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-project-structure"
+      ]
+    },
+    {
+      "statement": "None of the specified architecture is present as tracked executable code at this revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "commit-history"
+      ]
+    }
+  ],
+  "maturity": "concept",
+  "accomplishments": [
+    {
+      "statement": "A 770-line system specification documents the intended experience, service choices, data flow, component responsibilities, persona prompt, environment-variable names, API message shapes, implementation sequence, cost estimates, and test strategy.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-overview",
+        "spec-components",
+        "spec-api-contracts",
+        "spec-testing"
+      ]
+    },
+    {
+      "statement": "The specification identifies streaming as a core design constraint and describes sentence-level buffering intended to overlap language generation, speech synthesis, and animation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-architecture",
+        "spec-decisions"
+      ]
+    },
+    {
+      "statement": "The repository ignores the exact .env filename and contains no tracked credential file or credential value.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "gitignore",
+        "repository-tree"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The repository has no source code, corpus, portrait asset, generated index, dependency manifest, container definition, executable entry point, or frontend scaffold.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "spec-project-structure"
+      ]
+    },
+    {
+      "statement": "The documented unit, integration, streaming, latency, and character tests have not been created, and there is no CI or execution evidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "spec-testing"
+      ]
+    },
+    {
+      "statement": "The target latency, cost estimates, service compatibility, and quality assertions are design assumptions rather than measured properties of this repository.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-overview",
+        "spec-components",
+        "spec-costs",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Operational details such as authentication, authorization, retention of microphone or conversation data, observability, deployment, rate-limit behavior, and concrete failure recovery are not defined beyond brief mentions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "spec-components",
+        "spec-implementation-plan",
+        "repository-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The design depends on five external AI services and several streaming protocols, so undocumented API drift, cross-service buffering, rate limits, or incompatible media formats could prevent the stated latency and end-to-end behavior.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-architecture",
+        "spec-components",
+        "spec-decisions"
+      ]
+    },
+    {
+      "statement": "The proposed instruction to clone a Lincoln impersonator's recording introduces consent, licensing, attribution, and misleading-authenticity concerns that are not addressed in the specification.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-components",
+        "spec-decisions"
+      ]
+    },
+    {
+      "statement": "Microphone audio, transcripts, prompts, and generated media would cross multiple third-party services, but the repository contains no implemented privacy, access-control, deletion, or secret-management safeguards.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-architecture",
+        "spec-components",
+        "repository-tree",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "The Lincoln persona and retrieval plan lack a documented historical-review or citation mechanism, creating a risk that generated statements could be presented as authentic history without adequate provenance.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-components",
+        "spec-testing"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Before implementation, validate the current APIs, model identifiers, streaming capabilities, media formats, pricing, and measured latency of the proposed vendors with a minimal end-to-end spike.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-components",
+        "spec-costs",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Define an MVP acceptance test that proves one question can travel through transcription, retrieval, response generation, speech synthesis, and portrait animation while recording per-stage and end-to-end latency.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-implementation-plan",
+        "spec-testing"
+      ]
+    },
+    {
+      "statement": "Add explicit policies for microphone and transcript retention, third-party data processing, API-key handling, rate limits, failure behavior, and user disclosure that the voice and statements are synthesized.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-components",
+        "spec-implementation-plan",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "Resolve licensing and consent for the portrait, historical texts, and any voice-cloning source, and add expert-reviewed provenance or citations for historically grounded answers.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "spec-components",
+        "spec-testing"
+      ]
+    }
+  ],
+  "questions": [
+    "Is this specification still intended for implementation, or was the repository created only to preserve the design exercise?",
+    "Which vendor stack and model versions remain preferred after current API, pricing, and latency validation?",
+    "What rights or consent will authorize the portrait and voice-cloning source?",
+    "Should users receive citations or source excerpts for Lincoln's historical claims?",
+    "What privacy and retention requirements apply to microphone audio, transcripts, and generated media?"
+  ],
+  "evidence": [
+    {
+      "id": "github-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/live-portrait",
+      "summary": "The supplied snapshot identifies a private repository on main, pushed and updated on 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "spec-overview",
+      "kind": "specification",
+      "location": "living-portrait-spec.md sections 1 and 3",
+      "summary": "Defines the intended Abraham Lincoln conversational portrait experience, a mandatory streaming target near 1.2 seconds, and a proposed vendor and model stack."
+    },
+    {
+      "id": "spec-architecture",
+      "kind": "architecture_specification",
+      "location": "living-portrait-spec.md section 2",
+      "summary": "Describes the proposed client, speech recognition, retrieval, language generation, speech synthesis, avatar animation, and streaming data flow."
+    },
+    {
+      "id": "spec-components",
+      "kind": "component_specification",
+      "location": "living-portrait-spec.md sections 4 and 5",
+      "summary": "Specifies frontend and backend responsibilities, external-service configurations, retrieval behavior, persona instructions, voice cloning, portrait requirements, and placeholder environment-variable names."
+    },
+    {
+      "id": "spec-project-structure",
+      "kind": "planned_repository_structure",
+      "location": "living-portrait-spec.md section 6",
+      "summary": "Proposes backend, frontend, knowledge, prompt, asset, test, script, README, and optional container artifacts that are not present in the tracked tree."
+    },
+    {
+      "id": "spec-implementation-plan",
+      "kind": "implementation_plan",
+      "location": "living-portrait-spec.md section 7",
+      "summary": "Provides an eight-phase, approximately six-day plan from corpus construction through integration, error handling, and interface polish."
+    },
+    {
+      "id": "spec-api-contracts",
+      "kind": "api_specification",
+      "location": "living-portrait-spec.md section 8",
+      "summary": "Defines planned conversation WebSocket message shapes and optional health and retrieval REST endpoints."
+    },
+    {
+      "id": "spec-decisions",
+      "kind": "design_rationale",
+      "location": "living-portrait-spec.md section 9",
+      "summary": "Explains the planned use of pervasive streaming, sentence buffering, local FAISS retrieval, cloned speech, and a hosted avatar service."
+    },
+    {
+      "id": "spec-costs",
+      "kind": "cost_estimate",
+      "location": "living-portrait-spec.md section 10",
+      "summary": "Estimates a five-minute conversation at approximately $6.65, dominated by avatar video, and proposes self-hosted alternatives for cost reduction."
+    },
+    {
+      "id": "spec-testing",
+      "kind": "test_plan",
+      "location": "living-portrait-spec.md section 11",
+      "summary": "Lists proposed component, integration, streaming, latency, persona, and edge-case tests; none exist as tracked test artifacts."
+    },
+    {
+      "id": "spec-future-work",
+      "kind": "roadmap",
+      "location": "living-portrait-spec.md section 12",
+      "summary": "Lists possible multi-figure, memory, emotion, 3D, kiosk, multilingual, and classroom extensions."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": "local checkout at revision 381d5c389e4177f8a2b71d1c0b57054a9a5b598a",
+      "summary": "The complete tracked tree contains only .gitignore and the 770-line living-portrait-spec.md; there are no implementation, manifest, test, workflow, demo, or deployment files."
+    },
+    {
+      "id": "gitignore",
+      "kind": "security_configuration",
+      "location": ".gitignore",
+      "summary": "Ignores .env, .DS_Store, and node_modules; no credential file is tracked."
+    },
+    {
+      "id": "commit-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 381d5c389e4177f8a2b71d1c0b57054a9a5b598a",
+      "summary": "The shallow checkout exposes one commit, dated 2026-07-11 and titled Initial commit, adding the specification and ignore rules; main is the only observed branch."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The complete tracked tree, full specification, branch state, and available history agree that this is a recently created concept specification without an implementation. Confidence is high about purpose and maturity, while all performance and operational claims are explicitly treated as unverified plans."
+  },
+  "limitations": [
+    "The checkout is shallow with depth 50; history outside the available window could not be inspected, although the available repository contains only one commit.",
+    "GitHub issue, pull-request, visibility, and timestamp findings rely on the supplied snapshot rather than a fresh live query.",
+    "No implementation or executable artifact exists, so behavior, service compatibility, quality, cost, and latency could not be verified.",
+    "No credential values were inspected; analysis was limited to tracked filenames, placeholder configuration names in the specification, and ignore rules."
+  ]
+}

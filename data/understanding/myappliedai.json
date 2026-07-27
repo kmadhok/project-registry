@@ -1,0 +1,360 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/MyAppliedAI",
+  "analyzed_at": "2026-07-27T03:29:50Z",
+  "revision": "f995593afec83bc526f0aa328afc6fad19a4bc56",
+  "analysis_scope": {
+    "inspected": [
+      "GitHub repository metadata, archival state, default branch, visibility, branch inventory, and supplied issue/PR snapshot",
+      "complete tracked tree and README on the default branch",
+      "complete available default-branch commit history via git log --oneline -20",
+      "comparisons of all four non-default branches against main",
+      "PROJECT.md, requirements.txt, src/README.md, and part of FEATURE_EXTRACTION_PIPELINE_DESIGN.md on openclaw/feat-evaluation-demo",
+      "complete schema_extractor.py, feature_extraction.py, similarity_model.py, join_validator.py, evaluation.py, cli.py, package __init__.py, demo.py, and .gitignore on openclaw/feat-evaluation-demo",
+      "representative SQLite tests and the complete test-file inventory on openclaw/feat-evaluation-demo"
+    ],
+    "missing": [
+      "implementation, dependency manifests, tests, demos, and CI workflows on the default branch",
+      "packaging metadata such as pyproject.toml or setup.py",
+      "lockfile or upper dependency bounds",
+      "committed evaluation datasets, benchmark results, or generated reports",
+      "tests specifically covering the CLI, evaluation framework, and end-to-end demo",
+      "deployment, release, or scheduled operational artifacts"
+    ],
+    "inaccessible": [
+      "local execution of the non-default implementation because its refs and files were not present in the read-only checkout"
+    ],
+    "sampling_notes": "The supplied checkout was described as shallow at depth 50, so older or unreachable history may be truncated; git reported a non-shallow checkout, but it contained only the two main-branch commits and no local non-default refs. Main was inspected completely. The remote repository is small, but non-default evidence was sampled through GitHub: the most complete branch was inspected across its design, dependencies, package modules, demo, and representative tests. DATASET_SELECTION.md, DATASET_SURVEY.md, TEAM.md, the remainder of FEATURE_EXTRACTION_PIPELINE_DESIGN.md, and every individual test assertion were not inspected."
+  },
+  "stated_purpose": "Automate discovery and validation of joins between database tables so agents can understand and query datasets, with a longer-term plan to use validated joins as a knowledge base for natural-language or RAG-based database access.",
+  "observed_capabilities": [
+    {
+      "statement": "The default branch has no executable capability; its only tracked file is a README describing a dataset-exploration initiative.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main-tree",
+        "main-readme"
+      ]
+    },
+    {
+      "statement": "The unmerged openclaw/feat-evaluation-demo branch contains Python modules for SQLAlchemy schema inspection, column-name embeddings and statistics, weighted column-similarity scoring, join-candidate generation, and heuristic SQL join validation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "branch-comparison",
+        "core-source"
+      ]
+    },
+    {
+      "statement": "That branch also contains an argparse CLI, a generated SQLite demonstration database, and evaluation classes for precision, recall, F1, threshold comparison, and JSON report generation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "demo-evaluation"
+      ]
+    },
+    {
+      "statement": "The branch includes SQLite-backed tests for schema extraction, feature extraction, similarity scoring, and join validation, but no recorded successful test run was found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "branch-tests",
+        "branch-comparison"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "Repository documents propose selecting public multi-table datasets, discovering candidate joins, validating them with SQL, benchmarking against known relationships, and storing validated joins for later RAG use.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-plan",
+        "pipeline-design"
+      ]
+    },
+    {
+      "statement": "Dataset acquisition, a persistent join knowledge base, evaluation on held-out datasets, and the RAG application remain plans rather than evidenced deliverables.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "project-plan",
+        "branch-comparison",
+        "demo-evaluation"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The intended pipeline is database to SchemaExtractor to FeatureExtractor to SimilarityScorer to JoinCandidateGenerator to JoinValidator, with CLI, demo, and evaluation layers consuming the pipeline.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "pipeline-design",
+        "core-source",
+        "demo-evaluation"
+      ]
+    },
+    {
+      "statement": "SQLAlchemy provides database introspection and query execution; sentence-transformers supplies optional name embeddings; NumPy and hand-coded heuristics combine name, type, key-pattern, cardinality, and sampled-value signals.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "core-source"
+      ]
+    },
+    {
+      "statement": "Development is isolated on a linear family of openclaw branches: the schema/feature/similarity work is eight commits ahead of main, join validation is nine commits ahead, and the evaluation/demo branch is ten commits ahead.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "remote-branches",
+        "branch-comparison"
+      ]
+    }
+  ],
+  "maturity": "scaffold",
+  "accomplishments": [
+    {
+      "statement": "A substantial branch-only foundation was created with six core package modules, a CLI, a demo, design documents, and four test modules.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "branch-comparison",
+        "core-source",
+        "branch-tests",
+        "demo-evaluation"
+      ]
+    },
+    {
+      "statement": "The implementation models database schemas, computes multiple join-related feature families, ranks cross-table column pairs, executes candidate joins, and calculates validation and evaluation metrics.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-source",
+        "demo-evaluation"
+      ]
+    },
+    {
+      "statement": "Credential and local-database filenames are excluded by the branch's .gitignore, and no credential file appeared in the inspected default tree or branch comparison.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-config",
+        "main-tree",
+        "branch-comparison"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "None of the implementation has been merged into main; main and dataset_exploration point to the same README-only commit, while the feature branches have no open pull request.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main-tree",
+        "remote-branches",
+        "branch-comparison",
+        "github-status"
+      ]
+    },
+    {
+      "statement": "The most complete branch imports JoinCandidateGenerator from similarity_model.py in cli.py, evaluation.py, and demo.py, although the class is defined in join_validator.py; package __init__.py imports those modules eagerly, so normal package, CLI, demo, and test imports are expected to fail before execution.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "core-source",
+        "demo-evaluation",
+        "branch-tests"
+      ]
+    },
+    {
+      "statement": "The documented convenience function extract_features_sqlite explicitly raises NotImplementedError and constructs FeatureExtractor with an incompatible object before doing so.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-source"
+      ]
+    },
+    {
+      "statement": "No CI workflow, packaging metadata, test result, benchmark dataset, or evaluation output substantiates the documentation's claim that all four phases are complete.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "branch-comparison",
+        "source-readme",
+        "demo-evaluation"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The CLI logs the complete database URL, which could disclose embedded usernames or passwords in console or log output.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "demo-evaluation",
+        "security-config"
+      ]
+    },
+    {
+      "statement": "Table names, column names, join types, and composite conditions are interpolated directly into SQL strings; if any are influenced by untrusted input, this creates SQL-injection and malformed-query risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "core-source"
+      ]
+    },
+    {
+      "statement": "The value-statistics query places LIMIT after aggregate expressions, so it does not actually limit rows processed, while the join runner counts a subquery after adding a sample LIMIT and can report the sample size instead of the full join cardinality.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "core-source"
+      ]
+    },
+    {
+      "statement": "Database statistics use SQLite-specific PRAGMA despite broader PostgreSQL and MySQL claims, making validation behavior non-portable.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-source",
+        "source-readme"
+      ]
+    },
+    {
+      "statement": "Unpinned lower-bound dependencies, including a downloaded sentence-transformer model, and the absence of CI or a lockfile make reproducibility uncertain.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "branch-comparison"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Decide whether the Auto-Join Copilot experiment is still worth retaining; if not, archive it, otherwise select one feature branch as the canonical integration candidate.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "github-status",
+        "remote-branches",
+        "branch-comparison"
+      ]
+    },
+    {
+      "statement": "Before merging, correct JoinCandidateGenerator imports, reduce eager package imports, and add a smoke test that imports the package and runs the SQLite demo end to end.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "core-source",
+        "demo-evaluation",
+        "branch-tests"
+      ]
+    },
+    {
+      "statement": "Add CI, packaging metadata, reproducible dependency constraints, and at least one committed ground-truth benchmark with recorded precision, recall, and F1 results.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "branch-comparison",
+        "project-plan",
+        "demo-evaluation"
+      ]
+    },
+    {
+      "statement": "Redact credentials from logged database URLs, validate and quote SQL identifiers per dialect, replace SQLite-only metadata queries, and correct sampling and row-count logic before using real databases.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "core-source",
+        "demo-evaluation",
+        "security-config"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the openclaw/feat-evaluation-demo branch ever run successfully, or was it generated without execution?",
+    "Should the branch-only implementation be repaired and merged, preserved only as a reference experiment, or discarded?",
+    "Which real dataset and ground-truth joins were intended for evaluation?",
+    "Is the long-term join-knowledge-base and RAG objective still relevant to another active project?",
+    "Was the lack of pull requests intentional, or was integration work abandoned?"
+  ],
+  "evidence": [
+    {
+      "id": "github-status",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/MyAppliedAI",
+      "summary": "Public, unarchived repository with main as the default branch, no description, no open PR in the inspected snapshot, and no open issue reported by the supplied metadata."
+    },
+    {
+      "id": "main-readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "States that main tracks other branch initiatives and describes dataset_exploration as an effort to automate discovery of joins for agent-driven dataset querying."
+    },
+    {
+      "id": "main-tree",
+      "kind": "repository_tree",
+      "location": "main@f995593afec83bc526f0aa328afc6fad19a4bc56",
+      "summary": "The complete default-branch tree contains only README.md; no credential file, source, manifest, test, workflow, notebook, or demo is tracked."
+    },
+    {
+      "id": "main-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available main history has two commits: the initial README and a 2026-02-15 branch-description update."
+    },
+    {
+      "id": "remote-branches",
+      "kind": "github_branches",
+      "location": "https://github.com/kmadhok/MyAppliedAI/branches",
+      "summary": "Five remote branches were found: main, dataset_exploration, openclaw/dataset_exploration, openclaw/feat-join-validation, and openclaw/feat-evaluation-demo."
+    },
+    {
+      "id": "branch-comparison",
+      "kind": "github_compare",
+      "location": "https://github.com/kmadhok/MyAppliedAI/compare/main...openclaw/feat-evaluation-demo",
+      "summary": "The most complete branch is ten commits ahead of main and adds planning documents, requirements, six package modules, four test modules, a CLI, and a demo; dataset_exploration is identical to main, and no CI, packaging, data, or benchmark output is added."
+    },
+    {
+      "id": "project-plan",
+      "kind": "project_document",
+      "location": "openclaw/feat-evaluation-demo:PROJECT.md",
+      "summary": "Defines Auto-Join Copilot as automatic join discovery and validation, with planned public datasets, structured join knowledge, evaluation, CLI/demo work, and a future RAG application."
+    },
+    {
+      "id": "pipeline-design",
+      "kind": "design_document",
+      "location": "openclaw/feat-evaluation-demo:FEATURE_EXTRACTION_PIPELINE_DESIGN.md",
+      "summary": "Documents name, type, value, and schema feature categories and a database-to-candidate pipeline architecture."
+    },
+    {
+      "id": "source-readme",
+      "kind": "documentation",
+      "location": "openclaw/feat-evaluation-demo:src/README.md",
+      "summary": "Documents installation and module usage and labels phases 1 through 4 complete, although no execution or benchmark evidence accompanies that status."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_manifest",
+      "location": "openclaw/feat-evaluation-demo:requirements.txt",
+      "summary": "Lists lower-bound-only dependencies for SQLAlchemy, PostgreSQL, MySQL, sentence-transformers, NumPy, pandas, pytest, and pytest-cov."
+    },
+    {
+      "id": "core-source",
+      "kind": "source_code",
+      "location": "openclaw/feat-evaluation-demo:src/auto_join_copilot",
+      "summary": "Inspected schema extraction, feature extraction, similarity, join validation, and package exports; found substantive heuristic implementations plus an unfinished convenience function, direct SQL identifier interpolation, sampling/counting limitations, and a misplaced JoinCandidateGenerator import."
+    },
+    {
+      "id": "demo-evaluation",
+      "kind": "demo_and_entrypoints",
+      "location": "openclaw/feat-evaluation-demo:examples/demo.py, src/auto_join_copilot/cli.py, src/auto_join_copilot/evaluation.py",
+      "summary": "Provides a generated SQLite example, CLI commands, and evaluation/report classes, but imports JoinCandidateGenerator from the wrong module and includes no committed benchmark results."
+    },
+    {
+      "id": "branch-tests",
+      "kind": "tests",
+      "location": "openclaw/feat-evaluation-demo:tests",
+      "summary": "Four pytest modules contain SQLite-backed coverage for schema, features, similarity, and validation; no CLI, evaluation, demo, CI, or successful-run evidence was found."
+    },
+    {
+      "id": "security-config",
+      "kind": "security_configuration",
+      "location": "openclaw/feat-evaluation-demo:.gitignore",
+      "summary": "Ignores .env, .env.local, virtual environments, databases, logs, coverage output, and common generated files; no secret values were read."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The default revision and remote branch contents directly establish the repository's purpose, branch topology, and substantial prototype code. Confidence is limited because the implementation is unmerged, unavailable locally, not executable under the read-only analysis, has no CI or recorded test results, and contains a source-level import defect that appears to block its advertised workflows."
+  },
+  "limitations": [
+    "The analyzed revision is the README-only default-branch commit; implementation findings are explicitly based on unmerged remote branches rather than files at that revision.",
+    "The supplied checkout was described as shallow at depth 50, so history outside the available revision graph may be absent even though git reported the local graph as non-shallow.",
+    "Non-default branch code could not be executed, and dependency installation or test execution would have required writes.",
+    "Remote feature-branch history was compared by commit count and file changes, but its full commit-by-commit log was not locally available.",
+    "Some planning documents and portions of the test suite were not read in full.",
+    "No secret values were inspected; consequently, this analysis does not claim that the complete reachable Git history is free of secrets."
+  ]
+}

@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Supervised-Machine-Learning",
+  "analyzed_at": "2026-07-27T03:33:12Z",
+  "revision": "ad453478c084b0b461b19200215a5853cc5dc19a",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata and issue/PR snapshot",
+      "README.md",
+      "complete tracked-file inventory and top-level structure",
+      "all source cells and saved outputs in Credit Risk Evaluator.ipynb",
+      "dependency, test, CI, data, credential-filename, and deployable-artifact searches",
+      "local branches, remote-tracking branches, tags, and remotes",
+      "all three commits visible in git log"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "Resources/lending_data.csv referenced by the notebook",
+      "dependency manifest or environment lockfile",
+      "automated tests",
+      "CI workflows",
+      "release or deployment artifacts",
+      "model serialization artifacts",
+      "license"
+    ],
+    "inaccessible": [],
+    "sampling_notes": "The repository was supplied as a shallow clone with depth 50, so history beyond the clone boundary cannot be guaranteed. The repository contains only two tracked files and three visible commits; both files and every visible commit were inspected, so no implementation-file sampling was necessary."
+  },
+  "stated_purpose": "The README and supplied GitHub description present the repository as a comparison of two machine-learning models intended to provide insight into whether a loan should be accepted.",
+  "observed_capabilities": [
+    {
+      "statement": "The notebook loads tabular lending data from Resources/lending_data.csv and uses seven numeric lending attributes to predict the binary loan_status field.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The notebook performs a train/test split with random_state=1, trains logistic-regression and random-forest classifiers, and evaluates both using accuracy.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "Saved notebook outputs report logistic-regression training accuracy of approximately 0.99212, logistic-regression test accuracy of approximately 0.99185, and random-forest test accuracy of approximately 0.99159.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The implementation is a single six-cell Jupyter notebook containing a linear workflow: imports, external CSV loading, feature/target separation, train/test splitting, logistic-regression training, and random-forest training.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There is no application, package, service boundary, reusable training module, persisted model, or inference entry point beyond the notebook.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "notebook"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A complete notebook-scale supervised-learning comparison was implemented through model fitting and recorded evaluation output.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The README records the experiment's original prediction and a conclusion about the relative model performance.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The referenced lending dataset is not tracked, so the notebook cannot be reproduced from this checkout alone.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "No dependency manifest or environment specification pins Python, pandas, NumPy, scikit-learn, Jupyter, or the separately imported path package.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The README says the random forest performed better, but the saved outputs show a slightly higher test accuracy for logistic regression.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "Both model fits produce saved DataConversionWarning messages because the target is passed as a two-dimensional single-column DataFrame rather than a one-dimensional vector.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "There are no automated tests, CI workflows, diagnostic metrics beyond accuracy, data-validation checks, model persistence steps, or documented execution instructions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "notebook",
+        "readme"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Accuracy alone does not establish whether either classifier handles each loan-status class acceptably, making the recorded comparison insufficient evidence for consequential lending decisions.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The random forest has no fixed random_state, so its reported result may vary between executions even if the missing dataset is restored.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The absent dataset and unpinned environment make future reproduction vulnerable to unavailable inputs and dependency-version drift.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "repository-tree",
+        "git-history"
+      ]
+    },
+    {
+      "statement": "The contradiction between the README conclusion and saved notebook scores could mislead readers about which model performed better in the recorded run.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "notebook"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "If the experiment is worth preserving as a reproducible reference, add a documented and legally redistributable data-acquisition step, pin the environment, remove the redundant path import, flatten the target vector, and fix the random-forest seed.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Re-run the comparison and update the README from verified results, adding confusion matrices and class-specific precision, recall, and F1 metrics before drawing conclusions about credit-risk performance.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "If the owner does not expect to reproduce or extend this 2022 experiment, archive it while retaining a concise note that the referenced dataset is absent.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "repository-tree",
+        "notebook"
+      ]
+    }
+  ],
+  "questions": [
+    "Is Resources/lending_data.csv available from a public or otherwise redistributable source?",
+    "Was the README's random-forest conclusion based on a different run or dataset than the saved notebook outputs?",
+    "Was this repository coursework or an experiment intended for later reuse?",
+    "Should the repository be made reproducible as a reference example or formally archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Supervised-Machine-Learning",
+      "summary": "Supplied snapshot identifies a public main-branch repository, last pushed on 2022-09-19, with no open issues or pull requests and a description about using two models to inform loan acceptance."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "A short README names Python, pandas, Jupyter, and scikit-learn, states the loan-decision purpose, predicts logistic regression will be more accurate, and then says random forest performed better."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree contains only README.md and Credit Risk Evaluator.ipynb; no dataset, manifest, tests, workflow, documentation directory, deployment artifact, model artifact, or credential-named file was found."
+    },
+    {
+      "id": "notebook",
+      "kind": "implementation_and_saved_outputs",
+      "location": "Credit Risk Evaluator.ipynb",
+      "summary": "Six-cell Python notebook reads an absent Resources/lending_data.csv, splits seven predictors from loan_status, fits logistic regression and a 100-tree random forest, and retains accuracy results and target-shape warnings."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes three commits: a notebook upload and README creation on 2022-07-24, followed by a README update on 2022-09-19; only main and origin/main are visible and no tags are present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The entire small tracked implementation and all visible history were inspected, and the notebook directly supports the prototype assessment. Confidence is limited because the referenced dataset is absent, the environment is unspecified, the notebook could not be independently reproduced, and the supplied clone's history is bounded to depth 50."
+  },
+  "limitations": [
+    "The missing lending dataset prevented independent execution or verification of the saved scores.",
+    "No dependency specification was available with which to reconstruct the original runtime.",
+    "The clone was supplied with depth 50, so conclusions about historical activity are limited to the three visible commits.",
+    "Repository activity and issue/PR conclusions rely on the supplied GitHub snapshot and local remote-tracking state rather than a new live GitHub query.",
+    "No evidence establishes whether the dataset, feature definitions, or labels are appropriate, representative, licensed for redistribution, or suitable for real lending decisions."
+  ]
+}

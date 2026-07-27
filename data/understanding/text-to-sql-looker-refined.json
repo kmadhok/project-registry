@@ -1,0 +1,406 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Text_to_SQL_Looker_Refined",
+  "analyzed_at": "2026-07-27T03:34:49Z",
+  "revision": "cd5abb973219af3bff8f869111af16b6a19b8ee0",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub metadata snapshot",
+      "README.md and three testing or system overview documents",
+      "PRD and stated implementation plan",
+      "complete tracked-file inventory and top-level structure",
+      "Python dependency manifests and redacted configuration structure",
+      "CLI engine, configuration, LookML parser, metadata loader, grounding index, planners, SQL builder, validator, and representative LLM implementation",
+      "bundled LookML model and seven view definitions",
+      "unit-test sources, comprehensive test framework, simple evaluation questions, and saved-result aggregates",
+      "generated-artifact filenames and counts without opening conversation-log payloads",
+      "local branches, tags, revision metadata, and git log --oneline -20"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "CI workflows",
+      "deployment or scheduled-operation artifacts",
+      "release tags",
+      "license file",
+      "dependency lockfile"
+    ],
+    "inaccessible": [
+      "live GitHub API metadata, including independent archival-state confirmation",
+      "current pytest execution because pytest and most declared runtime dependencies are not installed",
+      "BigQuery dry-run and Gemini-backed execution because external credentials and services were not used"
+    ],
+    "sampling_notes": "The checkout was supplied as a shallow clone with depth 50, so analysis is limited to recent available history; git reports the checkout as non-shallow, but only two commits exist locally. All 204 tracked paths were inventoried, principal documentation and implementation components were inspected, and all Python files were syntax-parsed. The 104 conversation logs, seven metadata caches, and detailed prompt/SQL values in saved results were deliberately not read; only filenames, schemas, counts, and aggregate test metrics were sampled to avoid exposing potentially sensitive values."
+  },
+  "stated_purpose": "Build a single-turn, LookML-grounded assistant that converts natural-language e-commerce questions into minimal BigQuery Standard SQL, constrains generation to modeled fields and joins, and optionally validates queries with BigQuery.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository implements a Click-based CLI and Python engine supporting single-query and interactive natural-language-to-SQL workflows.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-engine"
+      ]
+    },
+    {
+      "statement": "It parses local LookML models and views, loads or caches BigQuery metadata, resolves LookML field expressions, and builds a searchable grounding index of explore fields and joins.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "grounding-source",
+        "lookml-project"
+      ]
+    },
+    {
+      "statement": "The default generation path uses Gemini with dynamically generated semantic schema context, while a heuristic rule-based planner remains available as a fallback configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-engine",
+        "llm-source",
+        "configuration"
+      ]
+    },
+    {
+      "statement": "Generated SQL can be passed through an automatic LIMIT guardrail and an optional BigQuery dry-run validator.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "sql-generation"
+      ]
+    },
+    {
+      "statement": "The repository includes simple and comprehensive evaluation tooling covering 33 routine questions, 16 complex scenarios, generated edge cases, result analysis, timing, token-cost accounting, and optional conversation capture.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "test-source",
+        "testing-docs"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The PRD targets a 50-question evaluation with at least 90% valid SQL, universal default-limit enforcement, generation latency below five seconds at p50, and fewer than 5% dry-run failures.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd"
+      ]
+    },
+    {
+      "statement": "The PRD leaves explore tie-breaking, natural-language relative-date support, and optional commented SQL as open design questions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "prd"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "TextToSQLEngine orchestrates configuration, LookML parsing, BigQuery metadata access, grounding-index construction, planner selection, SQL construction, limit enforcement, and optional validation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-engine",
+        "grounding-source",
+        "sql-generation"
+      ]
+    },
+    {
+      "statement": "The semantic layer consists of one e-commerce model with an order-items explore joining inventory, users, products, and distribution centers, plus five single-view explores over seven bundled BigQuery-backed views.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "lookml-project"
+      ]
+    },
+    {
+      "statement": "The enhanced LLM path classifies fields and tables by business meaning, generates query-specific schema context, calls Gemini, performs local schema checks, retries failures, and stores accepted SQL in a QueryPlan consumed by the shared SQL builder.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "llm-source",
+        "sql-generation"
+      ]
+    },
+    {
+      "statement": "BigQuery metadata is used for column types, descriptions, table validation, caching, and optional compilation checks rather than for executing generated analytical queries.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "grounding-source",
+        "prd"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a substantive implementation spanning 41 Python files that all parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Three saved Gemini evaluation runs each generated output successfully for all 33 simple questions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "saved-results"
+      ]
+    },
+    {
+      "statement": "The implementation added schema-intelligence and enhanced-context components intended to distinguish transactional values from reference prices and reduce semantic field-selection errors.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "llm-source",
+        "enhanced-summary"
+      ]
+    },
+    {
+      "statement": "Offline-style unit tests cover LookML parsing, grounding, metadata loading, query planning, SQL construction, and limit handling, primarily through temporary fixtures and mocked dependencies.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "test-source"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The three successful 33-question result sets recorded null validation status for every generated query, so they do not prove BigQuery compilation or semantic correctness.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "saved-results"
+      ]
+    },
+    {
+      "statement": "The current environment cannot reproduce the tests because pytest and most declared dependencies are absent, and the repository has no CI workflow demonstrating repeatable verification elsewhere.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The default engine imports and uses google-generativeai, but that dependency appears only in requirements.txt and is omitted from pyproject.toml, making installation through the project manifest incomplete for the default workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependency-manifests",
+        "core-engine"
+      ]
+    },
+    {
+      "statement": "There is no packaged service, container, deployment configuration, release, or operational monitoring evidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "history"
+      ]
+    },
+    {
+      "statement": "Saved runs report averages of approximately 12.7, 64.8, and 22.3 seconds per question; they do not report the PRD's p50 metric and therefore do not substantiate the stated sub-five-second latency target.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "saved-results",
+        "prd"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The public repository tracks 104 complete LLM conversation files and saved results whose schemas include user questions, prompts, schema context, raw responses, and generated SQL; these artifacts may expose sensitive query or schema information if the project is adapted to non-public data.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "generated-artifacts",
+        "testing-docs",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "Conversation saving and debug logging default to enabled, increasing the chance that future prompts and schema context are persisted unintentionally.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "configuration",
+        "llm-source"
+      ]
+    },
+    {
+      "statement": "The minimal .gitignore excludes only the virtual environment and .env, while generated caches, results, logs, and 26 compiled Python files are already tracked, creating repository-noise and stale-artifact risk.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-artifacts",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Local LLM validation relies partly on regular-expression extraction and permissive field-name checks; without the optional BigQuery dry-run, malformed or LookML-inconsistent SQL may be accepted as successful.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "llm-source",
+        "saved-results"
+      ]
+    },
+    {
+      "statement": "With only two bulk commits, no CI, no releases, and no substantive implementation activity after September 2025, future maintenance or reproducibility is uncertain.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Audit the tracked conversation and result artifacts for sensitive content, then sanitize or remove them from the public repository and expand .gitignore to cover conversation logs, caches, test outputs, and Python bytecode.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "generated-artifacts",
+        "configuration",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "Make installation reproducible by reconciling requirements.txt with pyproject.toml, adding a lockfile or constraints, and introducing CI that installs the package and runs the offline unit suite.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependency-manifests",
+        "verification",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Replace generation-success reporting with correctness evaluation that enables BigQuery dry-run validation, asserts LookML field and join constraints, and reports p50 latency and semantic accuracy against the planned 50-question set.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "saved-results",
+        "prd",
+        "test-source"
+      ]
+    },
+    {
+      "statement": "If active development is not resuming, preserve a sanitized version as an archived experiment with documented setup and known evaluation limitations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "saved-results",
+        "generated-artifacts"
+      ]
+    }
+  ],
+  "questions": [
+    "Were the generated SQL statements ever dry-run or manually checked for semantic correctness outside the saved result files?",
+    "Are the committed conversation logs and prompt-bearing result files intentionally public and confirmed free of sensitive data?",
+    "Was the repository a one-off September 2025 prototype, or is further work on latency and validation still intended?",
+    "Should the Gemini dependency remain the default path, or should the rule-based planner be the reproducible baseline?",
+    "Is there a successor repository or deployment containing later operational work?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata_snapshot",
+      "location": "https://github.com/kmadhok/Text_to_SQL_Looker_Refined",
+      "summary": "Public main-branch repository with no description, no open issues or pull requests, a last recorded push on 2025-09-17, and a last metadata update on 2025-09-03; live archival state could not be independently queried."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Inventory of 204 tracked paths spanning source, tests, LookML, cached metadata, LLM logs, generated results, documentation, and compiled Python files; no CI, deployment, notebook, release, license, or lockfile artifacts were found."
+    },
+    {
+      "id": "dependency-manifests",
+      "kind": "dependency_manifest",
+      "location": "pyproject.toml and requirements.txt",
+      "summary": "Python 3.11 project with LookML, BigQuery, Pydantic, sqlglot, YAML, Click, and dotenv dependencies; requirements.txt additionally declares google-generativeai, which the default engine imports but pyproject.toml omits."
+    },
+    {
+      "id": "configuration",
+      "kind": "configuration",
+      "location": "src/config.py and config/config.yaml",
+      "summary": "Typed configuration supports BigQuery, LookML, caching, rule-based or LLM generation, dry runs, and logging; default LLM settings select Gemini 2.5 Pro and enable debug and conversation persistence."
+    },
+    {
+      "id": "core-engine",
+      "kind": "source",
+      "location": "src/main.py",
+      "summary": "TextToSQLEngine and Click entry point initialize LookML, BigQuery metadata, grounding, planner, SQL builder, validation, interactive mode, and single-query mode."
+    },
+    {
+      "id": "grounding-source",
+      "kind": "source",
+      "location": "src/lookml, src/bigquery, and src/grounding",
+      "summary": "Pydantic LookML models, an lkml parser, INFORMATION_SCHEMA metadata loader with JSON caching, expression mapper, and explore-aware searchable grounding index."
+    },
+    {
+      "id": "sql-generation",
+      "kind": "source",
+      "location": "src/generator",
+      "summary": "Heuristic planning, field and join selection, BigQuery SQL assembly, automatic numeric LIMIT enforcement, and optional BigQuery dry-run validation."
+    },
+    {
+      "id": "llm-source",
+      "kind": "source",
+      "location": "src/llm",
+      "summary": "Gemini integration, prompt and response persistence, schema-context generation, semantic field and table classification, retry logic, regex-assisted validation, and conversion of accepted LLM SQL to a QueryPlan."
+    },
+    {
+      "id": "lookml-project",
+      "kind": "semantic_model",
+      "location": "data/lookml",
+      "summary": "Bundled LookML model defines six explores and seven BigQuery-backed e-commerce views; the principal order-items explore joins inventory, users, products, and distribution centers."
+    },
+    {
+      "id": "prd",
+      "kind": "product_requirements",
+      "location": "prd_to_implement.md",
+      "summary": "MVP specification separates LookML as the semantic allow-list from BigQuery metadata validation and defines goals, non-goals, success metrics, milestones, risks, and open questions."
+    },
+    {
+      "id": "enhanced-summary",
+      "kind": "implementation_note",
+      "location": "ENHANCED_SYSTEM_SUMMARY.md",
+      "summary": "Documents a semantic-field-classification enhancement intended to correct revenue-versus-reference-price mistakes and improve schema portability."
+    },
+    {
+      "id": "testing-docs",
+      "kind": "documentation",
+      "location": "README_SIMPLE_TESTING.md, README_ENHANCED_TESTING.md, and tests/README.md",
+      "summary": "Describes simple question evaluation, full prompt and response capture, complex scenario testing, edge-case generation, SQL analysis, performance tracking, and proposed CI usage."
+    },
+    {
+      "id": "test-source",
+      "kind": "tests",
+      "location": "tests and top-level test runners",
+      "summary": "Contains mocked unit tests for parser, metadata, grounding, planner, and builder behavior; 16 complex scenarios; nine edge-case generators; and multiple evaluation runners."
+    },
+    {
+      "id": "saved-results",
+      "kind": "generated_test_results",
+      "location": "test_results_20250903_071526.json, test_results_20250903_073555.json, and test_results_20250903_112801.json",
+      "summary": "Aggregate-only inspection found three 33-question Gemini runs with 33 generation successes each, no reported generation failures, total durations of 419, 2139, and 736 seconds, and null validation status for every result."
+    },
+    {
+      "id": "generated-artifacts",
+      "kind": "generated_file_inventory",
+      "location": "data/llm_logs, data/cache, test_results, and tracked __pycache__ directories",
+      "summary": "The public tree tracks 104 conversation JSON files, seven metadata caches, six saved result or log artifacts, and 26 Python bytecode files; conversation and cache values were not inspected."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Only two commits are available: an initial README commit and a bulk implementation commit dated 2025-09-03 titled 'basics are working, however it does take a long time'; main is the sole branch and there are no tags."
+    },
+    {
+      "id": "verification",
+      "kind": "local_verification",
+      "location": "local read-only analysis environment",
+      "summary": "All 41 Python files parsed successfully as syntax, but pytest collection and execution were unavailable because pytest and most declared dependencies were not installed."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, LookML, test code, and saved evaluation artifacts consistently support a functional text-to-SQL prototype. Confidence is limited because saved successes were not dry-run validated, current execution could not be reproduced, live GitHub metadata was unavailable, and the repository has no CI or deployment evidence."
+  },
+  "limitations": [
+    "The supplied checkout is limited to recent history at depth 50, although the local repository reports non-shallow and contains only two commits.",
+    "Live GitHub API access failed, so archival state, releases, and branch activity were assessed from the supplied snapshot and local refs.",
+    "Conversation-log, metadata-cache, and detailed prompt or SQL values were not read to avoid exposing potentially sensitive values.",
+    "No Gemini request, BigQuery query, dry run, or other credential-dependent operation was performed.",
+    "The current environment lacks pytest and most project dependencies, preventing direct test-suite or application execution.",
+    "Saved evaluation success denotes generation without an application error; it is not evidence that the SQL was executable or semantically correct."
+  ]
+}

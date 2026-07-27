@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/NewYorkBike",
+  "analyzed_at": "2026-07-27T03:27:01Z",
+  "revision": "a114e35916a85728e0dd4e1f56c5850aed3a7596",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata snapshot",
+      "complete nine-file tracked repository tree",
+      "index.html entry point",
+      "application JavaScript and CSS",
+      "vendored Leaflet.ExtraMarkers assets",
+      "tests, CI, documentation, manifest, credential-filename, branch, tag, and release-artifact presence",
+      "available git history through git log --oneline -20"
+    ],
+    "missing": [
+      "README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency manifest or lockfile",
+      "automated tests",
+      "CI workflows",
+      "deployment configuration",
+      "license",
+      "release tags",
+      "error-handling documentation"
+    ],
+    "inaccessible": [
+      "live GitHub metadata and archival-state verification because api.github.com was unreachable"
+    ],
+    "sampling_notes": "The supplied repository clone was described as shallow at depth 50, so recent history only was considered and any history outside that window may be truncated. The available checkout contains only one commit and nine tracked files; all tracked files were inventoried, and all first-party source was inspected. Binary marker images and minified third-party assets were identified and sampled rather than decoded or exhaustively audited."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The browser application renders an OpenStreetMap-centered Leaflet map of New York City and requests Citi Bike station information and status data from two GBFS endpoints.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entry-point",
+        "application-logic"
+      ]
+    },
+    {
+      "statement": "Stations are displayed as category-specific markers for coming soon, empty, low availability, healthy, and out of order, with layer toggles and a count legend.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "application-logic",
+        "presentation"
+      ]
+    },
+    {
+      "statement": "Clicking a station marker displays its name, capacity, and available-bike count.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "application-logic"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The implementation is a client-only static site consisting of one HTML entry point, first-party JavaScript and CSS, and vendored marker assets; it has no backend, build step, package manifest, or local data store.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "entry-point",
+        "application-logic",
+        "presentation"
+      ]
+    },
+    {
+      "statement": "The page loads D3 5, Moment.js 2.15.1, Leaflet 1.3.3, Polyfill.io, Google Fonts, and Ionicons from external CDNs while loading Leaflet.ExtraMarkers 1.0.1 and its images locally.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entry-point",
+        "vendored-assets"
+      ]
+    },
+    {
+      "statement": "Station information and station status records are merged by their array index before classification and marker creation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "application-logic"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A compact, complete static visualization flow was implemented from remote GBFS retrieval through marker classification, interactive layers, popups, and summary counts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entry-point",
+        "application-logic",
+        "presentation"
+      ]
+    },
+    {
+      "statement": "The repository includes the marker plugin, sprite images, and styling required for its five visual station states.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "vendored-assets",
+        "presentation"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The repository provides no setup instructions, purpose statement, dependency inventory, license, automated tests, CI workflow, or deployment configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "No checked-in verification artifact demonstrates that the application still works with the current Citi Bike GBFS responses or its externally hosted browser dependencies.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "entry-point",
+        "application-logic"
+      ]
+    },
+    {
+      "statement": "The nested data requests have no rejection handling or user-visible loading and failure states.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "application-logic"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Merging the two GBFS station arrays by position rather than station identifier can associate status data with the wrong station if the feeds differ in ordering, length, or membership.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "application-logic"
+      ]
+    },
+    {
+      "statement": "Because the empty-station check precedes the out-of-order check, a non-renting station with zero available bikes is categorized as empty instead of out of order.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "application-logic"
+      ]
+    },
+    {
+      "statement": "The unpinned or old CDN dependencies, obsolete Polyfill.io URL, and HTTP-only Ionicons stylesheet create availability, compatibility, supply-chain, and mixed-content risks.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "entry-point",
+        "vendored-assets"
+      ]
+    },
+    {
+      "statement": "With a single commit from June 2022 and no subsequent maintenance evidence, external API or browser changes may have broken the prototype without detection.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "metadata",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "If retaining the project as a working example, join the GBFS feeds by station_id, correct classification precedence, add loading and error states, and verify the current feed schema in a browser test.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "application-logic",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Document the project's purpose and local serving instructions, add a license and dependency inventory, and replace obsolete or insecure external asset URLs.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "entry-point",
+        "vendored-assets"
+      ]
+    },
+    {
+      "statement": "Ask the owner to confirm archival intent before changing registry lifecycle metadata; the repository currently has strong dormancy evidence and no maintenance signals.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "git-history"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository created as coursework, a tutorial exercise, or an application intended for continued use?",
+    "Should it remain available as a Citi Bike and Leaflet reference, or be formally archived?",
+    "Was the application ever deployed, and if so, is that deployment still expected to work?",
+    "Does another repository supersede this implementation?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata_snapshot",
+      "location": "https://github.com/kmadhok/NewYorkBike",
+      "summary": "Registry snapshot identifies a public repository on master with no description, no open issues or pull requests, and its last push on 2022-06-26; live archival-state verification was unavailable."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The complete tracked tree has nine files: index.html, two JavaScript files, two CSS files, and four marker images; it has no README, docs, manifest, tests, workflow, deployment configuration, or credential-named file."
+    },
+    {
+      "id": "entry-point",
+      "kind": "source",
+      "location": "index.html",
+      "summary": "Single-page entry point titled Citi Bike loads Leaflet, D3, Moment.js, Polyfill.io, fonts, icons, local styles, and the application logic, then provides a full-page map container."
+    },
+    {
+      "id": "application-logic",
+      "kind": "source",
+      "location": "static/js/logic.js",
+      "summary": "Creates the Leaflet map and five station layers, retrieves Citi Bike station information and status feeds, merges records by array index, classifies stations, creates markers and popups, and updates a count legend."
+    },
+    {
+      "id": "presentation",
+      "kind": "source",
+      "location": "static/css/style.css",
+      "summary": "Provides full-viewport map layout and color-coded legend styling for low, empty, coming-soon, healthy, and out-of-order categories."
+    },
+    {
+      "id": "vendored-assets",
+      "kind": "third_party_assets",
+      "location": "static/js/leaflet.extra-markers.min.js",
+      "summary": "Vendored minified Leaflet.ExtraMarkers reports version 1.0.1 and is accompanied by its minified CSS and four marker sprite images."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The available history contains one commit, a114e35 dated 2022-06-25 with message 'all', which added all nine tracked files; master matches origin/master and no tags are present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository is small enough that all first-party implementation and all tracked paths were inspected, making its architecture and implemented behavior clear. Confidence is limited because there is no documentation, test or deployment evidence, runtime verification was not performed, live GitHub metadata was unreachable, and the supplied history is subject to the stated depth-50 sampling constraint."
+  },
+  "limitations": [
+    "No README or other owner-authored documentation establishes the intended context or audience.",
+    "The application was not executed, so current CDN availability, browser behavior, CORS behavior, and GBFS schema compatibility were not verified.",
+    "Live GitHub archival state, branches beyond the checkout, and other current remote metadata could not be independently verified because the GitHub API was unreachable.",
+    "The supplied clone was described as shallow at depth 50, so conclusions about historical activity are limited to the available recent history.",
+    "Minified third-party files and binary images were identified and sampled but not exhaustively audited."
+  ]
+}

@@ -1,0 +1,413 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/fitness-sync",
+  "analyzed_at": "2026-07-27T03:19:19Z",
+  "revision": "8304db7d5d3170907bd4a8250efe01f0e446473d",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub metadata for the private main-branch repository",
+      "CLAUDE.md, backend/README.md, and engineering.md",
+      "top-level tree, Swift Package and XcodeGen manifests, generated Xcode project, Python manifest and lockfile, Docker configuration, migration layout, and ignore rules",
+      "representative Swift app, HealthKit, aggregation, networking, persistence, synchronization, background-task, and UI source",
+      "representative FastAPI routes, schemas, authentication, services, repositories, models, middleware, dashboard data route, and health checks",
+      "Swift unit tests and Python unit/integration tests",
+      "tracked credential filenames and ignore/history state without inspecting credential values",
+      "all available branches, tags, and the two commits returned by git history"
+    ],
+    "missing": [
+      "top-level README",
+      "AGENTS.md",
+      "docs directory",
+      "GitHub Actions or other CI configuration",
+      "release tags",
+      "production deployment manifest",
+      "committed test, build, deployment, or device-run results"
+    ],
+    "inaccessible": [
+      "an Apple Health-capable iPhone runtime",
+      "Xcode build and signing verification",
+      "a running PostgreSQL-backed deployment",
+      "credential values, intentionally excluded for safety"
+    ],
+    "sampling_notes": "The supplied checkout was described as shallow at depth 50; Git reports it as non-shallow because only two reachable commits exist. The repository has 144 tracked files. Documentation, manifests, entry points, core client/backend paths, representative tests, and all available commit history were inspected, but every source file and the 700-line dashboard presentation were not exhaustively reviewed."
+  },
+  "stated_purpose": "FitnessSync is documented as a read-only iPhone data-ingestion utility that aggregates selected Apple Health metrics into daily summaries and synchronizes them to a backend API.",
+  "observed_capabilities": [
+    {
+      "statement": "The Swift client requests read access to Apple Health and fetches weight, nutrition, steps, active energy, exercise minutes, walking/running distance, and running workout data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-health"
+      ]
+    },
+    {
+      "statement": "The client aggregates HealthKit samples into timezone-aware daily summaries, supports today, seven-day, history, and launch synchronization, and queues retryable failures in local JSON storage.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-sync",
+        "ios-persistence"
+      ]
+    },
+    {
+      "statement": "The SwiftUI interface implements onboarding, backend configuration, manual synchronization, payload preview, status display, local-data deletion, and persisted logs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-ui"
+      ]
+    },
+    {
+      "statement": "The FastAPI backend authenticates bearer API keys and exposes daily-summary ingestion, history retrieval, synchronization status, user-data deletion, and liveness/readiness endpoints.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-api",
+        "backend-auth"
+      ]
+    },
+    {
+      "statement": "Daily summaries are validated and upserted with the idempotency key `(user_id, source, date)`, while ingest events record request outcomes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-storage"
+      ]
+    },
+    {
+      "statement": "The backend also serves an HTML dashboard and a JSON endpoint that returns recent stored fitness summaries.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-dashboard"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The engineering roadmap labels sleep, HRV, resting heart rate, compliance scoring, local trends, silent push synchronization, encrypted debug export, and a combined Apple Health and Hevy dashboard as optional version-two work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "engineering-spec"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The repository is a monorepo containing a Swift 6 SwiftUI/HealthKit client and a Python 3.11 FastAPI/PostgreSQL backend.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "The client uses protocol-driven services and dependency injection to connect HealthKit reads, specialized aggregators, an HTTP client, local persistence, retry orchestration, background scheduling, and SwiftUI view models.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-sync",
+        "ios-health",
+        "ios-ui"
+      ]
+    },
+    {
+      "statement": "The backend follows a routes-to-services-to-repositories-to-SQLAlchemy-models structure, with Alembic migrations and PostgreSQL conflict-upsert behavior.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-api",
+        "backend-storage",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "Client tokens are stored in Keychain, settings in UserDefaults, and queue, sync-state, and log records in application-support JSON files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-persistence"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "Most of the documented version-one structure is represented by substantive client and backend implementation rather than empty scaffolding.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "engineering-spec",
+        "ios-sync",
+        "ios-health",
+        "backend-api",
+        "backend-storage"
+      ]
+    },
+    {
+      "statement": "The repository includes 10 Swift test functions covering aggregation, request construction, synchronization failure handling, and retry replay, plus 9 Python test functions covering security, authentication failures, ingestion, upsert, history, status, deletion, and PostgreSQL behavior.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "The backend includes an initial database migration, a container definition, local PostgreSQL orchestration, health checks, structured request logging, and API-key generation tooling.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-operations"
+      ]
+    },
+    {
+      "statement": "The second commit promptly removed `backend/.env` from tracking and added ignore rules for local environment files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history-security"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "No CI workflow or committed test/build result demonstrates that either the Swift or Python suites pass at the analyzed revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "HealthKit observer queries are not wired into the live app flow: background delivery is enabled, but `HealthKitManager.registerObservers()` is never called and the observer handler is not connected to `handleHealthObserverUpdate()`.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ios-background"
+      ]
+    },
+    {
+      "statement": "There is no release, production deployment configuration, or runtime evidence showing successful ingestion from a real iPhone into a persistent backend.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests",
+        "history"
+      ]
+    },
+    {
+      "statement": "The PostgreSQL-dependent test is conditional on an external database URL, so repository contents alone do not prove that the production-dialect upsert path has been exercised.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "The repository lacks a top-level README that explains setup and the combined client/backend workflow to a new maintainer.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests",
+        "project-docs"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The dashboard data endpoint has no authentication dependency and queries summaries without a user filter, creating a potential health-data exposure if the backend is reachable by untrusted users.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "backend-dashboard",
+        "backend-auth"
+      ]
+    },
+    {
+      "statement": "A `backend/.env` credential file was included in the initial commit and deleted in the next commit; its values were not inspected, but sensitive material may remain recoverable from Git history.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history-security"
+      ]
+    },
+    {
+      "statement": "The backend configuration supplies development defaults, so a deployment that does not explicitly provide production database and API-key-pepper settings could operate with unsuitable security configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "backend-operations",
+        "backend-auth"
+      ]
+    },
+    {
+      "statement": "The Dockerfile installs the project before copying the application package into the image, which may make the container build unreliable and should be verified.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "backend-operations"
+      ]
+    },
+    {
+      "statement": "The entire substantive implementation arrived in one initial commit, leaving little incremental history for distinguishing generated code from behavior validated during development.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Protect or remove the dashboard data endpoint and scope every dashboard query to an authenticated user before deploying the backend.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "backend-dashboard",
+        "backend-auth"
+      ]
+    },
+    {
+      "statement": "Treat the initially committed environment file as potentially exposed: review it outside this analysis, rotate any real credentials it contained, and consider purging it from Git history.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history-security"
+      ]
+    },
+    {
+      "statement": "Connect HealthKit observer registration to the background synchronization handler and add a test or device-level verification for observer-triggered synchronization.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "ios-background",
+        "engineering-spec"
+      ]
+    },
+    {
+      "statement": "Add CI that runs Swift tests, Python linting and type checking, backend unit tests, and PostgreSQL integration tests, then preserve the results as verification evidence.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tests",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "Verify and correct the Docker build sequence, then document a repeatable end-to-end setup and deployment path in a top-level README.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "backend-operations",
+        "project-docs"
+      ]
+    },
+    {
+      "statement": "Run manual QA on a physical iPhone for authorization, real HealthKit aggregation, offline queue replay, launch sync, and background refresh before promoting the project beyond prototype maturity.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "engineering-spec",
+        "ios-health",
+        "ios-sync",
+        "ios-background"
+      ]
+    }
+  ],
+  "questions": [
+    "Has the client successfully synchronized real Apple Health data to a deployed backend?",
+    "Was the initially committed backend environment file populated with real credentials, and have any such credentials been rotated?",
+    "Is the unauthenticated dashboard intended only for a trusted local network, or should it use the same user-scoped authentication as the fitness API?",
+    "Is observer-triggered background synchronization still required, or is periodic BGTask refresh sufficient for the intended use?",
+    "Where is the backend intended to run, and what operational monitoring, backup, TLS, and access controls exist outside this repository?",
+    "Are the optional version-two metrics still desired, or should the project focus on hardening the current ingestion workflow?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/fitness-sync",
+      "summary": "Provided snapshot identifies a private repository on main, pushed on 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "project-docs",
+      "kind": "repository_documentation",
+      "location": "CLAUDE.md; backend/README.md",
+      "summary": "Documents the combined iOS and FastAPI workflow, setup commands, endpoints, service organization, persistence choices, and testing commands."
+    },
+    {
+      "id": "engineering-spec",
+      "kind": "specification",
+      "location": "engineering.md",
+      "summary": "Defines the read-only ingestion objective, HealthKit metrics, architecture, aggregation rules, phases, definition of done, manual QA plan, and optional version-two roadmap."
+    },
+    {
+      "id": "tree-manifests",
+      "kind": "repository_tree_and_manifests",
+      "location": "Package.swift; project.yml; backend/pyproject.toml; backend/uv.lock; repository tree",
+      "summary": "Shows 144 tracked files comprising an iOS 17 Swift package/Xcode application and a Python 3.11 FastAPI backend; no CI workflow, release tag, or production deployment manifest is present."
+    },
+    {
+      "id": "ios-health",
+      "kind": "source_code",
+      "location": "Sources/FitnessSyncCore/Services/Health; Sources/FitnessSyncCore/Services/Aggregation",
+      "summary": "Implements HealthKit authorization and queries for the specified metrics, per-metric error capture, local-day boundaries, and daily aggregation with null handling."
+    },
+    {
+      "id": "ios-sync",
+      "kind": "source_code",
+      "location": "Sources/FitnessSyncCore/Services/Sync; Sources/FitnessSyncCore/Services/Network",
+      "summary": "Implements date-range synchronization, bearer-authenticated requests, offline and failure queueing, retry replay, state persistence, and launch/manual orchestration."
+    },
+    {
+      "id": "ios-persistence",
+      "kind": "source_code",
+      "location": "Sources/FitnessSyncCore/Services/Persistence",
+      "summary": "Stores tokens in Keychain, configuration in UserDefaults, and queue, state, and logs in application-support files with local-data clearing support."
+    },
+    {
+      "id": "ios-ui",
+      "kind": "source_code",
+      "location": "Sources/FitnessSyncCore/App; Sources/FitnessSyncCore/Features; iOSApp/FitnessSynciOSApp.swift",
+      "summary": "Implements onboarding and Home, Settings, and Logs tabs with launch synchronization, manual actions, status, payload preview, and configuration controls."
+    },
+    {
+      "id": "ios-background",
+      "kind": "source_code",
+      "location": "Sources/FitnessSyncCore/Services/Background; Sources/FitnessSyncCore/Services/Health/HealthObserverCoordinator.swift; Sources/FitnessSyncCore/App/FitnessSyncApp.swift",
+      "summary": "Implements BGTask refresh and HealthKit observer components, but call-site search shows observer registration and its synchronization callback are not connected in the running app."
+    },
+    {
+      "id": "backend-api",
+      "kind": "source_code",
+      "location": "backend/app/main.py; backend/app/api/v1; backend/app/services/fitness_service.py",
+      "summary": "Defines FastAPI application setup, error handling, authenticated ingestion/history/status/deletion routes, and liveness/readiness checks."
+    },
+    {
+      "id": "backend-auth",
+      "kind": "source_code",
+      "location": "backend/app/dependencies.py; backend/app/services/security.py; backend/app/models/api_key.py",
+      "summary": "Parses prefixed API keys, verifies hashed secrets with a configured pepper, rejects missing, malformed, invalid, or revoked credentials, and supplies user-scoped authentication context."
+    },
+    {
+      "id": "backend-storage",
+      "kind": "source_code",
+      "location": "backend/app/repositories/fitness_repository.py; backend/app/models; backend/alembic/versions/0001_initial.py",
+      "summary": "Implements PostgreSQL upsert semantics, unique user/source/date records, ingest-event auditing, history/status queries, and hard deletion of user summaries and events."
+    },
+    {
+      "id": "backend-dashboard",
+      "kind": "source_code",
+      "location": "backend/app/api/v1/dashboard.py; backend/app/static/dashboard.html",
+      "summary": "Serves a dashboard and an unauthenticated data route that selects recent health summaries across the table without applying an authenticated user filter."
+    },
+    {
+      "id": "backend-operations",
+      "kind": "operations_configuration",
+      "location": "backend/Dockerfile; backend/docker-compose.yml; backend/app/config.py; backend/app/api/v1/health.py",
+      "summary": "Provides local PostgreSQL and API containers, migrations on startup, environment-based settings, and health endpoints; the Dockerfile installs before copying application source."
+    },
+    {
+      "id": "tests",
+      "kind": "test_source",
+      "location": "Tests/FitnessSyncCoreTests; backend/tests",
+      "summary": "Contains 10 Swift and 9 Python test functions covering core aggregation, requests, retries, API flows, authentication, and upsert behavior; no execution result was available, and the PostgreSQL test is environment-gated."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The complete reachable history contains two commits from 2026-07-11: a 145-file initial implementation and an immediate environment-file cleanup."
+    },
+    {
+      "id": "history-security",
+      "kind": "git_history_security_review",
+      "location": "commits 3af8180 and 8304db7",
+      "summary": "Filename-only history inspection shows `backend/.env` was tracked in the initial commit and deleted in the next commit with new ignore rules; no credential values were read."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The repository contains coherent primary implementation evidence across both client and backend, with tests matching several documented behaviors. Confidence is limited by the absence of executed build/test evidence, physical-device validation, CI, deployment artifacts, and operational-use evidence; inspection also found material gaps in observer wiring and dashboard access control."
+  },
+  "limitations": [
+    "Analysis was read-only, so build, test, lint, migration, container, and runtime commands that could create artifacts were not executed.",
+    "No physical iPhone or Apple Health dataset was available to verify authorization, aggregation, or background delivery.",
+    "No deployed backend or PostgreSQL service was available to verify migrations, authentication, persistence, or the dashboard.",
+    "GitHub activity conclusions rely on the supplied metadata snapshot rather than a live GitHub query.",
+    "Credential values were deliberately not inspected, including the environment file retained in Git history.",
+    "The implementation was sampled across major components rather than exhaustively reviewed file by file."
+  ]
+}

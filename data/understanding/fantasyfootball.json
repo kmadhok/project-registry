@@ -1,0 +1,406 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/FantasyFootball",
+  "analyzed_at": "2026-07-27T03:19:48Z",
+  "revision": "7713adea6e57a0134394da666705ccd3295915b5",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata snapshot",
+      "README.md, README_SCRAPER.md, CLAUDE.md, AGENTS.md, manual_test/README.md, task PRD, task list, and user stories",
+      "top-level tracked-file inventory, dependency manifest, pytest configuration, Dockerfile, and docker-compose.yml",
+      "application entry point, SQLAlchemy models, scheduler, roster and waiver services, player mapping, candidate builders, alert context, and rules engine",
+      "representative RotoBaller, canonical-data, NFL statistics retrieval, and BigQuery-loading code",
+      "test inventory and representative unit and integration tests",
+      "tracked database table names and aggregate row counts without reading row values",
+      "generated artifact filenames, sizes, and aggregate CSV line counts without reading record values",
+      "all 15 locally available commits, local branches, tags, and recent file-change history"
+    ],
+    "missing": [
+      "GitHub Actions or other CI workflow",
+      "release tags or packaged releases",
+      "notebooks",
+      "implemented news-ingestion service",
+      "implemented notification-delivery service",
+      "Redis ingest, deduplication, and notification workers",
+      "current successful full-suite test report",
+      "deployment or production-usage evidence"
+    ],
+    "inaccessible": [
+      "live GitHub API metadata, branches, issues, pull requests, and archival state because network access to api.github.com failed",
+      "secret values in the tracked .env file, intentionally not inspected",
+      "live Sleeper, MFL, NFL, RotoBaller, and BigQuery verification because analysis was read-only and network-dependent execution was not performed"
+    ],
+    "sampling_notes": "The supplied clone was described as shallow with depth 50, so history must be treated as truncated; 15 commits were locally available, although Git reported the checkout itself as non-shallow. The repository is large\u201411,489 tracked files, including 11,167 virtual-environment files\u2014so source inspection sampled representative files from every major subsystem rather than every file. No .env values, database rows, logs, CSV records, or Parquet records were read; only filenames, schemas, sizes, counts, and aggregate line counts were inspected."
+  },
+  "stated_purpose": "The documentation describes an automated fantasy-football monitoring service that combines Sleeper and MyFantasyLeague roster and waiver data with player usage, projections, and news to produce timely waiver alerts.",
+  "observed_capabilities": [
+    {
+      "statement": "The code implements Sleeper and MyFantasyLeague API clients, cross-platform player mapping, roster synchronization, waiver-state synchronization, retry handling, and SQLAlchemy-backed persistence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "core-source",
+        "database-models"
+      ]
+    },
+    {
+      "statement": "The repository implements scheduled player, roster, waiver, usage, projection, schedule, injury, candidate-building, and rule-evaluation jobs using APScheduler.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "scheduler"
+      ]
+    },
+    {
+      "statement": "Candidate-analysis code calculates roster fit, market heat, scarcity, usage trends, tiers, and four alert rules covering role spikes, injury vacuums, red-zone opportunities, and trend breakouts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "candidate-rules"
+      ]
+    },
+    {
+      "statement": "A separate statistics workflow retrieves weekly NFL Next Gen passing, rushing, and receiving data, normalizes CSV headers, coordinates multiple weeks, and can upload results to BigQuery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "stats-pipeline"
+      ]
+    },
+    {
+      "statement": "The repository also contains canonical player/projection transformation scripts and browser-based RotoBaller ranking scrapers with committed output artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "supplementary-pipelines",
+        "generated-artifacts"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The original PRD plans near-real-time Reddit, Twitter, ESPN, and Sleeper news ingestion, confidence scoring, 24-hour deduplication, Redis-backed workers, and Slack alert delivery.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "planning-docs"
+      ]
+    },
+    {
+      "statement": "Later user stories plan additional waiver rules, a configurable WaiverScore, FAAB bid bands, Tuesday digests, post-waiver recaps, late-swap watchlists, cooldowns, and outcome tracking.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "planning-docs"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The primary application follows an API-client and service layer feeding SQLAlchemy models in SQLite, with APScheduler coordinating periodic jobs from src.main.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "entrypoint",
+        "core-source",
+        "database-models",
+        "scheduler"
+      ]
+    },
+    {
+      "statement": "Docker Compose defines Redis and the application container, but the planned Redis worker pipeline is not present in the tracked source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "container-config",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "NFL statistics retrieval and canonical-data construction are parallel script-oriented pipelines rather than fully integrated stages of the main scheduled application.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "stats-pipeline",
+        "supplementary-pipelines",
+        "scheduler"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The committed SQLite artifact contains 17,575 player rows, 18,911 player-usage rows, 17,821 projection rows, 544 roster entries, and 15 waiver candidates, demonstrating that substantial data-loading workflows have run.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "database-artifact"
+      ]
+    },
+    {
+      "statement": "Committed outputs include 115 Sleeper dump CSV files, 15 weekly Next Gen Stats CSV files, and multiple canonical and weekly-stat Parquet artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-artifacts"
+      ]
+    },
+    {
+      "statement": "The repository contains extensive unit and integration test code for roster synchronization, waiver tracking, storage, player mapping, retry behavior, projections, TPRR calculations, and snapshot upserts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "Recent available history shows concentrated September 2025 work on player unification, weekly statistics retrieval, modular scraping, and BigQuery upload.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "git-history"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The documented end-to-end alert workflow is incomplete: the planned news-ingestion, keyword-filtering, alert-delivery, and Redis worker modules do not exist.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "planning-docs",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "Scheduled candidate refresh and rule evaluation use a hard-coded demo league identifier, and the base candidate refresh method reports results without persisting its DataFrame.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "scheduler",
+        "candidate-rules"
+      ]
+    },
+    {
+      "statement": "The committed database has no waiver-state, waiver-claim, news-item, or alert rows; it also lacks the roster_snapshots table defined by the current ORM model, indicating schema or artifact drift.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "database-artifact",
+        "database-models"
+      ]
+    },
+    {
+      "statement": "The latest committed test analysis reports 109 passing, 24 failing, and 6 skipped tests, and no newer full-suite result or CI workflow proves that the current revision passes.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "test-analysis",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "The repository combines an alert-service concept, rankings scrapers, canonical modeling, data-warehouse loaders, and weekly statistics scripts without a single current scope or operational runbook tying them together.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "documentation",
+        "repository-tree",
+        "stats-pipeline",
+        "supplementary-pipelines"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A .env credential file is tracked in this public repository and the Dockerfile copies it into the image; its values were not inspected, so any potentially live credentials require an owner-led history audit and rotation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-inventory",
+        "container-config",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "The tracked virtual environment contains 11,167 files totaling approximately 325 MB, including platform-specific binaries, which makes clones large, undermines reproducibility, and unnecessarily expands the dependency attack surface.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-inventory"
+      ]
+    },
+    {
+      "statement": "Committed databases, logs, roster dumps, caches, compiled bytecode, and generated player artifacts may expose user- or league-specific data and make source changes difficult to review.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "generated-artifacts",
+        "security-inventory"
+      ]
+    },
+    {
+      "statement": "Without CI, a current passing test run, or deployment evidence, scheduler and API behavior can regress unnoticed as external data sources change.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tests",
+        "test-analysis",
+        "repository-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Immediately audit the tracked .env and Git history without publishing its values, revoke or rotate any credentials that may have been live, remove the file from tracking and image layers, and replace it with a value-free example file.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-inventory",
+        "container-config",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "Remove the virtual environment, caches, bytecode, logs, databases, and generated datasets from source control where they are not intentional fixtures; then strengthen ignore rules and use releases or external object storage for necessary artifacts.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-inventory",
+        "generated-artifacts"
+      ]
+    },
+    {
+      "statement": "Choose whether the repository's primary product is the alert service or the statistics warehouse, then either finish the missing ingestion and delivery path with configured league IDs and migrations or split the data experiments into focused repositories.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "documentation",
+        "planning-docs",
+        "repository-tree",
+        "scheduler"
+      ]
+    },
+    {
+      "statement": "Repair the known test failures, add isolated temporary-database tests, and establish CI for formatting, linting, typing, unit tests, and dependency scanning before treating the scheduler as deployable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "test-analysis",
+        "tests",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "If there is no intention to resume development or operate the system for a future NFL season, sanitize sensitive artifacts and formally archive the repository.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "metadata",
+        "security-inventory"
+      ]
+    }
+  ],
+  "questions": [
+    "Did the tracked .env ever contain live credentials, and have all potentially exposed credentials been revoked or rotated?",
+    "Is any part of this repository currently deployed, scheduled, or used to make weekly fantasy-football decisions?",
+    "Should the alert service or the NFL statistics and BigQuery pipeline be considered the repository's primary product?",
+    "Are the committed database, logs, Sleeper dumps, and generated player artifacts intended to remain public?",
+    "Should the project be revived for a future season, retained only as a private reference, or formally archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata_snapshot",
+      "location": "https://github.com/kmadhok/FantasyFootball",
+      "summary": "Registry-provided snapshot identifies a public repository on master, last pushed 2025-09-21, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "documentation",
+      "kind": "repository_documentation",
+      "location": "README.md and CLAUDE.md",
+      "summary": "Describes a Sleeper and MFL fantasy-football alert system with roster sync, waiver tracking, player mapping, scheduled processing, SQLite persistence, and contextual alerts."
+    },
+    {
+      "id": "planning-docs",
+      "kind": "product_planning",
+      "location": "tasks/prd.md, tasks/tasks-prd.md, and user_stories.md",
+      "summary": "Defines the original real-time alert vision and a larger backlog for candidate scoring, additional rules, FAAB recommendations, notification digests, and quality controls."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": "tracked files at revision 7713adea6e57a0134394da666705ccd3295915b5",
+      "summary": "Contains 11,489 tracked files across application source, tests, scrapers, data pipelines, generated artifacts, a database, logs, caches, and a committed virtual environment; no .github workflow or planned worker and notification modules are present."
+    },
+    {
+      "id": "entrypoint",
+      "kind": "source_code",
+      "location": "src/main.py",
+      "summary": "Initializes the SQLite database and APScheduler, reports season and league configuration, and remains running until signaled to stop."
+    },
+    {
+      "id": "core-source",
+      "kind": "source_code",
+      "location": "src/services/roster_sync.py, src/services/waiver_tracker.py, src/services/alert_context.py, src/database/roster_storage.py, and src/utils/player_id_mapper.py",
+      "summary": "Implements multi-platform API clients, storage operations, canonical player mapping, waiver synchronization, and database-backed contextual recommendation logic."
+    },
+    {
+      "id": "database-models",
+      "kind": "source_code",
+      "location": "src/database/models.py and src/database/migrations.py",
+      "summary": "Defines SQLAlchemy models for players, usage, projections, rosters, snapshots, waivers, news, alerts, injuries, schedules, defensive data, rankings, and waiver candidates."
+    },
+    {
+      "id": "scheduler",
+      "kind": "source_code",
+      "location": "src/services/scheduler.py",
+      "summary": "Registers periodic roster, waiver, player, usage, injury, schedule, candidate, rule-evaluation, and season-management jobs; candidate and rule jobs use a demo league identifier."
+    },
+    {
+      "id": "candidate-rules",
+      "kind": "source_code",
+      "location": "src/services/waiver_candidates_builder.py, src/services/enhanced_waiver_candidates_builder.py, and src/services/rules_engine.py",
+      "summary": "Builds and scores waiver-candidate data and implements role-spike, injury-vacuum, red-zone, and trend-breakout rules that persist pending alerts."
+    },
+    {
+      "id": "stats-pipeline",
+      "kind": "source_code",
+      "location": "stats_retrieval/",
+      "summary": "Contains modular passing, rushing, and receiving extraction pipelines, a multi-week coordinator, CSV normalization helpers, committed weekly outputs, and a BigQuery uploader."
+    },
+    {
+      "id": "supplementary-pipelines",
+      "kind": "source_code",
+      "location": "build_canonical_model_enhanced.py, Create_BigQuery_Schema/, and rotoballer_playwright_scraper.py",
+      "summary": "Provides canonical player and projection transformations, Sleeper dump and warehouse loaders, and Playwright-based ranking extraction."
+    },
+    {
+      "id": "tests",
+      "kind": "test_code",
+      "location": "src/**/test_*.py, tests/, and manual_test/",
+      "summary": "Includes broad unit, integration, and manual validation code, including mocked API tests and database-mutating tests; the suite was not rerun during this read-only analysis."
+    },
+    {
+      "id": "test-analysis",
+      "kind": "test_report",
+      "location": "TEST_ANALYSIS.md",
+      "summary": "A report committed on 2025-09-04 records 139 tests: 109 passed, 24 failed, and 6 skipped, with failures attributed to signature, mock, schema, expectation, import, async, and state problems."
+    },
+    {
+      "id": "database-artifact",
+      "kind": "generated_database_metadata",
+      "location": "data/fantasy_football.db",
+      "summary": "Read-only aggregate inspection found 17,575 players, 544 roster entries, 18,911 usage rows, 17,821 projections, and 15 waiver candidates, but zero waiver states, claims, news items, or alerts; the current ORM's roster_snapshots table was absent."
+    },
+    {
+      "id": "generated-artifacts",
+      "kind": "generated_outputs",
+      "location": "out/, canonical_output/, stats_retrieval/data/, and top-level CSV/XLS files",
+      "summary": "The repository commits Sleeper dumps, weekly statistics CSVs, rankings, source spreadsheets, canonical Parquet outputs, and database artifacts; only filenames, sizes, and aggregate counts were inspected."
+    },
+    {
+      "id": "container-config",
+      "kind": "deployment_configuration",
+      "location": "Dockerfile and docker-compose.yml",
+      "summary": "Defines Python 3.12 application and Redis containers, but copies the tracked .env into the application image and exposes a port despite no inspected HTTP server implementation."
+    },
+    {
+      "id": "security-inventory",
+      "kind": "security_and_repository_hygiene",
+      "location": ".env, .gitignore, .dockerignore, tracked-file inventory, and git object metadata",
+      "summary": "A credential-bearing filename is tracked but its values were not read; 11,167 virtual-environment files totaling about 325 MB are tracked alongside bytecode, logs, databases, and generated data."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at revision 7713adea6e57a0134394da666705ccd3295915b5",
+      "summary": "Fifteen commits were available, from 2025-07-19 through 2025-09-21; September work focused on player unification, statistics retrieval, modular pipelines, and upload support. Only master and origin/master were visible, with no tags."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, database metadata, generated artifacts, tests, and recent history consistently support a substantive but incomplete prototype. Confidence is limited because secret values were intentionally excluded, live GitHub and external APIs were inaccessible, the full suite was not rerun, operational use is unproven, and the supplied history must be treated as truncated."
+  },
+  "limitations": [
+    "The tracked .env file was identified but never opened, parsed, copied, or summarized.",
+    "Database, log, CSV, spreadsheet, and Parquet record values were not inspected; artifact conclusions use only schemas, aggregate counts, filenames, and sizes.",
+    "Network-dependent integrations and the full test suite were not executed during this read-only analysis.",
+    "Live GitHub archival state, additional branches, issue history, pull-request history, and releases could not be refreshed.",
+    "The supplied clone was described as depth 50, so conclusions about history before the 15 available commits are unavailable."
+  ]
+}

@@ -1,0 +1,503 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/job-search-drip-runner",
+  "analyzed_at": "2026-07-27T03:21:37Z",
+  "revision": "133a79bd977cd11e22dcc750d39a4e9a999d1267",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata",
+      "README.md, CLAUDE.md, AGENTS.md, SETUP.md, Skills.md, and PAIN_POINTS.md",
+      "infrastructure, onboarding, runner, trace, and evaluation documentation",
+      "complete tracked-file and top-level structure inventories",
+      "PowerShell runner and Task Scheduler entry points",
+      "representative Python state readers, pipeline mutation helpers, apply-packet reconciliation, watchdog, onboarding, and configuration code",
+      "prep and outreach orchestration skill definitions",
+      "test inventory, representative unit and lifecycle tests, and all nine behavior-contract locations",
+      "gitignore, Claude permission configuration, and credential-like tracked filenames without reading credential values",
+      "all available local branches, tags, and commit history"
+    ],
+    "missing": [
+      "configured profile.yaml and workspace instance",
+      "dependency manifest or lockfile",
+      "continuous-integration workflows",
+      "release tags or packaged releases",
+      "README-linked Automation Architecture - Drip Runner.md",
+      "README-linked Automation Design - Two-Orchestrator directory",
+      "internally referenced docs/determinism-audit.md and docs/spec/productionalization-v1.md",
+      "successful heartbeat timestamps for either PC automation pass or the optional cloud routine"
+    ],
+    "inaccessible": [
+      "live Windows Task Scheduler state",
+      "LinkedIn MCP daemon and account session",
+      "Gmail, Google Drive, rclone, ntfy, and cloud-routine state",
+      "live GitHub data beyond the supplied snapshot and local refs"
+    ],
+    "sampling_notes": "The checkout was supplied under a depth-50 constraint, so remote history beyond the checkout was not independently verified. Git reports the checkout as non-shallow and contains only two commits, both of which were inspected. The repository has 161 tracked files; representative implementations and tests were sampled rather than reading every skill, template, and test body. Tests were inspected but not executed because the analysis environment was read-only."
+  },
+  "stated_purpose": "Automate the work between saving a job and manually applying or sending outreach: ingest and classify jobs, tailor and export resumes, prepare application packets, and stage recruiter email drafts while retaining human approval gates.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository implements a two-pass workflow: a daily prep pass processes saved jobs into tailored resumes and application packets, while an hourly apply-gated pass stages recruiter outreach for Pipeline rows marked Applied.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "runner-entrypoint",
+        "scheduler",
+        "runner-prompts"
+      ]
+    },
+    {
+      "statement": "Deterministic Python utilities parse and mutate the Markdown pipeline, manage saved-job ledgers, build outreach worklists, enforce Applied-before-STAGED invariants, reconcile Drive packet state, and evaluate watchdog health.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "state-implementation",
+        "apply-packet",
+        "watchdog"
+      ]
+    },
+    {
+      "statement": "Claude Code skills orchestrate job intake, constrained JD classification, canonical-achievement resume tailoring, PDF export, recruiter discovery, email verification, and Gmail draft creation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "skills-map",
+        "orchestrator-skills"
+      ]
+    },
+    {
+      "statement": "First-time onboarding can generate a gitignored identity profile and seed a personal workspace from tracked, person-neutral templates, after which setup verification checks required files and tools.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup",
+        "onboarding",
+        "template-safety-test"
+      ]
+    },
+    {
+      "statement": "The system records structured per-run traces, rendered reports, token-accounting fields, gaps, predictions, and behavior-contract evidence rather than relying only on free-form logs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "trace-docs",
+        "evals"
+      ]
+    },
+    {
+      "statement": "Outward actions are designed to remain human-gated: application submission is manual and recruiter email operations create drafts rather than sending messages.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "infra",
+        "runner-prompts"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The current dogfood journal proposes fixes for WSL Git ownership failures, CRLF warning noise, dangling documentation links, Windows console mojibake, inconsistent Python launcher instructions, and misleading trace run identifiers.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "pain-points",
+        "history"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "A PowerShell entry point performs the profile gate, Git synchronization, prompt selection, unattended Claude invocation, heartbeat updates, packet reconciliation, digest generation, and logging.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runner-entrypoint"
+      ]
+    },
+    {
+      "statement": "Windows Task Scheduler definitions register a LinkedIn daemon at logon, a daily 05:07 prep pass, and an hourly outreach pass with non-overlap and three-hour execution bounds.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "scheduler",
+        "infra"
+      ]
+    },
+    {
+      "statement": "Persistent workflow state is stored in Markdown, JSON ledgers, role-folder artifacts, and Git commits rather than a database; deterministic readers translate those files into worklists and lifecycle transitions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "agent-guide",
+        "state-implementation",
+        "runner-prompts"
+      ]
+    },
+    {
+      "statement": "Claude skills provide judgment-heavy orchestration while Python scripts own mechanical validation, file mutation, deduplication, reconciliation, reporting, and safety invariants.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "skills-map",
+        "orchestrator-skills",
+        "state-implementation",
+        "evals"
+      ]
+    },
+    {
+      "statement": "The operational boundary depends on external Claude Code, LinkedIn MCP, Gmail, Google Drive, rclone, optional ntfy and Poppler, and an optional cloud routine.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup",
+        "infra"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "The tracked test suite contains 201 pytest-style test functions across 21 test files, including lifecycle integration, state invariants, onboarding, watchdog, packet reconciliation, trace behavior, and personal-data separation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "Nine deterministic behavior contracts cover classification, intake, resume tailoring and export, contact discovery and enrichment, email verification, outreach writing, and application packets.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "evals"
+      ]
+    },
+    {
+      "statement": "The implementation includes explicit recovery safeguards for Git races, stale automation, interrupted per-role work, malformed packet records, duplicate processing, and invalid STAGED transitions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runner-entrypoint",
+        "scheduler",
+        "state-implementation",
+        "apply-packet",
+        "watchdog"
+      ]
+    },
+    {
+      "statement": "Tracked templates are separated from ignored per-user profile, workspace, trace, and credential data, with a regression test intended to prevent personal references from entering distributable directories.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-config",
+        "template-safety-test",
+        "onboarding"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "This checkout is an unconfigured seed: profile.yaml is absent and all heartbeat success fields are null, so it does not prove that either automation pass or the cloud routine has run successfully in this repository.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "configuration-state",
+        "heartbeat",
+        "history"
+      ]
+    },
+    {
+      "statement": "No dependency manifest, lockfile, or CI workflow is tracked, and the inspected tests were not executed at the analyzed revision.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Documentation is internally inconsistent: the current scheduler code wires and enables both passes, while scripts/drip_runner/README.md still says that Pass A, Pass B, and cloud scheduling are not wired.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "runner-ops-doc",
+        "scheduler",
+        "pain-points"
+      ]
+    },
+    {
+      "statement": "Several architecture, design, audit, and productionalization documents referenced by tracked files are absent from the seeded repository.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "state-implementation",
+        "template-safety-test",
+        "pain-points",
+        "repository-tree"
+      ]
+    },
+    {
+      "statement": "There are no releases, tags, or repository-hosted deployment artifacts beyond setup scripts and scheduler definitions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The unattended runner invokes Claude with bypassPermissions and a broad allow-list that includes shell, writes, web access, Gmail, and LinkedIn; the draft-only design reduces outward-action risk but does not eliminate local file, Git, or connector mutation risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "runner-entrypoint",
+        "claude-settings",
+        "infra"
+      ]
+    },
+    {
+      "statement": "Markdown and Git form a multi-writer state system shared by scheduled PC and optional cloud processes, so malformed rows, merge conflicts, stale markers, or synchronization failures can suppress or duplicate work despite the implemented safeguards.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "agent-guide",
+        "runner-entrypoint",
+        "state-implementation",
+        "watchdog"
+      ]
+    },
+    {
+      "statement": "The absence of dependency pinning and CI makes behavior more vulnerable to Python, reportlab, PowerShell, Claude CLI, and external connector changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "setup",
+        "repository-tree",
+        "runner-entrypoint"
+      ]
+    },
+    {
+      "statement": "Automated LinkedIn access carries account or platform-policy risk; the repository acknowledges this indirectly by rationing contact research behind the apply gate and requiring sequential operations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "agent-guide",
+        "skills-map",
+        "runner-prompts"
+      ]
+    },
+    {
+      "statement": "Dangling and contradictory documentation can cause a new operator to follow obsolete setup or incorrectly conclude that scheduling is unfinished.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "runner-ops-doc",
+        "scheduler",
+        "pain-points"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Owner review should decide whether this repository is meant to remain a reusable engine seed or become a live private instance; if live, complete onboarding and capture one verified manual prep and outreach run before enabling unattended schedules.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "configuration-state",
+        "heartbeat",
+        "setup",
+        "history"
+      ]
+    },
+    {
+      "statement": "Resolve the six recorded dogfood findings, starting with broken documentation links and Windows command inconsistencies because they directly affect first-run success.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "pain-points"
+      ]
+    },
+    {
+      "statement": "Add a minimal pinned dependency definition and CI workflow that runs the deterministic unit, lifecycle, template-safety, trace, and evaluation tests on supported Python versions.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "repository-tree",
+        "tests",
+        "evals",
+        "setup"
+      ]
+    },
+    {
+      "statement": "Reconcile scripts/drip_runner/README.md with the installed scheduler implementation and either restore the referenced architecture documents or remove their links.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "runner-ops-doc",
+        "scheduler",
+        "pain-points"
+      ]
+    },
+    {
+      "statement": "Before production use, review whether bypassPermissions can be narrowed and document the accepted LinkedIn, Git-push, and connector threat model.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "runner-entrypoint",
+        "claude-settings",
+        "infra"
+      ]
+    }
+  ],
+  "questions": [
+    "Is this repository intended to remain a reusable template engine, or should it become an onboarded live job-search instance?",
+    "Have the full test suite and both scheduler passes been run successfully on the target Windows machine since this seed was created?",
+    "Are the omitted architecture and productionalization documents intentionally private, or should public-safe versions ship with the seed?",
+    "Is the optional cloud secretary currently deployed elsewhere, and what system is authoritative when it and the PC modify Pipeline.md concurrently?",
+    "Has the owner explicitly accepted the account and security risks of unattended bypassPermissions, LinkedIn automation, and automatic Git pushes?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/job-search-drip-runner",
+      "summary": "Supplied snapshot identifies a private repository on main, pushed 2026-07-18, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes the human-gated save-to-application and Applied-to-outreach conveyor belt, file-backed state, templates, safety model, and trace/evaluation layer."
+    },
+    {
+      "id": "agent-guide",
+      "kind": "documentation",
+      "location": "AGENTS.md",
+      "summary": "Defines workspace structure, sources of truth, apply-gate invariants, multi-writer Git discipline, sequential LinkedIn access, and never-invent rules."
+    },
+    {
+      "id": "setup",
+      "kind": "setup_documentation",
+      "location": "SETUP.md",
+      "summary": "Documents Windows prerequisites, onboarding, external dependencies, manual smoke tests, three scheduled tasks, and the optional cloud routine."
+    },
+    {
+      "id": "skills-map",
+      "kind": "architecture_documentation",
+      "location": "Skills.md",
+      "summary": "Maps the job funnel to 19 tracked Claude Code skills, their sources of truth, outputs, and the apply-gated orchestration split."
+    },
+    {
+      "id": "infra",
+      "kind": "operations_documentation",
+      "location": "infra/",
+      "summary": "Provides installation, manual equivalents, health checks, and teardown guidance for the PC runner, LinkedIn daemon, and optional cloud secretary."
+    },
+    {
+      "id": "runner-entrypoint",
+      "kind": "source_code",
+      "location": "scripts/drip_runner/run.ps1",
+      "summary": "Implements profile gating, Git synchronization, unattended Claude invocation, logging, heartbeats, watchdog alerts, packet reconciliation, digest handling, and mode selection."
+    },
+    {
+      "id": "scheduler",
+      "kind": "deployment_configuration",
+      "location": "scripts/drip_runner/install-tasks.ps1",
+      "summary": "Registers enabled LinkedInDaemon, daily DripRunner, and hourly DripRunnerOutreach Windows tasks with restart, non-overlap, wake, and execution-limit settings."
+    },
+    {
+      "id": "runner-prompts",
+      "kind": "runtime_configuration",
+      "location": "scripts/drip_runner/runner-prompt-saved.md and scripts/drip_runner/runner-prompt-outreach.md",
+      "summary": "Define sequential saved-job prep and Applied-only outreach execution, deterministic worklists, failure parking, Gmail drafts, and per-role Git commits."
+    },
+    {
+      "id": "runner-ops-doc",
+      "kind": "operations_documentation",
+      "location": "scripts/drip_runner/README.md",
+      "summary": "Documents runner modes and readers but contains a stale statement that the two-pass scheduler wiring is not implemented."
+    },
+    {
+      "id": "orchestrator-skills",
+      "kind": "workflow_definition",
+      "location": ".claude/skills/jd-to-ready/SKILL.md and .claude/skills/stage-outreach/SKILL.md",
+      "summary": "Define the prep and outreach orchestration contracts, constrained classification, trace requirements, canonical-fact rules, artifact handoff, and human gates."
+    },
+    {
+      "id": "state-implementation",
+      "kind": "source_code",
+      "location": "scripts/pipeline_row.py and scripts/drip_runner/outreach_worklist.py",
+      "summary": "Provide deterministic Pipeline row CRUD, atomic writes, lifecycle parsing, apply gating, STAGED enforcement, and outreach worklist generation."
+    },
+    {
+      "id": "apply-packet",
+      "kind": "source_code",
+      "location": "scripts/drip_runner/apply_packet.py",
+      "summary": "Builds and reconciles application packet records and rclone-backed Drive queue state, including applied, archived, drifted, and malformed-record handling."
+    },
+    {
+      "id": "watchdog",
+      "kind": "source_code",
+      "location": "scripts/drip_runner/watchdog.py",
+      "summary": "Evaluates prep, outreach, daemon, cloud-sweep, and abort-streak health with staleness thresholds and anti-flap behavior."
+    },
+    {
+      "id": "onboarding",
+      "kind": "source_and_documentation",
+      "location": "scripts/onboard.py, scripts/verify_setup.py, and docs/onboarding/README.md",
+      "summary": "Implement and document profile/workspace scaffolding, preservation of existing files, setup checks, and separation of credentials from tracked data."
+    },
+    {
+      "id": "trace-docs",
+      "kind": "observability_documentation",
+      "location": "docs/trace/TRACE_SCHEMA.md and docs/trace/TOKEN_ACCOUNTING.md",
+      "summary": "Specify versioned trace events, state transitions, gap taxonomy, healthy-trace criteria, and token attribution."
+    },
+    {
+      "id": "evals",
+      "kind": "verification_artifacts",
+      "location": "evals/",
+      "summary": "Contains a deterministic evaluation harness and nine behavior contracts for the major workflow primitives."
+    },
+    {
+      "id": "tests",
+      "kind": "test_inventory",
+      "location": "scripts/, scripts/drip_runner/, evals/, and selected skill scripts",
+      "summary": "Inventory found 201 pytest-style test functions in 21 files; representative tests cover lifecycle integration, state transitions, packet reconciliation, watchdog behavior, onboarding, trace contracts, and byte preservation."
+    },
+    {
+      "id": "template-safety-test",
+      "kind": "security_test",
+      "location": "scripts/test_no_personal_refs.py",
+      "summary": "Scans distributable source, skill, template, evaluation, infrastructure, and onboarding files for personal identifiers, absolute user paths, and UTF-8 BOMs."
+    },
+    {
+      "id": "security-config",
+      "kind": "security_configuration",
+      "location": ".gitignore and .env.example",
+      "summary": "The real .env, profile, runs, and derived email cache are ignored; the only tracked credential-like filename is .env.example, whose variable name was identified without reading or storing any value."
+    },
+    {
+      "id": "claude-settings",
+      "kind": "agent_configuration",
+      "location": ".claude/settings.json",
+      "summary": "Enables the Hunter plugin and broadly allows shell, file mutation, web fetch, Gmail, and LinkedIn operations."
+    },
+    {
+      "id": "configuration-state",
+      "kind": "repository_state",
+      "location": "repository root",
+      "summary": "No root profile.yaml, personal workspace, dependency manifest, lockfile, or GitHub Actions workflow is present."
+    },
+    {
+      "id": "heartbeat",
+      "kind": "operational_state",
+      "location": "scripts/drip_runner/heartbeat.json",
+      "summary": "All PC and cloud success timestamps and daemon status are null, with zero consecutive aborts."
+    },
+    {
+      "id": "pain-points",
+      "kind": "dogfood_notes",
+      "location": "PAIN_POINTS.md",
+      "summary": "Records six first-user findings from the 2026-07-18 seed and onboarding walkthrough, including setup friction, missing docs, encoding issues, and trace naming."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "All available history consists of a 2026-07-18 template seed commit and a follow-up dogfood pain-points commit; main matches origin/main and no tags exist."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": "repository root",
+      "summary": "The repository contains 161 tracked files, including 68 Python files, 19 skill definitions, 17 template files, PowerShell scheduling scripts, documentation, tests, and evaluation fixtures."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The purpose, architecture, implementation, safeguards, and test design are strongly supported by primary repository evidence. Confidence is limited because this seeded checkout is not configured, its heartbeat contains no successful runs, tests could not be executed in the read-only environment, external services and Windows schedules were inaccessible, and only two commits are available."
+  },
+  "limitations": [
+    "No credential values were read; credential analysis was limited to filenames, ignore rules, and the variable name in the example file.",
+    "The test suite was inspected but not executed.",
+    "External integrations and the target Windows runtime were not available for verification.",
+    "The supplied GitHub snapshot was used for issue and pull-request state; live GitHub state was not queried.",
+    "The depth-50 acquisition constraint may omit remote history even though this two-commit checkout reports itself as non-shallow.",
+    "Representative source, skill, template, and test files were sampled rather than every line of all 161 tracked files."
+  ]
+}

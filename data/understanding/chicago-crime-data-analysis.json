@@ -1,0 +1,389 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Chicago-Crime-Data-Analysis",
+  "analyzed_at": "2026-07-27T03:14:11Z",
+  "revision": "f330499c83831bbf2b84be89a832c98c1e539a09",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata and issue/PR snapshot",
+      "README.md",
+      "complete tracked-file inventory and top-level structure",
+      "Python Socrata extraction notebook, including code and saved execution summaries",
+      "MySQL schema and analysis SQL",
+      "R Markdown Leaflet source and generated HTML output",
+      "Tableau workbook structure, worksheets, dashboard, data-source classes, fields, and calculation metadata",
+      "45-page final presentation through PDF metadata and extracted text",
+      "dependency, test, CI, documentation, configuration, and credential-filename audits",
+      "all available branches and git log --oneline -20"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "dependency manifest or lockfile",
+      "source or cleaned CSV data",
+      "scripted Excel/OpenRefine cleaning transformations",
+      "data import or INSERT procedure",
+      "tests",
+      "CI workflows",
+      "release or deployment configuration",
+      "substantive setup and execution documentation"
+    ],
+    "inaccessible": [
+      "Git history older than the supplied depth-50 checkout, if any",
+      "live MySQL database and original local data files used to produce the saved outputs"
+    ],
+    "sampling_notes": "All eight tracked files were inventoried and every substantive source artifact was inspected; the 25.4 MB generated HTML was structurally inspected rather than read line by line. PDF metadata and extracted text were inspected, but rendered page images could not be created in the read-only workspace. Recent history was limited to the supplied depth-50 checkout; only two commits were available."
+  },
+  "stated_purpose": "Analysis of Chicago Crime.",
+  "observed_capabilities": [
+    {
+      "statement": "The notebook uses pandas and sodapy to request records from a City of Chicago Socrata endpoint, construct a dataframe, and export it to CSV; saved output records 200,008 values for several core fields.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The MySQL model defines a Crime fact table linked by foreign keys to IUCR, FBI code, ward, district, and community-area tables, with a generated datetime derived from the source crime-date string.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schema-sql"
+      ]
+    },
+    {
+      "statement": "The analysis SQL examines crime totals by month, community, district, type, location, weekday, date, time, population, density, and arrest status, and assigns percentile-based crime classifications.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analysis-sql"
+      ]
+    },
+    {
+      "statement": "The R Markdown queries the MySQL Crime table and builds a Leaflet map with clustered latitude/longitude markers and crime ID, date, and block popups; a generated interactive HTML artifact is tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "r-map",
+        "r-html"
+      ]
+    },
+    {
+      "statement": "The Tableau workbook contains one federated MySQL data source, five worksheets, and a Chicago Crime Analysis dashboard covering community, district, homicide, crime type, and location views.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tableau"
+      ]
+    },
+    {
+      "statement": "The final presentation documents the pipeline and reports findings about common crime types, temporal patterns, geographic concentrations, locations, and arrest rates, followed by policy and resident-facing use cases.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "presentation"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The presentation's improvements section proposes exploring the dataset more deeply, including clarifying distinctions between location categories such as street and sidewalk.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "presentation"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The project uses a mostly manual staged pipeline: Python/Socrata extraction to CSV, Excel and OpenRefine cleaning, MySQL loading and analysis, then Tableau and R/Leaflet visualization.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "presentation",
+        "schema-sql",
+        "analysis-sql",
+        "r-map",
+        "tableau"
+      ]
+    },
+    {
+      "statement": "The relational layer centers the Crime table as the event record and joins it to five descriptive lookup or geographic tables.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schema-sql",
+        "tableau"
+      ]
+    },
+    {
+      "statement": "The tracked PDF, Tableau workbook, and generated Leaflet HTML serve as presentation and visualization outputs rather than a deployed application.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "r-html",
+        "tableau",
+        "presentation",
+        "ops-audit"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository preserves a completed multi-tool coursework analysis spanning extraction, relational modeling, SQL analysis, GIS visualization, dashboarding, and presentation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "schema-sql",
+        "analysis-sql",
+        "r-map",
+        "r-html",
+        "tableau",
+        "presentation"
+      ]
+    },
+    {
+      "statement": "Saved notebook outputs, the generated map, the Tableau dashboard, and the 45-page presentation provide evidence that substantial portions of the workflow were executed at least once.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "r-html",
+        "tableau",
+        "presentation"
+      ]
+    },
+    {
+      "statement": "The final presentation translates technical results into potential policing-resource and resident-awareness use cases.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "presentation"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The repository does not include the source or cleaned CSV data, scripted cleaning transformations, or a data-import procedure, so the transition from API output to populated MySQL tables is not reproducible from tracked artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "notebook",
+        "presentation",
+        "schema-sql"
+      ]
+    },
+    {
+      "statement": "The schema script contains a duplicated Ward table declaration and an incomplete second declaration, while the analysis script contains statements without consistent terminators; the checked-in SQL therefore requires repair before clean execution as a batch.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "schema-sql",
+        "analysis-sql"
+      ]
+    },
+    {
+      "statement": "The README contains only the project title and a one-line description, with no setup, dependency, data-provenance, execution, or result-reproduction instructions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "ops-audit"
+      ]
+    },
+    {
+      "statement": "No dependency manifest, lockfile, automated test, CI workflow, deployment configuration, or release artifact establishes repeatable execution.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "ops-audit"
+      ]
+    },
+    {
+      "statement": "The notebook's saved output shows 200,008 records for several fields, while multiple SQL calculations use a hard-coded denominator of 200,139; the repository does not explain or validate this difference.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "notebook",
+        "analysis-sql"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A tracked R Markdown database connection contains an embedded credential; its value should be treated as exposed, removed from history where appropriate, and replaced with external configuration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "credential-audit",
+        "r-map"
+      ]
+    },
+    {
+      "statement": "The 25.4 MB generated map HTML embeds many crime-point records and materially inflates the repository while duplicating generated output that could instead be rebuilt or published separately.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "r-html"
+      ]
+    },
+    {
+      "statement": "The Socrata request is unauthenticated, uses a fixed record limit, and has no explicit pagination or validation, creating throttling and silent-truncation risks if the endpoint contents change.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook"
+      ]
+    },
+    {
+      "statement": "The presentation states that population is not correlated with crime, but the tracked SQL only compares grouped counts and population ratios rather than computing or testing a correlation; that conclusion is not fully supported by the recorded method.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "analysis-sql",
+        "presentation"
+      ]
+    },
+    {
+      "statement": "All implementation artifacts arrived in a single bulk-upload commit in June 2023, with no later maintenance, issues, pull requests, or operational evidence.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "git-history",
+        "metadata"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Remove and rotate the tracked database credential, parameterize the R connection through untracked environment or configuration inputs, and verify that generated artifacts do not retain it.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "credential-audit",
+        "r-map"
+      ]
+    },
+    {
+      "statement": "Document and automate the complete data path, including a year-filtered paginated Socrata extraction, deterministic cleaning, table loading, dependency versions, and one command or notebook sequence for regeneration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "notebook",
+        "presentation",
+        "tree",
+        "ops-audit"
+      ]
+    },
+    {
+      "statement": "Repair the SQL scripts, replace hard-coded denominators with computed totals, and add validation checks for row counts, foreign-key coverage, date parsing, and analytical calculations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "schema-sql",
+        "analysis-sql",
+        "notebook"
+      ]
+    },
+    {
+      "statement": "Reassess analytical claims such as population correlation with an explicit statistical method and document the limits of interpreting reported incidents as crime risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "analysis-sql",
+        "presentation"
+      ]
+    },
+    {
+      "statement": "After credential remediation, owner review should decide whether to retain this as a clearly labeled historical coursework artifact or archive it, because the repository shows no maintenance since 2023.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "git-history",
+        "metadata",
+        "presentation"
+      ]
+    }
+  ],
+  "questions": [
+    "Was the embedded database credential ever reused outside this local coursework database, and has it been rotated?",
+    "Where are the cleaned CSV files and the exact Excel/OpenRefine transformations used before MySQL loading?",
+    "What accounts for the difference between the notebook's 200,008-record output and the 200,139 denominator used in the SQL?",
+    "Can the reported findings still be regenerated from the current City of Chicago endpoint?",
+    "Should this repository remain public as historical coursework, be converted into a reproducible reference example, or be archived?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Chicago-Crime-Data-Analysis",
+      "summary": "Registry snapshot identifies a public, unarchived main-branch repository last pushed on 2023-06-11, with no open issues or pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Two-line README containing only the repository title and the phrase Analysis of Chicago Crime."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Eight tracked files: README, PDF presentation, notebook, R Markdown, two SQL files, Tableau workbook, and a 25.4 MB generated HTML map."
+    },
+    {
+      "id": "notebook",
+      "kind": "jupyter_notebook",
+      "location": "vf - API calls for 2021 crime data.ipynb",
+      "summary": "Executed Python 3 notebook using pandas and sodapy to fetch a fixed maximum of 200,008 Socrata records and export a CSV; saved output also warns about unauthenticated throttling."
+    },
+    {
+      "id": "schema-sql",
+      "kind": "sql_source",
+      "location": "vf - final project data loading.sql",
+      "summary": "MySQL DDL for the FP database and six-table crime model, including foreign keys and generated datetime logic; it also contains a duplicated, incomplete Ward declaration."
+    },
+    {
+      "id": "analysis-sql",
+      "kind": "sql_source",
+      "location": "vf - final project research questions final .sql",
+      "summary": "Queries for temporal, geographic, categorical, population, density, location, and arrest analyses, including percentile classifications and hard-coded 200,139 denominators."
+    },
+    {
+      "id": "r-map",
+      "kind": "r_markdown_source",
+      "location": "vf - final project - map for R.Rmd",
+      "summary": "RMySQL and Leaflet source that reads the Crime table and creates clustered crime markers; the connection configuration includes an embedded credential whose value was not retained in this brief."
+    },
+    {
+      "id": "r-html",
+      "kind": "generated_visualization",
+      "location": "vf - final-project-map-for-R.html",
+      "summary": "Approximately 25.4 MB Pandoc/htmlwidgets Leaflet output containing clustered markers and crime ID, date, and block popup payloads."
+    },
+    {
+      "id": "tableau",
+      "kind": "tableau_workbook",
+      "location": "vf - final project tableau.twb",
+      "summary": "Tableau 18.1 workbook with a federated MySQL Crime data source, five named worksheets, one Chicago Crime Analysis dashboard, and a percent-of-total calculation."
+    },
+    {
+      "id": "presentation",
+      "kind": "pdf_presentation",
+      "location": "annotated-vf-%20Final%20Project%20Presentation%20.pdf",
+      "summary": "45-page Autumn 2022 course presentation describing contributors, sources, ETL, six-table model, SQL findings, Tableau and R visualizations, use cases, lessons, and improvements."
+    },
+    {
+      "id": "git-history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Two available commits: an initial README commit and a bulk file-upload commit on 2023-06-11; main is the only available branch."
+    },
+    {
+      "id": "ops-audit",
+      "kind": "repository_audit",
+      "location": ".",
+      "summary": "No CLAUDE.md, AGENTS.md, docs, dependency manifest, lockfile, tests, CI directory, container definition, build file, release configuration, or deployment artifacts were found."
+    },
+    {
+      "id": "credential-audit",
+      "kind": "security_audit",
+      "location": "vf - final project - map for R.Rmd",
+      "summary": "Pattern-only audit identified a tracked credential-bearing database connection; no credential value is reproduced or summarized."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The source files, saved notebook output, generated map, Tableau workbook, and presentation consistently establish a completed coursework prototype and its intended pipeline. Confidence is limited because the data, import process, dependencies, live database, tests, and reproducible execution evidence are absent, and some counts and analytical claims are inconsistent or insufficiently validated."
+  },
+  "limitations": [
+    "The supplied checkout was described as shallow with depth 50, so conclusions about older history are limited to the two available commits.",
+    "No live database or source CSV was available, and read-only analysis did not execute the extraction, SQL, R, or Tableau workflows.",
+    "The generated HTML was structurally inspected rather than read exhaustively because it is approximately 25.4 MB and contains repeated embedded marker payloads.",
+    "The presentation was inspected through metadata and extracted text rather than rendered-page visual review.",
+    "GitHub activity conclusions rely on the supplied metadata snapshot and local refs rather than an independent live GitHub refresh.",
+    "Suggested lifecycle and remediation decisions require owner review."
+  ]
+}

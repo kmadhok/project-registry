@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/test2",
+  "analyzed_at": "2026-07-27T03:08:26Z",
+  "revision": "no-default-branch",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub and registry metadata",
+      "all nine supplied open issue titles",
+      "README, CLAUDE.md, AGENTS.md, and docs presence",
+      "top-level and tracked-file inventories",
+      "dependency manifests, configuration, entry points, and data-store presence",
+      "source, tests, CI workflows, notebooks, demos, and generated-output presence",
+      "local Git configuration, HEAD, refs, and shallow-clone metadata",
+      "local branch status and available commit history",
+      "tracked credential-related filenames without reading secret values"
+    ],
+    "missing": [
+      "tracked source files",
+      "README and other setup documentation",
+      "CLAUDE.md and AGENTS.md",
+      "docs directory",
+      "dependency manifest",
+      "tests",
+      "CI workflows",
+      "notebooks and demos",
+      "deployable artifacts",
+      "releases",
+      "local commit and branch refs"
+    ],
+    "inaccessible": [
+      "live GitHub repository metadata, issues, branches, and history because api.github.com was unreachable"
+    ],
+    "sampling_notes": "The supplied checkout was described as shallow with depth 50, so any available history would have been limited to recent commits. In practice, the checkout contains no commit, refs, tracked files, or .git/shallow marker; therefore there was no implementation tree or history to sample."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [],
+  "planned_work": [
+    {
+      "statement": "The supplied issue backlog proposes a small test-runner interface with a test-case model, mock data, list and detail views, a run action, mock run history, status indicators, linting, formatting, and minimal documentation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "registry-snapshot"
+      ]
+    }
+  ],
+  "architecture": [],
+  "maturity": "empty",
+  "accomplishments": [
+    {
+      "statement": "Nine issue titles define a possible implementation sequence from repository initialization through UI behavior and documentation.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "registry-snapshot"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The local repository has no commit, tracked implementation, documentation, manifest, tests, workflow, demo, or deployable artifact.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-tree",
+        "local-git-state"
+      ]
+    },
+    {
+      "statement": "No repository evidence states the intended users, problem, technical stack, or success criteria.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-tree",
+        "registry-snapshot"
+      ]
+    },
+    {
+      "statement": "All nine supplied implementation issues remain open, while the checkout contains no artifacts demonstrating progress against them.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "registry-snapshot",
+        "local-tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The detailed issue backlog may make the project appear more mature than its empty implementation state supports.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "registry-snapshot",
+        "local-tree",
+        "local-git-state"
+      ]
+    },
+    {
+      "statement": "The supplied metadata names main as the default branch and reports a push timestamp, but the checkout has an unborn main branch and no refs; without live GitHub access, the remote state cannot be reconciled.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "registry-snapshot",
+        "local-git-state",
+        "github-access"
+      ]
+    },
+    {
+      "statement": "There are no dependency, testing, formatting, CI, security, or operational safeguards because no tracked project files exist.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "local-tree"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Ask the owner whether this backlog still represents a live product idea or was created as an experiment; archive it if the work is no longer intended.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "registry-snapshot",
+        "local-tree"
+      ]
+    },
+    {
+      "statement": "If development is still intended, first document the test runner's purpose, users, stack, and acceptance criteria before initializing implementation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "registry-snapshot",
+        "local-tree"
+      ]
+    },
+    {
+      "statement": "Reconcile the remote default-branch state with the empty local checkout before a future registry refresh.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "registry-snapshot",
+        "local-git-state",
+        "github-access"
+      ]
+    }
+  ],
+  "questions": [
+    "Was test2 intended to become a real test-runner product, or was the repository and backlog generated as an experiment?",
+    "Do the nine open issues still describe desired work?",
+    "Why does the supplied metadata identify main and a push timestamp while the checkout has no commit or refs?",
+    "Should the repository be initialized, retained as an idea backlog, or archived?"
+  ],
+  "evidence": [
+    {
+      "id": "registry-snapshot",
+      "kind": "owner_supplied_github_snapshot",
+      "location": "https://github.com/kmadhok/test2",
+      "summary": "Supplied metadata describes a private repository with no description, main as the nominal default branch, no open pull requests, nine open issues, and last reported activity on 2026-02-09."
+    },
+    {
+      "id": "local-tree",
+      "kind": "repository_tree",
+      "location": "/private/tmp/claude-501/-Users-kanumadhok-Documents-Claude-Projects-project-registry/ce4d0c6a-ca65-43cb-aa8f-48f5a6897caf/scratchpad/repos/test2",
+      "summary": "The working tree contains only .git and has zero tracked files; no source, documentation, dependencies, tests, workflows, demos, generated outputs, or credential-related tracked filenames exist."
+    },
+    {
+      "id": "local-git-state",
+      "kind": "git_metadata",
+      "location": "/private/tmp/claude-501/-Users-kanumadhok-Documents-Claude-Projects-project-registry/ce4d0c6a-ca65-43cb-aa8f-48f5a6897caf/scratchpad/repos/test2/.git",
+      "summary": "HEAD points to refs/heads/main, but main has no commits, git rev-parse HEAD fails, no local or remote refs are present, and git log reports that the branch has no commits."
+    },
+    {
+      "id": "github-access",
+      "kind": "analysis_limitation",
+      "location": "https://api.github.com",
+      "summary": "Read-only attempts to retrieve current repository and issue data failed because the GitHub API was unreachable."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The complete local tree and Git metadata directly establish that this checkout contains no implementation or commit, while the supplied issue titles consistently describe only planned work. Live remote state could not be verified, so the purpose and default-branch discrepancy remain explicit limitations rather than inferred facts."
+  },
+  "limitations": [
+    "Live GitHub metadata, complete issue bodies and timestamps, branches, and remote commit history could not be inspected because the GitHub API was unreachable.",
+    "The supplied checkout was described as depth-50 and therefore could omit older history, although it contains no refs, commits, or shallow marker from which any history could be inspected.",
+    "The repository has no stated purpose, so the proposed test-runner direction is inferred only from supplied issue titles.",
+    "No implementation could be executed or verified."
+  ]
+}

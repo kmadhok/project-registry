@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/journaling-app",
+  "analyzed_at": "2026-07-27T03:22:50Z",
+  "revision": "3519a1fbdf5ef9691e33f3a7aef0befc3c4f2e55",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and issue/PR snapshot",
+      "README.md, CLAUDE.md, product specifications, architecture notes, build plans, implementation reports, testing guides, and user-feedback notes",
+      "complete tracked-file inventory and top-level structure",
+      "Python and Node dependency manifests, Docker Compose configuration, Alembic migrations, and GitHub Actions workflow",
+      "FastAPI entry point, authentication, data models, AI client, representative routers, schemas, and database configuration",
+      "Next.js entry points, API client, representative pages and components, Playwright configuration, and representative E2E journeys",
+      "backend, frontend, integration, and real-E2E test inventory and representative tests",
+      "tracked credential-related filenames and generated-artifact patterns without reading credential-file values",
+      "local branches, tags, commit count, and git log --oneline -20"
+    ],
+    "missing": [
+      "AGENTS.md",
+      "docs/ directory",
+      "release tags or packaged releases",
+      "cloud deployment configuration or evidence of a currently running deployment",
+      "implemented scheduled weekly-summary worker or cron configuration",
+      "independent test or coverage output generated from the analyzed revision"
+    ],
+    "inaccessible": [
+      "live GitHub repository metadata, Actions results, remote branch state, and release state because api.github.com was unreachable"
+    ],
+    "sampling_notes": "The repository contains 132 tracked files and about 1.23 MB, so its structure and major subsystems were broadly inspected. Long documents, the 70 KB theme-detail page, repetitive schema definitions, and every individual test body were sampled rather than read line by line. The task described the clone as shallow at depth 50 and recent-history-only; Git reports this checkout as non-shallow, but it contains only one commit, so no history beyond that initial commit was available."
+  },
+  "stated_purpose": "Build a theme-aware, multi-tenant journaling web application that combines typed or spoken entries with per-theme goals, streak tracking, structured AI reflections, weekly summaries, conversational entry creation, and voice playback.",
+  "observed_capabilities": [
+    {
+      "statement": "The FastAPI backend implements JWT signup/login and user-scoped CRUD for themes, three goal types, theme-linked entries, streaks, and JSON export.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-core",
+        "backend-routes",
+        "tests"
+      ]
+    },
+    {
+      "statement": "The backend integrates OpenAI for schema-constrained entry reflections, weekly theme summaries, speech transcription, text-to-speech, conversational journal-entry synthesis, and goal-coach intake.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ai-implementation",
+        "backend-routes",
+        "schemas"
+      ]
+    },
+    {
+      "statement": "The Next.js frontend provides authentication, a dashboard, theme and goal management, entry list/detail/create flows, audio recording or upload, reflection playback, weekly summaries, export, conversational entry creation, and a goal-coach interface.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "frontend",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "A 12-week goal-coaching foundation supports cycles, primary and secondary north-star goals, weekly plans and items, check-ins, plan commitment and closure, and execution scoring.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "goal-coach",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Docker Compose defines local PostgreSQL, Redis, API, and web services, while Alembic supplies migrations for the core, conversation, and goal-coach data models.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests",
+        "migrations"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The Phase 5 build plan calls for AI-generated weekly plans and reviews, scoreboard or progress views, deterministic E2E coverage, and no-mock real-data E2E validation for each goal-coach feature slice.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "build-plan"
+      ]
+    },
+    {
+      "statement": "Some Phase 5 foundations are implemented, but dedicated weekly-plan generation, weekly-review generation, and scoreboard endpoints were not found among the registered routes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "build-plan",
+        "backend-routes",
+        "goal-coach"
+      ]
+    },
+    {
+      "statement": "Project documents identify scheduled weekly summaries, mobile optimization, automated goal progress, broader browser and accessibility testing, performance testing, and security testing as future work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "status-docs",
+        "testing-docs"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The repository is a monorepo with a Next.js 14 and TypeScript frontend calling a FastAPI and SQLAlchemy backend backed by PostgreSQL; Redis and Celery dependencies are present but no worker implementation was found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests",
+        "backend-core",
+        "frontend"
+      ]
+    },
+    {
+      "statement": "The core relational model connects users to themes, goals, entries, AI artifacts, streaks, and conversations, with an entry_themes join table enforcing many-to-many entry classification.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-core",
+        "migrations"
+      ]
+    },
+    {
+      "statement": "Goal coaching extends the model with goal cycles, north-star goals, weekly plans, plan items, check-ins, and measurements, all associated with user-owned themes or goals.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "goal-coach",
+        "migrations"
+      ]
+    },
+    {
+      "statement": "AI calls are centralized in an injectable client; structured results are validated through Pydantic before persistence, and reflection, summary, and goal-coach intake handlers retry invalid structured responses once.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ai-implementation",
+        "backend-routes",
+        "schemas"
+      ]
+    },
+    {
+      "statement": "The frontend stores its bearer token in browser localStorage and uses a shared API client to call authenticated REST endpoints.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "frontend",
+        "security-config"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains an end-to-end implementation of its principal journaling workflow rather than only a scaffold: authentication, themes and goals, entry capture, AI reflection, weekly summary, voice, streak, and export code are all present.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-routes",
+        "frontend",
+        "tests"
+      ]
+    },
+    {
+      "statement": "The test inventory contains 75 backend test functions and 27 Playwright test declarations, including ownership checks, structured-AI mocks, real OpenAI voice integration tests, goal-coach API tests, and an opt-in comprehensive no-mock journey.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "Historical project reports record a successful three-test real OpenAI voice run and a 60-test backend run, although these results were not independently reproduced for the analyzed revision.",
+      "claim_type": "owner_context",
+      "evidence_ids": [
+        "status-docs"
+      ]
+    },
+    {
+      "statement": "User-feedback notes show that the application was manually exercised sufficiently to uncover reflection rendering, theme routing, and color-contrast defects, followed by documented fixes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "user-feedback"
+      ]
+    },
+    {
+      "statement": "A GitHub Actions workflow covers backend linting and pytest, frontend linting and build, and Chromium Playwright tests with PostgreSQL services.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "ci"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The analyzed revision was not executed because the read-only environment lacked a running PostgreSQL stack and did not permit build or test artifacts; current green status therefore remains unverified.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests",
+        "status-docs"
+      ]
+    },
+    {
+      "statement": "One status report records that frontend E2E verification was blocked by a corrupted macOS SWC binary, while another claims frontend tests passed and also concedes happy-path timing or state failures.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "status-docs"
+      ]
+    },
+    {
+      "statement": "Conversational entry creation saves an initial AI greeting, but the frontend does not display it and no message-fetch endpoint is registered, leaving the conversation UI initially blank despite the backend-generated prompt.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backend-routes",
+        "frontend"
+      ]
+    },
+    {
+      "statement": "The PRD requires rate limiting for AI cost control, but no rate-limiting implementation or dependency was found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme-specs",
+        "tree-manifests",
+        "security-config"
+      ]
+    },
+    {
+      "statement": "Redis and Celery are declared, but weekly summaries remain manually triggered and no scheduled worker implementation was found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree-manifests",
+        "backend-routes",
+        "status-docs"
+      ]
+    },
+    {
+      "statement": "No current deployment artifact or operational evidence supports the implementation report's statement that conversational entry creation was deployed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "status-docs",
+        "tree-manifests",
+        "history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The CI backend job sets OPENAI_API_KEY to a non-secret test value and runs all pytest tests; because real integration tests skip only when that variable is absent, the workflow may attempt paid external calls with an invalid credential instead of remaining fully mocked.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "ci",
+        "tests"
+      ]
+    },
+    {
+      "statement": "The API accepts any HTTP or HTTPS origin through its CORS regular expression while allowing credentials, which is broader than appropriate for a service holding private journal data.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-config"
+      ]
+    },
+    {
+      "statement": "Keeping bearer tokens in localStorage increases token-theft impact if a frontend cross-site-scripting flaw is introduced.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "frontend",
+        "security-config"
+      ]
+    },
+    {
+      "statement": "Several API handlers return upstream exception text to clients, which may disclose operational details and creates an inconsistent error contract.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "backend-routes",
+        "security-config"
+      ]
+    },
+    {
+      "statement": "All project history is compressed into a single initial commit, limiting provenance, refresh comparison, and confidence about which documented test results correspond to the checked-in source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "status-docs"
+      ]
+    },
+    {
+      "statement": "The repository contains an environment-variable template but no tracked live credential file was identified; credential values were not inspected.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-config"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Run the Docker-backed backend, deterministic Playwright, and opt-in real E2E suites from this exact revision, then retain machine-generated reports so maturity can be reassessed from prototype to functional.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tests",
+        "status-docs",
+        "tree-manifests"
+      ]
+    },
+    {
+      "statement": "Separate mocked CI from credential-gated integration testing so ordinary pull-request CI cannot invoke real OpenAI endpoints.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "ci",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Restrict CORS to explicit deployment origins, add AI endpoint rate limiting, avoid exposing raw exception strings, and review browser token storage before exposing the application beyond trusted local use.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-config",
+        "readme-specs"
+      ]
+    },
+    {
+      "statement": "Complete the conversational-entry contract by returning or fetching the initial greeting and add a deterministic test that verifies it is visible before the first user message.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "backend-routes",
+        "frontend",
+        "tests"
+      ]
+    },
+    {
+      "statement": "Reconcile status documents with the current implementation and clearly mark which Phase 5 goal-coach slices are complete, partially complete, or still planned.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "build-plan",
+        "status-docs",
+        "goal-coach"
+      ]
+    }
+  ],
+  "questions": [
+    "Is this application currently deployed or actively used, and if so where is the deployment configuration maintained?",
+    "Were the documented February test runs performed against source equivalent to commit 3519a1f, or were multiple development histories combined into the initial commit?",
+    "Should Phase 5 goal coaching remain an active direction, particularly weekly AI planning and review generation?",
+    "Is conversational journaling intended to display the AI's initial greeting immediately, or should the backend stop generating it?",
+    "Should real OpenAI integration tests run only manually or in a separately credentialed protected workflow?",
+    "Is the broad CORS policy intentional for tunnel or preview use, and what production origins should be allowed?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata-snapshot",
+      "kind": "github_metadata",
+      "location": "registry-supplied snapshot for kmadhok/journaling-app",
+      "summary": "Private main-branch repository pushed on 2026-07-11 with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme-specs",
+      "kind": "documentation",
+      "location": "README.md, CLAUDE.md, PRD.md, SPEC.md, ARCHITECTURE.md, and ACCEPTANCE_TESTS.md",
+      "summary": "Defines a theme-aware voice-journaling MVP with user-scoped themes and goals, AI reflections, weekly summaries, streaks, voice, export, privacy expectations, and local setup."
+    },
+    {
+      "id": "build-plan",
+      "kind": "project_plan",
+      "location": "BUILD_ORDER.md",
+      "summary": "Defines phases zero through five, including the implemented MVP areas and additional 12-week goal-coach, AI collaboration, progress-view, and verification requirements."
+    },
+    {
+      "id": "tree-manifests",
+      "kind": "repository_structure",
+      "location": "backend/, frontend/, docker-compose.yml, backend/requirements.txt, backend/pyproject.toml, and frontend/package.json",
+      "summary": "Shows a FastAPI, SQLAlchemy, PostgreSQL, Redis, Next.js 14, Tailwind, pytest, and Playwright monorepo with Docker-based local orchestration."
+    },
+    {
+      "id": "backend-core",
+      "kind": "source_code",
+      "location": "backend/app/main.py, backend/app/models.py, backend/app/auth.py, backend/app/database.py, and backend/app/config.py",
+      "summary": "Registers the API, implements JWT authentication, and defines the user, theme, goal, entry, AI artifact, streak, conversation, and goal-coach persistence models."
+    },
+    {
+      "id": "backend-routes",
+      "kind": "source_code",
+      "location": "backend/app/routers/",
+      "summary": "Implements authenticated routes for themes, goals, entries, streaks, AI artifacts, voice, export, conversations, and goal-coach cycles and weekly execution."
+    },
+    {
+      "id": "ai-implementation",
+      "kind": "source_code",
+      "location": "backend/app/ai_client.py and backend/app/routers/ai.py",
+      "summary": "Centralizes OpenAI structured generation, transcription, speech synthesis, guided conversation, entry synthesis, validation, retries, and goal-coach intake fallback behavior."
+    },
+    {
+      "id": "schemas",
+      "kind": "schema",
+      "location": "backend/schemas/ and backend/app/schemas/",
+      "summary": "Contains JSON and Pydantic schemas for reflections, summaries, synthesized entries, authentication, domain entities, and goal-coach intake."
+    },
+    {
+      "id": "goal-coach",
+      "kind": "source_code",
+      "location": "backend/app/routers/goal_coach.py, backend/app/schemas/goal_coach.py, backend/app/models.py, and frontend/app/themes/[id]/page.tsx",
+      "summary": "Implements the 12-week cycle, north-star, weekly-plan, check-in, scoring, AI-intake, and frontend management foundation."
+    },
+    {
+      "id": "migrations",
+      "kind": "database_migrations",
+      "location": "backend/alembic/versions/",
+      "summary": "Three migrations create the core tables, conversations and messages, and the extended goal-coach domain."
+    },
+    {
+      "id": "frontend",
+      "kind": "source_code",
+      "location": "frontend/app/, frontend/components/, and frontend/lib/api.ts",
+      "summary": "Implements the browser UI and typed API client for authentication, journaling, themes, goals, voice, AI reflection, export, conversations, and goal coaching."
+    },
+    {
+      "id": "tests",
+      "kind": "test_code",
+      "location": "backend/tests/, frontend/e2e/, frontend/tests/, and frontend/playwright.config.ts",
+      "summary": "Contains 75 backend test functions and 27 Playwright test declarations spanning mocked, integration, ownership, validation, voice, goal-coach, and no-mock real journeys."
+    },
+    {
+      "id": "ci",
+      "kind": "continuous_integration",
+      "location": ".github/workflows/ci.yml",
+      "summary": "Defines backend lint, format, and pytest jobs plus frontend lint, build, and Chromium Playwright jobs using PostgreSQL services."
+    },
+    {
+      "id": "status-docs",
+      "kind": "implementation_reports",
+      "location": "PHASE_4_COMPLETE.md, INTEGRATION_TESTS.md, phase 3 findings.md, phase_3_action_steps.md, BUG_FIXES_AND_LOGGING.md, and CONVERSATIONAL_ENTRY_IMPLEMENTATION.md",
+      "summary": "Records implementation claims and historical test results, but also documents an SWC blocker, happy-path instability, manual testing needs, and remaining limitations."
+    },
+    {
+      "id": "testing-docs",
+      "kind": "testing_documentation",
+      "location": "TESTING.md and TESTING_AGENT_GUIDE.md",
+      "summary": "Describes the testing pyramid, commands, claimed coverage, real-API gates, known coverage gaps, and failure-triage guidance."
+    },
+    {
+      "id": "user-feedback",
+      "kind": "owner_feedback",
+      "location": "my_user_test_feedback.md and observations.md",
+      "summary": "Records manual-use problems involving reflection rendering, theme routing, and text contrast, plus requests for theme goals and conversational journaling."
+    },
+    {
+      "id": "security-config",
+      "kind": "security_and_configuration_review",
+      "location": ".gitignore, backend/.gitignore, frontend/.gitignore, .env.example filename, backend/app/main.py, backend/app/config.py, backend/app/auth.py, and frontend localStorage usage",
+      "summary": "Shows credential-file exclusions and required configuration, bcrypt and JWT authentication, broad CORS matching, localStorage token handling, and no identified rate limiter; no credential values were read."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20 at 3519a1fbdf5ef9691e33f3a7aef0befc3c4f2e55",
+      "summary": "The available history consists of one commit dated 2026-07-11 with subject 'Initial commit'; local main tracks origin/main, with no tags or additional branches present."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary implementation, migrations, test code, and product documents support a detailed account of the repository, but the current revision could not be executed, live GitHub and Actions state was inaccessible, all history is compressed into one commit, and historical status reports contain conflicting verification claims."
+  },
+  "limitations": [
+    "No credential-file values were opened or inspected.",
+    "Live GitHub archival state, Actions outcomes, remote branches, and releases could not be independently verified.",
+    "The supplied GitHub snapshot, rather than a live query, is the sole evidence for current issue and pull-request counts.",
+    "Tests, builds, migrations, Docker startup, and OpenAI integrations were not executed in the read-only environment.",
+    "Historical pass counts and deployment statements are treated as owner context unless corroborated by current source.",
+    "Long repetitive files were sampled, so minor endpoints, UI states, or isolated defects may not be represented."
+  ]
+}

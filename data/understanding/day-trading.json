@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Day_trading",
+  "analyzed_at": "2026-07-27T03:15:51Z",
+  "revision": "30b0e42b582f22c27b3cad98fde4bd0d3e8e50bb",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata and activity snapshot",
+      "README.md and .gitignore",
+      "top-level tracked-file inventory and dependency manifest",
+      "all nine project implementation modules",
+      "representative generated CSV, log, and Excel-report artifacts",
+      "test, CI, notebook, packaging, deployment, tag, and release indicators",
+      "credential-like filename inventory without reading credential values",
+      "all three commits visible in git log"
+    ],
+    "missing": [
+      "CLAUDE.md, AGENTS.md, and docs directory",
+      "automated project tests",
+      "CI workflows",
+      "notebooks or interactive demos",
+      "packaging configuration and reproducible lockfile",
+      "deployment or scheduled-execution configuration",
+      "release tags",
+      "open issues and pull requests"
+    ],
+    "inaccessible": [
+      "live Yahoo Finance execution and dependency installation because analysis was read-only with restricted network access"
+    ],
+    "sampling_notes": "The checkout is shallow with depth 50, so history before the available commits may be truncated; only three commits are visible. All substantive first-party source was inspected. The tracked virtual environment contains 8,032 of 8,062 tracked files and was sampled through its inventory and metadata rather than reading vendored package source individually."
+  },
+  "stated_purpose": "A Python day-trading research tool that fetches Yahoo Finance market data, calculates SMA, MACD, and RSI indicators, generates rule-based signals, and optionally backtests them.",
+  "observed_capabilities": [
+    {
+      "statement": "The command-line application accepts ticker, interval, period, strategy, trend-mode, output, and backtest parameters.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The data layer fetches adjusted OHLCV bars through yfinance, converts timestamps to New York time, optionally filters regular market hours, and validates bar count and price consistency.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data"
+      ]
+    },
+    {
+      "statement": "The indicator and signal layers calculate SMA 20/50/200, MACD 12/26/9, and RSI 14, then produce BUY, SELL, or HOLD decisions using pullback or stacked trend rules.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "indicators",
+        "signals"
+      ]
+    },
+    {
+      "statement": "Three presets are implemented: current requires all three indicator conditions, aggressive requires any two, and conservative adds stronger trend confirmation and a volume filter.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "strategy-config",
+        "signals"
+      ]
+    },
+    {
+      "statement": "The application can export individual and combined signal CSVs, compare strategies, run a next-bar-open backtest with commission and slippage inputs, and generate an Excel workbook.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "export",
+        "backtest",
+        "comparison",
+        "excel-report"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "main.py orchestrates a sequential pipeline from Yahoo Finance retrieval through validation, indicator calculation, warm-up removal, signal generation, CSV export, optional backtesting, and multi-strategy comparison.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main",
+        "data",
+        "indicators",
+        "signals",
+        "export",
+        "backtest",
+        "comparison"
+      ]
+    },
+    {
+      "statement": "Strategy behavior is represented by dataclass configurations selected through a StrategyType enum and consumed by the shared signal-generation functions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "strategy-config",
+        "signals"
+      ]
+    },
+    {
+      "statement": "The system is a local batch-oriented research application rather than a live trading service: it has no broker integration, persistent application datastore, web interface, scheduler, or deployment configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "main",
+        "history"
+      ]
+    }
+  ],
+  "maturity": "functional",
+  "accomplishments": [
+    {
+      "statement": "A recorded September 2025 run processed 1,620 SPY bars, retained 1,420 after warm-up, executed all three strategies with backtesting, and completed in 10.5 seconds.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "execution-log"
+      ]
+    },
+    {
+      "statement": "Tracked outputs include six signal CSVs, an Excel report, and an execution log, providing evidence that the primary research workflow produced tangible results.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifacts",
+        "execution-log"
+      ]
+    },
+    {
+      "statement": "Signal logic uses prior-bar values for MACD and RSI crossovers, while the backtest executes a signal using the following bar's open price to reduce direct lookahead bias.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "signals",
+        "backtest"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no first-party automated tests or CI workflows to verify indicator calculations, strategy conditions, exports, or backtest accounting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    },
+    {
+      "statement": "The dependency manifest omits openpyxl even though the Excel report generator imports it, and the README does not document the later multi-strategy and Excel-report additions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "requirements",
+        "excel-report",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The backtester operates in fixed one-unit positions and lacks position sizing, stops, take-profit rules, exposure controls, benchmark comparison, and rigorous intraday annualization.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "backtest"
+      ]
+    },
+    {
+      "statement": "The Excel report embeds fixed SPY execution details and performance figures rather than deriving its summary entirely from the selected input files.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "excel-report"
+      ]
+    },
+    {
+      "statement": "No live brokerage execution capability is implemented despite the repository's trading theme.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "main"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The repository tracks a complete platform-specific virtual environment, compiled binaries, bytecode, bootstrap scripts, generated market data, reports, and logs; this inflates the repository and creates portability, provenance, and dependency-maintenance risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "history",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "The recorded positive result for the current strategy is based on only three buy signals over one 60-day SPY sample, so it is not strong evidence of general strategy performance.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "execution-log",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "The absence of tests makes financial metric and signal regressions difficult to detect, particularly as recent changes expanded the strategy logic substantially.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "history",
+        "backtest",
+        "signals"
+      ]
+    },
+    {
+      "statement": "The repository has had no visible commit activity since September 2025 and has no open issues or pull requests, suggesting the implementation is dormant.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "metadata",
+        "history"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Remove the tracked virtual environment, bytecode, generated outputs, and bootstrap installers from version control; expand .gitignore and recreate dependencies from a complete pinned manifest.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "gitignore",
+        "requirements"
+      ]
+    },
+    {
+      "statement": "Add deterministic unit tests for indicators, crossover boundaries, all strategy presets, next-bar execution, commissions, drawdown, and export schemas before relying on further performance results.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "signals",
+        "backtest",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Make the Excel summary derive from actual result files and document the multi-strategy workflow and openpyxl dependency.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "excel-report",
+        "requirements",
+        "readme"
+      ]
+    },
+    {
+      "statement": "If the project is revived, evaluate strategies over multiple symbols, regimes, and out-of-sample periods with realistic sizing and transaction-cost assumptions.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "execution-log",
+        "backtest"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this intended to remain an educational research tool, or was live or paper-trading integration planned?",
+    "Are the generated SPY datasets and reports meant to be durable reference fixtures or disposable run outputs?",
+    "Should the repository be revived with validation work, retained as a historical experiment, or archived?",
+    "What position-sizing and risk-management assumptions should a credible backtest use?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Day_trading",
+      "summary": "Public repository on main with no description, no open issues or pull requests, and last recorded push on 2025-09-09."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Documents a Yahoo Finance SMA/MACD/RSI signal generator, command-line usage, trading rules, CSV output, optional backtesting, and an educational-use disclaimer."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Contains nine first-party implementation modules, generated outputs, installer scripts, bytecode, and a tracked virtual environment comprising 8,032 of 8,062 tracked files; no first-party tests, CI, notebooks, or deployment artifacts were found."
+    },
+    {
+      "id": "requirements",
+      "kind": "dependency_manifest",
+      "location": "requirements.txt",
+      "summary": "Lists yfinance, pandas, numpy, pytz, and argparse, but not openpyxl used by the report generator."
+    },
+    {
+      "id": "gitignore",
+      "kind": "configuration",
+      "location": ".gitignore",
+      "summary": "Contains only the entry 'venv', which does not exclude the tracked trading_env directory or generated artifacts."
+    },
+    {
+      "id": "main",
+      "kind": "entry_point",
+      "location": "main.py",
+      "summary": "Implements the CLI and orchestrates data retrieval, validation, indicators, strategies, exports, comparisons, and optional backtests."
+    },
+    {
+      "id": "data",
+      "kind": "source",
+      "location": "data.py",
+      "summary": "Fetches yfinance OHLCV history, normalizes timezone, filters market hours, drops missing rows, and validates price-bar quality."
+    },
+    {
+      "id": "indicators",
+      "kind": "source",
+      "location": "indicators.py",
+      "summary": "Implements SMA, EMA/MACD, Wilder or simple RSI, and warm-up removal."
+    },
+    {
+      "id": "signals",
+      "kind": "source",
+      "location": "signals.py",
+      "summary": "Implements trend filters, MACD and RSI crossovers, volume confirmation, three signal-combination modes, and signal validation."
+    },
+    {
+      "id": "strategy-config",
+      "kind": "source",
+      "location": "strategy_config.py",
+      "summary": "Defines current, aggressive, and conservative strategy configurations using an enum and dataclass."
+    },
+    {
+      "id": "backtest",
+      "kind": "source",
+      "location": "backtest.py",
+      "summary": "Implements a one-position, fixed-unit backtester using next-bar-open execution, flat commissions, proportional slippage, trade logs, an equity curve, and summary metrics."
+    },
+    {
+      "id": "export",
+      "kind": "source",
+      "location": "export.py",
+      "summary": "Validates, orders, rounds, names, and writes signal datasets to CSV."
+    },
+    {
+      "id": "comparison",
+      "kind": "source",
+      "location": "strategy_comparison.py",
+      "summary": "Combines strategy-specific signals and produces CSV comparison tables from signal and optional backtest results."
+    },
+    {
+      "id": "excel-report",
+      "kind": "source",
+      "location": "create_excel_report.py",
+      "summary": "Builds a styled multi-sheet Excel workbook from recent CSVs but includes hard-coded strategy summary and execution values."
+    },
+    {
+      "id": "execution-log",
+      "kind": "generated_output",
+      "location": "trading_execution_log_20250909_073500.txt",
+      "summary": "Records a completed all-strategy SPY 15-minute run over 1,420 post-warm-up bars: current produced 3 buys and a reported 0.24% return, aggressive produced 63 signals and -0.07%, and conservative produced no signals."
+    },
+    {
+      "id": "artifacts",
+      "kind": "generated_outputs",
+      "location": "signals_SPY_15m_pullback_all_strategies_20250909_071404.csv",
+      "summary": "A tracked 1,420-row combined export contains OHLCV data, indicators, condition flags, and signals for all three strategies; related individual CSVs and an Excel workbook are also tracked."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "The shallow checkout exposes three commits dated 2025-09-01 through 2025-09-09; the final commit expanded strategies and added comparison, report, logs, datasets, and installer artifacts."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "All first-party implementation and available history were inspected, and a recorded successful run plus generated outputs support the primary workflow. Confidence is limited by the shallow history, lack of automated tests or CI, inability to rerun the network-dependent workflow, and weak performance-validation evidence."
+  },
+  "limitations": [
+    "The repository was analyzed read-only, so no files were modified and no network-dependent trading run was performed.",
+    "The clone is shallow at depth 50, and only three commits are available for historical analysis.",
+    "Vendored virtual-environment package source was not inspected individually because it is generated third-party content.",
+    "The supplied GitHub snapshot reports no open issues or pull requests, but no broader branch or historical issue analysis was available.",
+    "Generated performance figures were treated as recorded artifacts, not independently reproduced or validated investment results."
+  ]
+}

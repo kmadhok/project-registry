@@ -1,0 +1,350 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/predictive-markets",
+  "analyzed_at": "2026-07-27T03:29:38Z",
+  "revision": "af7fed4f7887211e682445b4325e7dedd2b999a3",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata for the private main-branch repository",
+      "README.md and SETUP_NOTES.md",
+      "top-level structure, tracked-file inventory, .gitignore, and entry points",
+      "get_market_data.py and submit_orders.py in full",
+      "installed-package metadata and representative size information from the tracked virtual environment",
+      "presence or absence of tests, CI workflows, notebooks, demos, deployment artifacts, and dependency manifests",
+      "Python syntax of both first-party scripts using AST parsing",
+      "local and remote branch inventory",
+      "git log --oneline -20 and available commit metadata",
+      "credential-related filenames and tracking status without inspecting credential-file contents"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory or architecture specification",
+      "requirements.txt, pyproject.toml, or another reproducible dependency manifest",
+      "automated tests",
+      "CI workflows",
+      "notebooks",
+      "release or deployment artifacts",
+      "runtime .env configuration in the checkout",
+      "open pull requests or issues"
+    ],
+    "inaccessible": [
+      "Values and contents of credential-like files were deliberately excluded from inspection under the analysis safety rules.",
+      "Live Kalshi API behavior was not exercised because it would require credentials and network access."
+    ],
+    "sampling_notes": "Analysis used the supplied clone described as shallow with depth 50, so history conclusions are limited to recent available history. Only one commit and one branch were visible. All seven non-venv tracked files were inventoried, and both first-party Python scripts were inspected fully. The 1,102 tracked virtual-environment files were sampled through package metadata, counts, and largest-file listings rather than read individually."
+  },
+  "stated_purpose": "The README describes a Python integration for retrieving Kalshi demo-market data and managing simulated portfolio orders through Kalshi's demo API.",
+  "observed_capabilities": [
+    {
+      "statement": "The market-data script constructs a Kalshi SDK client from environment configuration and implements market listing, individual market lookup, and order-book retrieval.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "market-source"
+      ]
+    },
+    {
+      "statement": "The order-management script implements demo-account balance lookup, position retrieval, order listing, limit-order creation with generated client IDs, and order cancellation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "order-source"
+      ]
+    },
+    {
+      "statement": "Both scripts expose runnable command-line examples, although limit-order submission and cancellation remain commented out by default.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "market-source",
+        "order-source"
+      ]
+    },
+    {
+      "statement": "Repository setup notes report that market retrieval was exercised successfully against the demo environment, while authenticated portfolio and order access returned an authorization failure.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup-notes"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The setup notes prescribe creating or confirming a Kalshi demo account, generating demo-specific API credentials, and replacing the current credential configuration before authenticated order operations can work.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup-notes"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The project is a pair of standalone Python scripts with duplicated client-initialization logic rather than a packaged application or shared library.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "market-source",
+        "order-source",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Both scripts load an API key identifier, private-key path, and API host from environment variables, read the private key at runtime, and pass the resulting configuration to the generated Kalshi Python SDK.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "market-source",
+        "order-source"
+      ]
+    },
+    {
+      "statement": "Market queries use the SDK's MarketsApi, while balance, position, and order operations use PortfolioApi.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "market-source",
+        "order-source"
+      ]
+    },
+    {
+      "statement": "Dependencies are supplied through a committed Python 3.9 virtual environment containing kalshi-python 2.1.4, python-dotenv 1.2.1, cryptography 46.0.3, and transitive packages, rather than through a declarative manifest.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "tree"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains implemented wrappers for the principal demo-market and order-management operations described in its README.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "market-source",
+        "order-source"
+      ]
+    },
+    {
+      "statement": "Both first-party Python files parse successfully as valid Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "The setup notes preserve a manual integration result showing successful market-data retrieval and a clearly identified authentication blocker for account operations.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup-notes"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "Authenticated balance, portfolio, and order workflows lack successful execution evidence and are documented as blocked by authorization failure.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup-notes",
+        "order-source"
+      ]
+    },
+    {
+      "statement": "There are no automated tests, CI workflows, reproducible dependency manifest, package configuration, or deployment artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "verification"
+      ]
+    },
+    {
+      "statement": "The README and setup notes describe market endpoints as public, but the market-data implementation still requires all credential-related environment variables and reads a private key before making requests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "setup-notes",
+        "market-source"
+      ]
+    },
+    {
+      "statement": "Order parameters such as side, action, price, and count are not validated locally before constructing and submitting the SDK request.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "order-source"
+      ]
+    },
+    {
+      "statement": "The repository has only one initial commit, so there is no maintenance history demonstrating continued use, defect correction, or evolution.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Two credential-like text files are tracked, and the setup documentation identifies one tracked file as RSA private-key material; its contents were not inspected.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "security-inventory",
+        "setup-notes"
+      ]
+    },
+    {
+      "statement": "The setup documentation itself contains a credential identifier, creating potential credential exposure through repository history even if the working files are later removed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "setup-notes",
+        "history"
+      ]
+    },
+    {
+      "statement": "The committed virtual environment accounts for 1,102 of 1,109 tracked files and includes platform-specific compiled macOS/Python 3.9 binaries, making the repository unusually large, difficult to audit, and nonportable.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "dependencies"
+      ]
+    },
+    {
+      "statement": "Without a dependency manifest or automated verification, recreating the environment and detecting SDK compatibility regressions will be unreliable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "verification",
+        "tree"
+      ]
+    },
+    {
+      "statement": "If configuration is accidentally pointed at a non-demo host, the same order-creation path could submit financially consequential orders because the code does not independently enforce the demo endpoint.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "order-source",
+        "readme"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Treat the tracked credential material as potentially exposed: determine whether it remains valid, revoke or rotate it as appropriate, remove credential files and identifiers from tracking and history, and expand ignore rules to cover private-key formats.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-inventory",
+        "setup-notes",
+        "history"
+      ]
+    },
+    {
+      "statement": "Replace the committed virtual environment with a pinned dependency manifest and document a clean-environment installation procedure.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "dependencies"
+      ]
+    },
+    {
+      "statement": "Extract shared Kalshi client construction into one module, validate order inputs, and enforce or explicitly confirm the demo host before allowing mutations.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "market-source",
+        "order-source"
+      ]
+    },
+    {
+      "statement": "Add mocked unit tests for request construction and response handling plus an opt-in demo integration test that proves market retrieval and authenticated account operations without exposing credentials.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "market-source",
+        "order-source",
+        "verification",
+        "setup-notes"
+      ]
+    },
+    {
+      "statement": "Reconcile the documentation and implementation concerning whether market-data calls require authentication.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "readme",
+        "setup-notes",
+        "market-source"
+      ]
+    }
+  ],
+  "questions": [
+    "Are either of the tracked credential-like files or the documented credential identifier still valid, and have they been rotated?",
+    "Was this repository intended as a one-time Kalshi API experiment or as the foundation for an actively developed trading tool?",
+    "Should the project remain strictly limited to the Kalshi demo environment, or is eventual production use intended?",
+    "Is successful authenticated order management still desired work?",
+    "Should public market-data access operate without credentials, as the documentation currently suggests?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/predictive-markets",
+      "summary": "Registry snapshot identifies a private, unarchived repository on main, pushed on 2026-07-11, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Describes setup and usage for Kalshi demo-market retrieval, order-book access, balances, positions, limit orders, and cancellation using mock funds."
+    },
+    {
+      "id": "setup-notes",
+      "kind": "setup_documentation",
+      "location": "SETUP_NOTES.md",
+      "summary": "Reports successful market-data retrieval, an authorization failure for authenticated operations, and steps for replacing demo credentials. A credential identifier is present but is intentionally not reproduced."
+    },
+    {
+      "id": "market-source",
+      "kind": "source_code",
+      "location": "get_market_data.py",
+      "summary": "Implements environment-configured SDK construction and functions for listing markets, fetching market details, and retrieving order books."
+    },
+    {
+      "id": "order-source",
+      "kind": "source_code",
+      "location": "submit_orders.py",
+      "summary": "Implements balance, position, order-listing, limit-order creation, and cancellation functions through the Kalshi PortfolioApi."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "HEAD contains 1,109 tracked files totaling about 40 MB: seven non-venv files and 1,102 files under a committed virtual environment. No tests, CI, notebooks, package manifest, or deployment structure is present."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_inventory",
+      "location": "venv/lib/python3.9/site-packages",
+      "summary": "Installed metadata includes kalshi-python 2.1.4, python-dotenv 1.2.1, cryptography 46.0.3, pydantic 2.12.5, urllib3 2.6.2, and transitive dependencies; large platform-specific compiled binaries are tracked."
+    },
+    {
+      "id": "verification",
+      "kind": "static_verification",
+      "location": "get_market_data.py; submit_orders.py",
+      "summary": "Both first-party scripts passed Python AST parsing. No credentialed or network integration execution was attempted, and no repository-provided automated tests exist."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Available history contains a single commit, af7fed4, titled 'Initial commit' and dated 2026-07-11; main is aligned with origin/main and no other branches are visible."
+    },
+    {
+      "id": "security-inventory",
+      "kind": "security_inventory",
+      "location": ".gitignore; tracked-file inventory",
+      "summary": "The .env filename is ignored and absent, but two credential-like text files are tracked. Their values and contents were not inspected."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The complete first-party implementation, documentation, repository structure, and available history support the prototype assessment. Confidence is limited because authenticated behavior is documented as failing, there are no automated verification artifacts, live API execution was intentionally avoided, and the supplied history is limited."
+  },
+  "limitations": [
+    "The supplied clone was described as shallow at depth 50, so older history would be unavailable if it existed beyond that boundary.",
+    "Credential-like file contents and all credential values were intentionally excluded from inspection.",
+    "No live Kalshi calls were performed, so current compatibility and runtime behavior were not independently verified.",
+    "The setup notes' reported market-data success was not corroborated by tests, logs, or generated outputs.",
+    "GitHub conclusions about issues and pull requests rely on the supplied registry snapshot rather than a fresh network query.",
+    "Vendored virtual-environment source was sampled rather than comprehensively reviewed."
+  ]
+}

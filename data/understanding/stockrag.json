@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/StockRag",
+  "analyzed_at": "2026-07-27T03:34:16Z",
+  "revision": "343b2d46b1ccb9f90a00fa88ff3b2dd9e0942ff3",
+  "analysis_scope": {
+    "inspected": [
+      "supplied registry and GitHub metadata snapshot",
+      "root tracked-file inventory and top-level structure",
+      "all root application entry points",
+      "app_third_rerun.py as the entry point marked CURRENT USE",
+      "app_chat.py and app.py as representative earlier application variants",
+      "helper_functions.py",
+      "archive/requirements_gemini.txt",
+      "archive/downloadnltk.ipynb",
+      "project-authored test-like files and verification structure",
+      ".gitattributes and Git LFS status",
+      "tracked credential-file presence without inspecting its values",
+      "all 20 project-authored Python files for syntax parsing",
+      "available branches, tags, and two-commit history"
+    ],
+    "missing": [
+      "root README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "current dependency manifest",
+      "automated project test suite",
+      "CI workflows",
+      "deployment configuration",
+      "release tags",
+      "architecture or planning documentation"
+    ],
+    "inaccessible": [
+      "live GitHub API verification of metadata, releases, branches, issues, and pull requests because network access was unavailable"
+    ],
+    "sampling_notes": "The analysis environment was supplied as a depth-50 recent-history clone, so history must be treated as truncated even though only two commits are available. The repository is large: 71,118 tracked paths and about 1,548 MiB of tracked blobs, with 71,092 paths under the committed scrapegraph virtual environment. Project-authored Python was inspected broadly, while bundled site-packages, native libraries, dependency tests, generated assets, and NLTK data were sampled only through inventories and largest-blob listings."
+  },
+  "stated_purpose": null,
+  "observed_capabilities": [
+    {
+      "statement": "The Streamlit interface accepts a stock symbol, retrieves recent matching articles from NewsAPI, presents article metadata for selection, and also accepts a custom article URL.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "current-app"
+      ]
+    },
+    {
+      "statement": "A selected page can be passed to ScrapeGraphAI, configured with an OpenAI model, to extract its article content.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "current-app",
+        "extractor-prototype"
+      ]
+    },
+    {
+      "statement": "Extracted content is chunked, embedded, stored in a temporary Chroma collection, indexed through LlamaIndex, and exposed through a streaming question-answering interface backed by Gemini.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "current-app",
+        "helpers"
+      ]
+    },
+    {
+      "statement": "The application preserves the selected stock, articles, extracted content, query engine, temporary-store path, and chat messages in Streamlit session state.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "current-app"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "app_third_rerun.py is marked CURRENT USE and acts as a monolithic Streamlit entry point containing the UI, NewsAPI client, article scraper, temporary vector-store lifecycle, retrieval pipeline, and chat orchestration.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "current-app"
+      ]
+    },
+    {
+      "statement": "helper_functions.py supplies model loaders, Gemini embeddings, document chunking, Chroma storage-context construction, and vector-store directory management.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "helpers"
+      ]
+    },
+    {
+      "statement": "The implemented data path is NewsAPI or custom URL to ScrapeGraphAI extraction, then LlamaIndex chunking and Chroma indexing, followed by Gemini-backed retrieval and streamed Streamlit chat output.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "current-app",
+        "helpers"
+      ]
+    },
+    {
+      "statement": "The numerous similarly structured app variants and archived experiments indicate iterative, file-level prototyping rather than a modular application architecture.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "project-tree",
+        "history"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository contains a coherent source-level demonstration of the intended stock-news workflow from discovery and extraction through article-grounded conversational retrieval.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "current-app",
+        "helpers"
+      ]
+    },
+    {
+      "statement": "All 20 project-authored Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "Several application variants record experiments with sidebar selection, chat state, article display, rerun handling, temporary Chroma persistence, and query rewriting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-tree",
+        "current-app",
+        "history"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no README, setup guide, architecture document, or unambiguous launch instruction.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-tree"
+      ]
+    },
+    {
+      "statement": "The only project dependency list is inside archive, while the committed virtual environment is not a portable or maintainable substitute for a current dependency manifest.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "repository-size"
+      ]
+    },
+    {
+      "statement": "Files named app_test.py, archive/test.py, and archive/test2.py are manual application experiments rather than automated tests; no project-authored pytest or unittest cases, CI workflows, or other repeatable verification artifacts were found.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "The primary workflow was not executed, so compatibility among the pinned-era libraries and the required external services is unproven.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "verification"
+      ]
+    },
+    {
+      "statement": "No deployment, monitoring, release, or operational safeguard evidence supports classifying the application as operational.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification",
+        "history"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A tracked .env file is used by the source for provider credentials; its values were deliberately not inspected, but any live credentials stored there may be exposed through repository history.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "credential-file",
+        "current-app"
+      ]
+    },
+    {
+      "statement": "The committed virtual environment contributes roughly 71,000 paths and platform-specific macOS native libraries, making clones unusually large and the environment nonportable.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-size"
+      ]
+    },
+    {
+      "statement": "Git LFS rules were added only after the initial commit and Git reports no LFS-managed files at the analyzed revision, so the existing large native binaries remain regular Git blobs.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "repository-size"
+      ]
+    },
+    {
+      "statement": "The interface accepts an arbitrary custom URL and sends it to a headless scraping pipeline without visible URL validation, creating a server-side request risk if the application were exposed to untrusted users.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "current-app"
+      ]
+    },
+    {
+      "statement": "Verbose logging includes user prompts, selected article details, and generated responses, which could expose user or article data in logs if deployed.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "current-app"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Remove the tracked .env file, add an appropriate ignore policy, purge credential material from history where necessary, and rotate any credentials that may have been live.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "credential-file",
+        "history"
+      ]
+    },
+    {
+      "statement": "Replace the committed virtual environment with a current locked dependency manifest and documented Python setup, then remove generated caches, downloaded corpora, and platform binaries from version control.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "repository-size"
+      ]
+    },
+    {
+      "statement": "Consolidate the application variants around one named entry point and separate news retrieval, scraping, indexing, model configuration, and UI state into testable modules.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "project-tree",
+        "current-app",
+        "helpers"
+      ]
+    },
+    {
+      "statement": "Add mocked unit tests for article filtering and pipeline construction plus one credential-gated end-to-end smoke test before treating the workflow as functional.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "verification",
+        "current-app"
+      ]
+    },
+    {
+      "statement": "If the experiment is no longer intended for use, preserve a concise architecture note and archive the cleaned repository rather than retaining the full generated environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "repository-size",
+        "verification"
+      ]
+    }
+  ],
+  "questions": [
+    "Was app_third_rerun.py the final intended entry point, or was another application variant used in practice?",
+    "Did the end-to-end NewsAPI, ScrapeGraphAI, OpenAI, Gemini, Chroma, and LlamaIndex workflow ever run successfully outside the development machine?",
+    "Are any credentials formerly or currently stored in the tracked .env file still active?",
+    "Should this remain a historical RAG experiment, or is there an owner intention to revive it?",
+    "Is there another repository that superseded this implementation?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata_snapshot",
+      "location": "https://github.com/kmadhok/StockRag",
+      "summary": "Owner-supplied snapshot identifies a private main-branch repository with no description, no open issues or pull requests, and its last push on 2024-08-25."
+    },
+    {
+      "id": "project-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The project root contains nine Streamlit-style app variants, helper_functions.py, an archive of experiments, a tracked environment file, generated artifacts, and a complete scrapegraph virtual environment, but no root README, docs, or current manifest."
+    },
+    {
+      "id": "current-app",
+      "kind": "source",
+      "location": "app_third_rerun.py",
+      "summary": "The file marked CURRENT USE implements stock-symbol news lookup, custom URL selection, ScrapeGraphAI article extraction, temporary Chroma indexing, Gemini-backed retrieval, query-rewrite experimentation, and streamed Streamlit chat."
+    },
+    {
+      "id": "extractor-prototype",
+      "kind": "source",
+      "location": "app.py",
+      "summary": "A smaller Streamlit prototype accepts an article URL, runs SmartScraperGraph with an OpenAI model, and displays extracted JSON."
+    },
+    {
+      "id": "helpers",
+      "kind": "source",
+      "location": "helper_functions.py",
+      "summary": "Shared helpers configure Gemini, Hugging Face and incomplete Bedrock alternatives, chunk documents, connect Chroma, and recreate vector-store directories."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_manifest",
+      "location": "archive/requirements_gemini.txt",
+      "summary": "An archived dependency list pins a 2024-era Streamlit, LlamaIndex, Chroma, Transformers, Hugging Face, Gemini, and related stack; no current root dependency manifest exists."
+    },
+    {
+      "id": "verification",
+      "kind": "tests_and_automation",
+      "location": "project-wide",
+      "summary": "All 20 project-authored Python files passed AST syntax parsing, but no automated project test functions, CI workflows, deployment configuration, releases, or execution evidence were found; test-named project files are interactive experiments."
+    },
+    {
+      "id": "repository-size",
+      "kind": "generated_and_dependency_files",
+      "location": "scrapegraph/",
+      "summary": "The committed virtual environment accounts for 71,092 of 71,118 tracked paths. HEAD contains about 1,548 MiB of tracked blobs, including macOS dylib and extension binaries as large as approximately 51 MiB."
+    },
+    {
+      "id": "credential-file",
+      "kind": "security_configuration",
+      "location": ".env",
+      "summary": "A seven-line .env file is tracked and source files load provider credentials from it. Its values were not opened, copied, summarized, or otherwise inspected."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Available history contains only the 2024-08-25 initial project commit and a second commit adding three Git LFS rules. No later source changes, tags, or additional available branches were found, and git lfs ls-files returned no managed files."
+    },
+    {
+      "id": "notebook",
+      "kind": "notebook",
+      "location": "archive/downloadnltk.ipynb",
+      "summary": "The archived notebook downloads broad NLTK datasets and contains a developer-machine-specific absolute path, reinforcing that the environment was assembled experimentally."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The implemented source path, repository structure, generated environment, and available history consistently support a stock-news RAG prototype classification. Confidence is limited because there is no documented setup, automated test, deployment artifact, or successful execution evidence, the external-service workflow could not be run without credentials and network access, live GitHub state could not be verified, and historical sampling is limited to the supplied depth-50 checkout."
+  },
+  "limitations": [
+    "The external-service workflow was not executed because doing so would require credential values and network access.",
+    "Credential values in .env were deliberately not inspected.",
+    "Live GitHub metadata, releases, and remote-only refs could not be verified because the GitHub API was unreachable.",
+    "The supplied clone is described as depth 50, so history beyond the available recent sample may be absent.",
+    "Bundled third-party source, tests, native libraries, generated assets, and NLTK data under scrapegraph were inventoried and sampled rather than read comprehensively.",
+    "Syntax parsing confirms grammatical validity only; it does not establish import compatibility or runtime correctness."
+  ]
+}

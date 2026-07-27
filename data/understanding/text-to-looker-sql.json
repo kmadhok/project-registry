@@ -1,0 +1,452 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Text_to_Looker_SQL",
+  "analyzed_at": "2026-07-27T03:33:50Z",
+  "revision": "b3558ff0c302e4a2802b50356c6e21e414d82cc3",
+  "analysis_scope": {
+    "inspected": [
+      "registry-provided GitHub metadata and default-branch snapshot",
+      "STREAMLIT_README.md and instructions.md",
+      "complete tracked-file inventory and top-level structure",
+      "dependency manifests, Procfile, runtime configuration, and .gitignore",
+      "application entry points and representative generation, retrieval, validation, execution, and data-generation source",
+      "synthetic dataset row counts, Looker-like metadata structure, field documents, and persisted retrieval artifacts",
+      "test source and static syntax of all 14 Python files",
+      "all eight commits available from git log, local and remote branch references, and per-commit file statistics",
+      "credential-like filenames, environment-variable references, and filenames matching embedded private-key or Google API-key patterns"
+    ],
+    "missing": [
+      "general repository README",
+      "CLAUDE.md",
+      "AGENTS.md",
+      "CI workflows",
+      "container configuration",
+      "release artifacts or tags",
+      "license",
+      "evidence of a currently running deployment",
+      "real Looker SDK integration",
+      "automated tests for the Gemini generation paths and Streamlit interfaces"
+    ],
+    "inaccessible": [
+      "Runtime test execution: pytest is not installed, and importing fake_looker.py fails because pandas is not installed in the analysis environment.",
+      "Live Gemini behavior was not exercised because it requires an external API credential and network access."
+    ],
+    "sampling_notes": "The supplied clone was described as shallow with depth 50, so history is treated as recent-history-only and potentially truncated. Eight commits were available and all were inspected. Source and configuration files were inspected broadly; large generated CSV contents, persisted JSON indexes, and the pickle artifact were sampled through structure, sizes, metadata, and generation code rather than exhaustively reading every value. No credential-file values were read."
+  },
+  "stated_purpose": "Provide a self-contained playground that translates natural-language retail questions into Looker-style WriteQuery JSON and SQL, with an optional Gemini/RAG path that can execute queries against a local synthetic Looker substitute.",
+  "observed_capabilities": [
+    {
+      "statement": "The deployment entry point presents a Streamlit form that sends a natural-language question and the checked-in retail metadata to Gemini, then displays generated Looker-style parameters, BigQuery SQL, token counts, and estimated cost.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "deployment-flow",
+        "generation-source"
+      ]
+    },
+    {
+      "statement": "A separate RAG workflow retrieves relevant field documentation from a persisted index or keyword fallback, asks Gemini for WriteQuery JSON, validates it with Pydantic, executes it through the fake Looker SDK, and generates a short narrative.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "rag-source",
+        "retrieval-source"
+      ]
+    },
+    {
+      "statement": "The fake Looker SDK loads five local CSV tables and supports model and explore discovery, metadata lookup, joins, filtering, dimensions, several aggregate measures, sorting, row limits, and JSON or CSV results while explicitly rejecting pivots and totals.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "fake-sdk",
+        "data-model"
+      ]
+    },
+    {
+      "statement": "The repository includes reproducible generation code and checked-in synthetic retail data comprising 5,000 customers, 1,500 products, 500 stores, 20,000 orders, and 80,000 order items.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-generator",
+        "generated-data"
+      ]
+    },
+    {
+      "statement": "A richer, non-deployed Streamlit interface contains query-generation, data-exploration, schema-documentation, visualization, result-download, and system-status views.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "rich-ui",
+        "deployment-config"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The documentation proposes replacing the local fake Looker implementation with the real Looker SDK once credentials are available.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-docs",
+        "deployment-flow"
+      ]
+    },
+    {
+      "statement": "The documented roadmap calls for stricter Gemini function-calling schema enforcement, streaming conversational output, and an integration test validating generated JSON with Pydantic.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-docs"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The repository contains two partially overlapping application paths: Procfile starts app.py, which calls text_to_looker.py and only generates WriteQuery-like JSON and SQL; streamlit_app.py instead uses chat_gemini.py, retrieval artifacts, Pydantic validation, and fake_looker.py to execute against local CSV data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "deployment-config",
+        "deployment-flow",
+        "generation-source",
+        "rag-source",
+        "rich-ui"
+      ]
+    },
+    {
+      "statement": "The local analytical model is a five-table retail schema described by fake_metadata.json, with orders and order_items carrying the join definitions used by the in-memory pandas executor.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "data-model",
+        "fake-sdk"
+      ]
+    },
+    {
+      "statement": "Field-level text files feed an indexing layer that can use Gemini embeddings, local Hugging Face embeddings, a LlamaIndex keyword index, or a minimal JSON document store depending on available dependencies and credentials.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "retrieval-source",
+        "retrieval-artifacts"
+      ]
+    },
+    {
+      "statement": "The deployment path and local execution path are not directly compatible: text_to_looker.py instructs Gemini to produce a `view` key, while fake_looker.py and the Pydantic RAG schema require an `explore` key.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generation-source",
+        "rag-source",
+        "fake-sdk"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository demonstrates the intended text-to-query concept through source for generation, retrieval, schema validation, and local execution rather than only documenting an idea.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generation-source",
+        "rag-source",
+        "fake-sdk"
+      ]
+    },
+    {
+      "statement": "Nineteen authored fake-SDK tests cover model discovery, explore metadata, filters, sorting, measures, validation errors, unsupported features, and JSON and CSV output.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests"
+      ]
+    },
+    {
+      "statement": "All 14 checked-in Python files parse successfully as Python syntax.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "Deployment-oriented artifacts were added, including a Procfile, pinned Python runtime, Streamlit entry point, and a short sequence of deployment-related dependency revisions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "deployment-config",
+        "history"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "The active requirements.txt lists only python-dotenv, google-generativeai, and Streamlit, although the deployed import path requires neither the local executor nor RAG dependencies but the broader documented application requires pandas, Pydantic, Faker, Plotly, FAISS, LlamaIndex, and embedding packages found only in requirements_actual.txt.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependencies",
+        "deployment-flow",
+        "rag-source",
+        "rich-ui"
+      ]
+    },
+    {
+      "statement": "The advertised local mode is not supported by the deployed app.py path because run_text_to_looker explicitly raises an error when GOOGLE_API_KEY is absent.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "project-docs",
+        "generation-source",
+        "deployment-flow"
+      ]
+    },
+    {
+      "statement": "The repository contains no CI configuration, so the authored tests and dependency compatibility are not automatically verified.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "tests"
+      ]
+    },
+    {
+      "statement": "The tests could not be executed in the supplied environment because pytest and pandas were unavailable, leaving current runtime correctness unconfirmed.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification"
+      ]
+    },
+    {
+      "statement": "There is no evidence that the planned real Looker SDK connection, credential-driven metadata ingestion, or execution against an actual Looker instance was implemented.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "project-docs",
+        "fake-sdk"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A clean deployment or setup based on requirements.txt is likely to fail for the richer documented workflow because its required packages are omitted from that manifest.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "rag-source",
+        "rich-ui",
+        "verification"
+      ]
+    },
+    {
+      "statement": "The competing entry points, incompatible `view` versus `explore` query shapes, and differing claims about offline support can cause users to run a different workflow from the one described in the documentation.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "project-docs",
+        "deployment-config",
+        "generation-source",
+        "rag-source",
+        "fake-sdk"
+      ]
+    },
+    {
+      "statement": "The deployed UI says it uses Gemini 2.5 Flash, but text_to_looker.py instantiates gemini-1.5-flash, making the displayed model and pricing assumptions inconsistent with the actual generation call.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "deployment-flow",
+        "generation-source"
+      ]
+    },
+    {
+      "statement": "Checking in more than 107,000 generated data rows and persisted retrieval artifacts increases repository size and creates regeneration and staleness concerns.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "generated-data",
+        "retrieval-artifacts",
+        "history"
+      ]
+    },
+    {
+      "statement": "No credential file or embedded private-key/API-key indicator was found, but multiple paths load GOOGLE_API_KEY and some call load_dotenv, so future contributors must continue keeping .env files untracked.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "security-review",
+        "dependencies"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Choose one canonical application flow and align its README, Procfile, query schema, model identifier, and offline-support claims.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "project-docs",
+        "deployment-config",
+        "generation-source",
+        "rag-source",
+        "fake-sdk"
+      ]
+    },
+    {
+      "statement": "Replace the split dependency files with one intentional runtime manifest plus an optional development manifest, then verify installation in a clean Python environment.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependencies",
+        "verification"
+      ]
+    },
+    {
+      "statement": "Add CI that installs the chosen dependency set, runs the fake-SDK tests, performs import and syntax checks, and tests generated-query schema compatibility without requiring a live credential.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tests",
+        "repository-tree",
+        "verification"
+      ]
+    },
+    {
+      "statement": "Decide whether the generated CSV and index files are durable fixtures or reproducible build outputs; if they are outputs, document regeneration and stop tracking unnecessary copies.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "data-generator",
+        "generated-data",
+        "retrieval-artifacts"
+      ]
+    },
+    {
+      "statement": "If the project is no longer being explored, mark the repository as archived and preserve it as a clearly labeled prototype rather than presenting its deployment instructions as current.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata",
+        "gaps-summary"
+      ]
+    }
+  ],
+  "questions": [
+    "Which interface is intended to be canonical: the deployed app.py generator or the executable RAG workflow in streamlit_app.py?",
+    "Was a Heroku or other hosted deployment ever successfully created, and is it still expected to run?",
+    "Should generated queries use Looker's `view` or `explore` field in this project's target SDK contract?",
+    "Are the checked-in synthetic datasets and index artifacts intentional fixtures or disposable generated outputs?",
+    "Is real Looker integration still desired, or was the local fake SDK the final scope?",
+    "Should this dormant prototype be archived, or does the owner intend to resume it?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Text_to_Looker_SQL",
+      "summary": "Registry snapshot identifies a public, unarchived repository on main with no GitHub description, no open issues or pull requests, and its latest push on 2025-06-23 UTC."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "The tracked tree contains 14 Python files, documentation, two requirements files, deployment configuration, five synthetic CSV tables, LookML-like metadata and field documents, persisted retrieval artifacts, and no CI, notebook, container, license, or release files."
+    },
+    {
+      "id": "project-docs",
+      "kind": "documentation",
+      "location": "STREAMLIT_README.md; instructions.md",
+      "summary": "Documentation describes a Gemini RAG playground, local fake Looker execution, Streamlit features, setup commands, offline fallback claims, and a roadmap for real Looker integration, stricter schema enforcement, streaming, and integration testing."
+    },
+    {
+      "id": "deployment-config",
+      "kind": "deployment_configuration",
+      "location": "Procfile; runtime.txt",
+      "summary": "Procfile launches `streamlit run app.py` on the assigned port, and runtime.txt pins Python 3.11."
+    },
+    {
+      "id": "deployment-flow",
+      "kind": "application_entry_point",
+      "location": "app.py",
+      "summary": "The configured Streamlit entry point accepts a question and displays generated Looker parameters, SQL, token usage, and cost; it does not invoke the fake SDK or RAG workflow."
+    },
+    {
+      "id": "generation-source",
+      "kind": "source_code",
+      "location": "text_to_looker.py; text_to_sql.py",
+      "summary": "Generation code loads fake_metadata.json, prompts gemini-1.5-flash for BigQuery SQL and JSON containing a `view` key, requires GOOGLE_API_KEY, and returns token counts and estimated cost inputs."
+    },
+    {
+      "id": "rag-source",
+      "kind": "source_code",
+      "location": "chat_gemini.py",
+      "summary": "GeminiRAGChat retrieves field context, generates JSON, validates model, explore, limits, pivots, and totals through Pydantic, executes via fake_looker, retries validation once, and optionally asks Gemini for a narrative."
+    },
+    {
+      "id": "retrieval-source",
+      "kind": "source_code",
+      "location": "build_index.py",
+      "summary": "Index-building code supports Gemini FAISS embeddings and several local fallbacks, persists retrieval state, and includes an index test routine."
+    },
+    {
+      "id": "retrieval-artifacts",
+      "kind": "generated_artifacts",
+      "location": "lookml_docs/; faiss_index/",
+      "summary": "Eight field-document files and persisted LlamaIndex, keyword-search, metadata, and vector-store artifacts are checked in; the pickle artifact was identified but its values were not read."
+    },
+    {
+      "id": "fake-sdk",
+      "kind": "source_code",
+      "location": "fake_looker.py",
+      "summary": "The pandas-based Looker substitute exposes model and explore metadata methods and executes validated `explore` queries with joins, filters, selected fields, aggregates, sorts, limits, and JSON or CSV serialization."
+    },
+    {
+      "id": "data-generator",
+      "kind": "source_code",
+      "location": "make_synthetic_data.py",
+      "summary": "Seeded Faker and random generation code creates a five-table retail dataset, fake Looker metadata, and field documentation."
+    },
+    {
+      "id": "data-model",
+      "kind": "data_schema",
+      "location": "fake_metadata.json",
+      "summary": "The `retail` model defines customers, products, stores, orders, and order_items explores with 33 dimensions/measures in total and join metadata on orders and order_items."
+    },
+    {
+      "id": "generated-data",
+      "kind": "synthetic_data",
+      "location": "data/",
+      "summary": "Checked-in CSVs contain 5,000 customer, 1,500 product, 500 store, 20,000 order, and 80,000 order-item rows; content was sampled rather than exhaustively inspected."
+    },
+    {
+      "id": "rich-ui",
+      "kind": "source_code",
+      "location": "streamlit_app.py; pages/",
+      "summary": "A separate Streamlit implementation provides query execution, results, downloads, a data explorer, visualizations, schema documentation, and system-status views, but Procfile does not launch it."
+    },
+    {
+      "id": "tests",
+      "kind": "test_source",
+      "location": "test_fake_looker.py; test_local_embeddings.py",
+      "summary": "Nineteen fake-SDK tests cover discovery, validation, filters, sorting, measures, formats, and unsupported options; a separate executable script checks sentence-transformer embeddings and keyword fallback."
+    },
+    {
+      "id": "dependencies",
+      "kind": "dependency_manifests",
+      "location": "requirements.txt; requirements_actual.txt",
+      "summary": "requirements.txt was reduced to three packages in the latest dependency commit, while requirements_actual.txt contains the larger pandas, Faker, Plotly, Pydantic, pytest, FAISS, LlamaIndex, and sentence-transformer environment used by the broader source."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "All eight available commits occurred on 2025-06-22 and consist of an initial implementation, addition of generated data and deployment files, repeated dependency changes, and two small app-description updates; no later commit is present."
+    },
+    {
+      "id": "security-review",
+      "kind": "security_scan",
+      "location": ".gitignore and tracked-file scan",
+      "summary": ".env is ignored, no credential-like file was present, and filename-only scans found no embedded Google API-key or private-key indicator. Source and docs reference GOOGLE_API_KEY, but no secret values were read."
+    },
+    {
+      "id": "verification",
+      "kind": "verification_result",
+      "location": "local analysis environment",
+      "summary": "AST parsing succeeded for all 14 Python files. Runtime tests could not start because pytest was unavailable and importing fake_looker failed due to missing pandas."
+    },
+    {
+      "id": "gaps-summary",
+      "kind": "analysis_summary",
+      "location": "revision b3558ff0c302e4a2802b50356c6e21e414d82cc3",
+      "summary": "Implementation evidence supports a substantial prototype, but repeatable installation, automated verification, canonical workflow selection, and real Looker integration remain unresolved."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, configuration, generated fixtures, authored tests, and all available commits clearly establish the repository's structure and prototype scope. Confidence is reduced because dependencies were unavailable for runtime testing, Gemini and deployment behavior were not exercised, and the repository contains conflicting application paths and documentation."
+  },
+  "limitations": [
+    "The supplied clone is treated as shallow at depth 50, so commits older than the available history may be absent even though all eight visible commits were inspected.",
+    "The GitHub state is based on the supplied registry snapshot rather than a live API refresh.",
+    "No Gemini call, external Looker connection, or hosted Streamlit deployment was exercised.",
+    "The analysis environment lacked pytest and pandas, preventing execution of the authored tests and fake SDK.",
+    "Large generated CSV and persisted index contents were sampled rather than exhaustively inspected.",
+    "The pickle retrieval artifact was not deserialized or summarized.",
+    "No credential values were read; security review was limited to filenames, ignored-file rules, environment-variable references, and filename-only pattern matches."
+  ]
+}

@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/finance-understanding",
+  "analyzed_at": "2026-07-27T03:18:54Z",
+  "revision": "8677fc9652165493a58bd3a65210c552258c1e72",
+  "analysis_scope": {
+    "inspected": [
+      "provided GitHub repository metadata and issue/PR snapshot",
+      "complete README.md",
+      "top-level tracked-file inventory and Git object modes",
+      "stories.md and Data_Analysis_Stories.md headings and specifications",
+      "dependency manifests, Python environment marker, and .gitignore",
+      "main.py and representative connector, ingestion, detection, analysis, tagging, and reporting modules",
+      "all 40 Python files through a read-only static syntax parse",
+      "generated output filenames, CSV schemas and row counts, JSON top-level keys, and PNG dimensions without inspecting financial values",
+      "credential-related filenames and teller.zip archive listing without reading credential values",
+      "test, CI, workflow, notebook, demo, release, and deployment artifact inventory",
+      "local branches and git log --oneline -20"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      ".env.example referenced by the README",
+      "automated test suite",
+      "CI workflows",
+      "dependency lockfile",
+      "release artifacts",
+      "deployment or scheduled-sync configuration",
+      "LICENSE file"
+    ],
+    "inaccessible": [
+      "Live GitHub API metadata was inaccessible because the environment could not connect to api.github.com; the supplied GitHub snapshot was used instead.",
+      "The tracked examples gitlink could not be inspected because no .gitmodules mapping exists."
+    ],
+    "sampling_notes": "The repository is modest in size, so the full tracked inventory, documentation, history, and Python syntax surface were examined; representative implementation files were read in detail. Generated financial artifacts and configuration CSVs were inspected only by filename, schema, row count, size, or structural keys to avoid exposing private values. The credential archive was inspected only as an archive listing. The checkout was supplied as shallow depth 50 and that limits historical conclusions, although local Git reports a non-shallow repository containing only one commit."
+  },
+  "stated_purpose": "The README presents the repository as a Python application that connects to financial institutions through Plaid or Teller, exports accounts and recent transactions to CSV, and supports subsequent personal financial analysis.",
+  "observed_capabilities": [
+    {
+      "statement": "The repository implements Plaid and Teller client wrappers plus scripts for institution enrollment, account ingestion, 90-day transaction ingestion, and one-command CSV synchronization.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "connectors",
+        "ingestion-scripts"
+      ]
+    },
+    {
+      "statement": "The modular main pipeline loads and normalizes transactions, detects paychecks, rent, credit-card payments, and recurring merchants, applies manual overrides, constructs pay periods, computes bills and savings summaries, compares goals, projects cash flow, and writes a Markdown snapshot.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main-pipeline",
+        "analysis-modules",
+        "analysis-stories"
+      ]
+    },
+    {
+      "statement": "Committed CSV, Markdown, JSON, and PNG outputs indicate that meaningful financial-analysis workflows have been executed on a dataset, including 432 transaction rows plus a header in the enriched transaction output.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "generated-outputs",
+        "initial-commit"
+      ]
+    },
+    {
+      "statement": "A separate monolithic analyzer produces additional JSON, Markdown, and visualization artifacts alongside the newer modular pipeline.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "legacy-analyzer",
+        "generated-outputs"
+      ]
+    }
+  ],
+  "planned_work": [
+    {
+      "statement": "The README names spreadsheet import, further pandas analysis, visualization, custom categorization, and scheduled synchronization as possible next steps, but there is no current issue backlog or implementation plan establishing their priority.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "github-snapshot"
+      ]
+    }
+  ],
+  "architecture": [
+    {
+      "statement": "The system has a connector layer for Plaid or Teller, plaintext CSV storage for linked institutions and fetched data, and a pandas-based analysis layer that transforms transactions into detection, aggregation, projection, and reporting outputs.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "connectors",
+        "ingestion-scripts",
+        "main-pipeline",
+        "analysis-modules"
+      ]
+    },
+    {
+      "statement": "Teller enrollment uses a loopback Flask application that temporarily holds enrollment data in memory; the CLI polls that application and then persists the access token in an institution CSV.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "teller-enrollment"
+      ]
+    },
+    {
+      "statement": "Configuration and manual overrides are CSV-driven, while generated reports are written to outputs/ and analysis_output/ rather than to a database or hosted service.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "repository-tree",
+        "main-pipeline",
+        "generated-outputs"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "All 17 documented analysis stories have corresponding modules or orchestration paths in the modular pipeline.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analysis-stories",
+        "main-pipeline",
+        "analysis-modules"
+      ]
+    },
+    {
+      "statement": "The repository contains generated artifacts for paycheck detection, rent detection, recurring merchants, bills, pay periods, monthly summaries, goals, cash-flow projections, and snapshot reporting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "generated-outputs"
+      ]
+    },
+    {
+      "statement": "All 40 inspected Python files parse successfully as Python source.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-verification"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "Plaid configuration is currently disabled: config.py comments out the PLAID_CLIENT_ID, PLAID_SECRET, PLAID_ENV, and PLAID_HOST definitions that plaid_client.py and the Plaid scripts import.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "plaid-config",
+        "connectors"
+      ]
+    },
+    {
+      "statement": "Setup is not reproducible from the manifests: requests is imported by Teller code but absent from both requirement files, matplotlib and seaborn are imported by the standalone analyzer but are undeclared, .env.example is absent, and .python-version contains a local environment name rather than a Python version.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "dependency-manifests",
+        "repository-tree",
+        "legacy-analyzer"
+      ]
+    },
+    {
+      "statement": "There are no automated tests or CI workflows; the two test-named scripts are manual Plaid connectivity checks, one of which prints a complete temporary link token.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification-inventory",
+        "manual-test-scripts"
+      ]
+    },
+    {
+      "statement": "The tracked examples entry is an unusable gitlink because the repository has no .gitmodules mapping.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "examples-gitlink"
+      ]
+    },
+    {
+      "statement": "The README focuses on connector ingestion and does not document the substantial modular analysis pipeline, its input schema, or its person-specific assumptions.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme",
+        "main-pipeline",
+        "cash-flow-module"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "A tracked teller.zip archive contains private_key.pem and certificate.pem. Their values were not read, but committing these credential files creates an immediate credential-exposure risk.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "credential-archive",
+        "initial-commit"
+      ]
+    },
+    {
+      "statement": "Tracked generated artifacts contain transaction-derived descriptions, balances, goals, merchant patterns, raw JSON fields, and financial summaries despite .gitignore only protecting data/*.csv; this creates substantial privacy exposure if the repository or its history is shared.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "generated-outputs",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "Institution access tokens are designed to be stored unencrypted in CSV files, and the Teller enrollment server exposes the captured token through a local GET endpoint while enrollment is active.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "teller-enrollment",
+        "ingestion-scripts",
+        "readme"
+      ]
+    },
+    {
+      "statement": "Cash-flow projections embed a fixed paycheck amount and provider- and person-specific reimbursement assumptions, so results may become incorrect without obvious configuration errors.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "main-pipeline",
+        "cash-flow-module"
+      ]
+    },
+    {
+      "statement": "Broad unpinned dependency ranges, missing imported dependencies, and the absence of automated verification make future reruns vulnerable to environment drift.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependency-manifests",
+        "verification-inventory"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Immediately revoke or rotate the Teller private key and certificate, remove teller.zip from the current tree, and purge the credential material from Git history after owner review.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "credential-archive",
+        "initial-commit"
+      ]
+    },
+    {
+      "statement": "Remove financial outputs and personal configuration from version control, add ignore rules for outputs/, analysis_output/, and private configuration, and retain only synthetic fixtures or templates.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "generated-outputs",
+        "gitignore"
+      ]
+    },
+    {
+      "statement": "Choose the supported connector path, restore or remove the disabled Plaid configuration accordingly, and provide a safe .env.example containing names and placeholders only.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "plaid-config",
+        "readme",
+        "dependency-manifests"
+      ]
+    },
+    {
+      "statement": "Declare every runtime dependency, replace the local .python-version value with a documented Python version or remove it, and add a lockfile or constraints file.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "dependency-manifests",
+        "legacy-analyzer"
+      ]
+    },
+    {
+      "statement": "Add synthetic-data unit and integration tests for normalization, detectors, summaries, projections, and connector error handling before treating the workflow as functional or operational.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "verification-inventory",
+        "main-pipeline",
+        "analysis-modules"
+      ]
+    },
+    {
+      "statement": "Move fixed paycheck, account-provider, reimbursement, and transfer assumptions into validated private configuration and document the modular analysis entry point.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cash-flow-module",
+        "main-pipeline",
+        "readme"
+      ]
+    }
+  ],
+  "questions": [
+    "Are the Teller certificate and private key still active, and have they already been rotated?",
+    "Should the Plaid connector remain supported, or has Teller replaced it?",
+    "Were the committed financial outputs intended as durable records, examples, or an accidental initial-commit inclusion?",
+    "Is the modular main.py pipeline now authoritative, or is scripts/financial_analyzer.py still used?",
+    "Should the fixed paycheck and reimbursement assumptions become private configuration?",
+    "Was the examples gitlink intended to reference another repository?",
+    "Is this recent initial commit an active experiment that should continue, or a one-time personal analysis snapshot?"
+  ],
+  "evidence": [
+    {
+      "id": "github-snapshot",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/finance-understanding",
+      "summary": "Owner-supplied snapshot identifies a private main-branch repository pushed on 2026-07-11 with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Documents Plaid and Teller enrollment, account and 90-day transaction CSV exports, sync commands, plaintext token storage, security cautions, and suggested future analysis."
+    },
+    {
+      "id": "repository-tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Contains connector clients, ingestion scripts, a modular src analysis package, a main entry point, configuration CSVs, generated reports, a legacy analyzer, and a credential archive."
+    },
+    {
+      "id": "analysis-stories",
+      "kind": "specification",
+      "location": "Data_Analysis_Stories.md",
+      "summary": "Defines 17 stories covering normalization, manual tagging, transaction detection, bills, pay periods, summaries, goals, manual accounts and transfers, overrides, and snapshot reporting."
+    },
+    {
+      "id": "connectors",
+      "kind": "source_code",
+      "location": "plaid_client.py; teller_client.py; config.py",
+      "summary": "Implements Plaid SDK calls and a requests-based Teller client with mTLS session support, pagination, retry handling, and configuration loading; Plaid configuration definitions are commented out."
+    },
+    {
+      "id": "ingestion-scripts",
+      "kind": "source_code",
+      "location": "scripts/link_institution*.py; scripts/ingest_*_to_csv*.py; scripts/sync_all_csv*.py",
+      "summary": "Implements institution enrollment, account and transaction normalization, CSV persistence, and subprocess-based full synchronization for both providers."
+    },
+    {
+      "id": "teller-enrollment",
+      "kind": "source_code",
+      "location": "teller_connect/app.py; scripts/link_institution_teller.py",
+      "summary": "A loopback Flask server captures Teller enrollment data in memory, returns it from a GET endpoint, and a polling CLI persists the access token to institutions_teller.csv."
+    },
+    {
+      "id": "main-pipeline",
+      "kind": "source_code",
+      "location": "main.py",
+      "summary": "Orchestrates an eight-phase pandas analysis pipeline and writes detector, pay-period, cash-flow, savings-goal, and Markdown report outputs."
+    },
+    {
+      "id": "analysis-modules",
+      "kind": "source_code",
+      "location": "src/loaders; src/tagging; src/detection; src/analysis; src/reporting",
+      "summary": "Provides modular loaders, manual overrides, heuristic detectors, summaries, projections, and report generation corresponding to the documented analysis stories."
+    },
+    {
+      "id": "cash-flow-module",
+      "kind": "source_code",
+      "location": "src/analysis/cash_flow_projection.py",
+      "summary": "Projects balances from account data, paychecks, bills, rent, and reimbursements, but includes fixed provider- and person-specific defaults."
+    },
+    {
+      "id": "legacy-analyzer",
+      "kind": "source_code",
+      "location": "scripts/financial_analyzer.py",
+      "summary": "A separate monolithic pandas/matplotlib/seaborn analysis implementation generates JSON, Markdown, and image reports."
+    },
+    {
+      "id": "generated-outputs",
+      "kind": "generated_artifacts",
+      "location": "outputs/; analysis_output/; config/",
+      "summary": "Tracked artifacts include 12 analysis CSVs, Markdown and JSON reports, two PNG visualizations, and configuration CSVs. Only schemas, row counts, dimensions, sizes, and structural keys were inspected."
+    },
+    {
+      "id": "dependency-manifests",
+      "kind": "dependency_configuration",
+      "location": "requirements.txt; requirements_teller.txt; .python-version",
+      "summary": "Declares broad minimum versions for Plaid, dotenv, pandas, NumPy, and Flask; requests, matplotlib, and seaborn imports are undeclared, and .python-version contains the local name 'finance'."
+    },
+    {
+      "id": "plaid-config",
+      "kind": "source_code",
+      "location": "config.py; plaid_client.py; scripts/test_config.py",
+      "summary": "Plaid client code imports configuration symbols whose definitions and validation are commented out, while the manual configuration script still expects them."
+    },
+    {
+      "id": "manual-test-scripts",
+      "kind": "verification_artifact",
+      "location": "scripts/test_config.py; scripts/test_plaid_client.py",
+      "summary": "Manual scripts check configuration and create a live Plaid link token; they contain no assertions or automated test harness, and the link-token script prints the complete temporary token."
+    },
+    {
+      "id": "verification-inventory",
+      "kind": "repository_inventory",
+      "location": "tests/; .github/",
+      "summary": "No tests directory, test framework, CI workflow, notebook, demo, deployment configuration, or scheduled-sync artifact is present."
+    },
+    {
+      "id": "static-verification",
+      "kind": "static_check",
+      "location": "**/*.py",
+      "summary": "A read-only Python compile pass successfully parsed all 40 Python files; no credentialed or data-writing runtime workflow was executed."
+    },
+    {
+      "id": "credential-archive",
+      "kind": "security_artifact",
+      "location": "teller.zip",
+      "summary": "The tracked archive listing contains private_key.pem and certificate.pem. Their contents were not opened, read, copied, or summarized."
+    },
+    {
+      "id": "gitignore",
+      "kind": "security_configuration",
+      "location": ".gitignore",
+      "summary": "Ignores .env, data/*.csv, PEM/key files, and certificate directories, but does not ignore outputs/, analysis_output/, private configuration Markdown, or ZIP archives."
+    },
+    {
+      "id": "examples-gitlink",
+      "kind": "git_structure",
+      "location": "examples",
+      "summary": "Tracked with Git mode 160000, but git submodule status fails because .gitmodules has no mapping for the path."
+    },
+    {
+      "id": "initial-commit",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "History contains one commit, 8677fc9 from 2026-07-11, which added the complete source tree, generated financial outputs, configuration files, and teller.zip."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "Primary source, specifications, generated artifacts, and the single available commit support the architecture and prototype conclusion. Confidence is limited because no automated tests or CI exist, credentialed connector workflows were not executed, live GitHub metadata was inaccessible, the supplied history scope is limited, and generated artifacts alone cannot prove repeatable setup."
+  },
+  "limitations": [
+    "No credential values or certificate contents were read or tested.",
+    "Financial output and configuration values were deliberately not inspected; only non-value structure and metadata were used.",
+    "No API calls, enrollment flows, or data-writing pipelines were executed.",
+    "Live GitHub archival state, releases, and branch metadata could not be refreshed from the network.",
+    "Recent-history conclusions are limited to the supplied depth-50 checkout, which contains only one commit.",
+    "The broken examples gitlink prevented inspection of its target content."
+  ]
+}

@@ -1,0 +1,375 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/scraping",
+  "analyzed_at": "2026-07-27T03:31:19Z",
+  "revision": "cecbc631f471cf59089c07e5b4f4bbdf4dc0fab5",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata",
+      "README.md, QUICK_START.md, and USAGE_GUIDE.md",
+      "complete tracked-file inventory and file sizes",
+      "requirements.txt, setup.py, and .gitignore",
+      "scrape_nfl_odds.py and nfl_odds_scraper.py entry points",
+      "representative parsing, exploration, and usage scripts",
+      "all eight tracked JSON result artifacts",
+      "presence of tests, CI workflows, notebooks, deployment artifacts, branches, and tags",
+      "Python syntax of all 16 Python files",
+      "git log --oneline -20 and commit metadata"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "automated test suite",
+      "CI workflow",
+      "notebooks",
+      "release or deployment configuration",
+      "dependency lockfile",
+      "license"
+    ],
+    "inaccessible": [
+      "fresh live-site scraper verification because network access is restricted and BeautifulSoup is not installed in the analysis environment",
+      "history older than the supplied checkout"
+    ],
+    "sampling_notes": "The repository is small: all 34 tracked paths were inventoried, the documentation and core implementation were inspected, and every JSON artifact was checked structurally. The three large captured HTML pages were sampled by size and relevant structural patterns rather than read line-by-line. The checkout was supplied as shallow with depth 50; only its single available commit was present, so earlier history could not be assessed."
+  },
+  "stated_purpose": "Extract NFL matchup moneyline odds from Vegas Insider's structured HTML and save selected or aggregated results as JSON.",
+  "observed_capabilities": [
+    {
+      "statement": "The standalone CLI builds a Vegas Insider matchup URL, fetches it with a requests session and browser-like headers, parses span.data-moneyline elements with BeautifulSoup, optionally filters targets or bookmakers, prints results, and writes JSON.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "A separate importable NFLOddsScraper implementation exposes page fetching, extraction, target filtering, validation, and JSON persistence methods.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "library"
+      ]
+    },
+    {
+      "statement": "Offline analysis scripts operate on captured Vegas Insider HTML to search for moneyline markers, deeplink identifiers, bookmaker context, and target odds.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "analysis-scripts",
+        "tree"
+      ]
+    },
+    {
+      "statement": "Tracked output artifacts preserve successful-looking Jets/Bengals target results and a broader eight-entry 49ers/Texans extraction.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifacts"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The repository is a flat collection of Python scripts, captured HTML pages, and generated JSON outputs rather than an installed package or service.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "Two overlapping scraper implementations, scrape_nfl_odds.py and nfl_odds_scraper.py, independently use requests and BeautifulSoup and contain similar extraction and persistence logic.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "library"
+      ]
+    },
+    {
+      "statement": "Team and bookmaker attribution is heuristic: it searches table-row text and URLs, then falls back to hard-coded team mappings or assumptions based on the sign of the odds.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "library"
+      ]
+    },
+    {
+      "statement": "Captured HTML serves as manually collected fixture material, but it is not connected to an automated regression-test harness.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "tests-ci",
+        "analysis-scripts"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "The repository demonstrates extraction of the target Jets +245 and Bengals -300 values in several saved JSON artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "It includes a command-line interface, reusable class, setup helper, usage examples, and three levels of user documentation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli",
+        "library",
+        "docs",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "The initial commit captures the reverse-engineering process as well as source pages and derived outputs, providing evidence of the exploratory workflow.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "history",
+        "tree",
+        "artifacts"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There is no automated test suite or CI workflow; files named test_*.json are saved results rather than executable tests.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tests-ci",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "The generalized library path returns no entries when target_odds is empty, contradicting usage_examples.py's claim that an empty target mapping extracts all odds.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "library",
+        "docs",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "The library's fallback assigns every positive line to the Jets and every negative line to the Bengals, while the CLI relies on a finite hard-coded team list; neither supports arbitrary matchups reliably.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "library",
+        "cli"
+      ]
+    },
+    {
+      "statement": "Bookmaker attribution is unresolved in most saved outputs: the main Jets/Bengals artifacts and the 49ers/Texans artifact label bookmakers as Unknown despite documentation emphasizing Bet365 filtering.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "artifacts",
+        "docs"
+      ]
+    },
+    {
+      "statement": "deep_js_analysis.py has an unterminated string literal, so the complete tracked Python source set does not pass syntax validation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification",
+        "analysis-scripts"
+      ]
+    },
+    {
+      "statement": "The CLI only provides target-specific arguments for Jets and Bengals, and its dictionary aggregation can overwrite multiple records that resolve to the same team label.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "cli"
+      ]
+    },
+    {
+      "statement": "The documentation's production-ready and any-matchup claims are not supported by repeatable execution, generalized attribution logic, automated tests, or operational configuration.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "docs",
+        "cli",
+        "library",
+        "tests-ci",
+        "verification"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "Extraction depends on a third-party page's CSS classes, table structure, URL encoding, and bookmaker links, so an upstream redesign can silently corrupt attribution or eliminate results.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "library"
+      ]
+    },
+    {
+      "statement": "Hard-coded favorite/underdog and team-name assumptions can produce plausible-looking but incorrect data for matchups other than the original Jets/Bengals case.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "library",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "The repository tracks three captured third-party HTML pages, eight generated JSON files, and two compiled Python cache files, increasing repository noise and potentially preserving stale third-party content and outbound deeplink data.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree"
+      ]
+    },
+    {
+      "statement": "Dependencies use lower bounds without a lockfile, while setup.py installs only two dependencies directly, making future reproduction sensitive to dependency changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest"
+      ]
+    },
+    {
+      "statement": "Documentation promotes anti-detection measures and scheduled scraping without recording site-policy review, rate-control behavior in the implementation, monitoring, or failure safeguards.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "docs",
+        "cli",
+        "library"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Decide whether this one-case scraping experiment is still needed; if not, retain only a concise reference note or archive the repository.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "docs",
+        "gaps-evidence"
+      ]
+    },
+    {
+      "statement": "If continuing, consolidate the duplicate scraper implementations and derive teams and bookmakers from explicit page structure instead of odds-sign or matchup-specific assumptions.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "cli",
+        "library"
+      ]
+    },
+    {
+      "statement": "Convert sanitized captured pages into deterministic fixtures and add tests for arbitrary teams, multiple bookmakers, duplicate lines, empty targets, malformed pages, and upstream selector changes.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "tree",
+        "tests-ci",
+        "artifacts"
+      ]
+    },
+    {
+      "statement": "Repair deep_js_analysis.py, add CI and dependency locking, and remove generated cache files and redundant outputs before presenting the project as reusable.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "verification",
+        "manifest",
+        "tree",
+        "tests-ci"
+      ]
+    },
+    {
+      "statement": "Document permitted-use assumptions, request pacing, error reporting, and data freshness before operating the scraper on a schedule.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "docs",
+        "cli",
+        "library"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository a one-time reverse-engineering exercise, or is the scraper expected to run again?",
+    "Are matchups beyond Jets/Bengals and 49ers/Texans actually required?",
+    "Which bookmaker and market records should be retained when a page contains multiple entries per team?",
+    "Were the captured HTML pages intentionally committed as reusable fixtures?",
+    "Has the site's current structure and permitted-use policy been reviewed since these snapshots were collected?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/scraping",
+      "summary": "Supplied snapshot identifies a private, unarchived repository on main with no description, open issues, or open pull requests and a push timestamp of 2026-07-11."
+    },
+    {
+      "id": "docs",
+      "kind": "documentation",
+      "location": "README.md; QUICK_START.md; USAGE_GUIDE.md",
+      "summary": "Documentation states that the project extracts Vegas Insider NFL moneylines from structured HTML, reports a Jets/Bengals success case, and claims broad production readiness and scheduled-use suitability."
+    },
+    {
+      "id": "cli",
+      "kind": "source",
+      "location": "scrape_nfl_odds.py",
+      "summary": "Standalone requests/BeautifulSoup CLI with browser-like headers, moneyline-span parsing, hard-coded NFL team mapping, Jets/Bengals target flags, bookmaker filtering, and JSON output."
+    },
+    {
+      "id": "library",
+      "kind": "source",
+      "location": "nfl_odds_scraper.py",
+      "summary": "Reusable scraper class fetches pages, extracts moneylines, heuristically assigns Jets to positive odds and Bengals to negative odds, filters exact targets, validates them, and saves JSON."
+    },
+    {
+      "id": "analysis-scripts",
+      "kind": "source_sample",
+      "location": "advanced_parser.py; html_parser.py; browser_simulation.py; extract_target_odds.py; deep_js_analysis.py",
+      "summary": "Exploratory scripts analyze captured HTML, moneyline CSS classes, deeplink IDs, table context, and target values; deep_js_analysis.py contains a syntax error."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_and_setup",
+      "location": "requirements.txt; setup.py; .gitignore",
+      "summary": "Requirements specify Python 3.7+ with lower-bounded requests, BeautifulSoup, and optional lxml; setup.py installs requests and BeautifulSoup then runs a live test, and no lockfile is present."
+    },
+    {
+      "id": "artifacts",
+      "kind": "generated_outputs",
+      "location": "jets_bengals_odds_results.json; nfl_odds.json; test_jets_bengals.json; test_results.json; jets_bengals_final_odds.json; 49ers_texans_odds.json; test_49ers_texans.json; extracted_odds.json",
+      "summary": "Saved outputs include repeated Jets +245/Bengals -300 results, a duplicate-heavy target extraction, eight 49ers/Texans records with Unknown bookmakers, one empty 49ers/Texans result, and 50 consensus records."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": "repository root",
+      "summary": "The single flat commit tracks 34 files, including 16 Python scripts, three captured HTML pages totaling about 1.5 MB, eight JSON outputs, and two __pycache__ bytecode files; no credential file was observed."
+    },
+    {
+      "id": "tests-ci",
+      "kind": "verification_inventory",
+      "location": "repository root and .github",
+      "summary": "No executable test modules, pytest or unittest configuration, GitHub Actions workflows, notebooks, Dockerfile, or deployment artifacts are present."
+    },
+    {
+      "id": "verification",
+      "kind": "local_verification",
+      "location": "read-only analysis environment",
+      "summary": "AST parsing found one syntax error among 16 Python files. Fresh CLI and fixture execution was blocked because BeautifulSoup is not installed and the environment is read-only with restricted network access."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Only cecbc63, 'Initial commit,' dated 2026-07-11 is available; local main matches origin/main, with no other branches or tags visible."
+    },
+    {
+      "id": "gaps-evidence",
+      "kind": "evidence_synthesis",
+      "location": "core source, documentation, outputs, and verification inventory",
+      "summary": "The production-readiness claim conflicts with hard-coded attribution, contradictory empty-target behavior, unknown bookmaker outputs, a syntax error, and absent automated verification."
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "rationale": "The repository is small, all tracked paths and result artifacts were inventoried, and the core source directly exposes both the implemented workflow and its matchup-specific limitations. Confidence in current live-site compatibility is lower because dependencies and network access prevented a fresh run, but that limitation does not undermine the prototype-level conclusion."
+  },
+  "limitations": [
+    "The supplied checkout was described as shallow with depth 50, and only one commit was available, so no earlier development history could be evaluated.",
+    "A fresh live scrape could not be performed because network access is restricted and BeautifulSoup is absent from the analysis environment.",
+    "The large captured HTML pages were sampled structurally rather than reviewed line-by-line.",
+    "GitHub state beyond the supplied metadata snapshot and locally available refs was not independently refreshed.",
+    "Suggested lifecycle and cleanup decisions require owner review."
+  ]
+}

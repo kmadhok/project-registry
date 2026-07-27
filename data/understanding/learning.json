@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "repository": "kmadhok/Learning",
+  "analyzed_at": "2026-07-27T03:24:38Z",
+  "revision": "81fd8f0b4cb8c038791381710fceeacb922fe383",
+  "analysis_scope": {
+    "inspected": [
+      "supplied GitHub repository metadata snapshot",
+      "README.md",
+      "complete inventory of all 19 tracked files",
+      "package.json and package-lock.json",
+      "index.js application entry point",
+      "views/index.ejs and public/css/main.css",
+      "haikus.json and all five bundled image assets",
+      "gulpfile.js, process.json, web.config, .gitignore, and LICENSE",
+      "NFT_Top_Collections.csv and the placeholder Dataset file",
+      "test, CI, notebook, release, credential-filename, and deployment-artifact presence checks",
+      "all three visible commits and local/remote branch references",
+      "JavaScript syntax and JSON parsing checks"
+    ],
+    "missing": [
+      "CLAUDE.md",
+      "AGENTS.md",
+      "docs directory",
+      "automated tests",
+      "CI workflows",
+      "notebooks",
+      "release tags",
+      "dependency update automation",
+      "documented setup or verification procedure beyond the README",
+      "documentation explaining NFT_Top_Collections.csv",
+      "the raw_images directory referenced by gulpfile.js"
+    ],
+    "inaccessible": [
+      "Live GitHub API metadata, including independent confirmation of archival state, because api.github.com was unreachable"
+    ],
+    "sampling_notes": "The repository contains only 19 tracked files, so the tracked tree was inspected completely rather than sampled. The supplied checkout was described as shallow with depth 50, which limits historical assurance; only three commits are visible. Local Git reports the checkout as not shallow, likely because the repository has fewer than 50 commits, but remote history was not independently verified."
+  },
+  "stated_purpose": "The README describes the repository as a quick Node.js template for demonstrating GitHub Codespaces, based on an Azure Node sample.",
+  "observed_capabilities": [
+    {
+      "statement": "The application starts an Express server on PORT or port 3000, serves static assets, and renders an EJS page at the root route.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-entry",
+        "manifest"
+      ]
+    },
+    {
+      "statement": "The rendered page displays five bundled haikus, each paired with a local Octocat image.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "view-assets",
+        "haiku-data"
+      ]
+    },
+    {
+      "statement": "Configuration is included for Azure IIS/iisnode hosting and PM2-style process management.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "deployment-config"
+      ]
+    },
+    {
+      "statement": "A Gulp task can optimize files from a raw_images directory into public/images, although the required source directory is not tracked.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "image-pipeline",
+        "tree"
+      ]
+    },
+    {
+      "statement": "The repository includes a 592-record NFT collections CSV, but the application does not load, analyze, or expose that dataset.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nft-data",
+        "app-entry"
+      ]
+    }
+  ],
+  "planned_work": [],
+  "architecture": [
+    {
+      "statement": "The project is a single-process Node.js web application: index.js loads static haiku data from JSON, passes it to an EJS template, and serves CSS and image files from public.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-entry",
+        "view-assets",
+        "haiku-data"
+      ]
+    },
+    {
+      "statement": "There is no database, API layer, client-side application, authentication subsystem, or integration between the web application and the NFT CSV.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "tree",
+        "app-entry",
+        "nft-data"
+      ]
+    }
+  ],
+  "maturity": "prototype",
+  "accomplishments": [
+    {
+      "statement": "A complete small server-rendered gallery was assembled with an entry point, template, styling, structured content, and five image assets.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "app-entry",
+        "view-assets",
+        "haiku-data"
+      ]
+    },
+    {
+      "statement": "The project includes locked Node dependencies and configuration for local startup, process supervision, and Azure IIS hosting.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "manifest",
+        "deployment-config"
+      ]
+    },
+    {
+      "statement": "The application source passes a Node syntax check, and all tracked JSON files parse successfully.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "static-verification"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "statement": "There are no automated tests, CI workflows, release tags, or recorded runtime verification artifacts.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "verification-inventory",
+        "history"
+      ]
+    },
+    {
+      "statement": "The README does not provide installation, startup, deployment, expected-output, or dataset documentation.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "readme"
+      ]
+    },
+    {
+      "statement": "The NFT CSV and one-byte Dataset placeholder are disconnected from the stated Codespaces demo and have no documented provenance or intended use.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "nft-data",
+        "history",
+        "readme"
+      ]
+    },
+    {
+      "statement": "The page references a missing Open Graph image, and its mobile CSS targets .june-images while the template uses .mona-images.",
+      "claim_type": "observed_fact",
+      "evidence_ids": [
+        "view-assets",
+        "tree"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "statement": "The dependency lockfile uses the older lockfile version 1 and pins a dependency graph originating around 2020, creating unresolved compatibility and security-maintenance uncertainty.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "dependency-lock",
+        "history"
+      ]
+    },
+    {
+      "statement": "The EJS template renders haiku text without escaping; the current bundled JSON is static, but sourcing that field from untrusted input later would create an HTML-injection risk.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "view-assets",
+        "haiku-data"
+      ]
+    },
+    {
+      "statement": "With no commits after January 2022 and no open issues or pull requests in the supplied snapshot, the repository appears dormant rather than actively maintained.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata"
+      ]
+    },
+    {
+      "statement": "The unexplained NFT dataset may confuse future users about the repository's scope and could be mistaken for an implemented data-analysis capability.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "nft-data",
+        "app-entry",
+        "readme"
+      ]
+    }
+  ],
+  "suggested_next_actions": [
+    {
+      "statement": "Treat the repository as archived unless the Codespaces demonstration or NFT dataset still serves a current owner need.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "history",
+        "metadata",
+        "readme",
+        "nft-data"
+      ]
+    },
+    {
+      "statement": "If retained as a reference example, separate or remove the unexplained NFT files, document setup and expected output, repair the missing Open Graph asset and mobile selector, and add a minimal route-rendering test.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "nft-data",
+        "readme",
+        "view-assets",
+        "verification-inventory"
+      ]
+    },
+    {
+      "statement": "Review and update the Node dependency graph before running or deploying the application again.",
+      "claim_type": "supported_inference",
+      "evidence_ids": [
+        "manifest",
+        "dependency-lock",
+        "history"
+      ]
+    }
+  ],
+  "questions": [
+    "Was this repository only a GitHub Codespaces exercise, or was it intended to become a reusable starter?",
+    "Why was NFT_Top_Collections.csv added, and should it belong in a separate data-analysis repository?",
+    "Is any Azure or PM2 deployment represented by the checked-in configuration still in use?",
+    "Should the repository be archived, or preserved as a reference after dependency and documentation cleanup?"
+  ],
+  "evidence": [
+    {
+      "id": "metadata",
+      "kind": "github_metadata",
+      "location": "https://github.com/kmadhok/Learning",
+      "summary": "Supplied snapshot identifies a private repository on main, last pushed on 2022-01-22, with no description, open issues, or open pull requests."
+    },
+    {
+      "id": "readme",
+      "kind": "documentation",
+      "location": "README.md",
+      "summary": "Four-line README calls the project 'Haikus for Codespaces' and describes it as a quick Node template based on an Azure sample."
+    },
+    {
+      "id": "tree",
+      "kind": "repository_tree",
+      "location": ".",
+      "summary": "Complete tracked tree contains 19 files: a small Node application, five images, deployment configuration, an NFT CSV, and a one-byte placeholder file."
+    },
+    {
+      "id": "manifest",
+      "kind": "dependency_manifest",
+      "location": "package.json",
+      "summary": "Defines a private Node package with node index.js and nodemon scripts, Express, EJS, nodemon, Gulp, and gulp-imagemin."
+    },
+    {
+      "id": "dependency-lock",
+      "kind": "dependency_lock",
+      "location": "package-lock.json",
+      "summary": "A 312,751-byte npm lockfile uses lockfileVersion 1 and records the dependency graph associated with the original sample."
+    },
+    {
+      "id": "app-entry",
+      "kind": "source",
+      "location": "index.js",
+      "summary": "Creates an Express application, loads haikus.json, serves public assets, renders the root EJS view, and listens on the configured port."
+    },
+    {
+      "id": "view-assets",
+      "kind": "source_and_assets",
+      "location": "views/index.ejs; public/css/main.css; public/images/",
+      "summary": "The template and CSS render the haiku gallery using five local images; inspection also found a missing Open Graph image reference and mismatched mobile CSS selector."
+    },
+    {
+      "id": "haiku-data",
+      "kind": "application_data",
+      "location": "haikus.json",
+      "summary": "Valid JSON defines five haiku and image-filename pairs consumed directly by the root route."
+    },
+    {
+      "id": "deployment-config",
+      "kind": "deployment_configuration",
+      "location": "web.config; process.json",
+      "summary": "Includes IIS/iisnode rewrite configuration for Azure-style hosting and a one-instance watched Node process definition."
+    },
+    {
+      "id": "image-pipeline",
+      "kind": "build_configuration",
+      "location": "gulpfile.js",
+      "summary": "Defines image optimization from raw_images into public/images, but raw_images is absent from the tracked tree."
+    },
+    {
+      "id": "nft-data",
+      "kind": "dataset",
+      "location": "NFT_Top_Collections.csv; Dataset",
+      "summary": "CSV contains a header and 592 NFT collection records; the separate Dataset file contains only one byte, and neither file is referenced by source code or documentation."
+    },
+    {
+      "id": "verification-inventory",
+      "kind": "verification_inventory",
+      "location": ".",
+      "summary": "No test files, .github workflows, notebooks, release artifacts, node_modules directory, or tracked credential-like filenames were found."
+    },
+    {
+      "id": "static-verification",
+      "kind": "verification_result",
+      "location": "index.js; package.json; package-lock.json; haikus.json",
+      "summary": "index.js passed node --check, and the three tracked JSON files parsed successfully; dependencies were absent, so the server was not executed."
+    },
+    {
+      "id": "history",
+      "kind": "git_history",
+      "location": "git log --oneline -20",
+      "summary": "Only three commits are visible, all from 2022-01-22: the initial sample, creation of the placeholder Dataset file, and upload of the NFT CSV."
+    }
+  ],
+  "confidence": {
+    "level": "medium",
+    "rationale": "The entire small tracked tree, its three visible commits, entry point, assets, manifests, and configuration were inspected, and static syntax/data checks succeeded. Confidence is reduced because dependencies were not installed, the application was not run, no tests or CI exist, live GitHub metadata was inaccessible, and the supplied checkout was described as history-limited."
+  },
+  "limitations": [
+    "The application could not be executed because node_modules is absent and analysis was read-only.",
+    "No dependency audit was run, so dependency risk is based on age and lockfile evidence rather than confirmed vulnerability findings.",
+    "Live GitHub archival state, branches beyond the supplied references, and other current remote metadata could not be independently confirmed.",
+    "The provided depth-50 history constraint means older remote history cannot be ruled out, although only three commits are visible and local Git reports the checkout as not shallow.",
+    "The origin, license, collection date, and intended use of NFT_Top_Collections.csv are undocumented."
+  ]
+}

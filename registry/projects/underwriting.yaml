@@ -2,12 +2,15 @@ id: underwriting
 name: underwriting-
 purpose: A recently initialized placeholder for an underwriting project that currently contains
   only a title README and no implementation or specification.
-lifecycle: incubating
-active: false
+lifecycle: next
+active: true
 category: project-placeholder
 repo: kmadhok/underwriting-
 visibility: private
-last_reviewed: '2026-07-27'
+last_reviewed: '2026-08-01'
+next_action:
+  description: Review the push-project spec PR when it opens
+  reviewed: '2026-08-01'
 tags:
 - underwriting
 - placeholder

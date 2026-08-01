@@ -1,0 +1,19 @@
+id: ai-engineering-markets
+name: ai_engineering_markets
+purpose: A due-diligence research spike testing whether a retail-scale systematic edge exists
+  on Kalshi prediction markets, combining literature synthesis with stdlib-only Python scripts
+  that census live markets and study orderbook depth.
+lifecycle: next
+active: true
+category: research
+repo: kmadhok/ai_engineering_markets
+visibility: private
+last_reviewed: '2026-08-01'
+next_action:
+  description: Review the push-project spec PR when it opens
+  reviewed: '2026-08-01'
+tags:
+- kalshi
+- prediction-markets
+- trading-research
+- market-data

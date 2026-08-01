@@ -9,7 +9,7 @@ repo: kmadhok/AI-News-Aggregator
 visibility: private
 last_reviewed: '2026-08-01'
 next_action:
-  description: 'Review push-project spec PR #13 and merge or edit the Remaining work checklist'
+  description: 'Review push-project chunk PR #14 (root dependency manifests)'
   reviewed: '2026-08-01'
 descriptions:
   private: Aggregate AI news across various data sources
@@ -19,4 +19,6 @@ tags:
 - semantic-search
 - transcription
 - python
-notes: 'push-project 2026-08-01: spec drafted https://github.com/kmadhok/AI-News-Aggregator/pull/13'
+notes: 'push-project 2026-08-01: spec drafted https://github.com/kmadhok/AI-News-Aggregator/pull/13
+
+  push-project 2026-08-01: chunk shipped https://github.com/kmadhok/AI-News-Aggregator/pull/14'

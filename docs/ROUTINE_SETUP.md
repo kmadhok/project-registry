@@ -49,10 +49,17 @@ awaiting review, that is a successful run: do nothing and say so.
 
 ### Repositories
 
+As of 2026-08-01, add these five:
+
 - `kmadhok/project-registry` — required; it carries the skill, the curated
   intent, and the evidence briefs
-- one entry per focus project (a repo the Routine cannot clone is a repo it
-  cannot push)
+- `kmadhok/interview-prep`
+- `kmadhok/AI-News-Aggregator`
+- `kmadhok/ai_engineering_markets`
+- `kmadhok/underwriting-` (the trailing hyphen is part of the name)
+
+The last four are the current focus list — a repo the Routine cannot clone is
+a repo it cannot push.
 
 Keep this list in sync with the focus list (`lifecycle: next` or `now`).
 Adding a project to the registry does not make it reachable from the cloud;

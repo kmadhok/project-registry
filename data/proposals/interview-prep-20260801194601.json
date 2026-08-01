@@ -1,0 +1,15 @@
+{
+  "id": "interview-prep-20260801194601",
+  "project_id": "interview-prep",
+  "created_at": "2026-08-01T19:46:01.926740+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-08-01: gear 1, https://github.com/kmadhok/interview-prep/pull/8",
+  "source": "record_review",
+  "applied_at": "2026-08-01T19:46:01.926740+00:00",
+  "changes": {
+    "notes": {
+      "before": null,
+      "after": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/interview-prep/pull/8"
+    }
+  }
+}

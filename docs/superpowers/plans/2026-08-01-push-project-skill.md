@@ -130,7 +130,18 @@ editing the checklist re-prioritizes the work._
 
 Rules: 3–8 chunks, ordered, each shippable as a single PR. If the repo is
 too immature to spec honestly, say so under Current state and make chunk 1
-the smallest step that changes that. Then: branch `push/spec`, commit only
+the smallest step that changes that.
+
+Every number in *Current state* must come from a command you ran against
+this clone in this run, and the command must be scoped to exactly what you
+claim. Counting files in a subdirectory means `ls <dir>/<glob> | wc -l`, not
+a repo-wide `find` — a recursive sweep silently pulls in matches from other
+directories and inflates the count. Re-run each count immediately before
+writing the sentence that cites it, and never carry a number over from the
+evidence brief: the brief is a cache from an older commit and its counts
+drift. A number you cannot reproduce on demand does not go in the spec.
+
+Then: branch `push/spec`, commit only
 `docs/SPEC.md`, open a PR titled `Spec: <one-line goal>` whose body restates
 the merge-is-approval contract. Do Step 4 and Step 5, then stop.
 

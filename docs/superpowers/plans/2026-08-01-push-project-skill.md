@@ -73,10 +73,13 @@ the open-PR brake below unless the owner's message overrides it.
    then lifecycle `next`, in that order. Empty → notify
    "focus list is empty — mark projects with: registry record-review <id> --set lifecycle=next"
    and stop.
-2. Rank: call `get_attention_queue`; keep only focus-list ids, in queue
-   order. Focus projects absent from the queue go last, least-recently
-   pushed by this skill first (see brake query — use the newest `push/` PR's
-   `createdAt` per repo; no `push/` PRs at all sorts first).
+2. Rank: call `get_attention_queue`. Candidate order = focus-list ids in
+   queue order, then focus-list ids absent from the queue. Order the
+   absent group by this skill's last touch, oldest first: per repo, run
+   `gh pr list --repo <repo> --state all --json headRefName,createdAt`,
+   keep PRs whose `headRefName` starts with `push/`, and the newest
+   `createdAt` among them is the touch time. Repos with no `push/` PRs
+   sort first (never touched); break remaining ties alphabetically by id.
 3. Brake: for each candidate in order, run
    `gh pr list --repo <repo> --state open --json number,headRefName,createdAt`
    and skip the project if any `headRefName` starts with `push/`.
@@ -95,7 +98,8 @@ the open-PR brake below unless the owner's message overrides it.
 ## Step 3 — Gear check
 
 Does `docs/SPEC.md` exist on the default branch of the clone?
-Absent → Gear 1. Present → Gear 2.
+Absent → Gear 1. Present → Gear 2. An empty repo (no commits, unborn
+branch) counts as absent → Gear 1.
 
 ## Gear 1 — draft the spec, stop
 
@@ -157,11 +161,23 @@ the merge-is-approval contract. Do Step 4 and Step 5, then stop.
 
 ## Step 4 — Write back
 
-`record_project_review` on the registry MCP: the project id, rationale
-`push-project <date>: gear <1|2>, <PR url or outcome>`, and `notes` set to
-the existing notes plus one appended line
-`push-project <date>: <spec drafted | chunk shipped | amended | aborted> <PR url>`.
-Notes replace wholesale — read the current value first, append, write.
+Call `record_project_review` on the registry MCP with exactly these
+arguments and no others:
+
+- `project_id`: the project id
+- `approved`: `true` — REQUIRED. Without it the tool files a pending
+  proposal, applies nothing, and still reports success; the review is
+  silently lost.
+- `rationale`: `push-project <date>: gear <1|2>, <PR url or outcome>`
+- `updates`: `{"notes": "<full replacement text>"}` — the existing notes
+  (read them via `get_project` first) plus one appended line
+  `push-project <date>: <spec drafted | chunk shipped | amended | aborted> <PR url>`.
+  Notes replace wholesale; there is no top-level `notes` parameter.
+
+The tool will technically accept other curated paths inside `updates`
+(`lifecycle`, `active`, `priority`, `next_action.*`). You MUST NOT pass
+them — Invariant 4 binds you, not the tool's permissiveness; `notes` is
+the only allowed key.
 
 Then commit the registry's own changes:
 `cd $REGISTRY_ROOT && .venv/bin/registry dashboard && git add registry/ data/proposals/ data/audit_log.jsonl DASHBOARD.md && git commit -m "push-project: record run for <id>" && git push`
@@ -172,7 +188,8 @@ Then commit the registry's own changes:
 Load the PushNotification tool via ToolSearch (`select:PushNotification`)
 and send one line: `<id> · gear <1|2> · <PR title> — <url>` (or the
 parked / empty-focus message). If the tool is unavailable, print the same
-line as the final message instead.
+line as the final message instead — the tool being absent in a headless
+run is normal, not an error.
 
 Finally, delete `$WORKDIR`.
 

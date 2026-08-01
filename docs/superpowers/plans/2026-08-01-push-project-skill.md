@@ -138,6 +138,15 @@ Rules: 3–8 chunks, ordered, each shippable as a single PR. If the repo is
 too immature to spec honestly, say so under Current state and make chunk 1
 the smallest step that changes that.
 
+Before writing any chunk that adds a capability, prove the capability is
+missing. Grep the codebase for it and enumerate the CLI's registered
+subcommands (for argparse, `grep -n "add_parser("`); a mature repo often
+already has the thing the issue tracker still asks for. A chunk that
+rebuilds working code is worse than no chunk — it burns a run and produces
+a PR the owner must reject. If the capability exists but is unused,
+untested, or stale, say so and make the chunk "run it, verify the result,
+add the missing test" instead of "build it".
+
 Every number in *Current state* must come from a command you ran against
 this clone in this run, and the command must be scoped to exactly what you
 claim. Counting files in a subdirectory means `ls <dir>/<glob> | wc -l`, not

@@ -1,0 +1,23 @@
+{
+  "id": "interview-prep-20260801201647",
+  "project_id": "interview-prep",
+  "created_at": "2026-08-01T20:16:47.024203+00:00",
+  "status": "applied",
+  "rationale": "Owner activated as a push-project focus project",
+  "source": "record_review",
+  "applied_at": "2026-08-01T20:16:47.024203+00:00",
+  "changes": {
+    "active": {
+      "before": false,
+      "after": true
+    },
+    "next_action.description": {
+      "before": null,
+      "after": "Review push-project spec PR #8 and merge or edit the Remaining work checklist"
+    },
+    "next_action.reviewed": {
+      "before": null,
+      "after": "2026-08-01"
+    }
+  }
+}

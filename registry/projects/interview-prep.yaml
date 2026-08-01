@@ -3,11 +3,14 @@ name: interview-prep
 purpose: A file-backed, agent-assisted job-search workspace that tracks applications, generates
   tailored resume and apply packets, and stages human-reviewed recruiter outreach.
 lifecycle: next
-active: false
+active: true
 category: career-automation
 repo: kmadhok/interview-prep
 visibility: private
 last_reviewed: '2026-08-01'
+next_action:
+  description: 'Review push-project spec PR #8 and merge or edit the Remaining work checklist'
+  reviewed: '2026-08-01'
 tags:
 - job-search
 - interview-prep

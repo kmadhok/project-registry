@@ -3,11 +3,14 @@ name: AI-News-Aggregator
 purpose: Collect YouTube captions, Semantic Scholar papers, and podcast transcripts into Markdown,
   then organize and semantically search the resulting personal AI knowledge base.
 lifecycle: next
-active: false
+active: true
 category: knowledge-management
 repo: kmadhok/AI-News-Aggregator
 visibility: private
 last_reviewed: '2026-08-01'
+next_action:
+  description: 'Review push-project spec PR #13 and merge or edit the Remaining work checklist'
+  reviewed: '2026-08-01'
 descriptions:
   private: Aggregate AI news across various data sources
 tags:

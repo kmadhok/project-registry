@@ -62,6 +62,12 @@ do" notification.
    intent-shaped goes into `propose_project_update` and stops there for the
    owner.
 5. Never open a PR you could not verify (tests run + entire diff read).
+6. Never target `project-registry` itself, even though its lifecycle is
+   `now` and it would otherwise rank first. It is this skill's own control
+   plane, it already has a spec and plan under `docs/superpowers/`, and the
+   owner develops it interactively — a cron-opened PR against it would
+   collide with live sessions. Skip it during selection and move to the
+   next candidate.
 
 ## Step 1 — Select
 

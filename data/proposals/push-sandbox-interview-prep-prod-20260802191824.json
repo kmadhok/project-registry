@@ -1,0 +1,19 @@
+{
+  "id": "push-sandbox-interview-prep-prod-20260802191824",
+  "project_id": "push-sandbox-interview-prep-prod",
+  "created_at": "2026-08-02T19:18:24.338531+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-08-02: gear 1, https://github.com/kmadhok/push-sandbox-interview-prep-prod/pull/1",
+  "source": "record_review",
+  "applied_at": "2026-08-02T19:18:24.338531+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": null,
+      "after": "2026-08-02"
+    },
+    "notes": {
+      "before": "Created 2026-08-02 by push-project-observe. Mirror-pushed from kmadhok/interview-prep-prod at b76d952 rather than forked, because GitHub refuses same-owner forks. Deliberately inert (incubating, inactive, no next action) so no bare run or scheduled Routine can select it; reachable only by named invocation. Delete after the observation.",
+      "after": "Created 2026-08-02 by push-project-observe. Mirror-pushed from kmadhok/interview-prep-prod at b76d952 rather than forked, because GitHub refuses same-owner forks. Deliberately inert (incubating, inactive, no next action) so no bare run or scheduled Routine can select it; reachable only by named invocation. Delete after the observation.\npush-project 2026-08-02: spec drafted https://github.com/kmadhok/push-sandbox-interview-prep-prod/pull/1"
+    }
+  }
+}

@@ -3,6 +3,25 @@
 What the skill actually does, observed against a disposable target rather than
 inferred from `SKILL.md`.
 
+## Provenance — for referencing this run from another session or model
+
+| Item | Value |
+|---|---|
+| Date | 2026-08-02 |
+| Claude Code session id | `f26eed63-43dc-4d98-afcf-ef80d0f219b1` |
+| Transcript | `~/.claude/projects/-Users-kanumadhok-Documents-Claude-Projects-project-registry/f26eed63-43dc-4d98-afcf-ef80d0f219b1.jsonl` |
+| Model | Opus 5 (1M context), `claude-opus-5[1m]` |
+| Codex delegation report | `~/.claude/model-reports/codex-push-sandbox-interview-prep-20260802-112521-58789.md` |
+| Registry commit at write-up | `16dc531ee7df796472179bd1cc3bd2c250d8e2de` |
+| Sandbox repo | `kmadhok/push-sandbox-interview-prep` (private) |
+| Sandbox source | `kmadhok/interview-prep-prod` @ `b76d952` |
+| Sandbox `main` after both runs | `70e1fc04c891493077b8a289606718b7f10072b4` |
+| PRs | [#1 spec](https://github.com/kmadhok/push-sandbox-interview-prep/pull/1) (merged `2f585f0`), [#2 chunk](https://github.com/kmadhok/push-sandbox-interview-prep/pull/2) (merged `70e1fc0`) |
+
+Note: this session resumed after a `/clear`, so earlier session ids exist in the
+same project directory. `f26eed63…` is the one that performed every action
+described here.
+
 **Why this exists.** Merging a push-project PR is the approval signal the whole
 design runs on ("Merging this PR approves the spec"), and `Step 4` write-backs
 land in an append-only audit log that a repo-side `git revert` does not unwind.
@@ -186,3 +205,51 @@ rather than overwriting them.
 **What a standard would NOT have fixed:** the three dependency traps above.
 Those needed real inspection of the code. A standard removes mechanical
 guessing; it does not remove the need to verify before delegating.
+
+---
+
+## Full test matrix — 2026-08-02, post-merge
+
+Every runnable surface, executed against a **fresh clone of sandbox `main`
+(`70e1fc0`)** using a throwaway Python 3.11.15 venv built from the merged
+`requirements-dev.txt` alone — no borrowed environment. This is the claim the
+shipped chunk makes, tested literally.
+
+| # | Surface | Command | Result |
+|---|---|---|---|
+| 1 | project-registry suite | `.venv/bin/python -m pytest` | **213 passed** |
+| 2 | project-registry rules | `registry validate` | **0 errors**, 3 suggestions, exit 0 |
+| 3 | sandbox helpers | `python -m pytest scripts/` | **154 passed** |
+| 4 | sandbox evals | `PYTHONPATH=evals python -m pytest evals/` | **32 passed** |
+| 5 | sandbox root (bare) | `python -m pytest` | **collection error** — expected, see below |
+| 6 | drip_runner subtree | `python -m pytest scripts/drip_runner/` | **92 passed** |
+| 7 | eval harness listing | `python evals/run_eval.py --list` | **9 skills** |
+| 8 | eval harness tests | `python -m pytest evals/test_run_eval.py` | **26 passed** |
+| 9 | trace verifier tests | `pytest evals/test_verify_behavior_traces.py` | **6 passed** |
+| 10 | personal-refs guard (SC6) | `pytest scripts/test_no_personal_refs.py` | **1 passed** |
+
+**Surface 5 fails by design.** `ModuleNotFoundError: No module named 'common'`
+is the known defect the *second* spec chunk exists to fix. It is recorded here
+as a passing observation — the repo behaves exactly as `docs/SPEC.md` says it
+does — not as a regression.
+
+**Surface 7 independently confirms a spec number.** The repo's own tooling
+reports 9 eval'd skills, matching the `9` written into *Current state* by a
+different method (`ls`-based count of directories containing `verify.py`). Two
+independent measures agreeing is what makes that number safe to cite.
+
+**One methodology correction worth recording.** An attempt to run
+`run_eval.py classify --workspace .` errored with "expected exactly one fixture
+role … found 0". That was a wrong entry point, not a defect: the harness expects
+a synthetic workspace, which `evals/test_run_eval.py` constructs itself
+(surface 8). Real verifier coverage comes from surfaces 4/8/9, not from manual
+`run_eval.py` invocation against a repo root.
+
+### Post-run invariant checks
+
+| Invariant | Check | Result |
+|---|---|---|
+| 2 — no repo outside the named project | `push/` PR counts on the 4 focus repos vs. pre-run baseline | **1, 1, 1, 0 — unchanged** |
+| 4 — registry writes are `notes` only | `git diff` on the sandbox YAML | only `notes` + `last_reviewed` |
+| 6 — never target `project-registry` | `push/` PRs on `kmadhok/project-registry` | **0** |
+| — | audit log | 2 `apply_proposal` entries, gear 1 and gear 2 |

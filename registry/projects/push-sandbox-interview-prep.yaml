@@ -1,0 +1,21 @@
+id: push-sandbox-interview-prep
+name: push-sandbox-interview-prep
+purpose: Disposable copy of interview-prep-prod used to observe push-project's
+  gear-1 and gear-2 behavior end to end without consuming approval signal on a
+  live repository. Not real work; safe to delete once the behavioral audit is
+  written up.
+lifecycle: incubating
+active: false
+category: tooling
+repo: kmadhok/push-sandbox-interview-prep
+is_fork: false
+visibility: private
+tags:
+- sandbox
+- push-project
+- disposable
+notes: 'Created 2026-08-02 as a push-project test target. Mirror-pushed from
+  kmadhok/interview-prep-prod at that date rather than forked, because GitHub
+  refuses same-owner forks. Deliberately inert (incubating, inactive, no next
+  action) so no bare run or scheduled Routine can ever select it; reachable
+  only by named invocation. Delete when the behavioral audit is complete.'

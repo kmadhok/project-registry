@@ -18,4 +18,6 @@ notes: 'Created 2026-08-02 as a push-project test target. Mirror-pushed from kma
   (incubating, inactive, no next action) so no bare run or scheduled Routine can ever select
   it; reachable only by named invocation. Delete when the behavioral audit is complete.
 
-  push-project 2026-08-02: spec drafted https://github.com/kmadhok/push-sandbox-interview-prep/pull/1'
+  push-project 2026-08-02: spec drafted https://github.com/kmadhok/push-sandbox-interview-prep/pull/1
+
+  push-project 2026-08-02: chunk shipped https://github.com/kmadhok/push-sandbox-interview-prep/pull/2'

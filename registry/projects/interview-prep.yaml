@@ -7,14 +7,16 @@ active: true
 category: career-automation
 repo: kmadhok/interview-prep
 visibility: private
-last_reviewed: '2026-08-01'
+last_reviewed: '2026-08-04'
 next_action:
   description: 'Review push-project spec PR #8 and merge or edit the Remaining work checklist'
-  reviewed: '2026-08-01'
+  reviewed: '2026-08-04'
 tags:
 - job-search
 - interview-prep
 - agent-workflows
 - automation
 - outreach
-notes: 'push-project 2026-08-01: spec drafted https://github.com/kmadhok/interview-prep/pull/8'
+notes: 'push-project 2026-08-01: spec drafted https://github.com/kmadhok/interview-prep/pull/8
+
+  push-project 2026-08-04: chunk shipped https://github.com/kmadhok/interview-prep/pull/9'

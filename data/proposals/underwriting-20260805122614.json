@@ -1,0 +1,23 @@
+{
+  "id": "underwriting-20260805122614",
+  "project_id": "underwriting",
+  "created_at": "2026-08-05T12:26:14.098312+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-08-05: gear 2, https://github.com/kmadhok/underwriting-/pull/2",
+  "source": "record_review",
+  "applied_at": "2026-08-05T12:26:14.098312+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": "2026-08-03",
+      "after": "2026-08-05"
+    },
+    "notes": {
+      "before": "push-project 2026-08-03: spec drafted https://github.com/kmadhok/underwriting-/pull/1",
+      "after": "push-project 2026-08-03: spec drafted https://github.com/kmadhok/underwriting-/pull/1\npush-project 2026-08-05: chunk shipped https://github.com/kmadhok/underwriting-/pull/2"
+    },
+    "next_action.reviewed": {
+      "before": "2026-08-03",
+      "after": "2026-08-05"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "push-sandbox-pc-20260808172037",
+  "project_id": "push-sandbox-pc",
+  "created_at": "2026-08-08T17:20:37.009151+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-08-08: gear 2, https://github.com/kmadhok/push-sandbox-pc/pull/3",
+  "source": "record_review",
+  "applied_at": "2026-08-08T17:20:37.009151+00:00",
+  "changes": {
+    "notes": {
+      "before": "Created 2026-08-08 as the PC-migration validation target. Delete when the migration validation is complete.\npush-project 2026-08-08: spec drafted https://github.com/kmadhok/push-sandbox-pc/pull/1\npush-project 2026-08-08: chunk shipped https://github.com/kmadhok/push-sandbox-pc/pull/2",
+      "after": "Created 2026-08-08 as the PC-migration validation target. Delete when the migration validation is complete.\n\npush-project 2026-08-08: spec drafted https://github.com/kmadhok/push-sandbox-pc/pull/1\n\npush-project 2026-08-08: chunk shipped https://github.com/kmadhok/push-sandbox-pc/pull/2\n\npush-project 2026-08-08: chunk shipped https://github.com/kmadhok/push-sandbox-pc/pull/3"
+    }
+  }
+}

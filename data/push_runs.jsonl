@@ -13,3 +13,4 @@
 {"ts": "2026-08-08T16:42:25Z", "host": "pc", "project": "push-sandbox-pc", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/push-sandbox-pc/pull/1"}
 {"ts": "2026-08-08T16:52:14Z", "host": "pc", "project": "push-sandbox-pc", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/push-sandbox-pc/pull/2"}
 {"ts": "2026-08-08T17:20:36Z", "host": "pc", "project": "push-sandbox-pc", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/push-sandbox-pc/pull/3"}
+{"ts": "2026-08-08T19:42:07Z", "host": "pc", "project": null, "gear": null, "outcome": "parked", "pr": null}

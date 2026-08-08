@@ -1,0 +1,16 @@
+id: push-sandbox-pc
+name: push-sandbox-pc
+purpose: Disposable copy of interview-prep-prod used to validate push-project running
+  headless on the PC workstation, without consuming approval signal on a live
+  repository. Not real work.
+lifecycle: incubating
+active: false
+category: tooling
+repo: kmadhok/push-sandbox-pc
+visibility: private
+tags:
+- sandbox
+- push-project
+- disposable
+notes: 'Created 2026-08-08 as the PC-migration validation target. Delete when the
+  migration validation is complete.'

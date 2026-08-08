@@ -1,3 +1,15 @@
+{"ts": "2026-08-01T19:46:01Z", "host": "mac", "project": "interview-prep", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/interview-prep/pull/8"}
+{"ts": "2026-08-01T20:03:06Z", "host": "mac", "project": "ai-news-aggregator", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/AI-News-Aggregator/pull/13"}
+{"ts": "2026-08-01T20:44:57Z", "host": "mac", "project": "ai-news-aggregator", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/AI-News-Aggregator/pull/14"}
+{"ts": "2026-08-01T21:45:51Z", "host": "cloud", "project": "ai-engineering-markets", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/ai_engineering_markets/pull/1"}
+{"ts": "2026-08-02T16:22:03Z", "host": "mac", "project": "push-sandbox-interview-prep", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/push-sandbox-interview-prep/pull/1"}
+{"ts": "2026-08-02T16:28:09Z", "host": "mac", "project": "push-sandbox-interview-prep", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/push-sandbox-interview-prep/pull/2"}
+{"ts": "2026-08-02T19:18:24Z", "host": "mac", "project": "push-sandbox-interview-prep-prod", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/push-sandbox-interview-prep-prod/pull/1"}
+{"ts": "2026-08-02T19:28:27Z", "host": "mac", "project": "push-sandbox-interview-prep-prod", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/push-sandbox-interview-prep-prod/pull/2"}
+{"ts": "2026-08-03T12:26:32Z", "host": "cloud", "project": "underwriting", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/underwriting-/pull/1"}
+{"ts": "2026-08-04T12:26:49Z", "host": "cloud", "project": "interview-prep", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/interview-prep/pull/9"}
+{"ts": "2026-08-05T12:26:14Z", "host": "cloud", "project": "underwriting", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/underwriting-/pull/2"}
+{"ts": "2026-08-06T12:30:02Z", "host": "cloud", "project": "interview-prep", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/interview-prep/pull/10"}
 {"ts": "2026-08-08T16:42:25Z", "host": "pc", "project": "push-sandbox-pc", "gear": 1, "outcome": "spec", "pr": "https://github.com/kmadhok/push-sandbox-pc/pull/1"}
 {"ts": "2026-08-08T16:52:14Z", "host": "pc", "project": "push-sandbox-pc", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/push-sandbox-pc/pull/2"}
 {"ts": "2026-08-08T17:20:36Z", "host": "pc", "project": "push-sandbox-pc", "gear": 2, "outcome": "chunk", "pr": "https://github.com/kmadhok/push-sandbox-pc/pull/3"}

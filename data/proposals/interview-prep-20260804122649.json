@@ -1,0 +1,23 @@
+{
+  "id": "interview-prep-20260804122649",
+  "project_id": "interview-prep",
+  "created_at": "2026-08-04T12:26:49.067665+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-08-04: gear 2, https://github.com/kmadhok/interview-prep/pull/9",
+  "source": "record_review",
+  "applied_at": "2026-08-04T12:26:49.067665+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": "2026-08-01",
+      "after": "2026-08-04"
+    },
+    "notes": {
+      "before": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/interview-prep/pull/8",
+      "after": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/interview-prep/pull/8\npush-project 2026-08-04: chunk shipped https://github.com/kmadhok/interview-prep/pull/9"
+    },
+    "next_action.reviewed": {
+      "before": "2026-08-01",
+      "after": "2026-08-04"
+    }
+  }
+}

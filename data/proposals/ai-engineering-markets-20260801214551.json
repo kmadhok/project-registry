@@ -1,0 +1,15 @@
+{
+  "id": "ai-engineering-markets-20260801214551",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-08-01T21:45:51.793948+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-08-01: gear 1, https://github.com/kmadhok/ai_engineering_markets/pull/1",
+  "source": "record_review",
+  "applied_at": "2026-08-01T21:45:51.793948+00:00",
+  "changes": {
+    "notes": {
+      "before": null,
+      "after": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/ai_engineering_markets/pull/1"
+    }
+  }
+}

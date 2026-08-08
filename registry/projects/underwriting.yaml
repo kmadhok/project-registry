@@ -7,11 +7,13 @@ active: true
 category: project-placeholder
 repo: kmadhok/underwriting-
 visibility: private
-last_reviewed: '2026-08-03'
+last_reviewed: '2026-08-05'
 next_action:
   description: Review the push-project spec PR when it opens
-  reviewed: '2026-08-03'
+  reviewed: '2026-08-05'
 tags:
 - underwriting
 - placeholder
-notes: 'push-project 2026-08-03: spec drafted https://github.com/kmadhok/underwriting-/pull/1'
+notes: 'push-project 2026-08-03: spec drafted https://github.com/kmadhok/underwriting-/pull/1
+
+  push-project 2026-08-05: chunk shipped https://github.com/kmadhok/underwriting-/pull/2'

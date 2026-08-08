@@ -19,12 +19,13 @@ First detect where you are running — the three environments differ:
   `<your scratchpad dir>/push/<project-id>` (fresh clone per run, deleted at
   the end), and the Codex adapter at `~/.claude/model-adapters/codex.sh` is
   available for delegation.
-- **PC (Windows workstation, scheduled)**: `REGISTRY_ROOT` =
-  `/g/projects/project-registry` (git-bash spelling of
-  `G:\projects\project-registry`). `REGISTRY_CLI` =
+- **PC (WSL Ubuntu on the always-on workstation, scheduled)**:
+  `REGISTRY_ROOT` = `/home/learnmsds/Github/project-registry`.
+  `REGISTRY_CLI` =
   `PYTHONPATH=src python3 -m project_registry.cli --root $REGISTRY_ROOT`.
-  `WORKDIR` = `/g/projects/push-work/<project-id>` (fresh clone per run,
-  deleted at the end). Codex is `codex.exe` on PATH — no adapter script.
+  `WORKDIR` = `/home/learnmsds/Github/push-work/<project-id>` (fresh clone
+  per run, deleted at the end). Codex is `~/bin/codex` (native Linux
+  binary) — no adapter script; `gh` is `~/bin/gh` if not on PATH.
   Before selecting, run `git -C $REGISTRY_ROOT pull --ff-only` so the run
   sees the latest curated intent.
 - **Cloud routine**: `REGISTRY_ROOT` = the cloned `project-registry`
@@ -37,9 +38,9 @@ First detect where you are running — the three environments differ:
 
 Detect in this order: if
 `/Users/kanumadhok/Documents/Claude/Projects/project-registry` exists you are
-on the Mac; else if `/g/projects/project-registry` exists you are on the PC;
-otherwise you are in a cloud routine. Everything else in this skill is
-identical everywhere.
+on the Mac; else if `/home/learnmsds/Github/project-registry` exists you are
+on the PC; otherwise you are in a cloud routine. Everything else in this
+skill is identical everywhere.
 
 - Branch namespace: every branch this skill creates is named `push/<slug>`.
 
@@ -176,7 +177,7 @@ the merge-is-approval contract. Do Step 4 and Step 5, then stop.
    - Otherwise delegate the task spec (plus relevant file excerpts):
      - Mac: pipe it to `~/.claude/model-adapters/codex.sh exec --prompt -
        --cd $WORKDIR --sandbox workspace-write --label push-<id>`.
-     - PC: pipe it to `codex.exe exec --cd $WORKDIR --sandbox
+     - PC: pipe it to `~/bin/codex exec --cd $WORKDIR --sandbox
        workspace-write -` (prompt on stdin).
      Codex not logged in or the invocation itself errors → abort and
      notify; no silent fallback.

@@ -12,13 +12,21 @@ do" notification.
 
 ## Constants
 
-First detect where you are running — the two environments differ:
+First detect where you are running — the three environments differ:
 
-- **Local (Mac)**: `REGISTRY_ROOT` = `/Users/kanumadhok/Documents/Claude/Projects/project-registry`,
+- **Mac (interactive)**: `REGISTRY_ROOT` = `/Users/kanumadhok/Documents/Claude/Projects/project-registry`,
   `REGISTRY_CLI` = `$REGISTRY_ROOT/.venv/bin/registry`, `WORKDIR` =
   `<your scratchpad dir>/push/<project-id>` (fresh clone per run, deleted at
   the end), and the Codex adapter at `~/.claude/model-adapters/codex.sh` is
   available for delegation.
+- **PC (Windows workstation, scheduled)**: `REGISTRY_ROOT` =
+  `/g/projects/project-registry` (git-bash spelling of
+  `G:\projects\project-registry`). `REGISTRY_CLI` =
+  `PYTHONPATH=src python3 -m project_registry.cli --root $REGISTRY_ROOT`.
+  `WORKDIR` = `/g/projects/push-work/<project-id>` (fresh clone per run,
+  deleted at the end). Codex is `codex.exe` on PATH — no adapter script.
+  Before selecting, run `git -C $REGISTRY_ROOT pull --ff-only` so the run
+  sees the latest curated intent.
 - **Cloud routine**: `REGISTRY_ROOT` = the cloned `project-registry`
   checkout (find it — you are started inside or beside it; `ls` the parent of
   your cwd). There is no `.venv`, so `REGISTRY_CLI` =
@@ -27,10 +35,11 @@ First detect where you are running — the two environments differ:
   the target repo — do NOT `gh repo clone` one that is already present. There
   is no Codex adapter: implement chunks yourself.
 
-Detect by testing for the local path: if
+Detect in this order: if
 `/Users/kanumadhok/Documents/Claude/Projects/project-registry` exists you are
-local, otherwise you are in a cloud routine. Everything else in this skill is
-identical in both.
+on the Mac; else if `/g/projects/project-registry` exists you are on the PC;
+otherwise you are in a cloud routine. Everything else in this skill is
+identical everywhere.
 
 - Branch namespace: every branch this skill creates is named `push/<slug>`.
 
@@ -62,7 +71,8 @@ the open-PR brake below unless the owner's message overrides it.
 
 **Bare invocation:**
 1. Focus list = `list_projects` (project-registry MCP) with lifecycle `now`,
-   then lifecycle `next`, in that order. Empty → notify
+   then lifecycle `next`, in that order. Empty → Step 4 (outcome
+   `empty_focus`), notify
    "focus list is empty — mark projects with: registry record-review <id> --set lifecycle=next"
    and stop.
 2. Rank: call `get_attention_queue`. Candidate order = focus-list ids in
@@ -75,7 +85,8 @@ the open-PR brake below unless the owner's message overrides it.
 3. Brake: for each candidate in order, run
    `gh pr list --repo <repo> --state open --json number,headRefName,createdAt`
    and skip the project if any `headRefName` starts with `push/`.
-4. First surviving candidate wins. If none survive → notify
+4. First surviving candidate wins. If none survive → Step 4 (outcome
+   `parked`), notify
    "all focus projects are waiting on your review: <open push/ PR urls>"
    and stop. That is a successful run.
 
@@ -84,7 +95,7 @@ the open-PR brake below unless the owner's message overrides it.
 - `get_project <id>` → purpose, notes, relationships, `repo`, visibility,
   observed GitHub state.
 - Evidence brief: read `$REGISTRY_ROOT/data/understanding/<id>.json`.
-- Get the code: locally, `gh repo clone <repo> $WORKDIR -- --depth 50`. In a
+- Get the code: on the Mac and the PC, `gh repo clone <repo> $WORKDIR -- --depth 50`. In a
   cloud routine the repo is already checked out beside the registry — use
   that checkout and skip cloning. Either way, then read README,
   CLAUDE.md / AGENTS.md if present, `docs/`, and `git log --oneline -15`.
@@ -162,11 +173,14 @@ the merge-is-approval contract. Do Step 4 and Step 5, then stop.
 5. Implement per the model-routing policy:
    - Taste-critical (UI, user-facing copy, API/SDK shape) → implement it
      yourself.
-   - Otherwise delegate, but only when running locally: pipe the task spec
-     (plus relevant file excerpts) to `~/.claude/model-adapters/codex.sh exec
-     --prompt - --cd $WORKDIR --sandbox workspace-write --label push-<id>`.
-     Adapter exit 4 (not logged in) → abort and notify; no silent fallback.
-     In a cloud routine there is no adapter: implement the chunk yourself to
+   - Otherwise delegate the task spec (plus relevant file excerpts):
+     - Mac: pipe it to `~/.claude/model-adapters/codex.sh exec --prompt -
+       --cd $WORKDIR --sandbox workspace-write --label push-<id>`.
+     - PC: pipe it to `codex.exe exec --cd $WORKDIR --sandbox
+       workspace-write -` (prompt on stdin).
+     Codex not logged in or the invocation itself errors → abort and
+     notify; no silent fallback.
+     In a cloud routine there is no Codex: implement the chunk yourself to
      the same standard, and verify it identically.
 6. Verify: run the full test suite (no new failures) and read the entire
    diff. Misses the bar → fix inline or redo once; a second miss → delete
@@ -178,8 +192,24 @@ the merge-is-approval contract. Do Step 4 and Step 5, then stop.
 
 ## Step 4 — Write back
 
-Call `record_project_review` on the registry MCP with exactly these
-arguments and no others:
+Every run writes back, whatever the outcome — parked and empty-focus runs
+are recorded too (they used to leave no trace, which made "ran, nothing to
+do" indistinguishable from "never ran").
+
+**Run journal (always):** append exactly one line to
+`$REGISTRY_ROOT/data/push_runs.jsonl` (git-tracked, append-only; create if
+absent):
+
+```json
+{"ts": "<UTC ISO-8601>", "host": "mac|pc|cloud", "project": "<id or null>", "gear": 1, "outcome": "spec|chunk|amend|aborted|parked|empty_focus", "pr": "<url or null>"}
+```
+
+`gear` is `null` when no gear was reached. Never rewrite or delete earlier
+lines.
+
+**Project review (only when a project was advanced or aborted):** call
+`record_project_review` on the registry MCP with exactly these arguments
+and no others:
 
 - `project_id`: the project id
 - `approved`: `true` — REQUIRED. Without it the tool files a pending
@@ -197,8 +227,13 @@ them — Invariant 4 binds you, not the tool's permissiveness; `notes` is
 the only allowed key.
 
 Then commit the registry's own changes:
-`cd $REGISTRY_ROOT && $REGISTRY_CLI dashboard && git add registry/ data/proposals/ data/audit_log.jsonl DASHBOARD.md && git commit -m "push-project: record run for <id>" && git push` (locally `$REGISTRY_CLI` is `.venv/bin/registry`; in a cloud routine it is the `PYTHONPATH=src python3 -m ...` form above, and the push goes to a `push/` branch if main is protected)
+`cd $REGISTRY_ROOT && $REGISTRY_CLI dashboard && git add registry/ data/proposals/ data/audit_log.jsonl data/push_runs.jsonl DASHBOARD.md && git commit -m "push-project: record run for <id or outcome>" && git push`
 (`record_project_review` also writes `data/proposals/` and `data/audit_log.jsonl`, which are git-tracked by design).
+
+On the Mac and the PC that push goes straight to `main`. In a cloud routine,
+if `main` is protected, push a `push/registry-run-<date>` branch **and open a
+PR for it** — a write-back branch without a PR strands the run record, which
+is exactly what happened to the 2026-08 cloud runs.
 
 ## Step 5 — Notify
 
@@ -215,10 +250,11 @@ Finally, delete `$WORKDIR`.
 | Case | Behavior |
 |---|---|
 | Clone or auth failure | Skip to the next focus candidate; notify if all fail |
-| Codex adapter exit 4 | Abort with notification |
+| Codex not logged in / invocation errors | Abort with notification |
 | Pre-existing red tests | Baseline first; verify = no NEW failures; flag in PR body |
 | Verification fails twice | Abort, delete branch, notify with what was attempted |
 | Spec chunk obsolete | Spec-amendment PR instead of code |
 
-Nothing is written anywhere until a branch is pushed, so a crashed run is
-safe to simply rerun.
+Nothing is written anywhere until a branch is pushed or Step 4 runs, so a
+crashed run is safe to simply rerun. (A crash before Step 4 leaves no
+journal line — the scheduler's own log is the record that the run started.)

@@ -183,6 +183,13 @@ the merge-is-approval contract. Do Step 4 and Step 5, then stop.
      notify; no silent fallback.
      In a cloud routine there is no Codex: implement the chunk yourself to
      the same standard, and verify it identically.
+     **Run Codex synchronously, in the foreground, with your Bash timeout
+     raised to its maximum.** Never launch it in the background and never
+     end your turn while it is still running: in a headless (`claude -p`)
+     run, ending your turn terminates the whole session and the run dies
+     mid-flight — this exact mistake killed two validation runs. If the
+     timeout cap fires anyway, keep waiting with repeated foreground checks
+     until the Codex process has exited, then read its output and continue.
 6. Verify: run the full test suite (no new failures) and read the entire
    diff. Misses the bar → fix inline or redo once; a second miss → delete
    the branch, Step 4 with outcome "aborted", notify with what was

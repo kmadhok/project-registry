@@ -7,10 +7,15 @@ active: false
 category: data-collection
 repo: kmadhok/Daily_Apartment_Pull
 visibility: public
-last_reviewed: '2026-07-27'
+last_reviewed: '2026-08-11'
 tags:
 - web-scraping
 - apartments
 - bigquery
 - playwright
 - automation
+notes: 'owner 2026-08-10: merged PR #1 (6374eed) retiring the daily scrape schedules. Both
+  daily.yml and simple_checker.yml have their cron blocks commented out with workflow_dispatch
+  preserved; re-enable by uncommenting. Last successful run was 2026-02-09 (GitHub had auto-disabled
+  the crons after 60 days inactivity). No journal line exists for the run that opened this
+  PR — likely a named invocation predating the always-journal rule. Project remains archived.'

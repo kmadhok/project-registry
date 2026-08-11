@@ -1,0 +1,15 @@
+{
+  "id": "ai-news-aggregator-20260811040011",
+  "project_id": "ai-news-aggregator",
+  "created_at": "2026-08-11T04:00:11.253399+00:00",
+  "status": "applied",
+  "rationale": "PR #14 merged 2026-08-10; the next_action naming it is satisfied and stale.",
+  "source": "propose",
+  "applied_at": "2026-08-11T04:00:34.466469+00:00",
+  "changes": {
+    "next_action.description": {
+      "before": "Review push-project chunk PR #14 (root dependency manifests)",
+      "after": "Review the next push-project chunk PR (close the 24-of-44 indexing gap)"
+    }
+  }
+}

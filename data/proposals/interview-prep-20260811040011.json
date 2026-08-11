@@ -1,0 +1,15 @@
+{
+  "id": "interview-prep-20260811040011",
+  "project_id": "interview-prep",
+  "created_at": "2026-08-11T04:00:11.490819+00:00",
+  "status": "applied",
+  "rationale": "Spec PR #8 merged earlier and chunk PR #10 merged 2026-08-10; the next_action referencing PR #8 review is stale.",
+  "source": "propose",
+  "applied_at": "2026-08-11T04:00:34.710242+00:00",
+  "changes": {
+    "next_action.description": {
+      "before": "Review push-project spec PR #8 and merge or edit the Remaining work checklist",
+      "after": "Review the next push-project chunk PR (pipeline_health reporter)"
+    }
+  }
+}

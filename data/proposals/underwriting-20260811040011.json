@@ -1,0 +1,15 @@
+{
+  "id": "underwriting-20260811040011",
+  "project_id": "underwriting",
+  "created_at": "2026-08-11T04:00:11.368217+00:00",
+  "status": "applied",
+  "rationale": "Spec PR merged and chunk PR #2 merged 2026-08-10. The README now documents that the domain is undecided; that owner decision is the real blocker, not another PR review.",
+  "source": "propose",
+  "applied_at": "2026-08-11T04:00:34.591798+00:00",
+  "changes": {
+    "next_action.description": {
+      "before": "Review the push-project spec PR when it opens",
+      "after": "Answer which underwriting domain this repo targets (credit / insurance / mortgage / other), or archive it \u2014 no further agent work adds value until then"
+    }
+  }
+}

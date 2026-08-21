@@ -57,8 +57,8 @@ Spec: `docs/BRANCH_CAPTURE_SPEC.md` (Rev 3). Read ALL 674 lines before touching 
 
 Source: `docs/FINDINGS_REGISTRY_MCP.md#M1`. `model.py:439-466` emits keys only when truthy; `is_fork: false`, `[]`, `""` vanish on the next automated write.
 
-- [ ] Implement fix option 1: track which keys were present in the source YAML and re-emit on that basis (Pydantic `exclude_unset` shape). Keys never present stay absent; keys present at a falsy value survive. Defaults for new objects: unchanged output.
-- [ ] Tests (requirement-driven): `is_fork: false` survives `record-review`; `tags: []` survives; `next_action: ""` survives; a file that never had `is_fork` does not gain it; a proposal apply does not add unset keys. Run the whole registry through load → save → load and assert byte-stable YAML for every `registry/projects/*.yaml` (if any file is NOT stable today, report which keys and why in PROGRESS — do not "fix" curated files).
+- [x] Implement fix option 1: track which keys were present in the source YAML and re-emit on that basis (Pydantic `exclude_unset` shape). Keys never present stay absent; keys present at a falsy value survive. Defaults for new objects: unchanged output.
+- [x] Tests (requirement-driven): `is_fork: false` survives `record-review`; `tags: []` survives; `next_action: ""` survives; a file that never had `is_fork` does not gain it; a proposal apply does not add unset keys. Run the whole registry through load → save → load and assert byte-stable YAML for every `registry/projects/*.yaml` (if any file is NOT stable today, report which keys and why in PROGRESS — do not "fix" curated files).
 - Validation: full gate. Commit `marathon(T2): preserve explicitly-set falsy curated fields on write`.
 
 ## T3 — M3: MCP review without `approved` must not read as success (P1)

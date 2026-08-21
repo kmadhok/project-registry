@@ -9,13 +9,16 @@ from project_registry.queries import list_open_prs, list_selected_issues
 from project_registry.signals import (
     ATTENTION_RULES,
     MISMATCH_RULES,
+    SignalConfig,
     build_attention_queue,
+    classify_branches,
     describe_rules,
     find_mismatches,
+    stale_branches,
 )
 from project_registry.validation import ERROR, SUGGESTION
 
-from .conftest import NOW, make_issue, make_pr, make_repo_state, make_snapshot
+from .conftest import NOW, make_branch, make_issue, make_pr, make_repo_state, make_snapshot
 
 
 def rule_ids(items):
@@ -162,6 +165,98 @@ def test_unknown_ci_state_is_not_treated_as_failing(write_project, load):
         make_pr(number=1, ci_state="unknown", created_days_ago=0, review_state="approved")
     ]))
     assert "ci_failing" not in rule_ids(build_attention_queue(load(), snapshot, now=NOW))
+
+
+# -- stale branches ------------------------------------------------------
+
+
+def test_stale_branch_threshold_is_inclusive_and_future_is_not_stale():
+    state = make_repo_state(branches=[
+        make_branch("at-threshold", committed_days_ago=90),
+        make_branch("younger", committed_days_ago=89),
+        make_branch("future", committed_days_ago=-1),
+    ], branches_fetched=True)
+    found = stale_branches(state, NOW, SignalConfig(stale_branch_days=90))
+    assert [branch.name for branch in found] == ["at-threshold"]
+
+
+def test_stale_branch_classifier_excludes_default_open_pr_and_unknown_dates():
+    state = make_repo_state(branches=[
+        make_branch("main", committed_days_ago=200, is_default=True),
+        make_branch("reviewed", committed_days_ago=200, open_pr_numbers=[7]),
+        make_branch("unknown", committed_days_ago=None),
+        make_branch("claude/old", committed_days_ago=200),
+        make_branch("claude/older", committed_days_ago=210),
+        make_branch("feat/old", committed_days_ago=100),
+    ], branches_fetched=True)
+    counts = classify_branches(state, NOW, SignalConfig())
+    assert counts.total == 6
+    assert counts.stale == 3
+    assert counts.open_pr_heads == 1
+    assert counts.groups == (("claude/", 2), ("feat/", 1))
+    assert counts.oldest_days == 210
+
+
+def test_stale_branches_emit_one_repo_scoped_attention_item(write_project, load):
+    write_project(id="p", purpose="p", repo="owner/repo")
+    state = make_repo_state("owner/repo", branches=[
+        make_branch("claude/x", committed_days_ago=210),
+        make_branch("claude/y", committed_days_ago=200),
+        make_branch("feat/z", committed_days_ago=100),
+    ], branches_fetched=True)
+    items = [
+        item for item in build_attention_queue(load(), make_snapshot(state), now=NOW)
+        if item.rule_id == "stale_branches"
+    ]
+    assert len(items) == 1
+    item = items[0]
+    assert item.kind == "branch"
+    assert item.number is None
+    assert item.age_days is None
+    assert item.title == "owner/repo"
+    assert item.url == "https://github.com/owner/repo"
+    assert item.reason == (
+        "3 stale branches (2 claude/, 1 feat/), oldest 210d"
+    )
+
+
+def test_stale_branch_reason_caps_groups_and_counts_hidden_branches(write_project, load):
+    write_project(id="p", purpose="p", repo="owner/repo")
+    state = make_repo_state("owner/repo", branches=[
+        make_branch("a/one"), make_branch("a/two"), make_branch("b/one"),
+        make_branch("c/one"), make_branch("d/one"),
+    ], branches_fetched=True)
+    item = next(
+        item for item in build_attention_queue(load(), make_snapshot(state), now=NOW)
+        if item.rule_id == "stale_branches"
+    )
+    assert item.reason == "5 stale branches (2 a/, 1 b/, 1 c/, +1 more), oldest 100d"
+
+
+def test_unfetched_or_partial_branches_never_emit_a_known_stale_count(write_project, load):
+    write_project(id="p", purpose="p", repo="owner/repo")
+    state = make_repo_state(
+        "owner/repo",
+        branches=[make_branch("old")],
+        branches_fetched=False,
+        branches_partial=True,
+        branches_error="truncated",
+    )
+    assert "stale_branches" not in rule_ids(
+        build_attention_queue(load(), make_snapshot(state), now=NOW)
+    )
+
+
+def test_attention_sort_accepts_repo_and_numbered_items_together(write_project, load):
+    write_project(id="p", purpose="p", repo="owner/repo")
+    state = make_repo_state(
+        "owner/repo",
+        branches=[make_branch("old")],
+        branches_fetched=True,
+        issues=[make_issue(number=2, labels=["bug"])],
+    )
+    items = build_attention_queue(load(), make_snapshot(state), now=NOW)
+    assert {(item.kind, item.number) for item in items} == {("issue", 2), ("branch", None)}
 
 
 # -- US-012: mismatches ---------------------------------------------------

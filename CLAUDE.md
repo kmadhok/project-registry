@@ -44,7 +44,7 @@ registry sync-status            # when GitHub evidence was last refreshed
 State-changing (each has guardrails — respect them, don't work around them):
 
 ```bash
-registry sync                                     # refresh GitHub evidence (read-only wrt GitHub; needs GITHUB_TOKEN)
+registry sync [--no-branches]                     # refresh GitHub evidence; optionally skip branch capture (needs GITHUB_TOKEN)
 registry import-github --owner kmadhok            # create needs_review stubs; never overwrites
 registry record-review <id> [--set path=value]    # stamp last_reviewed, optionally update fields
 registry propose <id> --set path=value --rationale "..."   # propose a curated change (applies nothing)

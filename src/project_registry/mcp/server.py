@@ -266,6 +266,7 @@ def tool_refresh_github(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
         registry, client, paths=paths,
         repos=args.get("repos"),
         with_details=args.get("with_details", True),
+        with_branches=args.get("with_branches", True),
     )
     snapshot = result.snapshot or load_snapshot(paths)
     now = dt.datetime.now(dt.timezone.utc)
@@ -274,6 +275,7 @@ def tool_refresh_github(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
         "completed_at": result.to_dict()["completed_at"],
         "coverage": result.coverage,
         "errors": result.errors,
+        "partial_errors": result.partial_errors,
         "note": (
             "Repositories that failed to refresh kept their previous data, "
             "marked stale."
@@ -395,6 +397,7 @@ TOOLS: tuple[Tool, ...] = (
          _schema({
              "repos": {"type": "array", "items": {"type": "string"}},
              "with_details": {"type": "boolean"},
+             "with_branches": {"type": "boolean"},
          }), tool_refresh_github, "MCP-004"),
 
     Tool("propose_project_update", "Propose changes to curated fields. Writes a proposal only; changes nothing.",

@@ -15,7 +15,7 @@ import datetime as dt
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from .github.snapshot import Issue, PullRequest, RepoState, Snapshot
+from .github.snapshot import Branch, Issue, PullRequest, RepoState, Snapshot
 from .model import Lifecycle, Project
 from .storage import Registry
 from .validation import ERROR, SUGGESTION
@@ -35,6 +35,17 @@ class SignalConfig:
     recent_activity_days: int = 30
     #: Active projects unreviewed for this long are called out.
     review_warning_days: int = 45
+    #: A branch with no commit for this long is stale.
+    stale_branch_days: int = 90
+
+
+@dataclass(frozen=True)
+class BranchCounts:
+    total: int
+    stale: int
+    open_pr_heads: int
+    groups: tuple[tuple[str, int], ...]
+    oldest_days: int | None
 
 
 @dataclass(frozen=True)
@@ -46,9 +57,9 @@ class AttentionItem:
     reason: str
     url: str
     repo: str
-    kind: str  # "pull_request" | "issue"
-    number: int
+    kind: str  # "pull_request" | "issue" | "branch"
     title: str
+    number: int | None = None
     project_id: str | None = None
     age_days: int | None = None
     urgency: int = 0
@@ -75,7 +86,7 @@ class AttentionRule:
     description: str
     severity: str
     urgency: int
-    applies_to: str  # "pull_request" | "issue"
+    applies_to: str  # "pull_request" | "issue" | "repo"
     check: Callable[[Any, dt.datetime, SignalConfig], str | None]
 
 
@@ -124,6 +135,58 @@ def _selected_issue(issue: Issue, now: dt.datetime, cfg: SignalConfig) -> str | 
     return None
 
 
+def stale_branches(
+    repo_state: RepoState, now: dt.datetime, cfg: SignalConfig
+) -> list[Branch]:
+    """Branches old enough to flag, excluding unknown and actively reviewed work."""
+    found = []
+    for branch in repo_state.branches:
+        age = branch.age_days(now)
+        if branch.is_default or branch.open_pr_numbers or age is None:
+            continue
+        if age >= cfg.stale_branch_days:
+            found.append(branch)
+    return found
+
+
+def classify_branches(
+    repo_state: RepoState, now: dt.datetime, cfg: SignalConfig
+) -> BranchCounts:
+    stale = stale_branches(repo_state, now, cfg)
+    grouped: dict[str, int] = {}
+    ages: list[int] = []
+    for branch in stale:
+        label = branch.name.split("/", 1)[0] + "/" if "/" in branch.name else branch.name
+        grouped[label] = grouped.get(label, 0) + 1
+        age = branch.age_days(now)
+        if age is not None:
+            ages.append(age)
+    return BranchCounts(
+        total=len(repo_state.branches),
+        stale=len(stale),
+        open_pr_heads=sum(bool(branch.open_pr_numbers) for branch in repo_state.branches),
+        groups=tuple(sorted(grouped.items(), key=lambda item: (-item[1], item[0]))),
+        oldest_days=max(ages) if ages else None,
+    )
+
+
+def _stale_branches(
+    repo_state: RepoState, now: dt.datetime, cfg: SignalConfig
+) -> str | None:
+    if not repo_state.branches_fetched:
+        return None
+    counts = classify_branches(repo_state, now, cfg)
+    if not counts.stale:
+        return None
+    shown = counts.groups[:3]
+    parts = [f"{count} {label}" for label, count in shown]
+    shown_count = sum(count for _, count in shown)
+    if shown_count < counts.stale:
+        parts.append(f"+{counts.stale - shown_count} more")
+    groups = ", ".join(parts)
+    return f"{counts.stale} stale branches ({groups}), oldest {counts.oldest_days}d"
+
+
 #: The full signal table. Adding a signal means adding a row.
 ATTENTION_RULES: tuple[AttentionRule, ...] = (
     AttentionRule(
@@ -149,6 +212,11 @@ ATTENTION_RULES: tuple[AttentionRule, ...] = (
     AttentionRule(
         "selected_issue", "Open issue carrying a watched label",
         SUGGESTION, 50, "issue", _selected_issue,
+    ),
+    AttentionRule(
+        "stale_branches",
+        "Repository with branches untouched for N days (excluding default and open-PR heads)",
+        SUGGESTION, 35, "repo", _stale_branches,
     ),
 )
 
@@ -176,6 +244,24 @@ def build_attention_queue(
         project_id = project.id if project else None
 
         for rule in ATTENTION_RULES:
+            if rule.applies_to == "repo":
+                reason = rule.check(repo_state, now, cfg)
+                if reason:
+                    items.append(
+                        AttentionItem(
+                            rule_id=rule.id,
+                            severity=rule.severity,
+                            reason=reason,
+                            url=repo_state.url,
+                            repo=repo_state.full_name,
+                            kind="branch",
+                            title=repo_state.full_name,
+                            project_id=project_id,
+                            age_days=None,
+                            urgency=rule.urgency,
+                        )
+                    )
+                continue
             candidates = (
                 repo_state.pull_requests if rule.applies_to == "pull_request"
                 else repo_state.issues
@@ -200,7 +286,7 @@ def build_attention_queue(
                     )
                 )
 
-    items.sort(key=lambda i: (-i.urgency, i.repo, i.number, i.rule_id))
+    items.sort(key=lambda i: (-i.urgency, i.repo, i.number or 0, i.rule_id))
     return items
 
 

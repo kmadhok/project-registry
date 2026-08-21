@@ -39,8 +39,15 @@ from .queries import (
     list_related_projects,
     list_selected_issues,
     search_projects,
+    signal_ref,
 )
-from .signals import build_attention_queue, describe_rules, find_mismatches
+from .signals import (
+    SignalConfig,
+    build_attention_queue,
+    classify_branches,
+    describe_rules,
+    find_mismatches,
+)
 from .storage import Paths, load_registry, read_jsonl
 from .validation import ERROR, validate
 
@@ -213,11 +220,22 @@ def cmd_show(args, paths, now) -> int:
             print(f"    - {edge['kind']} → {edge['target']}{tag}")
 
     if state:
-        print(f"\n  github: {state.full_name} · "
-              f"{'private' if state.private else 'public'} · "
-              f"{'archived' if state.archived else 'live'} · "
-              f"{len(state.pull_requests)} open PR(s) · "
-              f"{len(state.issues)} open issue(s)")
+        github = (
+            f"\n  github: {state.full_name} · "
+            f"{'private' if state.private else 'public'} · "
+            f"{'archived' if state.archived else 'live'} · "
+            f"{len(state.pull_requests)} open PR(s) · "
+            f"{len(state.issues)} open issue(s)"
+        )
+        if state.branches_fetched:
+            counts = classify_branches(state, now, SignalConfig())
+            github += (
+                f" · {counts.total} branches ({counts.stale} stale, "
+                f"{counts.open_pr_heads} open-PR heads)"
+            )
+        if state.branches_error:
+            github += f" · (branches: {state.branches_error})"
+        print(github)
     return 0
 
 
@@ -395,7 +413,7 @@ def cmd_attention(args, paths, now) -> int:
         print("No attention signals in the last snapshot.")
         return 0
     for item in items:
-        print(f"[{item.severity}] {item.repo}#{item.number} — {item.reason}")
+        print(f"[{item.severity}] {signal_ref(item.repo, item.number)} — {item.reason}")
         print(f"    rule: {item.rule_id}")
         print(f"    url:  {item.url}")
     print(f"\n{len(items)} signal(s).")
@@ -477,6 +495,7 @@ def cmd_sync(args, paths, now) -> int:
         paths=paths,
         repos=args.repo or None,
         with_details=not args.no_details,
+        with_branches=not args.no_branches,
     )
     if emit(result.to_dict(), args):
         return 0 if result.coverage["complete"] else 1
@@ -485,6 +504,8 @@ def cmd_sync(args, paths, now) -> int:
     print(f"Refreshed {coverage['repos_succeeded']}/{coverage['repos_requested']} repositories.")
     for error in result.errors:
         print(f"  failed: {error['repo']} — {error['error']}")
+    for error in result.partial_errors:
+        print(f"  partial: {error['repo']} — {error['error']}")
     if result.errors:
         print("\nPrevious data for failed repositories was kept and marked stale.")
     return 0 if coverage["complete"] else 1
@@ -712,6 +733,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("--repo", action="append", help="Limit to these repositories.")
     sub.add_argument("--no-details", action="store_true",
                      help="Skip per-PR review and CI lookups.")
+    sub.add_argument("--no-branches", action="store_true",
+                     help="Skip branch capture and carry forward prior branch evidence.")
 
     add("sync-status", cmd_sync_status, "Report the last GitHub refresh.")
 

@@ -25,12 +25,16 @@ from .conftest import NOW
 class FakeClient(GitHubClient):
     """A client that answers from canned data and records what was asked."""
 
-    def __init__(self, repos=None, pulls=None, issues=None, fail=()):
+    def __init__(
+        self, repos=None, pulls=None, issues=None, branches=None, fail=(), branch_fail=()
+    ):
         super().__init__(token=None)
         self.repos = repos or {}
         self.pulls = pulls or {}
         self.issues = issues or {}
+        self.branches = branches or {}
         self.fail = set(fail)
+        self.branch_fail = set(branch_fail)
         self.calls: list[str] = []
 
     def get_repo(self, full_name):
@@ -54,6 +58,12 @@ class FakeClient(GitHubClient):
     def get_combined_status(self, full_name, ref):
         return {}
 
+    def list_branch_nodes(self, full_name):
+        self.calls.append(f"list_branch_nodes:{full_name}")
+        if full_name in self.branch_fail:
+            raise GitHubError(f"{full_name}: branches boom", 502)
+        return self.branches.get(full_name, ([], False, 0))
+
 
 def repo_payload(full_name, **overrides):
     payload = {
@@ -71,6 +81,18 @@ def repo_payload(full_name, **overrides):
     }
     payload.update(overrides)
     return payload
+
+
+def branch_node(name, *, date="2026-01-01T00:00:00Z", prs=None, protected=False):
+    return {
+        "name": name,
+        "branchProtectionRule": {"id": "rule"} if protected else None,
+        "target": {
+            "oid": f"sha-{name}",
+            "committedDate": date,
+            "associatedPullRequests": {"nodes": prs or []},
+        },
+    }
 
 
 # -- MCP-006: the client cannot mutate ------------------------------------
@@ -123,6 +145,7 @@ def test_sync_records_start_completion_coverage_and_errors(paths, write_project)
         "repos_requested": 2,
         "repos_succeeded": 1,
         "repos_failed": 1,
+        "repos_partial": 0,
         "complete": False,
         "failed_repos": ["owner/two"],
     }
@@ -197,6 +220,172 @@ def test_snapshot_status_reports_staleness_and_coverage(paths, write_project):
     assert status["stale"] is True
     assert status["coverage"]["repos_succeeded"] == 1
     assert status["repo_count"] == 1
+
+
+# -- branch refresh semantics --------------------------------------------
+
+
+def test_sync_fetches_sorted_branches_and_maps_only_open_in_repo_prs(paths, write_project):
+    write_project(id="a", purpose="p", repo="owner/one")
+    prs = [
+        {"number": 1, "state": "CLOSED", "headRepository": {"nameWithOwner": "owner/one"}},
+        {"number": 2, "state": "OPEN", "headRepository": {"nameWithOwner": "owner/one"}},
+        {"number": 3, "state": "OPEN", "headRepository": {"nameWithOwner": "fork/one"}},
+        {"number": 4, "state": "OPEN", "headRepository": None},
+    ]
+    client = FakeClient(
+        repos={"owner/one": repo_payload("owner/one")},
+        branches={"owner/one": ([
+            branch_node("z-feature", prs=prs, protected=True),
+            branch_node("main"),
+            branch_node("a-feature"),
+        ], False, 3)},
+    )
+
+    result = sync(load_registry(paths), client, paths=paths, now=NOW)
+    state = result.snapshot.get("owner/one")
+
+    assert [branch.name for branch in state.branches] == ["a-feature", "main", "z-feature"]
+    assert state.branches[1].is_default is True
+    assert state.branches[2].protected is True
+    assert state.branches[2].open_pr_numbers == [2, 4]
+    assert state.branches_fetched is True
+    assert state.branches_partial is False
+    assert state.branches_fetched_at == NOW
+    assert state.branches_error is None
+
+
+def test_partial_branch_fetch_is_retained_and_reported_without_repo_failure(
+    paths, write_project
+):
+    write_project(id="a", purpose="p", repo="owner/one")
+    client = FakeClient(
+        repos={"owner/one": repo_payload("owner/one")},
+        branches={"owner/one": ([branch_node("feature/one")], True, 1251)},
+    )
+
+    result = sync(load_registry(paths), client, paths=paths, now=NOW)
+    state = result.snapshot.get("owner/one")
+
+    assert [branch.name for branch in state.branches] == ["feature/one"]
+    assert state.branches_fetched is False
+    assert state.branches_partial is True
+    assert state.branches_fetched_at == NOW
+    assert "1251" in state.branches_error
+    assert result.repos_succeeded == ["owner/one"]
+    assert result.repos_failed == []
+    assert result.coverage["repos_partial"] == 1
+    assert result.partial_errors == [{
+        "repo": "owner/one", "error": state.branches_error, "status": None,
+    }]
+
+
+def test_branch_failure_carries_forward_previous_branch_observation(paths, write_project):
+    write_project(id="a", purpose="p", repo="owner/one")
+    registry = load_registry(paths)
+    first = FakeClient(
+        repos={"owner/one": repo_payload("owner/one")},
+        branches={"owner/one": ([branch_node("feature/one")], False, 1)},
+    )
+    sync(registry, first, paths=paths, now=NOW)
+
+    later = NOW + dt.timedelta(hours=1)
+    broken = FakeClient(
+        repos={"owner/one": repo_payload("owner/one", description="fresh metadata")},
+        branch_fail={"owner/one"},
+    )
+    result = sync(registry, broken, paths=paths, now=later)
+    state = result.snapshot.get("owner/one")
+
+    assert state.description == "fresh metadata"
+    assert [branch.name for branch in state.branches] == ["feature/one"]
+    assert state.branches_fetched is False
+    assert state.branches_fetched_at == NOW
+    assert state.stale is False
+    assert "branches boom" in state.branches_error
+    assert result.repos_failed == []
+    assert result.coverage["repos_partial"] == 1
+
+
+def test_no_branches_skips_client_and_carries_forward_without_an_error(paths, write_project):
+    write_project(id="a", purpose="p", repo="owner/one")
+    registry = load_registry(paths)
+    sync(
+        registry,
+        FakeClient(
+            repos={"owner/one": repo_payload("owner/one")},
+            branches={"owner/one": ([branch_node("feature/one")], False, 1)},
+        ),
+        paths=paths,
+        now=NOW,
+    )
+    client = FakeClient(repos={"owner/one": repo_payload("owner/one")})
+
+    result = sync(
+        registry,
+        client,
+        paths=paths,
+        now=NOW + dt.timedelta(hours=1),
+        with_branches=False,
+    )
+    state = result.snapshot.get("owner/one")
+
+    assert not any(call.startswith("list_branch_nodes:") for call in client.calls)
+    assert [branch.name for branch in state.branches] == ["feature/one"]
+    assert state.branches_fetched is False
+    assert state.branches_fetched_at == NOW
+    assert state.branches_error is None
+    assert result.partial_errors == []
+
+
+def test_malformed_branch_nodes_are_counted_not_crashed(paths, write_project):
+    write_project(id="a", purpose="p", repo="owner/one")
+    nodes = [
+        branch_node("good"),
+        {"name": "", "target": {"oid": "bad", "committedDate": "2026-01-01T00:00:00Z"}},
+        {"name": "no-target", "target": None},
+        branch_node("no-date", date=None),
+    ]
+    result = sync(
+        load_registry(paths),
+        FakeClient(
+            repos={"owner/one": repo_payload("owner/one")},
+            branches={"owner/one": (nodes, False, 4)},
+        ),
+        paths=paths,
+        now=NOW,
+    )
+    state = result.snapshot.get("owner/one")
+    assert [branch.name for branch in state.branches] == ["good"]
+    assert state.branches_skipped == 3
+    assert state.branches_fetched is True
+
+
+def test_later_success_clears_a_previous_branch_error(paths, write_project):
+    write_project(id="a", purpose="p", repo="owner/one")
+    registry = load_registry(paths)
+    sync(
+        registry,
+        FakeClient(
+            repos={"owner/one": repo_payload("owner/one")},
+            branch_fail={"owner/one"},
+        ),
+        paths=paths,
+        now=NOW,
+    )
+    result = sync(
+        registry,
+        FakeClient(
+            repos={"owner/one": repo_payload("owner/one")},
+            branches={"owner/one": ([branch_node("fixed")], False, 1)},
+        ),
+        paths=paths,
+        now=NOW + dt.timedelta(hours=1),
+    )
+    state = result.snapshot.get("owner/one")
+    assert state.branches_fetched is True
+    assert state.branches_error is None
+    assert result.partial_errors == []
 
 
 # -- derivation helpers ---------------------------------------------------

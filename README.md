@@ -35,7 +35,7 @@ To pull in GitHub evidence, export a token with read access ([docs/SETUP.md](doc
 ```bash
 export GITHUB_TOKEN=...
 registry import-github --owner kmadhok   # create stubs marked needs_review
-registry sync                            # refresh observed state (read-only)
+registry sync [--no-branches]            # refresh observed state; optionally skip branch capture (read-only)
 registry prs                             # open PRs across the portfolio
 registry attention                       # work needing a human, with the rule behind each signal
 registry mismatches                      # where registry intent and GitHub disagree

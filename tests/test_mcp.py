@@ -18,7 +18,7 @@ from project_registry.mcp.server import (
 )
 from project_registry.storage import load_registry
 
-from .conftest import make_pr, make_repo_state, make_snapshot
+from .conftest import make_branch, make_pr, make_repo_state, make_snapshot
 
 
 def call(paths, name, arguments=None):
@@ -168,6 +168,27 @@ def test_attention_queue_reports_null_for_unrecorded_priority(paths, write_proje
                   next_action={"description": "Decide the format", "reviewed": "2026-07-20"})
     payload, _ = call(paths, "get_attention_queue")
     assert payload["items"][0]["human_priority"] is None
+
+
+def test_branch_state_and_signal_flow_through_shared_mcp_queries(paths, write_project):
+    write_project(id="p", purpose="p", repo="owner/repo")
+    save_snapshot(make_snapshot(make_repo_state(
+        "owner/repo",
+        branches=[make_branch("old")],
+        branches_fetched=True,
+    )), paths)
+
+    project, _ = call(paths, "get_project", {"project_id": "p"})
+    assert project["github"]["branches"][0]["name"] == "old"
+    assert project["github"]["branches_fetched"] is True
+
+    payload, is_error = call(paths, "get_attention_queue")
+    assert not is_error
+    branch_item = next(
+        item for item in payload["items"] if "stale_branches" in item["rule_ids"]
+    )
+    assert branch_item["title"].startswith("owner/repo")
+    assert "#None" not in json.dumps(payload)
 
 
 def test_missing_next_actions_and_review_queue(paths, write_project):

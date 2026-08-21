@@ -34,7 +34,7 @@ pip install -e .
 
 export GITHUB_TOKEN=github_pat_...
 registry import-github --owner kmadhok    # one needs_review stub per repo; never overwrites
-registry sync                             # read-only refresh of PRs, issues, activity, CI
+registry sync [--no-branches]             # read-only refresh; optionally carry branch evidence forward
 registry validate
 registry dashboard
 ```

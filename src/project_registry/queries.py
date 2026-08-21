@@ -48,6 +48,11 @@ PRIORITY_WEIGHT: dict[Priority, int] = {
 }
 
 
+def signal_ref(repo: str, number: int | None) -> str:
+    """Render a GitHub item reference without inventing a number for repo signals."""
+    return f"{repo}#{number}" if number is not None else repo
+
+
 @dataclass
 class ProjectFilter:
     lifecycle: list[Lifecycle] = field(default_factory=list)
@@ -451,11 +456,12 @@ def build_work_queue(
 
         # Attach the signal to the project's existing next-action item when
         # there is one, so a single project does not fragment into many rows.
+        ref = signal_ref(signal.repo, signal.number)
         key = f"next_action:{project.id}" if project and f"next_action:{project.id}" in items \
-            else f"github:{signal.repo}#{signal.number}"
+            else f"github:{ref}"
 
         existing = items.get(key)
-        reason = f"{signal.repo}#{signal.number} {signal.reason} [{signal.rule_id}]"
+        reason = f"{ref} {signal.reason} [{signal.rule_id}]"
         if existing is not None:
             existing.reasons.append(reason)
             existing.github_urgency = max(existing.github_urgency, signal.urgency)
@@ -467,7 +473,7 @@ def build_work_queue(
         items[key] = WorkItem(
             project_id=project.id if project else None,
             project_name=project.name if project else None,
-            title=f"{signal.repo}#{signal.number} {signal.title}",
+            title=f"{ref} {signal.title}",
             source="github",
             reasons=[reason],
             human_priority=(

@@ -48,3 +48,4 @@
 [2026-08-21T20:16:03Z] CHECKPOINT T3 causal tests first proved both missing and false approval already filed one pending proposal but returned only a generic refusal; record_review now raises with that proposal id and the required NOTHING-applied recovery instruction, and 99 targeted MCP/proposal/CLI cases pass
 [2026-08-21T20:16:03Z] CHECKPOINT T3 SCHEMA and the CLAUDE cheatsheet now state the intentional surface divergence: CLI record-review applies directly, while MCP requires approved=true and otherwise files a named pending proposal with an error result
 [2026-08-21T20:16:15Z] CHECKPOINT T3 full gate passed: pytest collected and passed 263 cases; registry validate returned 0 errors and 3 suggestions; the 2-test increase from T2 separately covers omitted approval, explicit false approval, and approved success instead of combining false/success in one test
+[2026-08-21T20:16:36Z] DONE T3 commits=4a3199a tests=263 passed

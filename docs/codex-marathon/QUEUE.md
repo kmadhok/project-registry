@@ -65,9 +65,9 @@ Source: `docs/FINDINGS_REGISTRY_MCP.md#M1`. `model.py:439-466` emits keys only w
 
 Source: `docs/FINDINGS_REGISTRY_MCP.md#M3`. `mcp/server.py:337-349` passes `approved=False` by default; the tool files a pending proposal and reports success.
 
-- [ ] Make `record_project_review` (and `apply_approved_project_update` if it has the same trap) return an unmistakable non-success when `approved` is absent/false: MCP `isError: true` (or the server's equivalent error envelope) with text stating "pending proposal <id> filed, NOTHING applied; call again with approved=true". Do not change the CLI's direct-apply behavior.
-- [ ] Document the divergence (MCP requires explicit approval; CLI applies directly) in `docs/SCHEMA.md` or `docs/SETUP.md` — wherever write paths are described — and in the `CLAUDE.md` cheatsheet line for `record-review` (one sentence).
-- [ ] Tests: MCP call without `approved` → error envelope + proposal exists + project unchanged; with `approved=true` → applied; CLI path unchanged.
+- [x] Make `record_project_review` (and `apply_approved_project_update` if it has the same trap) return an unmistakable non-success when `approved` is absent/false: MCP `isError: true` (or the server's equivalent error envelope) with text stating "pending proposal <id> filed, NOTHING applied; call again with approved=true". Do not change the CLI's direct-apply behavior.
+- [x] Document the divergence (MCP requires explicit approval; CLI applies directly) in `docs/SCHEMA.md` or `docs/SETUP.md` — wherever write paths are described — and in the `CLAUDE.md` cheatsheet line for `record-review` (one sentence).
+- [x] Tests: MCP call without `approved` → error envelope + proposal exists + project unchanged; with `approved=true` → applied; CLI path unchanged.
 - Validation: full gate. Commit `marathon(T3): mcp record_project_review refuses silently-pending reviews`.
 
 ## T4 — `registry push-report` (P1)

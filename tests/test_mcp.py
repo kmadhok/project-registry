@@ -119,6 +119,14 @@ def test_list_projects_and_filters(seeded):
     payload, _ = call(seeded, "list_projects", {"lifecycle": ["now"]})
     assert [p["id"] for p in payload["projects"]] == ["alpha"]
 
+    payload, _ = call(
+        seeded, "list_projects", {"active": True, "category": "tooling"}
+    )
+    assert [p["id"] for p in payload["projects"]] == ["alpha"]
+
+    payload, _ = call(seeded, "list_projects", {"active": False})
+    assert [p["id"] for p in payload["projects"]] == ["beta"]
+
 
 def test_get_project_includes_relationships_and_github_state(seeded):
     payload, _ = call(seeded, "get_project", {"project_id": "alpha"})
@@ -148,8 +156,15 @@ def test_list_related_projects_returns_inverse_edges(seeded):
 
 
 def test_every_response_carries_source_timestamps(seeded):
-    for name in ("list_projects", "list_next_actions", "get_attention_queue",
-                 "list_open_prs", "get_github_sync_status"):
+    for name in (
+        "list_projects",
+        "list_next_actions",
+        "find_missing_next_actions",
+        "list_projects_needing_review",
+        "get_attention_queue",
+        "list_open_prs",
+        "get_github_sync_status",
+    ):
         payload, _ = call(seeded, name)
         stamps = payload["source_timestamps"]
         assert stamps["registry_loaded_at"]

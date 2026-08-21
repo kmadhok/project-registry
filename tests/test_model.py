@@ -152,6 +152,24 @@ def test_accomplishments_sort_newest_first(write_project, load):
     assert [a.summary for a in project.accomplishments] == ["newer", "middle", "older"]
 
 
+def test_accomplishment_links_round_trip(write_project, load):
+    links = [
+        "https://github.com/owner/repo/commit/abc",
+        "https://github.com/owner/repo/releases/tag/v1",
+        "https://example.com/demo",
+        "https://github.com/owner/repo/pull/7",
+    ]
+    write_project(
+        id="p",
+        purpose="why",
+        accomplishments=[
+            {"date": "2026-05-05", "kind": "demo", "summary": "Shipped", "links": links}
+        ],
+    )
+
+    assert load().require("p").accomplishments[0].links == links
+
+
 def test_accomplishment_requires_a_date():
     with pytest.raises(RegistryError, match="accomplishment.date is required"):
         Project.parse({

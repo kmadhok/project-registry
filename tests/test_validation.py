@@ -64,6 +64,18 @@ def test_next_action_without_a_reviewed_date_is_an_error(write_project, load):
     assert findings(load(), "next_action_unreviewed")[0].severity == ERROR
 
 
+def test_future_next_action_review_is_an_error_but_today_is_valid(write_project, load):
+    for project_id, reviewed in (("future", "2026-07-26"), ("today", "2026-07-25")):
+        write_project(
+            id=project_id,
+            purpose="why",
+            next_action={"description": "Ship the importer", "reviewed": reviewed},
+        )
+
+    found = findings(load(), "next_action_future_review")
+    assert [(item.project_id, item.severity) for item in found] == [("future", ERROR)]
+
+
 def test_now_without_desired_outcome_is_an_error(write_project, load):
     """Operating rule 3: nothing enters `now` without an exit outcome."""
     write_project(
@@ -98,6 +110,34 @@ def test_archived_but_active_is_a_suggestion_not_an_error(write_project, load):
     assert len(coherence) == 1
     assert coherence[0].severity == SUGGESTION
     assert report.ok  # no errors introduced
+
+
+def test_inactive_committed_lifecycles_are_suggestions(write_project, load):
+    write_project(id="now", purpose="why", lifecycle="now", desired_outcome="done")
+    write_project(id="next", purpose="why", lifecycle="next")
+    write_project(id="maintained", purpose="why", lifecycle="maintained")
+
+    found = findings(load(), "inactive_but_committed")
+    assert [(item.project_id, item.severity) for item in found] == [
+        ("maintained", SUGGESTION),
+        ("next", SUGGESTION),
+        ("now", SUGGESTION),
+    ]
+
+
+def test_active_never_reviewed_is_a_suggestion_but_inactive_is_not(write_project, load):
+    write_project(
+        id="active",
+        purpose="why",
+        active=True,
+        next_action={"description": "Decide the storage format", "reviewed": "2026-07-25"},
+    )
+    write_project(id="inactive", purpose="why")
+
+    found = findings(load(), "active_never_reviewed")
+    assert [(item.project_id, item.severity) for item in found] == [
+        ("active", SUGGESTION)
+    ]
 
 
 def test_superseded_without_successor_is_an_error(write_project, load):
@@ -160,6 +200,23 @@ def test_public_without_public_safe_description_is_an_error(write_project, load)
     """US-009 safety gate, enforced before anything can be exported."""
     write_project(id="p", purpose="why", public=True)
     assert findings(load(), "public_without_public_safe")[0].severity == ERROR
+
+
+def test_showcase_order_collision_applies_only_to_public_projects(write_project, load):
+    for project_id in ("public-one", "public-two"):
+        write_project(
+            id=project_id,
+            purpose="why",
+            public=True,
+            showcase_order=1,
+            descriptions={"public_safe": "safe summary"},
+        )
+    write_project(id="private", purpose="why", showcase_order=1)
+
+    found = findings(load(), "showcase_order_collision")
+    assert [(item.project_id, item.severity) for item in found] == [
+        ("public-two", SUGGESTION)
+    ]
 
 
 def test_credential_material_is_an_error(write_project, load):

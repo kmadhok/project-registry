@@ -46,11 +46,11 @@ Spec: `docs/BRANCH_CAPTURE_SPEC.md` (Rev 3). Read ALL 674 lines before touching 
 
 ## T1c — Branch capture: live smoke, threshold from data, open questions (P0, depends T1b)
 
-- [ ] Smoke against the real repo, read-only: `GITHUB_TOKEN=$(gh auth token) REG sync --repo kmadhok/interview-prep`. Expect `branches_fetched=true`, `branches_partial=false`, ~800 branches, ~9 GraphQL requests, seconds not minutes. Record the actual numbers in PROGRESS.md. Do not commit `data/github/` (gitignored).
-- [ ] Histogram branch ages from the snapshot (spec §9 Q1). Pick `stale_branch_days` from the distribution; if the data does not clearly argue for a change, keep 90 and say so. Record the histogram and the decision.
-- [ ] `REG attention` shows exactly one `stale_branches` item for `kmadhok/interview-prep`; `REG show interview-prep` renders the branch line.
-- [ ] Append a `## Rev 4 — implementation notes` section to `docs/BRANCH_CAPTURE_SPEC.md` answering each §9 question with the decision taken (Q1 data-driven, Q2 counts kept, Q3 kept with the `show` warning, Q4 warning implemented, Q5 allowlist implemented + test name), and listing any deviation from §4 with the reason. Keep the checklist in §5 true.
-- [ ] Update `docs/SCHEMA.md` / `docs/PURPOSE.md` only where they describe observed data or attention rules and are now stale (e.g. the "stale branches" promise in PURPOSE is now implemented).
+- [x] Smoke against the real repo, read-only: `GITHUB_TOKEN=$(gh auth token) REG sync --repo kmadhok/interview-prep`. Expect `branches_fetched=true`, `branches_partial=false`, ~800 branches, ~9 GraphQL requests, seconds not minutes. Record the actual numbers in PROGRESS.md. Do not commit `data/github/` (gitignored).
+- [x] Histogram branch ages from the snapshot (spec §9 Q1). Pick `stale_branch_days` from the distribution; if the data does not clearly argue for a change, keep 90 and say so. Record the histogram and the decision.
+- [x] `REG attention` shows exactly one `stale_branches` item for `kmadhok/interview-prep`; `REG show interview-prep` renders the branch line.
+- [x] Append a `## Rev 4 — implementation notes` section to `docs/BRANCH_CAPTURE_SPEC.md` answering each §9 question with the decision taken (Q1 data-driven, Q2 counts kept, Q3 kept with the `show` warning, Q4 warning implemented, Q5 allowlist implemented + test name), and listing any deviation from §4 with the reason. Keep the checklist in §5 true.
+- [x] Update `docs/SCHEMA.md` / `docs/PURPOSE.md` only where they describe observed data or attention rules and are now stale (e.g. the "stale branches" promise in PURPOSE is now implemented).
 - Validation: full gate. Commit `marathon(T1c): branch capture — smoke results, threshold decision, spec notes`.
 
 ## T2 — M1: falsy curated fields must round-trip (P1)

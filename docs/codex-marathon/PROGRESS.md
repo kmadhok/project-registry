@@ -33,3 +33,4 @@
 [2026-08-21T20:10:08Z] CHECKPOINT T1c live cached queries after the threshold change show exactly one stale_branches attention item with 5 stale branches (3 pc/, 1 claude/, 1 feat/), oldest 75d; registry show interview-prep renders 1251 branches (5 stale, 1 open-PR heads)
 [2026-08-21T20:10:08Z] CHECKPOINT T1c Rev 4 answers all five open questions and records implementation deviations; SCHEMA and PURPOSE now describe observed branch evidence and the implemented attention rule
 [2026-08-21T20:10:08Z] CHECKPOINT T1c full gate passed: pytest collected and passed 253 cases; registry validate returned 0 errors and 3 suggestions; the 2-test increase from T1b covers the data-derived 60-day default and the branch-specific pagination ceiling without changing REST pagination
+[2026-08-21T20:10:25Z] DONE T1c commits=fb333c0 tests=253 passed

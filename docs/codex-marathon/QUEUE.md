@@ -84,10 +84,10 @@ Source: memory note "optional/future: `registry push-report` command (journal ×
 
 Source: `docs/FINDINGS_REGISTRY_MCP.md#M2`. `data/understanding/*.json` (briefs) have `analyzed_at` and `revision`; nothing in `src/` reads them. Do NOT build a generator — only make presence/staleness observable.
 
-- [ ] `registry briefs-status [--json]`: for every project with a `repo`, report brief present/absent, `analyzed_at`, age in days, and whether `revision` matches the snapshot's current default-branch head when known (stale/current/unknown). Summary line: N present / M missing / K stale.
-- [ ] Fold a one-line brief summary into `registry sync-status` output (present/missing/stale counts) so staleness is no longer invisible.
-- [ ] Document the directory, the fields read, and the ownership decision-still-open in `docs/SCHEMA.md` (observed section) — state plainly that briefs are produced out-of-band today.
-- [ ] Tests: missing dir, missing brief, malformed JSON, stale vs current revision, age computation with `NOW`.
+- [x] `registry briefs-status [--json]`: for every project with a `repo`, report brief present/absent, `analyzed_at`, age in days, and whether `revision` matches the snapshot's current default-branch head when known (stale/current/unknown). Summary line: N present / M missing / K stale.
+- [x] Fold a one-line brief summary into `registry sync-status` output (present/missing/stale counts) so staleness is no longer invisible.
+- [x] Document the directory, the fields read, and the ownership decision-still-open in `docs/SCHEMA.md` (observed section) — state plainly that briefs are produced out-of-band today.
+- [x] Tests: missing dir, missing brief, malformed JSON, stale vs current revision, age computation with `NOW`.
 - Validation: full gate. Commit `marathon(T5): briefs-status and sync-status brief coverage`.
 
 ## T6 — push-project SKILL.md fixes S1/S2/S3 (P2)

@@ -15,14 +15,14 @@ Conventions used below:
 
 ## T0 — Setup and branch (P0)
 
-- [ ] `git fetch origin && git checkout -b codex/marathon-2026-08-21 origin/main`
-- [ ] Commit the five untracked docs **verbatim, no edits**:
+- [x] `git fetch origin && git checkout -b codex/marathon-2026-08-21 origin/main`
+- [x] Commit the five untracked docs **verbatim, no edits**:
       `docs/BRANCH_CAPTURE_SPEC.md docs/FINDINGS_PUSH_PROJECT_SKILL.md docs/FINDINGS_REGISTRY_MCP.md docs/FINDINGS_REPO_HYGIENE.md docs/PUSH_PROJECT_TEST_HARNESS.md`
       plus `docs/codex-marathon/` (this queue, PROMPT.md, and a new PROGRESS.md),
       `scripts/codex-marathon.sh`, and the modified `.gitignore` (ignores `.codex-marathon/` and `.marathon-stop`).
       Message: `marathon(T0): commit audit findings, branch-capture spec, marathon queue`.
-- [ ] Leave `2026-08-02-121320-local-command-caveat…txt` at repo root untouched and uncommitted (owner's stray transcript; not yours to move). Likewise leave any untracked `data/proposals/*.json` alone — other sessions file proposals there; they are not part of this branch.
-- [ ] Push the branch; open ONE draft PR titled `Codex marathon 2026-08-21` with body = the task list (ids + titles + status). Record the PR URL in PROGRESS.md. All later tasks update this PR body; never open a second PR.
+- [x] Leave `2026-08-02-121320-local-command-caveat…txt` at repo root untouched and uncommitted (owner's stray transcript; not yours to move). Likewise leave any untracked `data/proposals/*.json` alone — other sessions file proposals there; they are not part of this branch.
+- [x] Push the branch; open ONE draft PR titled `Codex marathon 2026-08-21` with body = the task list (ids + titles + status). Record the PR URL in PROGRESS.md. All later tasks update this PR body; never open a second PR.
 - Validation: `git status --porcelain | grep -v '^?? 2026-08-02' | grep -v '^?? data/proposals/'` is empty; `gh pr view --json url` succeeds.
 
 ## T1a — Branch capture: client + snapshot model (P0)

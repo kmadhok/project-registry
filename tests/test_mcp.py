@@ -16,6 +16,7 @@ from project_registry.mcp.server import (
     handle_request,
     serve,
 )
+from project_registry.proposals import PENDING, list_proposals
 from project_registry.storage import load_registry
 
 from .conftest import make_branch, make_pr, make_repo_state, make_snapshot
@@ -282,12 +283,26 @@ def test_proposals_can_be_listed_and_inspected(seeded):
     assert "before:" in payload["diff"]
 
 
-def test_record_review_requires_approval(seeded):
-    payload, is_error = call(seeded, "record_project_review", {
-        "project_id": "alpha", "reviewed_on": "2026-07-25", "approved": False,
-    })
-    assert is_error is True
+@pytest.mark.parametrize("approval", [None, False])
+def test_record_review_without_true_approval_is_an_unmistakable_error(
+    seeded, approval
+):
+    arguments = {"project_id": "alpha", "reviewed_on": "2026-07-25"}
+    if approval is not None:
+        arguments["approved"] = approval
 
+    payload, is_error = call(seeded, "record_project_review", arguments)
+
+    assert is_error is True
+    pending = list_proposals(seeded, status=PENDING)
+    assert len(pending) == 1
+    assert f"pending proposal {pending[0].id} filed" in payload["error"]
+    assert "NOTHING applied" in payload["error"]
+    assert "approved=true" in payload["error"]
+    assert str(load_registry(seeded).require("alpha").last_reviewed) == "2026-07-20"
+
+
+def test_record_review_with_true_approval_applies(seeded):
     payload, is_error = call(seeded, "record_project_review", {
         "project_id": "alpha", "reviewed_on": "2026-07-25", "approved": True,
     })

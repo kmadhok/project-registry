@@ -46,7 +46,7 @@ State-changing (each has guardrails — respect them, don't work around them):
 ```bash
 registry sync [--no-branches]                     # refresh GitHub evidence; optionally skip branch capture (needs GITHUB_TOKEN)
 registry import-github --owner kmadhok            # create needs_review stubs; never overwrites
-registry record-review <id> [--set path=value]    # stamp last_reviewed, optionally update fields
+registry record-review <id> [--set path=value]    # CLI applies directly; MCP record_project_review requires approved=true
 registry propose <id> --set path=value --rationale "..."   # propose a curated change (applies nothing)
 registry proposal-show <proposal-id>              # exact before/after diff
 registry proposal-apply <proposal-id> --approve   # land it (re-validated, audited)

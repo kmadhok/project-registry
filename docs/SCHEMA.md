@@ -132,3 +132,9 @@ registry proposal-apply my-project-20260725120000 --approve
 ```
 
 Note that an applied proposal rewrites the file in canonical field order, so YAML comments in that file are not preserved.
+
+`registry record-review` is a sanctioned CLI shortcut that applies directly.
+The MCP `record_project_review` tool instead requires `approved=true`; without
+it, the tool files a pending proposal, returns an error saying nothing was
+applied, and names the proposal for inspection or separate approval through
+`apply_approved_project_update`.

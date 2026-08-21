@@ -310,10 +310,14 @@ def test_record_review_is_audited(paths, write_project):
 def test_record_review_without_approval_is_refused(paths, write_project):
     write_project(id="p", purpose="p", last_reviewed="2026-01-01")
     registry = load_registry(paths)
-    with pytest.raises(ProposalError, match="explicit approval"):
+    with pytest.raises(
+        ProposalError,
+        match=r"pending proposal p-\d+ filed, NOTHING applied; call again with approved=true",
+    ):
         record_review(registry, "p", reviewed_on=dt.date(2026, 7, 25), paths=paths,
                       now=NOW, approved=False)
     assert load_registry(paths).require("p").last_reviewed == dt.date(2026, 1, 1)
+    assert len(list_proposals(paths, status=PENDING)) == 1
 
 
 @pytest.mark.parametrize(

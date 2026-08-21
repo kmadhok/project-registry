@@ -436,4 +436,9 @@ def record_review(
         now=now,
         source="record_review",
     )
+    if not approved:
+        raise ProposalError(
+            f"pending proposal {proposal.id} filed, NOTHING applied; "
+            "call again with approved=true"
+        )
     return apply_proposal(registry, proposal.id, approved=approved, paths=paths, now=now)

@@ -56,3 +56,4 @@
 [2026-08-21T20:21:02Z] CHECKPOINT T4 causal test first failed because the shared push_runs module did not exist; tolerant journal aggregation, cache-only default, explicit GET-only refresh, CLI, MCP, docs, and requirement tests are now implemented, and 117 targeted report/client/sync/CLI/MCP cases pass
 [2026-08-21T20:21:02Z] CHECKPOINT T4 real no-network report succeeded: 16 valid runs, 0 malformed lines, 15 unique linked PRs, and all 15 states unknown because data/github/push_prs.json has never been fetched; the since=2026-08-08 boundary produced 4 runs and 3 unknown PRs
 [2026-08-21T20:21:34Z] CHECKPOINT T4 full gate passed: pytest collected and passed 271 cases; registry validate returned 0 errors and 3 suggestions; the 8-test increase from T3 covers journal outcomes/malformed input/deduplication/since filtering, cache miss and refresh semantics, CLI/MCP parity, and the GET-only PR endpoint
+[2026-08-21T20:21:48Z] DONE T4 commits=7e89d89 tests=271 passed

@@ -74,10 +74,10 @@ Source: `docs/FINDINGS_REGISTRY_MCP.md#M3`. `mcp/server.py:337-349` passes `appr
 
 Source: memory note "optional/future: `registry push-report` command (journal × push/ PR states → merge-rate report)". Data: `data/push_runs.jsonl` (fields `ts, host, project, gear, outcome, pr`; `project/gear/pr` may be null for `parked`/`empty_focus`).
 
-- [ ] Add a query function (in `queries.py` or a new `push_runs.py`) that parses the journal tolerantly (bad line → counted + reported, never crashes) and aggregates: runs by host, by outcome, by project, by gear; PRs by state (`open|merged|closed|unknown`).
-- [ ] PR state resolution: through the existing GET-only client (`GET /repos/{o}/{r}/pulls/{n}`), cached under `data/github/push_prs.json` with a `fetched_at`. `--refresh` fetches; without it, report from cache; never-fetched = `unknown`. Unknown is never counted as merged (same "unknown ≠ passing" philosophy as the rest of the repo).
-- [ ] CLI `registry push-report [--json] [--refresh] [--since YYYY-MM-DD]`; MCP tool `get_push_report` calling the same function. Add both to `CLAUDE.md` cheatsheet and `README`/`docs/SETUP.md` where commands are listed.
-- [ ] Tests: fixture journal with every outcome kind + a malformed line; merge-rate math; cache miss → unknown; `--since` filter; CLI and MCP produce the same numbers.
+- [x] Add a query function (in `queries.py` or a new `push_runs.py`) that parses the journal tolerantly (bad line → counted + reported, never crashes) and aggregates: runs by host, by outcome, by project, by gear; PRs by state (`open|merged|closed|unknown`).
+- [x] PR state resolution: through the existing GET-only client (`GET /repos/{o}/{r}/pulls/{n}`), cached under `data/github/push_prs.json` with a `fetched_at`. `--refresh` fetches; without it, report from cache; never-fetched = `unknown`. Unknown is never counted as merged (same "unknown ≠ passing" philosophy as the rest of the repo).
+- [x] CLI `registry push-report [--json] [--refresh] [--since YYYY-MM-DD]`; MCP tool `get_push_report` calling the same function. Add both to `CLAUDE.md` cheatsheet and `README`/`docs/SETUP.md` where commands are listed.
+- [x] Tests: fixture journal with every outcome kind + a malformed line; merge-rate math; cache miss → unknown; `--since` filter; CLI and MCP produce the same numbers.
 - Validation: full gate; `REG push-report` runs on the real journal without network. Commit `marathon(T4): registry push-report`.
 
 ## T5 — M2 (visibility half): evidence-brief coverage and staleness (P2)

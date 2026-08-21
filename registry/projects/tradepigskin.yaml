@@ -1,0 +1,41 @@
+id: tradepigskin
+name: TradePigskin
+purpose: A SwiftUI iOS fantasy-football trade analyzer, co-developed with Mitchel Lister (listmitch),
+  that scores multi-player redraft trades from a bundled, manually maintained player-value
+  table across PPR, half-PPR and standard formats, applying a consolidation weighting so premium
+  players count for more per roster spot.
+lifecycle: incubating
+active: true
+category: mobile-app
+repo: listmitch/TradePigskin
+visibility: private
+last_reviewed: '2026-08-21'
+next_action:
+  description: Decide whether to scaffold the Expo/TypeScript app and EAS preview pipeline
+    described in the collaboration playbook, or keep iterating the SwiftUI version
+  reviewed: '2026-08-21'
+relationships:
+- kind: related
+  target: fantasyfootball
+  note: Same domain; earlier Python waiver-candidate prototype.
+tags:
+- fantasy-football
+- ios
+- swiftui
+- trade-analyzer
+- collaboration
+- expo
+notes: 'Repo is owned by listmitch; kmadhok is a collaborator (private). Local checkout at
+
+  ~/Documents/Claude/Projects/TradePigskin (nested TradePigskin/TradePigskin Xcode project,
+
+  single "Add files via upload" commit on 2026-08-17).
+
+  2026-08-17: Kanu drafted a GitHub + Expo + TestFlight collaboration playbook
+
+  (.lavish/expo-collaboration-workflow.html) — the target workflow, not the repo''s current
+  state.
+
+  agent 2026-08-21: entry drafted from repo evidence; lifecycle/active/next_action are
+
+  proposed for owner confirmation; priority deliberately not set.'

@@ -29,10 +29,10 @@ Conventions used below:
 
 Spec: `docs/BRANCH_CAPTURE_SPEC.md` (Rev 3). Read ALL 674 lines before touching code. Sections: §4.1 data model, §4.2 GraphQL client (read-only verb allowlist — §4.2.2 is the design; do not weaken `ALLOWED_METHOD` semantics, replace with the allowlist exactly as specified), §4.2.3 query.
 
-- [ ] **Contract re-check first** (spec §7): run the `gh api graphql` probe for `kmadhok/interview-prep` with `first:2`. Confirm `committedDate` non-null on every node. If the shape differs from §4.2.3, STOP this task, record the actual shape in PROGRESS.md, mark `[~]`, and continue with T2.
-- [ ] Implement `Branch` dataclass + snapshot fields (§4.1) with `branches_fetched_at`, `branches_partial`, `branches_skipped`, tolerant parsing.
-- [ ] Implement `graphql()` transport in `github/client.py` per §4.2 — POST allowed only through `graphql()`, which refuses non-`query` operations; the HTTP-verb test in §6 must prove no mutation path exists.
-- [ ] Unit tests per §6 for model + client (network-free; use `tests/conftest.py` `NOW`). Include the "REST would have produced silent zero" regression: a node missing `committedDate` counts toward `branches_skipped`, never silently passes.
+- [x] **Contract re-check first** (spec §7): run the `gh api graphql` probe for `kmadhok/interview-prep` with `first:2`. Confirm `committedDate` non-null on every node. If the shape differs from §4.2.3, STOP this task, record the actual shape in PROGRESS.md, mark `[~]`, and continue with T2.
+- [x] Implement `Branch` dataclass + snapshot fields (§4.1) with `branches_fetched_at`, `branches_partial`, `branches_skipped`, tolerant parsing.
+- [x] Implement `graphql()` transport in `github/client.py` per §4.2 — POST allowed only through `graphql()`, which refuses non-`query` operations; the HTTP-verb test in §6 must prove no mutation path exists.
+- [x] Unit tests per §6 for model + client (network-free; use `tests/conftest.py` `NOW`). Include the "REST would have produced silent zero" regression: a node missing `committedDate` counts toward `branches_skipped`, never silently passes.
 - Validation: full gate. Commit `marathon(T1a): branch capture — graphql client and snapshot model`.
 
 ## T1b — Branch capture: sync + signals + CLI + dashboard (P0, depends T1a)

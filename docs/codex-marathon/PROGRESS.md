@@ -16,3 +16,4 @@
 [2026-08-21T20:00:24Z] CHECKPOINT T1a parser helpers assigned to §4.3 landed early so the queue's missing-committedDate regression has a causal test in T1a; T1b will wire them into sync
 [2026-08-21T20:00:24Z] CHECKPOINT T1a the implemented client completed a live one-page read: nodes=100, partial=true, total=1251, missing_dates=0
 [2026-08-21T20:00:24Z] CHECKPOINT T1a full gate passed: 233 tests passed (20 more than the measured T0 baseline, all from 2 new requirement-driven test modules); registry validate returned 0 errors and 3 suggestions
+[2026-08-21T20:00:37Z] DONE T1a commits=cb4ea73 tests=233 passed

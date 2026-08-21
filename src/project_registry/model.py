@@ -328,6 +328,12 @@ class Project:
     notes: str | None = None
     #: Path the project was loaded from, set by storage. Not part of the schema.
     source_path: str | None = None
+    #: Top-level YAML keys that were explicitly present. Not part of the schema.
+    source_fields: frozenset[str] = field(default_factory=frozenset, repr=False)
+    #: Original falsy values, retained so automated rewrites preserve intent.
+    source_falsy_values: dict[str, Any] = field(
+        default_factory=dict, repr=False, compare=False
+    )
 
     KNOWN_FIELDS = frozenset(
         {
@@ -411,7 +417,7 @@ class Project:
             last_reviewed=_date(raw.get("last_reviewed"), "last_reviewed", project_id),
             next_action=(
                 NextAction.parse(next_action_raw, project_id)
-                if next_action_raw is not None
+                if next_action_raw not in (None, "")
                 else None
             ),
             accomplishments=accomplishments,
@@ -425,6 +431,8 @@ class Project:
             tags=_str_list(raw.get("tags"), "tags", project_id),
             notes=_clean(raw.get("notes")),
             source_path=source_path,
+            source_fields=frozenset(raw),
+            source_falsy_values={key: value for key, value in raw.items() if not value},
         )
 
     # -- serialization ---------------------------------------------------
@@ -436,49 +444,95 @@ class Project:
         readable and diffs stay small.
         """
         out: dict[str, Any] = {"id": self.id, "name": self.name}
-        if self.purpose:
-            out["purpose"] = self.purpose
-        if self.desired_outcome:
-            out["desired_outcome"] = self.desired_outcome
+        if self._include("purpose", self.purpose):
+            out["purpose"] = self.purpose or self._source_falsy("purpose", "")
+        if self._include("desired_outcome", self.desired_outcome):
+            out["desired_outcome"] = self.desired_outcome or self._source_falsy(
+                "desired_outcome", ""
+            )
         out["lifecycle"] = self.lifecycle.value
         out["active"] = self.active
-        if self.needs_review:
-            out["needs_review"] = True
-        if self.category:
-            out["category"] = self.category
-        if self.priority:
-            out["priority"] = self.priority.value
-        if self.effort:
-            out["effort"] = self.effort.value
-        if self.horizon:
-            out["horizon"] = self.horizon.value
-        if self.blocked_by:
-            out["blocked_by"] = self.blocked_by
-        if self.repo:
-            out["repo"] = self.repo
-        if self.is_fork:
-            out["is_fork"] = True
+        if self._include("needs_review", self.needs_review):
+            out["needs_review"] = self.needs_review
+        if self._include("category", self.category):
+            out["category"] = self.category or self._source_falsy("category", "")
+        if self._include("priority", self.priority):
+            out["priority"] = (
+                self.priority.value
+                if self.priority
+                else self._source_falsy("priority", None)
+            )
+        if self._include("effort", self.effort):
+            out["effort"] = (
+                self.effort.value
+                if self.effort
+                else self._source_falsy("effort", None)
+            )
+        if self._include("horizon", self.horizon):
+            out["horizon"] = (
+                self.horizon.value
+                if self.horizon
+                else self._source_falsy("horizon", None)
+            )
+        if self._include("blocked_by", self.blocked_by):
+            out["blocked_by"] = self.blocked_by or self._source_falsy("blocked_by", "")
+        if self._include("repo", self.repo):
+            out["repo"] = self.repo or self._source_falsy("repo", "")
+        if self._include("is_fork", self.is_fork):
+            out["is_fork"] = self.is_fork
         out["visibility"] = self.visibility.value
-        if self.last_reviewed:
-            out["last_reviewed"] = self.last_reviewed.isoformat()
-        if self.next_action:
-            out["next_action"] = self.next_action.to_dict()
-        if self.accomplishments:
-            out["accomplishments"] = [a.to_dict() for a in self.accomplishments]
-        if self.relationships:
-            out["relationships"] = [r.to_dict() for r in self.relationships]
+        if self._include("last_reviewed", self.last_reviewed):
+            out["last_reviewed"] = (
+                self.last_reviewed.isoformat()
+                if self.last_reviewed
+                else self._source_falsy("last_reviewed", None)
+            )
+        if self._include("next_action", self.next_action):
+            out["next_action"] = (
+                self.next_action.to_dict()
+                if self.next_action
+                else self._source_falsy("next_action", "")
+            )
+        if self._include("accomplishments", self.accomplishments):
+            out["accomplishments"] = (
+                [a.to_dict() for a in self.accomplishments]
+                if self.accomplishments
+                else self._source_falsy("accomplishments", [])
+            )
+        if self._include("relationships", self.relationships):
+            out["relationships"] = (
+                [r.to_dict() for r in self.relationships]
+                if self.relationships
+                else self._source_falsy("relationships", [])
+            )
         descriptions = self.descriptions.to_dict()
-        if descriptions:
-            out["descriptions"] = descriptions
-        if self.public:
-            out["public"] = True
-        if self.showcase_order is not None:
-            out["showcase_order"] = self.showcase_order
-        if self.tags:
-            out["tags"] = list(self.tags)
-        if self.notes:
-            out["notes"] = self.notes
+        if self._include("descriptions", descriptions):
+            out["descriptions"] = descriptions or self._source_falsy(
+                "descriptions", {}
+            )
+        if self._include("public", self.public):
+            out["public"] = self.public
+        if self.showcase_order is not None or "showcase_order" in self.source_fields:
+            out["showcase_order"] = (
+                self.showcase_order
+                if self.showcase_order is not None
+                else self._source_falsy("showcase_order", None)
+            )
+        if self._include("tags", self.tags):
+            out["tags"] = (
+                list(self.tags) if self.tags else self._source_falsy("tags", [])
+            )
+        if self._include("notes", self.notes):
+            out["notes"] = self.notes or self._source_falsy("notes", "")
         return out
+
+    def _include(self, name: str, value: Any) -> bool:
+        return bool(value) or name in self.source_fields
+
+    def _source_falsy(self, name: str, default: Any) -> Any:
+        if name in self.source_falsy_values:
+            return self.source_falsy_values[name]
+        return default
 
     # -- derived views ---------------------------------------------------
 

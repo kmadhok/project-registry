@@ -131,3 +131,12 @@ automatic:
 ```cron
 0 8 * * * cd /path/to/project-registry && GITHUB_TOKEN=$(cat ~/.config/registry-token) registry sync
 ```
+
+## 6. Declare repository metadata
+
+The root [`.project-meta.yaml`](../.project-meta.yaml) records the registry id,
+interpreter, test commands, and validation commands that automation would
+otherwise have to guess. This convention is a starting point, not a settled
+schema, and no code reads the file yet. See the
+[repository-hygiene findings](FINDINGS_REPO_HYGIENE.md) for the evidence behind
+the proposed fields.

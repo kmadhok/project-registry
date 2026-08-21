@@ -25,6 +25,7 @@ ALLOWED_METHODS = frozenset({"GET", "POST"})
 ALLOWED_METHOD = "GET"
 
 DEFAULT_BASE_URL = "https://api.github.com"
+DEFAULT_BRANCH_MAX_PAGES = 50
 GRAPHQL_PATH = "/graphql"
 USER_AGENT = "project-registry/0.1 (read-only)"
 
@@ -79,12 +80,14 @@ class GitHubClient:
         timeout: int = 30,
         per_page: int = 100,
         max_pages: int = 10,
+        branch_max_pages: int = DEFAULT_BRANCH_MAX_PAGES,
     ) -> None:
         self.token = token or os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.per_page = per_page
         self.max_pages = max_pages
+        self.branch_max_pages = branch_max_pages
 
     # -- transport -------------------------------------------------------
 
@@ -216,7 +219,7 @@ class GitHubClient:
 
     def list_branch_nodes(self, full_name: str) -> tuple[list[dict], bool, int]:
         """Return GraphQL branch nodes, whether they are partial, and total count."""
-        if "/" not in full_name or self.max_pages < 1:
+        if "/" not in full_name or self.branch_max_pages < 1:
             raise GitHubError(f"{full_name}: invalid repository or pagination limit")
         owner, name = full_name.split("/", 1)
         if not owner or not name:
@@ -226,7 +229,7 @@ class GitHubClient:
         cursor: str | None = None
         total_count = 0
         has_next_page = False
-        for _ in range(self.max_pages):
+        for _ in range(self.branch_max_pages):
             data = self.graphql(
                 BRANCHES_QUERY,
                 {"owner": owner, "name": name, "cursor": cursor},

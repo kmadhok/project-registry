@@ -36,7 +36,7 @@ class SignalConfig:
     #: Active projects unreviewed for this long are called out.
     review_warning_days: int = 45
     #: A branch with no commit for this long is stale.
-    stale_branch_days: int = 90
+    stale_branch_days: int = 60
 
 
 @dataclass(frozen=True)

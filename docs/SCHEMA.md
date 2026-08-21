@@ -118,7 +118,9 @@ The last one is a hard boundary: the registry stores no credential values, ever.
 
 ## Observed data (not editable here)
 
-`data/github/snapshot.json` holds repository visibility, archival state, pushes, open PRs, issues, review state, and CI state, each stamped with when it was fetched. It is rewritten by `registry sync` and read by everything else. A failed refresh keeps the previous entry and marks it `stale: true` rather than dropping it.
+`data/github/snapshot.json` holds repository visibility, archival state, pushes, open PRs, issues, review state, CI state, and remote branch observations. Repository and branch reads have separate timestamps; branch records include head SHA, commit time, protection, default-branch status, and open in-repo PR numbers. `branches_fetched`, `branches_partial`, `branches_skipped`, and `branches_error` keep missing or incomplete evidence from reading as complete. The snapshot is rewritten by `registry sync` and read by everything else. A failed repository refresh keeps the previous entry and marks it `stale: true`; a branch-only failure keeps the previous branch observation, marks it unfetched, and surfaces a partial error.
+
+The `stale_branches` attention rule emits at most one suggestion per repository. It currently uses a 60-day threshold, excludes the default branch and branches with open in-repo PRs, and never treats an unknown commit date or incomplete branch list as known-stale evidence.
 
 ## Editing
 

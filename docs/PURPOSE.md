@@ -98,7 +98,7 @@ The foundation is successful when:
 - every non-fork repository has a lifecycle state and purpose or an explicit `needs_review` marker;
 - all active projects have a next action and last-reviewed date;
 - open PRs can be listed across the portfolio;
-- projects with no next action, stale activity, or conflicting signals can be found;
+- projects with no next action, stale activity, stale branch groups, or conflicting signals can be found;
 - the registry can generate a concise portfolio dashboard;
 - an MCP client can answer read-only questions without direct GitHub exploration.
 

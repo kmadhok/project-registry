@@ -672,3 +672,53 @@ GraphQL pages and records calls):
    invariant is preserved and better tested. A reviewer who considers the literal
    GET-only property load-bearing in itself should say so now — the alternative
    is accepting the silent no-op of §1.1 or a 7-minute-per-repo sync.
+
+## Rev 4 — implementation notes
+
+Implemented and smoke-tested on 2026-08-21. The read-only sync captured 1,251
+branches with `branches_fetched=true`, `branches_partial=false`, zero skipped
+nodes, and one open-PR head. It required 13 GraphQL pages (inferred exactly from
+1,251 nodes at 100 per page) and 64.996 seconds. The Rev-3 estimates of 802
+branches, nine pages, and about six seconds are therefore historical rather than
+current performance expectations.
+
+Decisions on the §9 questions:
+
+1. **Threshold: 60 days.** The live age histogram was 0–6d: 161, 7–13d: 167,
+   14–29d: 374, 30–44d: 342, 45–59d: 202, 60–74d: 4, 75–89d: 1,
+   and 90+d: 0. Of 1,249 eligible non-default, no-open-PR branches, 207 were at
+   least 45 days old but only five were at least 60 days old. The sharp drop
+   after day 59 makes 60 a bounded, data-supported triage threshold; 90 would
+   emit no signal on the motivating repository.
+2. **Display counts, not names.** The repo-level reason keeps the top three
+   prefix groups and a remaining count. Names remain available in the snapshot.
+3. **Keep carried-forward data but hide its counts.** When a branch read fails
+   or is skipped, the last observation and its timestamp remain in the snapshot,
+   `branches_fetched` is false, and `show` renders the error instead of computing
+   a fresh-looking count from old data.
+4. **Raise the branch-only ceiling and retain the warning.** The branch query
+   now has a 50-page/5,000-node ceiling while REST pagination stays at 10 pages.
+   This was necessary because the live repository had already exceeded the old
+   1,000-node ceiling. If the new ceiling is reached, `branches_partial` remains
+   true, the stale rule stays silent, and `show` displays the truncation warning.
+5. **Keep the guarded POST allowlist.** `test_post_is_allowlisted_only_inside_graphql`
+   confines POST to `graphql()`, and
+   `test_graphql_refuses_non_read_operations_before_transport` proves mutation,
+   subscription, and obfuscated/non-read documents are rejected before I/O.
+
+Implementation deviations from §4:
+
+- A GraphQL node without `committedDate` is skipped and increments
+  `branches_skipped`, rather than being retained with an unknown date. The queue's
+  explicit regression requirement is stricter than §4.2.3 and prevents the
+  REST-era silent-zero failure from returning through malformed live data.
+- Branch pagination uses the separate 50-page ceiling described above rather
+  than the client's shared 10-page REST ceiling. Tests keep both limits explicit.
+- The current dashboard work-queue section renders `WorkItem.title` rather than
+  constructing a second repo/number link as the line references in §4.6 assumed.
+  Repo-scoped formatting is therefore centralized in `queries.signal_ref` for
+  work items and used directly by the dashboard attention section; both paths
+  are covered by a no-`#None` rendering test.
+- The MCP refresh tool also exposes `with_branches` for the same cost control as
+  CLI `--no-branches`; it still calls the shared sync function and adds no forked
+  branch logic.

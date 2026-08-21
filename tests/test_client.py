@@ -122,7 +122,7 @@ def test_list_branch_nodes_threads_cursor_and_reports_complete(monkeypatch):
         },
     )
 
-    nodes, partial, total = GitHubClient(max_pages=2).list_branch_nodes("owner/repo")
+    nodes, partial, total = GitHubClient(branch_max_pages=2).list_branch_nodes("owner/repo")
 
     assert nodes == [{"name": "a"}, {"name": "b"}]
     assert partial is False
@@ -150,8 +150,14 @@ def test_list_branch_nodes_marks_ceiling_as_partial(monkeypatch):
         },
     )
 
-    nodes, partial, total = GitHubClient(max_pages=1).list_branch_nodes("owner/repo")
+    nodes, partial, total = GitHubClient(branch_max_pages=1).list_branch_nodes("owner/repo")
 
     assert nodes == [{"name": "a"}]
     assert partial is True
     assert total == 200
+
+
+def test_branch_pagination_has_headroom_without_raising_rest_ceiling():
+    client = GitHubClient()
+    assert client.max_pages == 10
+    assert client.branch_max_pages == 50

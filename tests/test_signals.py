@@ -170,6 +170,10 @@ def test_unknown_ci_state_is_not_treated_as_failing(write_project, load):
 # -- stale branches ------------------------------------------------------
 
 
+def test_stale_branch_default_follows_the_live_distribution_decision():
+    assert SignalConfig().stale_branch_days == 60
+
+
 def test_stale_branch_threshold_is_inclusive_and_future_is_not_stale():
     state = make_repo_state(branches=[
         make_branch("at-threshold", committed_days_ago=90),

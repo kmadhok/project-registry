@@ -152,6 +152,46 @@ class Issue:
 
 
 @dataclass
+class Branch:
+    name: str
+    head_sha: str
+    committed_at: dt.datetime | None = None
+    protected: bool = False
+    is_default: bool = False
+    open_pr_numbers: list[int] = field(default_factory=list)
+
+    def age_days(self, now: dt.datetime) -> int | None:
+        return age_days(self.committed_at, now)
+
+    @classmethod
+    def from_dict(cls, raw: dict[str, Any]) -> "Branch":
+        numbers: list[int] = []
+        for value in raw.get("open_pr_numbers") or []:
+            try:
+                numbers.append(int(value))
+            except (TypeError, ValueError):
+                continue
+        return cls(
+            name=str(raw.get("name") or ""),
+            head_sha=str(raw.get("head_sha") or ""),
+            committed_at=parse_ts(raw.get("committed_at")),
+            protected=bool(raw.get("protected", False)),
+            is_default=bool(raw.get("is_default", False)),
+            open_pr_numbers=numbers,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "head_sha": self.head_sha,
+            "committed_at": iso(self.committed_at),
+            "protected": self.protected,
+            "is_default": self.is_default,
+            "open_pr_numbers": list(self.open_pr_numbers),
+        }
+
+
+@dataclass
 class RepoState:
     full_name: str
     private: bool = True
@@ -165,6 +205,12 @@ class RepoState:
     open_issues_count: int = 0
     pull_requests: list[PullRequest] = field(default_factory=list)
     issues: list[Issue] = field(default_factory=list)
+    branches: list[Branch] = field(default_factory=list)
+    branches_fetched: bool = False
+    branches_fetched_at: dt.datetime | None = None
+    branches_skipped: int = 0
+    branches_partial: bool = False
+    branches_error: str | None = None
     fetched_at: dt.datetime | None = None
     #: True when this entry was carried over from a previous snapshot because
     #: the most recent refresh failed for this repository (MCP-004).
@@ -189,6 +235,16 @@ class RepoState:
             open_issues_count=int(raw.get("open_issues_count", 0) or 0),
             pull_requests=[PullRequest.from_dict(p) for p in raw.get("pull_requests") or []],
             issues=[Issue.from_dict(i) for i in raw.get("issues") or []],
+            branches=[
+                Branch.from_dict(branch)
+                for branch in raw.get("branches") or []
+                if isinstance(branch, dict)
+            ],
+            branches_fetched=bool(raw.get("branches_fetched", False)),
+            branches_fetched_at=parse_ts(raw.get("branches_fetched_at")),
+            branches_skipped=int(raw.get("branches_skipped", 0) or 0),
+            branches_partial=bool(raw.get("branches_partial", False)),
+            branches_error=raw.get("branches_error"),
             fetched_at=parse_ts(raw.get("fetched_at")),
             stale=bool(raw.get("stale", False)),
             error=raw.get("error"),
@@ -208,6 +264,12 @@ class RepoState:
             "open_issues_count": self.open_issues_count,
             "pull_requests": [p.to_dict() for p in self.pull_requests],
             "issues": [i.to_dict() for i in self.issues],
+            "branches": [branch.to_dict() for branch in self.branches],
+            "branches_fetched": self.branches_fetched,
+            "branches_fetched_at": iso(self.branches_fetched_at),
+            "branches_skipped": self.branches_skipped,
+            "branches_partial": self.branches_partial,
+            "branches_error": self.branches_error,
             "fetched_at": iso(self.fetched_at),
             "stale": self.stale,
             "error": self.error,

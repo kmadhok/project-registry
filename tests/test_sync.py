@@ -77,12 +77,16 @@ def repo_payload(full_name, **overrides):
 
 
 def test_client_only_ever_issues_get_requests():
-    """MCP-006, enforced at the bottom of the stack."""
+    """MCP-006 allows only REST GET and guarded GraphQL query POST."""
     source = inspect.getsource(client_module)
     assert client_module.ALLOWED_METHOD == "GET"
+    assert client_module.ALLOWED_METHODS == frozenset({"GET", "POST"})
     verbs = set(re.findall(r'method\s*=\s*"([A-Z]+)"', source))
-    assert verbs <= {"GET"}
-    assert not re.search(r'\b(POST|PUT|PATCH|DELETE)\b', source)
+    assert verbs <= {"GET", "POST"}
+    assert source.count('method="POST"') == inspect.getsource(GitHubClient.graphql).count(
+        'method="POST"'
+    ) == 1
+    assert not re.search(r'\b(PUT|PATCH|DELETE)\b', source)
 
 
 def test_sync_never_writes_under_the_registry_directory(paths, write_project):

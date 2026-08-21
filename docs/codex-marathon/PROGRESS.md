@@ -7,3 +7,12 @@
 [2026-08-21T19:55:41Z] CHECKPOINT T0 full gate passed: pytest collected and passed 213 cases; registry validate returned 0 errors and 3 suggestions
 [2026-08-21T19:55:41Z] CHECKPOINT T0 queue baseline says 141 passed, but the recorded origin/main base collects 213 cases; T0 changed no tests, so this is a baseline-count discrepancy rather than a test-count change caused by the task
 [2026-08-21T19:55:41Z] DONE T0 commits=6164f49 tests=213 passed
+[2026-08-21T19:56:23Z] START T1a attempt=1 base=f3cfd55a5bc016c09ed73c77884128bdd5e83eaa
+[2026-08-21T19:57:27Z] CHECKPOINT T1a read all 674 lines of BRANCH_CAPTURE_SPEC.md plus snapshot.py, client.py, sync.py, tests/conftest.py, and the existing client invariant in test_sync.py before code edits
+[2026-08-21T19:57:27Z] CHECKPOINT T1a live GraphQL first:2 probe matched Rev 3 and returned non-null committedDate on both nodes; totalCount is now 1251 (up from the spec's 802 and above its 1000-node default ceiling)
+[2026-08-21T19:57:27Z] CHECKPOINT T1a requirement scenarios enumerated before tests: Branch full/null/unicode round-trips; old RepoState defaults; malformed/future dates; GraphQL read openings; mutation/subscription/comment-obfuscated refusal before transport; GraphQL errors; cursor pagination and ceiling partial; malformed branch node including missing committedDate is skipped and counted
+[2026-08-21T19:57:27Z] CHECKPOINT T1a spec deviation to carry into Rev 4: §4.2.3 permits missing committedDate as an unknown date, but QUEUE T1a explicitly requires such a node to increment branches_skipped so the REST-style silent-zero regression cannot recur; the stricter queue requirement wins
+[2026-08-21T19:59:31Z] CHECKPOINT T1a Branch/RepoState snapshot fields, guarded GraphQL transport, paginated refs client, and tolerant GraphQL-node parser are implemented; targeted snapshot/client/sync suites pass 46 cases
+[2026-08-21T20:00:24Z] CHECKPOINT T1a parser helpers assigned to §4.3 landed early so the queue's missing-committedDate regression has a causal test in T1a; T1b will wire them into sync
+[2026-08-21T20:00:24Z] CHECKPOINT T1a the implemented client completed a live one-page read: nodes=100, partial=true, total=1251, missing_dates=0
+[2026-08-21T20:00:24Z] CHECKPOINT T1a full gate passed: 233 tests passed (20 more than the measured T0 baseline, all from 2 new requirement-driven test modules); registry validate returned 0 errors and 3 suggestions

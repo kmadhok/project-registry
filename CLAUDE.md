@@ -72,8 +72,9 @@ registry dashboard                                # regenerate DASHBOARD.md
 6. **Never write secrets** (tokens, keys, `.env` values) into registry files.
    Validation blocks known patterns; treat that as a boundary, not a filter to
    evade.
-7. **No external GitHub mutations from this codebase.** The GitHub client is
-   GET-only by design; do not add merge/close/archive/delete capabilities.
+7. **No external GitHub mutations from this codebase.** REST is GET-only; the
+   guarded GraphQL POST accepts read queries only. Do not add
+   merge/close/archive/delete capabilities.
 
 ## Answering "what should I work on?"
 

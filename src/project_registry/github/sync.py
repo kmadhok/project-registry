@@ -2,7 +2,7 @@
 
 Guarantees this module upholds:
 
-* It is read-only with respect to GitHub (see `client.ALLOWED_METHOD`).
+* It is read-only with respect to GitHub (see `client.ALLOWED_METHODS`).
 * It writes only under ``data/`` -- never under ``registry/``.
 * A partial failure never silently discards good data: the previous entry for a
   failed repository is carried forward, marked ``stale`` with the error attached,
@@ -17,7 +17,7 @@ from typing import Any, Iterable
 
 from ..storage import Paths, Registry, read_json, write_json
 from .client import GitHubClient, GitHubError, derive_ci_state, derive_review_state
-from .snapshot import Issue, PullRequest, RepoState, Snapshot, iso, parse_ts
+from .snapshot import Branch, Issue, PullRequest, RepoState, Snapshot, iso, parse_ts
 
 
 @dataclass
@@ -154,6 +154,63 @@ def repo_state_from_api(repo: dict, now: dt.datetime) -> RepoState:
         open_issues_count=int(repo.get("open_issues_count") or 0),
         fetched_at=now,
     )
+
+
+def branch_from_node(
+    node: dict[str, Any], default_branch: str, full_name: str
+) -> Branch | None:
+    """Parse one GraphQL ref node, failing closed on unknown commit age."""
+    if not isinstance(node, dict) or not node.get("name"):
+        return None
+    target = node.get("target")
+    if not isinstance(target, dict) or not target.get("oid"):
+        return None
+    committed_at = parse_ts(target.get("committedDate"))
+    if committed_at is None:
+        return None
+
+    branch = Branch(
+        name=str(node["name"]),
+        head_sha=str(target["oid"]),
+        committed_at=committed_at,
+        protected=node.get("branchProtectionRule") is not None,
+        is_default=node["name"] == default_branch,
+    )
+    associated = target.get("associatedPullRequests") or {}
+    if not isinstance(associated, dict):
+        associated = {}
+    associated_nodes = associated.get("nodes") or []
+    if not isinstance(associated_nodes, list):
+        associated_nodes = []
+    for raw in associated_nodes:
+        if not isinstance(raw, dict) or raw.get("state") != "OPEN":
+            continue
+        head_repository = raw.get("headRepository")
+        if head_repository is not None and not isinstance(head_repository, dict):
+            continue
+        head_repo = (head_repository or {}).get("nameWithOwner")
+        if head_repo is not None and head_repo != full_name:
+            continue
+        try:
+            branch.open_pr_numbers.append(int(raw["number"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    return branch
+
+
+def branches_from_nodes(
+    nodes: Iterable[dict[str, Any]], default_branch: str, full_name: str
+) -> tuple[list[Branch], int]:
+    """Parse branch nodes and count every malformed node that was dropped."""
+    branches: list[Branch] = []
+    skipped = 0
+    for node in nodes:
+        branch = branch_from_node(node, default_branch, full_name)
+        if branch is None:
+            skipped += 1
+            continue
+        branches.append(branch)
+    return sorted(branches, key=lambda branch: branch.name), skipped
 
 
 def pull_request_from_api(

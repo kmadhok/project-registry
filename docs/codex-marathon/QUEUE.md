@@ -120,9 +120,9 @@ Source: `docs/FINDINGS_REPO_HYGIENE.md` "Proposed marker file" (H1/H2/H4).
 
 Method from the repo owner's testing rule: extract scenarios from requirements BEFORE writing tests; each requirement → ≥1 test; happy path, edge cases, error handling, state transitions.
 
-- [ ] For each story in `docs/USER_STORIES.md` and each rule in `docs/SCHEMA.md`, list its acceptance criteria and find the test that covers each (`grep` test names/asserts). Write the matrix to `docs/codex-marathon/TEST_MATRIX.md` (criterion → test id or GAP).
-- [ ] Fill GAPs with tests that assert the *requirement* (not current implementation details). If a GAP test fails because the code is wrong, fix the code in a separate commit and say so in PROGRESS; if it reveals a design question, leave the test marked `xfail` with a reason and record it — do not silently adjust the assertion to pass.
-- [ ] Stop when two passes over the matrix add nothing new.
+- [x] For each story in `docs/USER_STORIES.md` and each rule in `docs/SCHEMA.md`, list its acceptance criteria and find the test that covers each (`grep` test names/asserts). Write the matrix to `docs/codex-marathon/TEST_MATRIX.md` (criterion → test id or GAP).
+- [x] Fill GAPs with tests that assert the *requirement* (not current implementation details). If a GAP test fails because the code is wrong, fix the code in a separate commit and say so in PROGRESS; if it reveals a design question, leave the test marked `xfail` with a reason and record it — do not silently adjust the assertion to pass.
+- [x] Stop when two passes over the matrix add nothing new.
 - Validation: full gate. Commits `marathon(T9): tests for <story ids>` (several allowed).
 
 ## T10 — Adversarial self-review of the whole branch (P1, run last before T11)

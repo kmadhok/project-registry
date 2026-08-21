@@ -127,9 +127,9 @@ Method from the repo owner's testing rule: extract scenarios from requirements B
 
 ## T10 — Adversarial self-review of the whole branch (P1, run last before T11)
 
-- [ ] Fresh eyes: `git diff origin/main...HEAD --stat`, then review each task's commits as a hostile reviewer. For each: correctness, silent-failure paths (the repo's recurring theme), read-only GitHub invariant (`grep -rn "POST\|PATCH\|DELETE\|PUT" src/` — only the `graphql()` allowlist may reference POST), secrets (`REG validate` already scans; also grep for `gho_`, `ghp_`, `sk-`), test quality (do tests assert requirements or mirror code?), docs consistency.
-- [ ] Fix real defects with commits `marathon(T10): fix — <what>`. Record each finding + disposition (fixed / not a defect / deferred with reason) in PROGRESS.md. Don't churn style.
-- [ ] Re-run the T1c smoke once more after all fixes; re-record numbers.
+- [x] Fresh eyes: `git diff origin/main...HEAD --stat`, then review each task's commits as a hostile reviewer. For each: correctness, silent-failure paths (the repo's recurring theme), read-only GitHub invariant (`grep -rn "POST\|PATCH\|DELETE\|PUT" src/` — only the `graphql()` allowlist may reference POST), secrets (`REG validate` already scans; also grep for `gho_`, `ghp_`, `sk-`), test quality (do tests assert requirements or mirror code?), docs consistency.
+- [x] Fix real defects with commits `marathon(T10): fix — <what>`. Record each finding + disposition (fixed / not a defect / deferred with reason) in PROGRESS.md. Don't churn style.
+- [x] Re-run the T1c smoke once more after all fixes; re-record numbers.
 - Validation: full gate; `git log origin/main..HEAD --oneline` reads as a clean per-task history.
 
 ## T11 — Final report and stop (P0)

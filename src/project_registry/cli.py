@@ -28,6 +28,7 @@ from .proposals import (
     record_review,
     reject_proposal,
 )
+from .push_runs import build_push_report
 from .queries import (
     ProjectFilter,
     build_review_queue,
@@ -526,6 +527,37 @@ def cmd_sync_status(args, paths, now) -> int:
     return 0
 
 
+def cmd_push_report(args, paths, now) -> int:
+    try:
+        report = build_push_report(
+            paths=paths, since=args.since, refresh=args.refresh, now=now
+        )
+    except ValueError as exc:
+        raise RegistryError(str(exc)) from None
+    if emit(report, args):
+        return 0
+
+    runs = report["runs"]
+    prs = report["pull_requests"]
+    rate = prs["merge_rate"]
+    print(f"push runs       {runs['total']}")
+    print(f"by host         {json.dumps(runs['by_host'])}")
+    print(f"by outcome      {json.dumps(runs['by_outcome'])}")
+    print(f"by project      {json.dumps(runs['by_project'])}")
+    print(f"by gear         {json.dumps(runs['by_gear'])}")
+    print(f"PR states       {json.dumps(prs['by_state'])}")
+    percent = "unknown" if rate["percent"] is None else f"{rate['percent']:.1f}%"
+    print(f"merge rate      {rate['merged']}/{rate['total']} ({percent})")
+    malformed = report["journal"]["malformed_count"]
+    if malformed:
+        print(f"malformed       {malformed} journal line(s)")
+        for item in report["journal"]["malformed"]:
+            print(f"  line {item['line']}: {item['error']}")
+    for error in prs["refresh_errors"]:
+        print(f"  refresh error: {error['url']} — {error['error']}")
+    return 0
+
+
 def cmd_import_github(args, paths, now) -> int:
     registry = load_registry(paths)
     client = GitHubClient()
@@ -737,6 +769,12 @@ def build_parser() -> argparse.ArgumentParser:
                      help="Skip branch capture and carry forward prior branch evidence.")
 
     add("sync-status", cmd_sync_status, "Report the last GitHub refresh.")
+
+    sub = add("push-report", cmd_push_report, "Summarize push runs and cached PR states.")
+    sub.add_argument("--refresh", action="store_true",
+                     help="Refresh linked PR states through read-only GitHub GETs.")
+    sub.add_argument("--since", metavar="YYYY-MM-DD",
+                     help="Include runs on or after this UTC date.")
 
     sub = add("import-github", cmd_import_github, "Create stubs from an owner's repositories.")
     sub.add_argument("--owner", required=True)

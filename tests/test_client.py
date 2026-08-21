@@ -95,6 +95,17 @@ def test_graphql_errors_are_not_returned_as_empty_success(monkeypatch):
         GitHubClient().graphql("{ viewer { login } }")
 
 
+def test_get_pull_uses_the_read_only_rest_transport(monkeypatch):
+    calls = install_responses(monkeypatch, {"state": "open", "merged_at": None})
+
+    payload = GitHubClient().get_pull("owner/repo", 7)
+
+    assert payload["state"] == "open"
+    request, _ = calls[0]
+    assert request.method == "GET"
+    assert request.full_url == "https://api.github.com/repos/owner/repo/pulls/7"
+
+
 def test_list_branch_nodes_threads_cursor_and_reports_complete(monkeypatch):
     calls = install_responses(
         monkeypatch,

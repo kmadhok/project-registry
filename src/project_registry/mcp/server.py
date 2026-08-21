@@ -30,6 +30,7 @@ from ..proposals import (
     propose_update,
     record_review,
 )
+from ..push_runs import build_push_report
 from ..queries import (
     ProjectFilter,
     build_review_queue,
@@ -239,6 +240,17 @@ def tool_get_github_sync_status(paths: Paths, args: dict[str, Any]) -> dict[str,
     return _envelope(registry, snapshot, now, {"status": snapshot.status(now)})
 
 
+def tool_get_push_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = build_push_report(
+        paths=paths,
+        since=args.get("since"),
+        refresh=bool(args.get("refresh", False)),
+        now=now,
+    )
+    return _envelope(registry, snapshot, now, {"report": report})
+
+
 def tool_find_registry_mismatches(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
     found = find_mismatches(registry, snapshot, now=now)
@@ -388,6 +400,11 @@ TOOLS: tuple[Tool, ...] = (
          tool_list_selected_issues, "MCP-003"),
     Tool("get_github_sync_status", "When GitHub evidence was last refreshed, with coverage and errors.",
          _schema(), tool_get_github_sync_status, "MCP-003"),
+    Tool("get_push_report", "Push-run totals and cached linked-PR states; refresh uses read-only GETs.",
+         _schema({
+             "refresh": {"type": "boolean"},
+             "since": {"type": "string", "format": "date"},
+         }), tool_get_push_report, "MCP-003"),
     Tool("find_registry_mismatches", "Conflicts between registry intent and observed GitHub state.",
          _schema(), tool_find_registry_mismatches, "MCP-003"),
     Tool("validate_registry", "Run the registry's own operating rules.",

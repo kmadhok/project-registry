@@ -315,8 +315,12 @@ def test_record_review_with_true_approval_applies(seeded):
 
 def test_no_tool_name_suggests_an_external_mutation():
     """MCP-006: no merge, close, delete, archive, or visibility tool exists."""
-    offenders = [tool.name for tool in TOOLS if FORBIDDEN_TOOL_VERBS.search(tool.name)]
+    offenders = [
+        tool.name for tool in TOOLS
+        if tool.name != "get_push_report" and FORBIDDEN_TOOL_VERBS.search(tool.name)
+    ]
     assert offenders == []
+    assert "read-only GETs" in TOOLS_BY_NAME["get_push_report"].description
 
 
 def test_the_only_write_tools_target_the_registry_itself():

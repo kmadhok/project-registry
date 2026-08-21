@@ -202,6 +202,9 @@ class GitHubClient:
     def list_open_pulls(self, full_name: str) -> list[dict]:
         return list(self.paginate(f"/repos/{full_name}/pulls", {"state": "open"}))
 
+    def get_pull(self, full_name: str, number: int) -> dict:
+        return self.get(f"/repos/{full_name}/pulls/{number}") or {}
+
     def list_open_issues(self, full_name: str) -> list[dict]:
         """Open issues, excluding pull requests (GitHub returns both here)."""
         items = self.paginate(f"/repos/{full_name}/issues", {"state": "open"})

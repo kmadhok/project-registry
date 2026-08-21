@@ -39,6 +39,7 @@ registry sync [--no-branches]            # refresh observed state; optionally sk
 registry prs                             # open PRs across the portfolio
 registry attention                       # work needing a human, with the rule behind each signal
 registry mismatches                      # where registry intent and GitHub disagree
+registry push-report                     # push-run totals and cached linked-PR states
 ```
 
 Day-to-day:
@@ -65,7 +66,7 @@ registry audit
 registry mcp                  # JSON-RPC 2.0 over stdio
 ```
 
-21 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — the HTTP client is restricted to `GET`, and a test enforces both.
+22 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, push-run reporting, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — REST remains restricted to `GET`, and a test enforces both.
 
 **Claude Code discovers the server automatically** via [`.mcp.json`](.mcp.json) when this repo is open. Claude Desktop and global registration are covered in [docs/SETUP.md](docs/SETUP.md). Sessions without MCP still work: [`CLAUDE.md`](CLAUDE.md) gives any LLM session the CLI commands and the rules.
 

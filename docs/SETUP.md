@@ -47,6 +47,9 @@ Notes:
 - `registry sync` writes only `data/github/snapshot.json` (gitignored cache).
   If some repositories fail to refresh, their previous data is kept and marked
   stale; `registry sync-status` shows coverage and errors.
+- `registry push-report` summarizes `data/push_runs.jsonl` from the local
+  `data/github/push_prs.json` cache. Add `--refresh` to update linked PR states
+  with read-only GitHub GETs, or `--since YYYY-MM-DD` to limit the runs.
 
 ## 3. Curate
 
@@ -70,9 +73,9 @@ and the review queue keeps track of what's left. Field reference:
 ### Claude Code (CLI, IDE, web)
 
 Nothing to do: [`.mcp.json`](../.mcp.json) at the repo root is project-scoped
-config. Open the repo, approve the server once when prompted, and the 21 tools
+config. Open the repo, approve the server once when prompted, and the 22 tools
 (`list_projects`, `get_attention_queue`, `list_open_prs`,
-`propose_project_update`, …) are available in every session.
+`get_push_report`, `propose_project_update`, …) are available in every session.
 
 To register it globally instead (usable from any directory):
 

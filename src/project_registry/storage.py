@@ -57,6 +57,14 @@ class Paths:
         return self.data_dir / "github" / "snapshot.json"
 
     @property
+    def push_prs_file(self) -> Path:
+        return self.data_dir / "github" / "push_prs.json"
+
+    @property
+    def push_runs_file(self) -> Path:
+        return self.data_dir / "push_runs.jsonl"
+
+    @property
     def proposals_dir(self) -> Path:
         return self.data_dir / "proposals"
 

@@ -39,6 +39,7 @@ registry attention              # GitHub work needing a human, with the rule per
 registry mismatches             # registry intent vs GitHub state; exit 1 on errors
 registry review-queue           # projects due for a deliberate review
 registry sync-status            # when GitHub evidence was last refreshed
+registry push-report            # push-run totals and cached PR states; add --refresh/--since/--json
 ```
 
 State-changing (each has guardrails — respect them, don't work around them):

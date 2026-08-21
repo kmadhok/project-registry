@@ -111,9 +111,9 @@ Source: `docs/FINDINGS_REPO_HYGIENE.md` "Proposed marker file" (H1/H2/H4).
 
 ## T8 — Docs drift sweep (P2)
 
-- [ ] Compare every command in `CLAUDE.md` cheatsheet, `README.md`, `docs/SETUP.md`, `docs/SCHEMA.md` against `REG --help` and each subcommand's `--help` (including new ones from T1/T4/T5). Fix wrong flags, missing commands, stale counts ("21-tool MCP server" etc. — count the real tools in `mcp/server.py`).
-- [ ] Check `docs/IMPLEMENTATION_PLAN.md` layout block against the real `src/` tree; update only factual drift.
-- [ ] Do NOT hand-edit `DASHBOARD.md` (generated) and do not touch `registry/`.
+- [x] Compare every command in `CLAUDE.md` cheatsheet, `README.md`, `docs/SETUP.md`, `docs/SCHEMA.md` against `REG --help` and each subcommand's `--help` (including new ones from T1/T4/T5). Fix wrong flags, missing commands, stale counts ("21-tool MCP server" etc. — count the real tools in `mcp/server.py`).
+- [x] Check `docs/IMPLEMENTATION_PLAN.md` layout block against the real `src/` tree; update only factual drift.
+- [x] Do NOT hand-edit `DASHBOARD.md` (generated) and do not touch `registry/`.
 - Validation: full gate. Commit `marathon(T8): docs drift — commands, flags, counts`.
 
 ## T9 — Requirement-driven test-gap sweep (P2)

@@ -65,3 +65,7 @@
 [2026-08-21T20:24:55Z] CHECKPOINT T5 real status reports 95 present / 3 missing / 1 stale, with 94 present briefs revision-unknown and 0 malformed; interview-prep is the one stale brief (brief e0fee790 versus known default head 7675ab93), while unsynced repositories correctly remain unknown rather than current
 [2026-08-21T20:25:09Z] CHECKPOINT T5 full gate passed: pytest collected and passed 276 cases; registry validate returned 0 errors and 3 suggestions; the 5-test increase from T4 covers missing directories/files, malformed JSON, age and current/stale/unknown revision classification, unfetched evidence, and CLI/MCP/sync-status parity
 [2026-08-21T20:25:21Z] DONE T5 commits=9ebeb1d tests=276 passed
+[2026-08-21T20:26:19Z] START T6 attempt=1 base=5a58fd5f94b09913e031b10c4263d3bf5e0747b4
+[2026-08-21T20:27:04Z] CHECKPOINT T6 read the complete push-project finding and canonical 268-line skill, verified the target passages and file history, then added only the five required wording changes; the skill is now 278 lines (+10, within the +25 limit), its diff is 16 insertions/6 deletions in one file, required terms are present in changed hunks, and git diff --check is clean
+[2026-08-21T20:27:36Z] CHECKPOINT T6 full gate passed as an extra confidence check: pytest collected and passed 276 cases; registry validate returned 0 errors and 3 suggestions; the test count is unchanged because T6 edits only skill instructions
+[2026-08-21T20:27:36Z] DONE T6 commits=254f13e tests=276 passed

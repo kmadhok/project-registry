@@ -94,11 +94,11 @@ Source: `docs/FINDINGS_REGISTRY_MCP.md#M2`. `data/understanding/*.json` (briefs)
 
 Source: `docs/FINDINGS_PUSH_PROJECT_SKILL.md` S1, S2, S3. Edit ONLY the repo-tracked copy `.claude/skills/push-project/SKILL.md` (canonical; last changed at `731fd59`). Do not touch `~/.claude/`.
 
-- [ ] S1: the `approved` warning (around line 223) must name the surface — MCP requires `approved: true`; CLI `registry record-review` has no flag and applies directly. Two sentences, inline.
-- [ ] S2: make the evidence-brief read conditional with the stated fallback (README, `CLAUDE.md`/`AGENTS.md`, `docs/`, `git log`).
-- [ ] S3: add the test-command search order (marker file → `CLAUDE.md`/`AGENTS.md` → `Makefile`/`pyproject.toml`/`package.json` → docs) and require distinguishing a *collection* error from a *test* failure before reporting a red baseline.
-- [ ] Add the "verify before delegating" sentence to the gear-2 delegation step (the load-bearing finding) and "explain a changed test count, don't just match it" to the verification step.
-- [ ] Minimal diff: no restructuring, no tone changes, keep every existing rule. `wc -l` delta should be small (≤ +25 lines).
+- [x] S1: the `approved` warning (around line 223) must name the surface — MCP requires `approved: true`; CLI `registry record-review` has no flag and applies directly. Two sentences, inline.
+- [x] S2: make the evidence-brief read conditional with the stated fallback (README, `CLAUDE.md`/`AGENTS.md`, `docs/`, `git log`).
+- [x] S3: add the test-command search order (marker file → `CLAUDE.md`/`AGENTS.md` → `Makefile`/`pyproject.toml`/`package.json` → docs) and require distinguishing a *collection* error from a *test* failure before reporting a red baseline.
+- [x] Add the "verify before delegating" sentence to the gear-2 delegation step (the load-bearing finding) and "explain a changed test count, don't just match it" to the verification step.
+- [x] Minimal diff: no restructuring, no tone changes, keep every existing rule. `wc -l` delta should be small (≤ +25 lines).
 - Validation: `git diff --stat .claude/skills/push-project/SKILL.md` shows only that file; the four edits are present (grep for `record-review`, `fallback`, `collection`, `verify` in the changed hunks). Commit `marathon(T6): push-project skill — S1/S2/S3 and delegation-verification wording`.
 
 ## T7 — Dogfood the repo-hygiene marker (P2)

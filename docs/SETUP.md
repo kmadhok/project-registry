@@ -50,6 +50,9 @@ Notes:
 - `registry push-report` summarizes `data/push_runs.jsonl` from the local
   `data/github/push_prs.json` cache. Add `--refresh` to update linked PR states
   with read-only GitHub GETs, or `--since YYYY-MM-DD` to limit the runs.
+- `registry briefs-status` reports whether each repo-backed project has an
+  evidence brief and whether its recorded revision matches the latest known
+  default-branch head. `registry sync-status` includes the coverage summary.
 
 ## 3. Curate
 
@@ -73,9 +76,10 @@ and the review queue keeps track of what's left. Field reference:
 ### Claude Code (CLI, IDE, web)
 
 Nothing to do: [`.mcp.json`](../.mcp.json) at the repo root is project-scoped
-config. Open the repo, approve the server once when prompted, and the 22 tools
+config. Open the repo, approve the server once when prompted, and the 23 tools
 (`list_projects`, `get_attention_queue`, `list_open_prs`,
-`get_push_report`, `propose_project_update`, …) are available in every session.
+`get_briefs_status`, `get_push_report`, `propose_project_update`, …) are
+available in every session.
 
 To register it globally instead (usable from any directory):
 

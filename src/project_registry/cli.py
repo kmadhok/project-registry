@@ -13,6 +13,7 @@ import json
 import sys
 from typing import Any, Sequence
 
+from .briefs import build_briefs_status, build_sync_status
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -514,7 +515,8 @@ def cmd_sync(args, paths, now) -> int:
 
 def cmd_sync_status(args, paths, now) -> int:
     snapshot = load_snapshot(paths)
-    status = snapshot.status(now)
+    registry = load_registry(paths)
+    status = build_sync_status(registry, snapshot, paths=paths, now=now)
     if emit(status, args):
         return 0
     print(f"last refresh   {_dash(status['completed_at'])} ({status['age']})")
@@ -522,8 +524,37 @@ def cmd_sync_status(args, paths, now) -> int:
     print(f"repositories   {status['repo_count']}")
     if status["coverage"]:
         print(f"coverage       {json.dumps(status['coverage'])}")
+    briefs = status["briefs"]
+    print(
+        f"briefs         {briefs['present']} present / {briefs['missing']} missing / "
+        f"{briefs['stale']} stale"
+    )
     for error in status["errors"]:
         print(f"  error: {error.get('repo')} — {error.get('error')}")
+    return 0
+
+
+def cmd_briefs_status(args, paths, now) -> int:
+    registry = load_registry(paths)
+    snapshot = load_snapshot(paths)
+    report = build_briefs_status(registry, snapshot, paths=paths, now=now)
+    if emit(report, args):
+        return 0
+    for item in report["projects"]:
+        presence = "present" if item["present"] else "missing"
+        age = "unknown age" if item["age_days"] is None else f"{item['age_days']}d"
+        print(
+            f"{item['project_id']:<32} {presence:<7} "
+            f"{item['revision_state']:<7} {age}"
+        )
+        if item["error"]:
+            print(f"  error: {item['error']}")
+    summary = report["summary"]
+    print(
+        f"\n{summary['present']} present / {summary['missing']} missing / "
+        f"{summary['stale']} stale ({summary['unknown']} revision unknown, "
+        f"{summary['malformed']} malformed)."
+    )
     return 0
 
 
@@ -769,6 +800,7 @@ def build_parser() -> argparse.ArgumentParser:
                      help="Skip branch capture and carry forward prior branch evidence.")
 
     add("sync-status", cmd_sync_status, "Report the last GitHub refresh.")
+    add("briefs-status", cmd_briefs_status, "Report evidence-brief coverage and staleness.")
 
     sub = add("push-report", cmd_push_report, "Summarize push runs and cached PR states.")
     sub.add_argument("--refresh", action="store_true",

@@ -53,6 +53,10 @@ class Paths:
         return self.root / "data"
 
     @property
+    def understanding_dir(self) -> Path:
+        return self.data_dir / "understanding"
+
+    @property
     def snapshot_file(self) -> Path:
         return self.data_dir / "github" / "snapshot.json"
 

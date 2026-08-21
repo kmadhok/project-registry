@@ -122,6 +122,21 @@ The last one is a hard boundary: the registry stores no credential values, ever.
 
 The `stale_branches` attention rule emits at most one suggestion per repository. It currently uses a 60-day threshold, excludes the default branch and branches with open in-repo PRs, and never treats an unknown commit date or incomplete branch list as known-stale evidence.
 
+`data/understanding/<project-id>.json` holds an evidence brief when one exists.
+`registry briefs-status` reads `analyzed_at` and `revision`: `analyzed_at`
+provides the brief age, while `revision` is compared with the snapshot's
+latest known default-branch head and reported as `current`, `stale`, or
+`unknown`. Missing, malformed, and revision-unknown briefs stay separate;
+unknown is never treated as current. `registry sync-status` includes the
+present/missing/stale summary, and the MCP exposes the same query through
+`get_briefs_status`.
+
+Briefs are produced out-of-band today, not by `registry sync`, and are
+git-tracked. The registry only reports their coverage and staleness; it does
+not generate, refresh, or delete them. Whether they should become generated
+observed evidence or remain externally owned is still an open ownership
+decision.
+
 ## Editing
 
 Hand-edit the YAML for prose. For scripted or agent-driven changes use the proposal path, which records exact before/after values and refuses anything that would introduce a validation error:

@@ -6,8 +6,10 @@ do here:
 
 - `registry/projects/*.yaml` — **curated human intent** (purpose, lifecycle,
   active flag, priority, next action). Authoritative. Git-tracked.
-- `data/` — **observed GitHub evidence** (PRs, issues, CI, activity), written
-  only by `registry sync`. A refreshable cache, gitignored, never authoritative.
+- `data/github/` — **observed GitHub evidence** (PRs, issues, CI, activity),
+  written only by `registry sync`. A refreshable cache, gitignored, never authoritative.
+- `data/understanding/` — **out-of-band evidence briefs**, currently produced
+  outside the registry and git-tracked; their long-term owner is not settled.
 
 Sync never writes under `registry/`; generated data must never overwrite
 curated fields. See `docs/PURPOSE.md` for the full operating rules.
@@ -39,6 +41,7 @@ registry attention              # GitHub work needing a human, with the rule per
 registry mismatches             # registry intent vs GitHub state; exit 1 on errors
 registry review-queue           # projects due for a deliberate review
 registry sync-status            # when GitHub evidence was last refreshed
+registry briefs-status          # evidence-brief presence, age, and revision staleness
 registry push-report            # push-run totals and cached PR states; add --refresh/--since/--json
 ```
 

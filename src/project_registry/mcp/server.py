@@ -19,6 +19,7 @@ import sys
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable, TextIO
 
+from ..briefs import build_briefs_status, build_sync_status
 from ..github.client import GitHubClient
 from ..github.sync import load_snapshot, sync
 from ..model import Effort, Lifecycle, Priority
@@ -237,7 +238,14 @@ def tool_list_selected_issues(paths: Paths, args: dict[str, Any]) -> dict[str, A
 
 def tool_get_github_sync_status(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
-    return _envelope(registry, snapshot, now, {"status": snapshot.status(now)})
+    status = build_sync_status(registry, snapshot, paths=paths, now=now)
+    return _envelope(registry, snapshot, now, {"status": status})
+
+
+def tool_get_briefs_status(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = build_briefs_status(registry, snapshot, paths=paths, now=now)
+    return _envelope(registry, snapshot, now, {"briefs": report})
 
 
 def tool_get_push_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
@@ -400,6 +408,8 @@ TOOLS: tuple[Tool, ...] = (
          tool_list_selected_issues, "MCP-003"),
     Tool("get_github_sync_status", "When GitHub evidence was last refreshed, with coverage and errors.",
          _schema(), tool_get_github_sync_status, "MCP-003"),
+    Tool("get_briefs_status", "Evidence-brief presence, age, and revision staleness.",
+         _schema(), tool_get_briefs_status, "MCP-003"),
     Tool("get_push_report", "Push-run totals and cached linked-PR states; refresh uses read-only GETs.",
          _schema({
              "refresh": {"type": "boolean"},

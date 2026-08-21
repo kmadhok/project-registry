@@ -94,3 +94,53 @@
 [2026-08-21T20:41:15Z] CHECKPOINT T10 post-fix live smoke completed in 38.480s (20:40:19.261Z to 20:40:57.741Z): 1/1 repo succeeded, 0 failed/partial errors, 1251 branches, branches_fetched=true, branches_partial=false, branches_skipped=0, 1 open-PR head; show reports 5 stale and attention emits exactly one stale_branches item (3 pc/, 1 claude/, 1 feat/; oldest 75d)
 [2026-08-21T20:41:15Z] CHECKPOINT T10 full gate passed: pytest collected and passed 283 cases; registry validate returned 0 errors and 3 suggestions; the 2-test increase from T9 is the parameterized regression proving invalid-JSON and non-object GraphQL responses both fail through GraphQLError
 [2026-08-21T20:41:15Z] DONE T10 commits=2cf682f tests=283 passed
+[2026-08-21T20:41:50Z] START T11 attempt=1 base=b25c409147af2a6a642d5f1dcf0aa2ff91391b61
+[2026-08-21T20:41:50Z] CHECKPOINT T11 T10 status is pushed and PR #4 now shows T0-T10 done, T11 pending, the 283-test gate, and final smoke numbers
+
+## FINAL REPORT
+
+### Status
+
+| Task | Title | Status |
+|---|---|---|
+| T0 | Setup and branch | Done |
+| T1a | Branch capture: client + snapshot model | Done |
+| T1b | Branch capture: sync + signals + CLI + dashboard | Done |
+| T1c | Branch capture: live smoke, threshold, spec notes | Done |
+| T2 | Preserve falsy curated fields | Done |
+| T3 | MCP review approval semantics | Done |
+| T4 | `registry push-report` | Done |
+| T5 | Evidence-brief coverage and staleness | Done |
+| T6 | push-project skill fixes | Done |
+| T7 | Repo-hygiene marker | Done |
+| T8 | Docs drift sweep | Done |
+| T9 | Requirement-driven test-gap sweep | Done |
+| T10 | Adversarial branch review | Done |
+| T11 | Final report and stop | Done |
+
+No task is blocked. No discovered task was added.
+
+### Verification
+
+- Queue baseline: 141 passed. The untouched `origin/main` base actually collected 213 tests at T0, so the queue number was already stale before implementation. Final: 283 tests collected and passed, a measured increase of 70 requirement tests from the real base (and 142 over the written queue baseline).
+- Final `registry validate`: 0 errors, 3 pre-existing suggestions (`dotfiles`, `looker-text-to-sql`, `remote-workstation`).
+- Final live smoke: 2026-08-21T20:40:19.261Z to 20:40:57.741Z (38.480s); 1/1 repository succeeded, 0 failed, 0 partial; 1,251 branches, `branches_fetched=true`, `branches_partial=false`, 0 skipped, 1 open-PR head. `registry show interview-prep` reports 5 stale branches and `registry attention` returns exactly one `stale_branches` item (3 `pc/`, 1 `claude/`, 1 `feat/`; oldest 75d).
+- T10 found and fixed one real defect: invalid-JSON or non-object GraphQL responses now become `GraphQLError`, preserving per-repository partial-failure semantics instead of aborting the sync. The guarded transport contains the only POST; no PATCH/PUT/DELETE path or credential was introduced.
+
+### Decisions taken
+
+- `stale_branch_days=60`: the live histogram had 202 branches at 45–59 days but only 5 at 60+; 90 days would have made a shipped rule falsely look inactive.
+- Stale-branch output keeps group counts rather than branch names. Carried-forward or partial evidence never produces a confident signal; `show` surfaces the branch error instead.
+- Branch pagination has a branch-specific 5,000-node ceiling while REST remains at 10 pages. The GraphQL POST is confined to `graphql()` and guarded by a fail-closed read-operation allowlist and transport tests.
+- A missing `committedDate` is skipped and counted, following the queue's stricter silent-zero regression requirement over Rev 3's earlier unknown-date wording.
+- Push-report merge rate is merged unique PRs divided by all unique linked PRs; open and unknown remain in the denominator, so missing evidence cannot inflate success.
+- Evidence briefs remain out-of-band. This branch adds visibility only, not a generator or ownership decision.
+
+### Owner follow-up
+
+- Review and merge PR #4 when satisfied; this marathon did not merge or change any other PR/issue/label.
+- The repo-tracked `.claude/skills/push-project/SKILL.md` is updated. Per the hard boundary, `~/.claude/` was not touched; copy/install the updated skill there manually only if that separate global copy should match.
+- Live GitHub snapshots and the push-PR cache remain gitignored machine evidence and are not part of the PR.
+
+[2026-08-21T20:42:19Z] CHECKPOINT T11 final report written with all tasks done, queue baseline discrepancy, 283-test final gate, final smoke, decisions, zero blocked items, and owner follow-up
+[2026-08-21T20:42:19Z] DONE T11 commits=none-before-closeout tests=283 passed

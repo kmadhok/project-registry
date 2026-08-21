@@ -134,9 +134,9 @@ Method from the repo owner's testing rule: extract scenarios from requirements B
 
 ## T11 — Final report and stop (P0)
 
-- [ ] Update the PR body: per-task status table, test count before/after (141 → N), smoke numbers, decisions taken (threshold, open questions), blocked items with reasons, anything the owner must decide or do by hand (e.g. merge order, ~/.claude skill copy is stale vs repo copy).
-- [ ] Write `## FINAL REPORT` at the end of PROGRESS.md with the same content.
-- [ ] `touch .marathon-stop` in the repo root (uncommitted) so the runner exits.
+- [x] Update the PR body: per-task status table, test count before/after (141 → N), smoke numbers, decisions taken (threshold, open questions), blocked items with reasons, anything the owner must decide or do by hand (e.g. merge order, ~/.claude skill copy is stale vs repo copy).
+- [x] Write `## FINAL REPORT` at the end of PROGRESS.md with the same content.
+- [x] `touch .marathon-stop` in the repo root (uncommitted) so the runner exits.
 - Validation: PR body updated (`gh pr view --json body | grep -c 'T1'` ≥ 1); `.marathon-stop` exists.
 
 ---

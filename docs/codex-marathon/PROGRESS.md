@@ -69,3 +69,7 @@
 [2026-08-21T20:27:04Z] CHECKPOINT T6 read the complete push-project finding and canonical 268-line skill, verified the target passages and file history, then added only the five required wording changes; the skill is now 278 lines (+10, within the +25 limit), its diff is 16 insertions/6 deletions in one file, required terms are present in changed hunks, and git diff --check is clean
 [2026-08-21T20:27:36Z] CHECKPOINT T6 full gate passed as an extra confidence check: pytest collected and passed 276 cases; registry validate returned 0 errors and 3 suggestions; the test count is unchanged because T6 edits only skill instructions
 [2026-08-21T20:27:36Z] DONE T6 commits=254f13e tests=276 passed
+[2026-08-21T20:28:23Z] START T7 attempt=1 base=cceb7d1736392ea79646116287ec497d5fb166ad
+[2026-08-21T20:29:09Z] CHECKPOINT T7 read the complete repo-hygiene finding plus SETUP and pyproject, verified the marker was absent and unignored and the venv is Python 3.11.15, then added the exact identity/interpreter/test/validate fields and documented the convention as a starting point that no code reads yet; the required yaml.safe_load command and an exact-shape assertion both returned 0, and git diff --check is clean
+[2026-08-21T20:29:24Z] CHECKPOINT T7 full gate passed as an extra verification of the declared commands: pytest collected and passed 276 cases; registry validate returned 0 errors and 3 suggestions; the test count is unchanged because T7 adds only metadata and documentation
+[2026-08-21T20:29:24Z] DONE T7 commits=baec83d tests=276 passed

@@ -105,8 +105,8 @@ Source: `docs/FINDINGS_PUSH_PROJECT_SKILL.md` S1, S2, S3. Edit ONLY the repo-tra
 
 Source: `docs/FINDINGS_REPO_HYGIENE.md` "Proposed marker file" (H1/H2/H4).
 
-- [ ] Add `.project-meta.yaml` to THIS repo: `registry_id: project-registry`, `interpreter: "3.11"`, `test: ["PY -m pytest -q"]` (literal `.venv/bin/python -m pytest -q` and the PYTHONPATH fallback form), `validate: ["registry validate"]`.
-- [ ] Document the convention in `docs/SETUP.md` (or a short `docs/PROJECT_META.md`) as "a starting point, not a settled schema", linking the findings doc. No code reads it yet — say so.
+- [x] Add `.project-meta.yaml` to THIS repo: `registry_id: project-registry`, `interpreter: "3.11"`, `test: ["PY -m pytest -q"]` (literal `.venv/bin/python -m pytest -q` and the PYTHONPATH fallback form), `validate: ["registry validate"]`.
+- [x] Document the convention in `docs/SETUP.md` (or a short `docs/PROJECT_META.md`) as "a starting point, not a settled schema", linking the findings doc. No code reads it yet — say so.
 - Validation: `PY -c "import yaml; yaml.safe_load(open('.project-meta.yaml'))"`. Commit `marathon(T7): add .project-meta.yaml marker and document the convention`.
 
 ## T8 — Docs drift sweep (P2)

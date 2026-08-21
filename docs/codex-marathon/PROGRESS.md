@@ -24,3 +24,4 @@
 [2026-08-21T20:05:31Z] CHECKPOINT T1b requirement tests added across sync, signals, queries, CLI/dashboard, and MCP; 144 targeted cases pass and git diff --check is clean
 [2026-08-21T20:05:57Z] CHECKPOINT T1b full gate passed: pytest collected and passed 251 cases; registry validate returned 0 errors and 3 suggestions; the 18-test increase from T1a is the requirement coverage added for sync failure/partial/opt-out states, branch classification, and CLI/dashboard/MCP rendering
 [2026-08-21T20:05:57Z] CHECKPOINT T1b registry rules lists stale_branches and sync --help exposes both --no-branches and --no-details
+[2026-08-21T20:06:18Z] DONE T1b commits=b20d090 tests=251 passed

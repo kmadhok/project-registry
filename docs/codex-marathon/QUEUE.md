@@ -37,11 +37,11 @@ Spec: `docs/BRANCH_CAPTURE_SPEC.md` (Rev 3). Read ALL 674 lines before touching 
 
 ## T1b — Branch capture: sync + signals + CLI + dashboard (P0, depends T1a)
 
-- [ ] `github/sync.py` per §4.3: one paginated `refs` read per repo, `previous` threading, per-repo error handling into `SyncResult.partial_errors`, `--no-branches` (or the spec's named flag) for cost control.
-- [ ] `signals.py` per §4.4: `stale_branches` rule — ONE item per repo, counts not names, `_signal_ref` rendering, threshold constant `stale_branch_days` (default 90 until T1c says otherwise), rule description registered so `registry rules` lists it.
-- [ ] `cli.py` per §4.5 (`show` line, sync flag) and `dashboard.py` per §4.6. Surface `branches_partial` visibly in `show` (spec §9 Q4 — implement the warning; that question is answered "yes, at least the warning").
-- [ ] MCP: if the MCP server exposes attention/show tools that wrap the same query functions, they must pick the new data up with no code fork — verify with a test in `tests/test_mcp.py`.
-- [ ] Tests per §6 for sync/signals/cli (monkeypatch-based CLI test as the spec declares).
+- [x] `github/sync.py` per §4.3: one paginated `refs` read per repo, `previous` threading, per-repo error handling into `SyncResult.partial_errors`, `--no-branches` (or the spec's named flag) for cost control.
+- [x] `signals.py` per §4.4: `stale_branches` rule — ONE item per repo, counts not names, `_signal_ref` rendering, threshold constant `stale_branch_days` (default 90 until T1c says otherwise), rule description registered so `registry rules` lists it.
+- [x] `cli.py` per §4.5 (`show` line, sync flag) and `dashboard.py` per §4.6. Surface `branches_partial` visibly in `show` (spec §9 Q4 — implement the warning; that question is answered "yes, at least the warning").
+- [x] MCP: if the MCP server exposes attention/show tools that wrap the same query functions, they must pick the new data up with no code fork — verify with a test in `tests/test_mcp.py`.
+- [x] Tests per §6 for sync/signals/cli (monkeypatch-based CLI test as the spec declares).
 - Validation: full gate; `REG rules | grep -i stale_branches`. Commit `marathon(T1b): branch capture — sync, stale_branches rule, cli, dashboard`.
 
 ## T1c — Branch capture: live smoke, threshold from data, open questions (P0, depends T1b)

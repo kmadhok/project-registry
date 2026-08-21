@@ -12,8 +12,12 @@ from project_registry.github.client import GitHubClient, GitHubError, GraphQLErr
 
 
 class FakeResponse:
-    def __init__(self, payload: dict):
-        self.body = json.dumps(payload).encode("utf-8")
+    def __init__(self, payload):
+        self.body = (
+            payload.encode("utf-8")
+            if isinstance(payload, str)
+            else json.dumps(payload).encode("utf-8")
+        )
 
     def __enter__(self):
         return self
@@ -92,6 +96,20 @@ def test_graphql_errors_are_not_returned_as_empty_success(monkeypatch):
     install_responses(monkeypatch, {"errors": [{"message": "field unavailable"}]})
 
     with pytest.raises(GraphQLError, match="field unavailable"):
+        GitHubClient().graphql("{ viewer { login } }")
+
+
+@pytest.mark.parametrize(
+    ("payload", "message"),
+    [
+        ("not-json", "invalid JSON response"),
+        ([{"data": {}}], "expected a response object"),
+    ],
+)
+def test_graphql_malformed_responses_are_client_errors(monkeypatch, payload, message):
+    install_responses(monkeypatch, payload)
+
+    with pytest.raises(GraphQLError, match=message):
         GitHubClient().graphql("{ viewer { login } }")
 
 

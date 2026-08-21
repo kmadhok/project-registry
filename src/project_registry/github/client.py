@@ -139,7 +139,12 @@ class GitHubClient:
         except urllib.error.URLError as exc:  # pragma: no cover - network path
             raise GitHubError(f"graphql: {exc.reason}") from None
 
-        payload = json.loads(raw) if raw.strip() else {}
+        try:
+            payload = json.loads(raw) if raw.strip() else {}
+        except json.JSONDecodeError:
+            raise GraphQLError("graphql: invalid JSON response") from None
+        if not isinstance(payload, dict):
+            raise GraphQLError("graphql: expected a response object")
         if payload.get("errors"):
             first = payload["errors"][0]
             message = first.get("message") if isinstance(first, dict) else str(first)

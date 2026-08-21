@@ -94,7 +94,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 
 What remains is data, not code: follow [docs/SETUP.md](docs/SETUP.md) to import your repositories, then curate a purpose, lifecycle, and next action for each imported stub.
 
-Tests: `python3 -m pytest` (213 tests, no network required).
+Tests: `python3 -m pytest` (no network required).
 
 ## Non-goals for the first version
 

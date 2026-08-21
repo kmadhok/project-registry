@@ -9,6 +9,9 @@ The system is a Python package plus plain-text data. It has three layers, matchi
 ```
 registry/projects/*.yaml      curated intent      (human-owned, hand-edited, git-tracked)
 data/github/snapshot.json     observed evidence   (machine-owned, refreshable, timestamped)
+data/github/push_prs.json     observed PR states  (machine-owned, refreshable cache)
+data/understanding/*.json     evidence briefs     (out-of-band, coverage/staleness reported)
+data/push_runs.jsonl          push-run journal    (workflow-owned, read-only to this package)
 data/proposals/*.json         pending changes     (proposed but not applied)
         │
         ▼
@@ -17,8 +20,10 @@ src/project_registry/
   storage.py     load/save registry, snapshot, proposals
   validation.py  core operating rules → errors vs suggestions
   queries.py     list/get/search/related/next-actions/work-queue/review-queue
-  github/        read-only REST client + sync into snapshot
-  signals.py     PR attention rules + registry/GitHub mismatch rules
+  briefs.py      evidence-brief coverage, age, and revision status
+  push_runs.py   push-run aggregation + cached PR-state reporting
+  github/        read-only REST/GraphQL client + importer/snapshot/sync
+  signals.py     PR/branch attention rules + registry/GitHub mismatch rules
   dashboard.py   markdown dashboard
   portfolio.py   public-safe export
   proposals.py   propose / apply / record-review with audit log
@@ -233,13 +238,13 @@ Operating rule 4 (check new projects for overlap) ships as `rule_overlap_check`:
 
 **Approach.** A rule table. Each rule is `(id, description, predicate, severity)` and produces `AttentionItem(rule_id, reason, url, severity)`. Adding a signal means adding a table row.
 
-Rules: `ci_failing`, `changes_requested`, `stale_pr`, `unreviewed_pr`, `draft_pr_aging`, `selected_issue` (issues carrying a watched label).
+Rules: `ci_failing`, `changes_requested`, `stale_pr`, `unreviewed_pr`, `draft_pr_aging`, `selected_issue` (issues carrying a watched label), and `stale_branches` (one repository-scoped item with counts, never branch names).
 
 **Artifacts.** `signals.ATTENTION_RULES`, `signals.build_attention_queue`, `cli attention`.
 
 | Acceptance criterion | How it is met |
 |---|---|
-| Failing CI, requested changes, stale PRs, unreviewed PRs, selected issues | The six rules above |
+| Failing CI, requested changes, stale PRs, unreviewed PRs, selected issues, stale branches | The seven rules above |
 | Each signal links to its GitHub source | `url` is required on every item; a test asserts no item has an empty URL |
 | Explains the rule that produced it | `rule_id` plus the rendered `reason` string, both shown in output |
 
@@ -281,7 +286,7 @@ The hard requirement — *"must not invent a project priority when none is recor
 
 ## MCP-003 — Inspect GitHub work (`P1`)
 
-`list_open_prs`, `get_pr_attention`, `list_selected_issues`, `get_github_sync_status`. All read the snapshot; `get_github_sync_status` reports last start/completion, coverage, errors, and staleness.
+`list_open_prs`, `get_pr_attention`, `list_selected_issues`, `get_github_sync_status`, `get_briefs_status`, `get_push_report`, `find_registry_mismatches`, `validate_registry`. Snapshot-backed tools stay offline; `get_push_report` uses cached PR states unless refresh is explicit, and `get_github_sync_status` reports last start/completion, coverage, errors, brief coverage, and staleness.
 
 ## MCP-004 — Refresh observed state (`P1`)
 
@@ -289,8 +294,8 @@ The hard requirement — *"must not invent a project priority when none is recor
 
 | Acceptance criterion | How it is met |
 |---|---|
-| Read-only with respect to GitHub | The client exposes `GET` only; a test asserts no other verb appears in the client module |
-| Records start, completion, errors, coverage | `SyncResult` carries all four and is persisted into the snapshot |
+| Read-only with respect to GitHub | REST exposes `GET` only; the sole GraphQL `POST` transport rejects mutations/subscriptions before I/O, and tests enforce the allowlist |
+| Records start, completion, errors, coverage | `SyncResult` carries all four plus separate branch coverage and is persisted into the snapshot |
 | Partial failure does not silently overwrite good data | Per-repo merge: a failed repo keeps its previous entry, marked `stale: true` with the error attached, and coverage reports the shortfall |
 
 ## MCP-005 — Propose registry updates (`P2`)
@@ -307,7 +312,7 @@ The hard requirement — *"must not invent a project priority when none is recor
 
 ## MCP-006 — Guard external actions (`P2`)
 
-No GitHub mutation tool exists in the first server. This is enforced by a test that asserts the advertised tool names contain nothing matching `merge|close|delete|archive|visibility|push|dispatch`, and that the GitHub client module contains no non-GET request. Any future external write must name its exact repository and target, and defaults to refusing without explicit confirmation.
+No GitHub mutation tool exists in the first server. This is enforced by tests that reject mutation-like advertised tool names (with the read-only `get_push_report` explicitly proven cache/GET-only), confine REST to `GET`, and permit `POST` only inside the mutation-refusing GraphQL query transport. Any future external write must name its exact repository and target, and defaults to refusing without explicit confirmation.
 
 ---
 

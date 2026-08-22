@@ -16,6 +16,7 @@ from typing import Any, Sequence
 
 from .briefs import build_briefs_status, build_sync_status
 from .contracts import parse_contract, validate_contract
+from .build import BuildError, build_report, resume_project
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -73,6 +74,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     except ProposalError as exc:
         print(f"proposal error: {exc}", file=sys.stderr)
+        return 2
+    except BuildError as exc:
+        print(f"build error: {exc}", file=sys.stderr)
         return 2
     except GitHubError as exc:
         print(f"github error: {exc}", file=sys.stderr)
@@ -612,6 +616,56 @@ def cmd_push_report(args, paths, now) -> int:
     return 0
 
 
+def cmd_build_report(args, paths, now) -> int:
+    try:
+        report = build_report(paths, since=args.since, now=now)
+    except ValueError as exc:
+        raise RegistryError(str(exc)) from None
+    if emit(report, args):
+        return 0
+
+    runs = report["runs"]
+    chunks = report["chunks"]
+    timing = report["minutes_per_merged_chunk"]
+    timing_text = (
+        "—" if timing["count"] == 0
+        else f"mean {timing['mean']:.1f}, median {timing['median']:.1f}"
+    )
+    rows = [
+        ["build runs", str(runs["total"])],
+        ["legacy runs", str(report["legacy"]["runs"])],
+        ["chunks", f"{chunks['started']} started / {chunks['merged']} merged"],
+        ["reverts", str(report["reverts"])],
+        ["guard denials", str(report["guard_denials"])],
+        ["needs intent", str(report["needs_intent_events"])],
+        ["minutes/merge", timing_text],
+    ]
+    print(_table(rows, ["METRIC", "VALUE"]))
+    print(f"\nwhy: outcomes {json.dumps(runs['by_outcome'])}")
+    print(f"why: projects {json.dumps(runs['by_project'])}")
+    print(f"why: rejected {json.dumps(chunks['rejected_by_reason'])}")
+    print(f"why: skipped {json.dumps(chunks['skipped_by_reason'])}")
+    if report["paused_projects"]:
+        for item in report["paused_projects"]:
+            print(f"why: paused {item['project_id']} — {item['paused_reason']}")
+    if report["journal"]["malformed_count"]:
+        print(f"malformed       {report['journal']['malformed_count']} journal line(s)")
+        for item in report["journal"]["malformed"]:
+            print(f"  line {item['line']}: {item['error']}")
+    return 0
+
+
+def cmd_build_resume(args, paths, now) -> int:
+    state = resume_project(paths, args.project_id, now=now)
+    payload = {"project_id": args.project_id, **state.to_dict()}
+    if emit(payload, args):
+        return 0
+    print(f"Resumed {args.project_id}.")
+    for field, value in state.to_dict().items():
+        print(f"  {field:<24} {_dash(value)}")
+    return 0
+
+
 def cmd_import_github(args, paths, now) -> int:
     registry = load_registry(paths)
     client = GitHubClient()
@@ -834,6 +888,17 @@ def build_parser() -> argparse.ArgumentParser:
                      help="Refresh linked PR states through read-only GitHub GETs.")
     sub.add_argument("--since", metavar="YYYY-MM-DD",
                      help="Include runs on or after this UTC date.")
+
+    sub = add("build-report", cmd_build_report, "Summarize autonomous build runs.")
+    sub.add_argument("--since", metavar="YYYY-MM-DD",
+                     help="Include events on or after this UTC date.")
+
+    build = subparsers.add_parser("build", help="Manage autonomous build state.")
+    build_subparsers = build.add_subparsers(dest="build_command", required=True)
+    resume = build_subparsers.add_parser("resume", help="Clear a project's build pause.")
+    resume.add_argument("project_id")
+    resume.add_argument("--json", action="store_true", help="Emit JSON.")
+    resume.set_defaults(handler=cmd_build_resume)
 
     sub = add("import-github", cmd_import_github, "Create stubs from an owner's repositories.")
     sub.add_argument("--owner", required=True)

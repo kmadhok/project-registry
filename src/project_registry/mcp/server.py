@@ -47,6 +47,7 @@ from ..queries import (
     source_timestamps,
 )
 from ..signals import build_attention_queue, describe_rules, find_mismatches
+from ..specs import validate_spec
 from ..storage import Paths, load_registry
 from ..validation import validate
 
@@ -285,6 +286,15 @@ def tool_validate_contract(paths: Paths, args: dict[str, Any]) -> dict[str, Any]
     return _envelope(registry, snapshot, now, report.to_dict())
 
 
+def tool_validate_spec(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    project = registry.get(args["project_id"])
+    if project is None:
+        raise ToolError(f"unknown project id: {args['project_id']}")
+    report = validate_spec(args["spec_text"], project=project)
+    return _envelope(registry, snapshot, now, report.to_dict())
+
+
 # -- MCP-004: refresh -----------------------------------------------------
 
 
@@ -434,6 +444,11 @@ TOOLS: tuple[Tool, ...] = (
              "contract_text": {"type": "string"},
              "project_id": {"type": "string"},
          }, ["contract_text"]), tool_validate_contract, "MCP-003"),
+    Tool("validate_spec", "Validate an agent-owned repository roadmap without changing it.",
+         _schema({
+             "project_id": {"type": "string"},
+             "spec_text": {"type": "string"},
+         }, ["project_id", "spec_text"]), tool_validate_spec, "MCP-003"),
 
     Tool("refresh_github", "Re-read GitHub into the local snapshot. Read-only with respect to GitHub.",
          _schema({

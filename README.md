@@ -26,6 +26,7 @@ Sync writes only under `data/`. Nothing in that path can touch `registry/`, whic
 pip install -e .              # or: PYTHONPATH=src python3 -m project_registry.cli ...
 
 registry validate             # check the registry against its own operating rules
+registry validate-spec <project-id> <path>  # check an agent-owned docs/SPEC.md roadmap
 registry list                 # the whole portfolio
 registry show project-registry
 registry dashboard            # regenerate DASHBOARD.md

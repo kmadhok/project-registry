@@ -32,6 +32,7 @@ Read-only queries:
 
 ```bash
 registry validate               # check operating rules; non-zero exit on errors
+registry validate-spec <id> <path> # check an agent-owned docs/SPEC.md roadmap
 registry list                   # whole portfolio (add --lifecycle/--active/... filters)
 registry show <id>              # one project in full, with relationships and GitHub state
 registry search <text>          # free-text search across curated fields

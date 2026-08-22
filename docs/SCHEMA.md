@@ -26,6 +26,40 @@ Everything here is **human intent**. Observed GitHub state lives in `data/github
 | `descriptions.private` | string | | Detail that must never be published. |
 | `descriptions.public_safe` | string | | The **only** description a public export may use. |
 
+### Brief
+
+`brief` is optional owner-curated intent. `purpose` and `desired_outcome` remain top-level fields.
+
+```yaml
+brief:
+  done_criteria: [The indexed count equals the collected count]
+  non_goals: [No new content sources]
+  constraints: [Local CLI only]
+  open_decisions:
+    - question: Which underwriting domain?
+      status: open                 # open (default) | answered
+      answer: null
+  reviewed: 2026-08-22
+```
+
+All lists default to empty. `open_decisions[].question` is required; `answer` may be a string or null. Build readiness requires a purpose, desired outcome, at least one done criterion, a repository, and no open decisions.
+
+### Automation policy
+
+`automation` is optional and defaults to a safe, disabled policy.
+
+```yaml
+automation:
+  mode: off                       # off | shadow | spec_only | build
+  allow: [dependencies, ci, generated_data]
+  budget:
+    chunks_per_run: 6             # integer >= 1
+    minutes_per_run: 120          # integer >= 1
+  paused: false
+```
+
+`allow` is limited to `dependencies`, `ci`, `generated_data`, `public_api`, `migrations`, and `personal_data`. An omitted budget uses 6 chunks and 120 minutes per run. `paused` is an owner-controlled kill switch.
+
 ## Lifecycle and focus
 
 | Field | Type | Required | Notes |
@@ -112,6 +146,9 @@ Three gates must pass before anything is exported: `public: true`, a non-empty `
 | `overlap_similar_name` | suggestion | Two projects share the same name tokens |
 | `public_without_public_safe` | error | `public: true` with no `public_safe` description |
 | `showcase_order_collision` | suggestion | Two public projects share a `showcase_order` |
+| `brief_incomplete_for_build` | error | `build` or `shadow` mode with missing purpose, desired outcome, done criteria, repo, or an open decision |
+| `automation_without_focus_lifecycle` | suggestion | `build`, `shadow`, or `spec_only` mode outside `now`, `next`, or `maintained` |
+| `open_decision_unanswered` | suggestion | An open decision exists while mode is not `build` or `shadow` |
 | `credential_material` | error | Text matches a token/key pattern |
 
 The last one is a hard boundary: the registry stores no credential values, ever. If it fires, remove the value and rotate it.
@@ -147,6 +184,8 @@ registry proposal-apply my-project-20260725120000 --approve
 ```
 
 Note that an applied proposal rewrites the file in canonical field order, so YAML comments in that file are not preserved.
+
+The brief proposal paths are `brief.done_criteria`, `brief.non_goals`, `brief.constraints`, `brief.open_decisions`, and `brief.reviewed`. Automation paths are `automation.mode`, `automation.allow`, `automation.budget.chunks_per_run`, `automation.budget.minutes_per_run`, and `automation.paused`.
 
 `registry record-review` is a sanctioned CLI shortcut that applies directly.
 The MCP `record_project_review` tool instead requires `approved=true`; without

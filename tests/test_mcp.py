@@ -280,6 +280,21 @@ def test_propose_tool_changes_nothing(seeded):
     assert load_registry(seeded).require("alpha").purpose == "Parse invoices"
 
 
+def test_propose_tool_accepts_a_brief_path(seeded):
+    payload, is_error = call(
+        seeded,
+        "propose_project_update",
+        {
+            "project_id": "alpha",
+            "changes": {"brief.done_criteria": "parser succeeds,tests pass"},
+        },
+    )
+    assert not is_error
+    change = payload["proposal"]["changes"]["brief.done_criteria"]
+    assert change == {"before": None, "after": ["parser succeeds", "tests pass"]}
+    assert load_registry(seeded).require("alpha").brief.done_criteria == []
+
+
 def test_apply_requires_approved_true(seeded):
     payload, _ = call(seeded, "propose_project_update", {
         "project_id": "alpha", "changes": {"purpose": "A new purpose"},

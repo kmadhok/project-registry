@@ -125,6 +125,65 @@ def test_inactive_committed_lifecycles_are_suggestions(write_project, load):
     ]
 
 
+def test_build_mode_requires_a_complete_brief_but_off_does_not(write_project, load):
+    for project_id, mode in (("build", "build"), ("off", "off")):
+        write_project(
+            id=project_id,
+            purpose="why",
+            desired_outcome="done",
+            repo=f"owner/{project_id}",
+            automation={"mode": mode},
+        )
+
+    found = findings(load(), "brief_incomplete_for_build")
+    assert [(item.project_id, item.severity) for item in found] == [("build", ERROR)]
+    assert "brief.done_criteria" in found[0].message
+
+
+def test_open_decision_is_build_error_and_names_the_question(write_project, load):
+    write_project(
+        id="p",
+        purpose="why",
+        desired_outcome="done",
+        repo="owner/repo",
+        brief={
+            "done_criteria": ["tests pass"],
+            "open_decisions": [{"question": "Which database?"}],
+        },
+        automation={"mode": "build"},
+    )
+    found = findings(load(), "brief_incomplete_for_build")
+    assert found[0].severity == ERROR
+    assert "open_decision: Which database?" in found[0].message
+    assert not findings(load(), "open_decision_unanswered")
+
+
+def test_open_decision_is_a_suggestion_when_automation_is_off(write_project, load):
+    write_project(
+        id="p",
+        purpose="why",
+        brief={"open_decisions": [{"question": "Which database?"}]},
+        automation={"mode": "off"},
+    )
+    found = findings(load(), "open_decision_unanswered")
+    assert [(item.project_id, item.severity) for item in found] == [("p", SUGGESTION)]
+    assert "Which database?" in found[0].message
+
+
+def test_enabled_automation_outside_focus_lifecycle_is_a_suggestion(write_project, load):
+    write_project(
+        id="p",
+        purpose="why",
+        desired_outcome="done",
+        repo="owner/repo",
+        lifecycle="incubating",
+        brief={"done_criteria": ["tests pass"]},
+        automation={"mode": "build"},
+    )
+    found = findings(load(), "automation_without_focus_lifecycle")
+    assert [(item.project_id, item.severity) for item in found] == [("p", SUGGESTION)]
+
+
 def test_active_never_reviewed_is_a_suggestion_but_inactive_is_not(write_project, load):
     write_project(
         id="active",

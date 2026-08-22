@@ -59,7 +59,7 @@ State-changing (each has guardrails — respect them, don't work around them):
 registry sync [--repo <owner/name>] [--no-details] [--no-branches] # refresh GitHub evidence (needs GITHUB_TOKEN)
 registry import-github --owner kmadhok            # create needs_review stubs; never overwrites
 registry record-review <id> [--set path=value]    # CLI applies directly; MCP record_project_review requires approved=true
-registry propose <id> --set path=value --rationale "..."   # propose a curated change (applies nothing)
+registry propose <id> --set path=value --rationale "..."   # supports brief.done_criteria, brief.non_goals, brief.constraints, brief.open_decisions, brief.reviewed, automation.mode, automation.allow, automation.budget.chunks_per_run, automation.budget.minutes_per_run, automation.paused (applies nothing)
 registry proposal-apply <proposal-id> --approve   # land it (re-validated, audited)
 registry proposal-reject <proposal-id>            # reject a pending proposal
 registry dashboard                                # regenerate DASHBOARD.md

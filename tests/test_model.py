@@ -8,6 +8,8 @@ from pathlib import Path
 import pytest
 
 from project_registry.model import (
+    AutomationMode,
+    ChangeClass,
     Lifecycle,
     Project,
     RegistryError,
@@ -123,6 +125,124 @@ def test_new_project_defaults_keep_the_existing_canonical_output():
         "active": False,
         "visibility": "private",
     }
+
+
+def test_brief_and_automation_round_trip_byte_stably(paths):
+    data = {
+        "id": "p",
+        "name": "P",
+        "purpose": "why",
+        "desired_outcome": "done",
+        "brief": {
+            "done_criteria": ["tests pass"],
+            "non_goals": ["deployment"],
+            "constraints": ["local only"],
+            "open_decisions": [
+                {"question": "Which format?", "status": "answered", "answer": "YAML"},
+                {"question": "Which owner?", "status": "open", "answer": None},
+            ],
+            "reviewed": "2026-08-22",
+        },
+        "lifecycle": "maintained",
+        "active": False,
+        "blocked_by": "review",
+        "automation": {
+            "mode": "off",
+            "allow": ["dependencies", "ci"],
+            "budget": {"chunks_per_run": 6, "minutes_per_run": 120},
+            "paused": False,
+        },
+        "repo": "owner/repo",
+        "visibility": "private",
+    }
+    path = paths.projects_dir / "p.yaml"
+    original = dump_yaml(data)
+    path.write_text(original, encoding="utf-8")
+
+    project = load_registry(paths).require("p")
+    assert project.automation.mode is AutomationMode.OFF
+    assert project.automation.allow == [ChangeClass.DEPENDENCIES, ChangeClass.CI]
+    save_project(project, paths)
+
+    assert path.read_text(encoding="utf-8") == original
+
+
+@pytest.mark.parametrize(
+    "field,value,match",
+    [
+        ("brief", {"mystery": True}, "unknown brief"),
+        ("automation", {"mystery": True}, "unknown automation"),
+        ("automation", {"budget": {"mystery": 1}}, "unknown automation.budget"),
+        (
+            "brief",
+            {"open_decisions": [{"question": "Q?", "mystery": True}]},
+            "unknown open decision",
+        ),
+    ],
+)
+def test_brief_and_automation_unknown_subkeys_are_rejected(field, value, match):
+    with pytest.raises(RegistryError, match=match):
+        Project.parse({"id": "p", "name": "P", field: value})
+
+
+@pytest.mark.parametrize(
+    "automation,match",
+    [
+        ({"mode": "automatic"}, "automation.mode"),
+        ({"allow": ["source_code"]}, "automation.allow"),
+        ({"budget": {"chunks_per_run": 0}}, "chunks_per_run"),
+        ({"budget": {"minutes_per_run": -1}}, "minutes_per_run"),
+    ],
+)
+def test_invalid_automation_mode_class_and_budget_are_rejected(automation, match):
+    with pytest.raises(RegistryError, match=match):
+        Project.parse({"id": "p", "name": "P", "automation": automation})
+
+
+def test_open_decision_requires_a_question():
+    with pytest.raises(RegistryError, match="open_decisions.question is required"):
+        Project.parse(
+            {"id": "p", "name": "P", "brief": {"open_decisions": [{"status": "open"}]}}
+        )
+
+
+def test_brief_gaps_reports_each_missing_piece_and_open_question():
+    project = Project.parse(
+        {
+            "id": "p",
+            "name": "P",
+            "brief": {
+                "open_decisions": [
+                    {"question": "Which database?"},
+                    {"question": "Which format?", "status": "answered", "answer": "YAML"},
+                ]
+            },
+        }
+    )
+    assert project.brief_gaps() == [
+        "purpose",
+        "desired_outcome",
+        "brief.done_criteria",
+        "repo",
+        "open_decision: Which database?",
+    ]
+
+    complete = Project.parse(
+        {
+            "id": "complete",
+            "name": "Complete",
+            "purpose": "why",
+            "desired_outcome": "done",
+            "repo": "owner/repo",
+            "brief": {
+                "done_criteria": ["tests pass"],
+                "open_decisions": [
+                    {"question": "Which format?", "status": "answered", "answer": "YAML"}
+                ],
+            },
+        }
+    )
+    assert complete.brief_gaps() == []
 
 
 def test_every_curated_project_yaml_is_byte_stable_on_load_and_dump():

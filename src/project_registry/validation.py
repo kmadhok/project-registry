@@ -16,7 +16,15 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Iterator
 
-from .model import Lifecycle, NORMALLY_ACTIVE, Project, RelationKind, name_tokens
+from .model import (
+    AutomationMode,
+    Lifecycle,
+    NORMALLY_ACTIVE,
+    OpenDecisionStatus,
+    Project,
+    RelationKind,
+    name_tokens,
+)
 from .storage import Registry
 
 ERROR = "error"
@@ -274,6 +282,74 @@ def rule_active_recently_reviewed(ctx: RuleContext) -> Iterator[Finding]:
                 "active_review_stale", SUGGESTION,
                 f"is active but was last reviewed {days} days ago",
                 project.id,
+            )
+
+
+# -- automation readiness -------------------------------------------------
+
+
+@rule
+def rule_brief_complete_for_build(ctx: RuleContext) -> Iterator[Finding]:
+    """Build and shadow modes require complete, owner-curated intent."""
+    automated_modes = {AutomationMode.BUILD, AutomationMode.SHADOW}
+    for project in ctx.registry:
+        if project.automation.mode not in automated_modes:
+            continue
+        gaps = project.brief_gaps()
+        if gaps:
+            yield Finding(
+                "brief_incomplete_for_build",
+                ERROR,
+                f"automation mode `{project.automation.mode.value}` requires a complete "
+                f"brief; missing: {', '.join(gaps)}",
+                project.id,
+                hint="Fill every listed brief gap, or turn automation mode off.",
+            )
+
+
+@rule
+def rule_automation_has_focus_lifecycle(ctx: RuleContext) -> Iterator[Finding]:
+    """Enabled automation should stay attached to a focus lifecycle."""
+    enabled_modes = {
+        AutomationMode.BUILD,
+        AutomationMode.SHADOW,
+        AutomationMode.SPEC_ONLY,
+    }
+    focus_lifecycles = {Lifecycle.NOW, Lifecycle.NEXT, Lifecycle.MAINTAINED}
+    for project in ctx.registry:
+        if (
+            project.automation.mode in enabled_modes
+            and project.lifecycle not in focus_lifecycles
+        ):
+            yield Finding(
+                "automation_without_focus_lifecycle",
+                SUGGESTION,
+                f"automation mode `{project.automation.mode.value}` is enabled while "
+                f"lifecycle is `{project.lifecycle.value}`",
+                project.id,
+                hint="Move the project to now, next, or maintained, or disable automation.",
+            )
+
+
+@rule
+def rule_open_decisions_answered(ctx: RuleContext) -> Iterator[Finding]:
+    """Open intent decisions remain visible when they are not already build blockers."""
+    blocking_modes = {AutomationMode.BUILD, AutomationMode.SHADOW}
+    for project in ctx.registry:
+        if project.automation.mode in blocking_modes:
+            continue
+        questions = [
+            decision.question
+            for decision in project.brief.open_decisions
+            if decision.status is OpenDecisionStatus.OPEN
+        ]
+        if questions:
+            yield Finding(
+                "open_decision_unanswered",
+                SUGGESTION,
+                f"has unanswered open decision(s): {', '.join(questions)}",
+                project.id,
+                hint="Answer the decision or mark it answered when resolved.",
             )
 
 

@@ -110,6 +110,7 @@ Where the output lands, and how staleness is detected, is a registry concern
 
 The audit's ranked recommendation (`PUSH_PROJECT_AUDIT.md:191-199`), collapsed
 into one artifact per repo. Names are a starting point, not a settled schema.
+The adopted schema-v1 contract and validation command are documented in [SETUP.md](SETUP.md#6-declare-repository-metadata).
 
 ```yaml
 # .project-meta.yaml — committed to each target repo

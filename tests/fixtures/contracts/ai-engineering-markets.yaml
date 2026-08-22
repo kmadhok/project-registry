@@ -1,0 +1,6 @@
+schema: 1
+registry_id: ai-engineering-markets
+runtime: {kind: python, version: "3.11"}
+# The repository does not have tests yet; this is the proposed future command.
+test:
+  - python3 -m pytest -q

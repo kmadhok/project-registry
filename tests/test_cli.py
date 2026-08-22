@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from project_registry import cli as cli_module
 from project_registry.cli import main
@@ -31,6 +32,23 @@ def test_validate_exits_zero_when_clean(paths, write_project, capsys):
     code, out = run(paths, "validate", capsys=capsys)
     assert code == 0
     assert "OK" in out
+
+
+def test_validate_contract_accepts_the_repository_contract(paths, capsys):
+    contract = Path(__file__).parents[1] / ".project-meta.yaml"
+    code, out = run(
+        paths,
+        "validate-contract",
+        str(contract),
+        "--project-id",
+        "project-registry",
+        "--json",
+        capsys=capsys,
+    )
+    assert code == 0
+    payload = json.loads(out)
+    assert payload["ok"] is True
+    assert payload["contract"]["schema"] == 1
 
 
 def test_json_output_is_machine_readable(paths, write_project, capsys):

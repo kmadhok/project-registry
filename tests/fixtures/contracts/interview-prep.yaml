@@ -1,0 +1,15 @@
+schema: 1
+registry_id: interview-prep
+runtime: {kind: python, version: "3.11"}
+package_manager: pip
+setup:
+  - python3 -m pip install -r scripts/drip_runner/requirements-dev.txt
+test:
+  - python3 -m pytest scripts/drip_runner -q
+  - python3 -m pytest scripts/ci -q
+verify:
+  - python3 scripts/ci/validate_json_state.py
+personal_data:
+  - Roles/**
+  - Pipeline.md
+  - _Archived/**

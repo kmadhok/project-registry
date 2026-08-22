@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Iterable, TextIO
 
 from ..briefs import build_briefs_status, build_sync_status
+from ..contracts import parse_contract, validate_contract
 from ..github.client import GitHubClient
 from ..github.sync import load_snapshot, sync
 from ..model import Effort, Lifecycle, Priority
@@ -275,6 +276,15 @@ def tool_validate_registry(paths: Paths, args: dict[str, Any]) -> dict[str, Any]
     return _envelope(registry, snapshot, now, validate(registry, today=now.date()).to_dict())
 
 
+def tool_validate_contract(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = validate_contract(
+        parse_contract(args["contract_text"]),
+        expected_registry_id=args.get("project_id"),
+    )
+    return _envelope(registry, snapshot, now, report.to_dict())
+
+
 # -- MCP-004: refresh -----------------------------------------------------
 
 
@@ -419,6 +429,11 @@ TOOLS: tuple[Tool, ...] = (
          _schema(), tool_find_registry_mismatches, "MCP-003"),
     Tool("validate_registry", "Run the registry's own operating rules.",
          _schema(), tool_validate_registry, "MCP-003"),
+    Tool("validate_contract", "Validate a target repository contract without changing it.",
+         _schema({
+             "contract_text": {"type": "string"},
+             "project_id": {"type": "string"},
+         }, ["contract_text"]), tool_validate_contract, "MCP-003"),
 
     Tool("refresh_github", "Re-read GitHub into the local snapshot. Read-only with respect to GitHub.",
          _schema({

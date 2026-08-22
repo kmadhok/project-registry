@@ -250,6 +250,22 @@ def test_validate_registry_tool(paths, write_project):
     assert payload["error_count"] == 1
 
 
+def test_validate_contract_tool_returns_report_in_standard_envelope(paths):
+    payload, is_error = call(paths, "validate_contract", {
+        "contract_text": (
+            'schema: 1\nregistry_id: target\n'
+            'runtime: {kind: python, version: "3.11"}\n'
+            'test: ["python3 -m pytest -q"]\n'
+        ),
+        "project_id": "target",
+    })
+    assert not is_error
+    assert payload["ok"] is True
+    assert payload["runnable"] is True
+    assert payload["contract"]["registry_id"] == "target"
+    assert payload["source_timestamps"]["registry_loaded_at"]
+
+
 # -- MCP-005: proposals ---------------------------------------------------
 
 

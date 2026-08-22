@@ -136,9 +136,35 @@ automatic:
 
 ## 6. Declare repository metadata
 
-The root [`.project-meta.yaml`](../.project-meta.yaml) records the registry id,
-interpreter, test commands, and validation commands that automation would
-otherwise have to guess. This convention is a starting point, not a settled
-schema, and no code reads the file yet. See the
-[repository-hygiene findings](FINDINGS_REPO_HYGIENE.md) for the evidence behind
-the proposed fields.
+Each target repository declares its automation contract in a root
+`.project-meta.yaml`. Schema v1 uses these fields:
+
+| Field | Required | Description |
+|---|---:|---|
+| `schema` | yes | Must be integer `1`. |
+| `registry_id` | yes | Registry project id (`^[a-z0-9][a-z0-9-]*$`). |
+| `runtime` | yes | `{kind: python\|node\|go\|rust\|other, version: "..."}`. |
+| `package_manager` | no | `pip`, `uv`, `poetry`, `npm`, `pnpm`, `yarn`, `cargo`, `go`, or `other`. |
+| `setup` | no | Shell commands that prepare the repository. |
+| `test` | yes | One or more non-empty test commands. |
+| `lint`, `typecheck`, `verify` | no | Additional command lists that must pass when declared. |
+| `max_test_minutes` | no | Positive integer; defaults to `15`. |
+| `network` | no | `{allowed: false}` by default. |
+| `secrets_required` | no | Environment-variable names only, never secret values. |
+| `services` | no | Required services; a non-empty list makes the contract non-runnable by the builder. |
+| `generated_files`, `generate` | no | Generated-file globs and the commands allowed to update them. |
+| `personal_data` | no | Globs identifying personal-data paths. |
+| `forbidden_paths` | no | Globs the builder must not change. |
+| `deploy` | no | Only `none` is accepted in v1. |
+
+Validate a contract and confirm its identity before automation uses it:
+
+```sh
+registry validate-contract .project-meta.yaml --project-id <registry-id>
+```
+
+Use `--json` for the normalized contract, runnable status, and machine-readable
+findings. The repository's own [`.project-meta.yaml`](../.project-meta.yaml) is
+a complete v1 example. See the
+[repository-hygiene findings](FINDINGS_REPO_HYGIENE.md) for the original evidence
+behind this convention.

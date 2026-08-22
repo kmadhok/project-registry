@@ -11,9 +11,11 @@ import argparse
 import datetime as dt
 import json
 import sys
+from pathlib import Path
 from typing import Any, Sequence
 
 from .briefs import build_briefs_status, build_sync_status
+from .contracts import parse_contract, validate_contract
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -146,6 +148,27 @@ def cmd_validate(args, paths, now) -> int:
 
     if not report.findings:
         print(f"OK — {len(registry)} projects, no findings.")
+        return 0
+    for finding in report.findings:
+        print(finding.render())
+    print()
+    print(f"{len(report.errors)} error(s), {len(report.suggestions)} suggestion(s).")
+    return 0 if report.ok else 1
+
+
+def cmd_validate_contract(args, paths, now) -> int:
+    try:
+        text = Path(args.path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RegistryError(f"cannot read contract {args.path!r}: {exc}") from exc
+    report = validate_contract(
+        parse_contract(text), expected_registry_id=args.project_id
+    )
+    if emit(report.to_dict(), args):
+        return 0 if report.ok else 1
+
+    if not report.findings:
+        print("OK — contract is valid and runnable.")
         return 0
     for finding in report.findings:
         print(finding.render())
@@ -747,6 +770,10 @@ def build_parser() -> argparse.ArgumentParser:
         sub.add_argument("--blocked", choices=["true", "false"])
 
     add("validate", cmd_validate, "Check the registry against the operating rules.")
+
+    sub = add("validate-contract", cmd_validate_contract, "Validate a target-repository contract.")
+    sub.add_argument("path")
+    sub.add_argument("--project-id", help="Expected registry project id.")
 
     sub = add("list", cmd_list, "List projects.")
     add_project_filters(sub)

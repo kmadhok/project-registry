@@ -53,6 +53,7 @@ from .signals import (
     describe_rules,
     find_mismatches,
 )
+from .specs import validate_spec
 from .storage import Paths, load_registry, read_jsonl
 from .validation import ERROR, validate
 
@@ -179,6 +180,37 @@ def cmd_validate_contract(args, paths, now) -> int:
     print()
     print(f"{len(report.errors)} error(s), {len(report.suggestions)} suggestion(s).")
     return 0 if report.ok else 1
+
+
+def cmd_validate_spec(args, paths, now) -> int:
+    registry = load_registry(paths)
+    project = registry.require(args.project_id)
+    try:
+        text = Path(args.path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RegistryError(f"cannot read spec {args.path!r}: {exc}") from exc
+    report = validate_spec(text, project=project)
+    success = report.structure_ok and (
+        report.unchecked_count == 0 or report.next_ready_index is not None
+    )
+    if emit(report.to_dict(), args):
+        return 0 if success else 1
+
+    for item in report.items:
+        status = "READY" if item.ready else "NOT READY"
+        detail = "" if item.ready else f" — {', '.join(item.problems)}"
+        print(f"{item.index:>3}  {status:9}  {item.title}{detail}")
+    for problem in report.problems:
+        print(f"STRUCTURE  {problem}")
+    for warning in report.warnings:
+        print(f"WARNING    {warning.message} ({warning.rule_id})")
+    if report.unchecked_count == 0 and report.structure_ok:
+        print("OK — all SPEC items are checked.")
+    elif report.next_ready_index is not None:
+        print(f"\nNext ready item: {report.next_ready_index}")
+    else:
+        print("\nNo unchecked SPEC item is ready.")
+    return 0 if success else 1
 
 
 def cmd_list(args, paths, now) -> int:
@@ -828,6 +860,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub = add("validate-contract", cmd_validate_contract, "Validate a target-repository contract.")
     sub.add_argument("path")
     sub.add_argument("--project-id", help="Expected registry project id.")
+
+    sub = add("validate-spec", cmd_validate_spec, "Validate an agent-owned repository roadmap.")
+    sub.add_argument("project_id")
+    sub.add_argument("path")
 
     sub = add("list", cmd_list, "List projects.")
     add_project_filters(sub)

@@ -234,3 +234,33 @@ The MCP `record_project_review` tool instead requires `approved=true`; without
 it, the tool files a pending proposal, returns an error saying nothing was
 applied, and names the proposal for inspection or separate approval through
 `apply_approved_project_update`.
+
+## SPEC item format
+
+An agent-owned roadmap lives at `docs/SPEC.md`. Its `## Remaining work`
+section is a Markdown checklist. Checked items are historical and are not
+readiness-validated. Every unchecked item uses these indented, case-insensitive
+metadata lines (multiple metadata fields may share a line):
+
+```markdown
+- [ ] A bounded, checkable change
+      Acceptance: the observable condition that proves the change is done
+      Tests: a test path or a precise verification description
+      Size: S
+      Classes: none
+      Verified-missing: evidence that the capability does not already exist
+```
+
+`Size` is `S` or `M`. `Classes` is `none` or a comma-separated subset of
+`dependencies`, `ci`, `generated_data`, `public_api`, `migrations`,
+`personal_data`, `plan`, and `contract`. The first six must also appear in the
+project's `automation.allow`; `plan` and `contract` are always allowed.
+
+Readiness problems are `missing_acceptance`, `missing_tests`, `missing_size`,
+`size_too_large`, `missing_verified_missing`, `unknown_class`,
+`blocked_by_policy`, `never_class`, and `needs_intent`. Structural problems are
+`missing_remaining_work`, `no_items`, and `malformed_checkbox`.
+`contradicts_non_goal` is a suggestion-level warning and does not make an item
+unready. `registry validate-spec <project-id> <path>` exits non-zero when the
+structure is broken or no unchecked item is ready; an entirely checked list is
+successful.

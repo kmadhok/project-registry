@@ -52,6 +52,35 @@ def test_validate_contract_accepts_the_repository_contract(paths, capsys):
     assert payload["contract"]["schema"] == 1
 
 
+def test_validate_spec_exit_codes(paths, write_project, tmp_path, capsys):
+    write_project(id="target", automation={"allow": []})
+    ready = tmp_path / "ready.md"
+    ready.write_text(
+        "## Remaining work\n"
+        "- [ ] Add a bounded test\n"
+        "      Acceptance: the test passes\n"
+        "      Tests: tests/test_one.py\n"
+        "      Size: S\n"
+        "      Classes: none\n"
+        "      Verified-missing: the test file is absent\n",
+        encoding="utf-8",
+    )
+    code, out = run(paths, "validate-spec", "target", str(ready), "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["next_ready_index"] == 1
+
+    blocked = tmp_path / "blocked.md"
+    blocked.write_text("## Remaining work\n- [ ] Legacy item\n", encoding="utf-8")
+    code, out = run(paths, "validate-spec", "target", str(blocked), "--json", capsys=capsys)
+    assert code == 1
+    assert json.loads(out)["next_ready_index"] is None
+
+    done = tmp_path / "done.md"
+    done.write_text("## Remaining work\n- [x] Finished\n", encoding="utf-8")
+    code, _ = run(paths, "validate-spec", "target", str(done), capsys=capsys)
+    assert code == 0
+
+
 def test_json_output_is_machine_readable(paths, write_project, capsys):
     write_project(id="p", purpose="why", lifecycle="maintained")
     code, out = run(paths, "list", "--json", capsys=capsys)

@@ -295,6 +295,28 @@ def test_build_report_cli_and_mcp_return_same_numbers(paths, capsys):
     assert mcp_report["minutes_per_merged_chunk"] == cli_report["minutes_per_merged_chunk"]
 
 
+def test_validate_spec_tool_matches_validator_and_rejects_unknown_id(paths, write_project):
+    write_project(id="target", automation={"allow": []})
+    spec_text = (
+        "## Remaining work\n- [ ] Add one test\n"
+        "      Acceptance: the test passes\n      Tests: tests/test_one.py\n"
+        "      Size: S\n      Classes: none\n"
+        "      Verified-missing: the test does not exist\n"
+    )
+    payload, is_error = call(
+        paths, "validate_spec", {"project_id": "target", "spec_text": spec_text}
+    )
+    assert not is_error
+    assert payload["next_ready_index"] == 1
+    assert payload["source_timestamps"]["registry_loaded_at"]
+
+    payload, is_error = call(
+        paths, "validate_spec", {"project_id": "missing", "spec_text": spec_text}
+    )
+    assert is_error
+    assert payload["error"] == "unknown project id: missing"
+
+
 # -- MCP-005: proposals ---------------------------------------------------
 
 

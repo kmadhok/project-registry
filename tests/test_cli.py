@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from project_registry import cli as cli_module
+from project_registry.build import append_event
 from project_registry.cli import main
 from project_registry.dashboard import render_dashboard
 from project_registry.github.sync import save_snapshot
@@ -283,6 +284,22 @@ def test_no_command_prints_help(paths, capsys):
     code, out = run(paths, capsys=capsys)
     assert code == 0
     assert "usage:" in out
+
+
+def test_build_report_and_resume_commands(paths, capsys):
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "run_finished",
+        "project_id": "alpha", "outcome": "completed",
+    }, now=NOW)
+    code, out = run(paths, "build-report", "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["runs"]["total"] == 1
+
+    code, out = run(paths, "build", "resume", "alpha", "--json", capsys=capsys)
+    assert code == 0
+    state = json.loads(out)
+    assert state["project_id"] == "alpha"
+    assert state["paused_reason"] is None
 
 
 # -- dashboard rendering --------------------------------------------------

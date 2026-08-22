@@ -7,6 +7,8 @@ import json
 
 import pytest
 
+from project_registry.build import append_event
+from project_registry.cli import main
 from project_registry.github.sync import save_snapshot
 from project_registry.mcp.server import (
     FORBIDDEN_TOOL_VERBS,
@@ -248,6 +250,33 @@ def test_validate_registry_tool(paths, write_project):
     payload, _ = call(paths, "validate_registry")
     assert payload["ok"] is False
     assert payload["error_count"] == 1
+
+
+def test_build_report_cli_and_mcp_return_same_numbers(paths, capsys):
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "chunk_started",
+        "project_id": "alpha", "chunk_id": "c1",
+        "ts": "2026-08-22T12:00:00+00:00",
+    })
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "merged",
+        "project_id": "alpha", "chunk_id": "c1",
+        "ts": "2026-08-22T12:15:00+00:00",
+    })
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "run_finished",
+        "project_id": "alpha", "outcome": "completed",
+        "ts": "2026-08-22T12:16:00+00:00",
+    })
+
+    assert main(["--root", str(paths.root), "build-report", "--json"]) == 0
+    cli_report = json.loads(capsys.readouterr().out)
+    payload, is_error = call(paths, "get_build_report")
+    assert not is_error
+    mcp_report = payload["report"]
+    assert mcp_report["runs"] == cli_report["runs"]
+    assert mcp_report["chunks"] == cli_report["chunks"]
+    assert mcp_report["minutes_per_merged_chunk"] == cli_report["minutes_per_merged_chunk"]
 
 
 # -- MCP-005: proposals ---------------------------------------------------

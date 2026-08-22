@@ -69,6 +69,30 @@ class Paths:
         return self.data_dir / "push_runs.jsonl"
 
     @property
+    def build_dir(self) -> Path:
+        return self.data_dir / "build"
+
+    @property
+    def build_runs_file(self) -> Path:
+        return self.build_dir / "runs.jsonl"
+
+    @property
+    def build_state_file(self) -> Path:
+        return self.build_dir / "state.json"
+
+    @property
+    def build_lease_file(self) -> Path:
+        return self.build_dir / "lease.json"
+
+    @property
+    def build_stop_file(self) -> Path:
+        return self.build_dir / "STOP"
+
+    @property
+    def build_digests_dir(self) -> Path:
+        return self.build_dir / "digests"
+
+    @property
     def proposals_dir(self) -> Path:
         return self.data_dir / "proposals"
 

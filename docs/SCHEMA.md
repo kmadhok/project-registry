@@ -137,6 +137,48 @@ not generate, refresh, or delete them. Whether they should become generated
 observed evidence or remain externally owned is still an open ownership
 decision.
 
+## Build state (`data/build`)
+
+Autonomous-builder data is machine-owned and never changes curated registry
+YAML. `runs.jsonl`, `state.json`, and `digests/` are tracked; the active
+`lease.json` and kill-switch `STOP` file are ignored.
+
+Each line of `runs.jsonl` is an event object with these fields:
+
+| Field | Type | Notes |
+|---|---|---|
+| `ts` | ISO-8601 UTC timestamp | Event time. |
+| `run_id` | string | Required, non-empty run identifier. |
+| `host` | string | Required execution host. |
+| `type` | enum | `run_started`, `candidate_selected`, `contract_bootstrapped`, `contract_repaired`, `chunk_started`, `pr_opened`, `verify_passed`, `verify_failed`, `review_verdict`, `merged`, `merge_conflict`, `reverted`, `chunk_rejected`, `chunk_skipped`, `guard_denied`, `needs_intent`, `reconciled`, `crashed`, `stopped`, `resumed`, or `run_finished`. |
+| `project_id` | string or null | Registry project, when applicable. |
+| `chunk_id` | string or null | Chunk identifier, when applicable. |
+| `pr_url` | GitHub PR URL or null | Pull request associated with the event. |
+| `tag` | string or null | Checkpoint or other event tag. |
+| `outcome` | enum or null | Required only for `run_finished`. |
+| `reason` | string or null | Machine-readable rejection, skip, or denial reason. |
+| `detail` | object or null | Structured event-specific detail. |
+
+Run outcomes are `completed`, `budget_exhausted`, `roadmap_done`,
+`needs_intent`, `blocked_by_policy`, `no_candidate`, `lease_held`,
+`registry_dirty`, `preflight_failed`, `clone_failed`, `contract_broken`,
+`baseline_red`, `codex_unavailable`, `aborted`, `stopped`, `crashed`, `paused`,
+`shadow_completed`, and `forced_named`. Malformed journal lines are reported by
+`build-report` and skipped; they do not make the report fail.
+
+`state.json` is keyed by project ID. Each value contains `last_run_at`,
+`last_success_at`, `consecutive_failures`, `paused_reason`, `paused_at`,
+`chunks_merged_total`, `needs_intent_proposal_id`, `last_run_id`, and
+`last_outcome`. Pause reasons are `consecutive_failures`, `revert`,
+`contract_broken`, `baseline_red`, or `owner`.
+
+Each rejected chunk and an aborted, crashed, or Codex-unavailable finished run
+increments the consecutive-failure count. A merge resets it, records success,
+and increments the lifetime merged-chunk count. Three consecutive failures
+pause a project. A revert pauses immediately, as do `contract_broken` and
+`baseline_red` outcomes. `registry build resume <id>` clears the pause and
+failure count and records a `resumed` event.
+
 ## Editing
 
 Hand-edit the YAML for prose. For scripted or agent-driven changes use the proposal path, which records exact before/after values and refuses anything that would introduce a validation error:

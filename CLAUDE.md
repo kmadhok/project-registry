@@ -47,6 +47,8 @@ registry review-queue           # projects due for a deliberate review
 registry sync-status            # when GitHub evidence was last refreshed
 registry briefs-status          # evidence-brief presence, age, and revision staleness
 registry push-report            # push-run totals and cached PR states; add --refresh/--since/--json
+registry build-report           # build-run/chunk metrics; add --since/--json
+registry build resume <id>      # clear a project's build pause and failure count
 registry portfolio              # public-safe export; add --format json|markdown/-o
 registry proposals              # pending/applied/rejected proposal records
 registry proposal-show <id>     # exact before/after proposal diff

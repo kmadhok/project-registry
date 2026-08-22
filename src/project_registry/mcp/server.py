@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Iterable, TextIO
 
 from ..briefs import build_briefs_status, build_sync_status
+from ..build import build_report
 from ..github.client import GitHubClient
 from ..github.sync import load_snapshot, sync
 from ..model import Effort, Lifecycle, Priority
@@ -259,6 +260,12 @@ def tool_get_push_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     return _envelope(registry, snapshot, now, {"report": report})
 
 
+def tool_get_build_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = build_report(paths, since=args.get("since"), now=now)
+    return _envelope(registry, snapshot, now, {"report": report})
+
+
 def tool_find_registry_mismatches(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
     found = find_mismatches(registry, snapshot, now=now)
@@ -415,6 +422,9 @@ TOOLS: tuple[Tool, ...] = (
              "refresh": {"type": "boolean"},
              "since": {"type": "string", "format": "date"},
          }), tool_get_push_report, "MCP-003"),
+    Tool("get_build_report", "Autonomous build-run, chunk, breaker, and journal metrics.",
+         _schema({"since": {"type": "string", "format": "date"}}),
+         tool_get_build_report, "MCP-003"),
     Tool("find_registry_mismatches", "Conflicts between registry intent and observed GitHub state.",
          _schema(), tool_find_registry_mismatches, "MCP-003"),
     Tool("validate_registry", "Run the registry's own operating rules.",

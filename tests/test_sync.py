@@ -16,10 +16,11 @@ from project_registry.github.client import (
     derive_review_state,
 )
 from project_registry.github.importer import import_inventory, slugify, unique_id
-from project_registry.github.sync import load_snapshot, sync
-from project_registry.storage import load_registry
+from project_registry.github.sync import load_snapshot, save_snapshot, sync
+from project_registry.signals import find_mismatches
+from project_registry.storage import load_registry, read_json
 
-from .conftest import NOW
+from .conftest import NOW, make_repo_state, make_snapshot
 
 
 class FakeClient(GitHubClient):
@@ -170,6 +171,94 @@ def test_partial_failure_keeps_previous_data_and_marks_it_stale(paths, write_pro
     assert state.stale is True
     assert "boom" in state.error
     assert result.coverage["complete"] is False
+
+
+def test_targeted_sync_merges_with_previous_snapshot(paths, write_project):
+    """A targeted refresh replaces only its target and keeps other evidence intact."""
+    for name in ("a", "b", "c"):
+        write_project(id=name, purpose="p", repo=f"owner/{name}")
+    registry = load_registry(paths)
+    initial = FakeClient(
+        repos={
+            f"owner/{name}": repo_payload(f"owner/{name}", description=f"old {name}")
+            for name in ("a", "b", "c")
+        }
+    )
+    sync(registry, initial, paths=paths, now=NOW)
+    before = read_json(paths.snapshot_file)["repos"]
+
+    later = NOW + dt.timedelta(hours=1)
+    result = sync(
+        registry,
+        FakeClient(repos={"owner/a": repo_payload("owner/a", description="fresh a")}),
+        paths=paths,
+        repos=["owner/a"],
+        now=later,
+    )
+    after = read_json(paths.snapshot_file)["repos"]
+
+    assert set(after) == {"owner/a", "owner/b", "owner/c"}
+    assert result.snapshot.get("owner/a").description == "fresh a"
+    assert result.snapshot.get("owner/a").fetched_at == later
+    assert after["owner/b"] == before["owner/b"]
+    assert after["owner/c"] == before["owner/c"]
+    assert result.repos_requested == ["owner/a"]
+    assert result.coverage["repos_requested"] == 1
+    assert result.snapshot.started_at == later
+    assert result.snapshot.completed_at == later
+
+    mismatches = find_mismatches(registry, result.snapshot, now=later)
+    missing_repos = {item.repo for item in mismatches if item.rule_id == "repo_missing"}
+    assert not {"owner/b", "owner/c"} & missing_repos
+
+
+def test_failed_target_is_carried_forward_stale_without_dropping_non_targets(
+    paths, write_project
+):
+    for name in ("a", "b"):
+        write_project(id=name, purpose="p", repo=f"owner/{name}")
+    previous = make_snapshot(
+        make_repo_state("owner/a"),
+        make_repo_state("owner/b"),
+    )
+    previous.get("owner/a").description = "last known a"
+    save_snapshot(previous, paths)
+    before_b = previous.get("owner/b").to_dict()
+
+    result = sync(
+        load_registry(paths),
+        FakeClient(fail={"owner/a"}),
+        paths=paths,
+        repos=["owner/a"],
+        now=NOW + dt.timedelta(hours=1),
+    )
+
+    carried = result.snapshot.get("owner/a")
+    assert carried.description == "last known a"
+    assert carried.stale is True
+    assert "boom" in carried.error
+    assert result.snapshot.get("owner/b").to_dict() == before_b
+    assert result.coverage["repos_requested"] == 1
+    assert result.coverage["repos_failed"] == 1
+
+
+def test_full_sync_replaces_snapshot_and_drops_repos_not_in_registry(paths, write_project):
+    write_project(id="a", purpose="p", repo="owner/a")
+    save_snapshot(
+        make_snapshot(make_repo_state("owner/a"), make_repo_state("owner/removed")),
+        paths,
+    )
+
+    result = sync(
+        load_registry(paths),
+        FakeClient(repos={"owner/a": repo_payload("owner/a", description="fresh")}),
+        paths=paths,
+        now=NOW + dt.timedelta(hours=1),
+    )
+
+    assert set(result.snapshot.repos) == {"owner/a"}
+    assert result.snapshot.get("owner/a").description == "fresh"
+    assert result.coverage["repos_requested"] == 1
 
 
 def test_successful_refresh_clears_staleness(paths, write_project):

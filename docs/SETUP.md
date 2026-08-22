@@ -47,6 +47,8 @@ Notes:
 - `registry sync` writes only `data/github/snapshot.json` (gitignored cache).
   If some repositories fail to refresh, their previous data is kept and marked
   stale; `registry sync-status` shows coverage and errors.
+- `registry sync --repo owner/repo` refreshes that repository while preserving
+  every non-targeted repository's existing snapshot data and timestamps.
 - `registry push-report` summarizes `data/push_runs.jsonl` from the local
   `data/github/push_prs.json` cache. Add `--refresh` to update linked PR states
   with read-only GitHub GETs, or `--since YYYY-MM-DD` to limit the runs.

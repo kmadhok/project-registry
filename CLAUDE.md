@@ -94,6 +94,9 @@ registry mcp                                      # run the stdio MCP server
 7. **No external GitHub mutations from this codebase.** REST is GET-only; the
    guarded GraphQL POST accepts read queries only. Do not add
    merge/close/archive/delete capabilities.
+8. **Honor the autonomous build guard while a lease is active.** The
+   `PreToolUse` rules in `docs/BUILD_GUARD.md` are safety boundaries; do not
+   bypass, disable, or evade them.
 
 ## Answering "what should I work on?"
 

@@ -83,6 +83,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 ## Documents
 
 - [Setup](docs/SETUP.md) — token creation, inventory import, curation loop, MCP registration
+- [Autonomous build guard](docs/BUILD_GUARD.md) — active-lease command and MCP safety rules
 - [Agent instructions](CLAUDE.md) — how LLM sessions should use this repo
 - [Purpose and operating model](docs/PURPOSE.md) — the problem, sources of truth, lifecycle vocabulary, safety boundaries
 - [User stories and MCP capabilities](docs/USER_STORIES.md) — 19 stories with acceptance criteria

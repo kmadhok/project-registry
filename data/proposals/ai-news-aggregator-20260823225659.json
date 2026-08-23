@@ -1,0 +1,46 @@
+{
+  "id": "ai-news-aggregator-20260823225659",
+  "project_id": "ai-news-aggregator",
+  "created_at": "2026-08-23T22:56:59.356290+00:00",
+  "status": "pending",
+  "rationale": "intent-refresh 2026-08-23: drafted from docs/SPEC.md (merged PR #13, chunk PR #14 merged 2026-08-10; 24-of-44 index gap is the central spec gap), CLAUDE.md project vision, and repo state at 2026-08-11 (root manifests present, tests/ has 2 files, no CI). X-pipeline question kept as a constraint rather than an open decision so it gates only the doc-consolidation chunk, not the project.",
+  "source": "intent-refresh",
+  "applied_at": null,
+  "changes": {
+    "desired_outcome": {
+      "before": null,
+      "after": "Every collected item is searchable: indexing keeps pace with collection automatically, and one CLI command answers questions across YouTube, podcast, and scholar sources from a clean checkout."
+    },
+    "brief.done_criteria": {
+      "before": null,
+      "after": [
+        "content_index row count equals collected markdown file count, enforced by a regression test",
+        "a freshly collected file becomes searchable without a manual indexing step",
+        "python3 -m pytest tests passes from a clean checkout using the pinned manifests",
+        "embeddings and search have tests: ranking sanity, empty query, no match, DB round-trip",
+        "re-running a pipeline over already-collected content creates no duplicate rows or files"
+      ]
+    },
+    "brief.non_goals": {
+      "before": null,
+      "after": [
+        "no new content sources (the X/Twitter pipeline stays specified-but-unbuilt) until the existing three are fully indexed and tested",
+        "no hosted service, API, or web UI - local CLI over local files and SQLite",
+        "no swap of the embedding model or vector store",
+        "no republishing or redistribution of collected third-party content"
+      ]
+    },
+    "brief.constraints": {
+      "before": null,
+      "after": [
+        "content.db is generated data - regenerate it only via the declared generate command and commit the refresh deliberately",
+        "GitHub issue triage and closing is the owner's job; the builder never closes issues",
+        "whether the X/Twitter pipeline is still wanted is an owner call - treat SPEC_X.md/PLAN_X.md consolidation as blocked on it"
+      ]
+    },
+    "brief.reviewed": {
+      "before": null,
+      "after": "2026-08-23"
+    }
+  }
+}

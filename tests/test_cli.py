@@ -387,6 +387,36 @@ def test_build_queue_and_readiness_commands(paths, write_project, capsys):
     assert result["policy"]["mode"] == "shadow"
 
 
+def test_build_lifecycle_commands_start_context_finish(paths, write_project, capsys):
+    write_project(
+        id="builder", name="Builder", purpose="Ship it",
+        desired_outcome="It ships", repo="owner/builder",
+        brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    code, out = run(
+        paths, "build", "context", "builder", "--json", capsys=capsys
+    )
+    assert code == 0
+    assert json.loads(out)["project_id"] == "builder"
+
+    code, out = run(
+        paths, "build", "start", "--host", "mac", "--project", "builder",
+        "--json", capsys=capsys,
+    )
+    assert code == 0
+    started = json.loads(out)
+    assert started["candidate"]["project_id"] == "builder"
+
+    code, out = run(
+        paths, "build", "finish", started["run_id"], "--outcome", "completed",
+        "--json", capsys=capsys,
+    )
+    assert code == 0
+    assert json.loads(out)["state_after"]["last_outcome"] == "completed"
+    assert not paths.build_lease_file.exists()
+
+
 # -- dashboard rendering --------------------------------------------------
 
 

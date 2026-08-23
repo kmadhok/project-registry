@@ -340,6 +340,32 @@ def test_build_queue_cli_and_mcp_are_identical(paths, write_project, capsys):
     assert readiness["state"] == "ready"
     assert readiness["policy"]["mode"] == "build"
 
+
+def test_build_lifecycle_mcp_begin_context_finish(paths, write_project):
+    write_project(
+        id="builder", name="Builder", purpose="Ship it",
+        desired_outcome="It ships", repo="owner/builder",
+        brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    context, is_error = call(paths, "get_build_context", {"project_id": "builder"})
+    assert not is_error
+    assert context["eligibility"]["state"] == "ready"
+
+    started, is_error = call(paths, "begin_build_run", {
+        "host": "mac", "project_id": "builder",
+    })
+    assert not is_error
+    assert started["candidate"]["project_id"] == context["project_id"]
+    assert started["candidate"]["contract_expectations"] == context["contract_expectations"]
+
+    finished, is_error = call(paths, "finish_build_run", {
+        "run_id": started["run_id"], "outcome": "completed",
+    })
+    assert not is_error
+    assert finished["state_after"]["last_outcome"] == "completed"
+    assert not paths.build_lease_file.exists()
+
     error, is_error = call(
         paths, "validate_project_readiness", {"project_id": "missing"}
     )
@@ -477,11 +503,20 @@ def test_the_only_write_tools_target_the_registry_itself():
         "propose_project_update",
         "apply_approved_project_update",
         "record_project_review",
+        "begin_build_run",
+        "record_build_event",
+        "finish_build_run",
+        "reconcile_build_runs",
     }
     # refresh_github writes only the local cache; everything else is a read.
     assert write_tools <= set(TOOLS_BY_NAME)
     for name in write_tools:
         assert "GitHub" not in TOOLS_BY_NAME[name].description or name == "refresh_github"
+    for name in {
+        "begin_build_run", "record_build_event", "finish_build_run",
+        "reconcile_build_runs",
+    }:
+        assert "writes only under data/build/" in TOOLS_BY_NAME[name].description
 
 
 def test_apply_and_review_tools_require_approval_in_their_schema():

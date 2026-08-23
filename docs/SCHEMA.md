@@ -186,6 +186,15 @@ Autonomous-builder data is machine-owned and never changes curated registry
 YAML. `runs.jsonl`, `state.json`, and `digests/` are tracked; the active
 `lease.json` and kill-switch `STOP` file are ignored.
 
+`lease.json` is created atomically and contains `run_id`, `host`, `pid`,
+`project_id`, `repo`, `dry_run`, `started_at`, `ttl_seconds`, `status`,
+`prs_open`, `merges`, per-chunk PR/verification/verdict/merge data, the policy
+`allow` list and `budget`, `contract_forbidden_paths`, and
+`reconcile_targets`. Status is `active`, `reconciling`, or
+`finalize_pending`. A lease expires after `started_at + ttl_seconds`; cleanup
+is planned by `registry build reconcile` and acknowledged with
+`registry build reconcile --done`.
+
 Each line of `runs.jsonl` is an event object with these fields:
 
 | Field | Type | Notes |
@@ -208,6 +217,12 @@ Run outcomes are `completed`, `budget_exhausted`, `roadmap_done`,
 `baseline_red`, `codex_unavailable`, `aborted`, `stopped`, `crashed`, `paused`,
 `shadow_completed`, and `forced_named`. Malformed journal lines are reported by
 `build-report` and skipped; they do not make the report fail.
+
+Startup outcomes `registry_dirty`, `lease_held`, `no_candidate`, and `stopped`
+are journaled even though no new lease is issued. A successful finish writes
+`digests/<run_id>.md` with the project and outcome, merged PRs and checkpoint
+tags, available `git revert <merge-sha>` commands, rejections, guard denials,
+pause information, and projects currently needing intent.
 
 `state.json` is keyed by project ID. Each value contains `last_run_at`,
 `last_success_at`, `consecutive_failures`, `paused_reason`, `paused_at`,

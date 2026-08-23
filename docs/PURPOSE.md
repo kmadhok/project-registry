@@ -51,6 +51,13 @@ The registry owns:
 - relationships such as successor, predecessor, duplicate, or component;
 - private notes and public-safe summaries.
 
+### Briefs and automation
+
+The project brief—`purpose`, `desired_outcome`, and `brief.*`—is the
+owner-authored approval surface for autonomous work. Automation reads that
+intent but does not rewrite it; changes are filed through the proposal workflow
+for owner review and approval.
+
 ### GitHub-observed data
 
 GitHub owns:
@@ -89,6 +96,9 @@ Observed data may be cached for speed, but it should be refreshable and clearly 
 6. GitHub activity is evidence, not priority. A recent commit does not automatically make a project active.
 7. Generated data must never overwrite human-curated fields.
 8. Automated write actions require explicit confirmation and must identify their exact target.
+9. The owner brief (`purpose`, `desired_outcome`, and `brief.*`) is the approval surface for autonomous work and changes only through proposals.
+10. Autonomous runs never write curated YAML; run state lives under `data/build/`.
+11. Execution invariants are enforced by the `PreToolUse` guard, not by prose.
 
 ## Initial success criteria
 
@@ -107,5 +117,9 @@ The foundation is successful when:
 - Never store tokens, API keys, `.env` contents, or credential values.
 - Treat repository visibility and public-safe descriptions independently: a private project may have a public-safe summary, but it is never public by default.
 - Do not expose private issue, PR, or project content through a public output unless it has been explicitly marked safe.
-- Do not merge PRs, close issues, archive repositories, delete branches, or change visibility without explicit approval.
+- The autonomous builder must never deploy, send outbound messages, make payments, mutate external systems, or read or quote secret values.
+- The autonomous builder must never commit directly to a default branch, force-push, or delete branches outside its own `push/*` namespace.
+- The autonomous builder must never close or edit issues or pull requests it did not create.
+- The autonomous builder must never choose a project's domain, priority, lifecycle, or `active` state.
+- Outside an autonomous run, do not merge PRs, close issues, archive repositories, delete branches, or change visibility without explicit approval.
 - Record refresh times and distinguish stale cached data from live GitHub state.

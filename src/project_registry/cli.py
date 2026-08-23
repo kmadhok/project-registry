@@ -11,13 +11,33 @@ import argparse
 import datetime as dt
 import json
 import sys
+from pathlib import Path
 from typing import Any, Sequence
 
 from .briefs import build_briefs_status, build_sync_status
+from .contracts import parse_contract, validate_contract
+from .automation import ELIGIBILITY_STATES, build_queue, readiness
+from .build import (
+    BuildError,
+    EVENT_TYPES,
+    RUN_OUTCOMES,
+    begin_run,
+    build_env,
+    build_report,
+    confirm_writeback,
+    finish_run,
+    get_build_context,
+    load_state,
+    reconcile,
+    reconcile_done,
+    record_event,
+    resume_project,
+)
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
 from .github.sync import load_snapshot, sync
+from .intent import build_brief_status, filter_brief_status
 from .model import Effort, Lifecycle, Priority, RegistryError
 from .portfolio import export_portfolio, render_portfolio_markdown
 from .proposals import (
@@ -50,6 +70,7 @@ from .signals import (
     describe_rules,
     find_mismatches,
 )
+from .specs import validate_spec
 from .storage import Paths, load_registry, read_jsonl
 from .validation import ERROR, validate
 
@@ -71,6 +92,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     except ProposalError as exc:
         print(f"proposal error: {exc}", file=sys.stderr)
+        return 2
+    except BuildError as exc:
+        print(f"build error: {exc}", file=sys.stderr)
         return 2
     except GitHubError as exc:
         print(f"github error: {exc}", file=sys.stderr)
@@ -152,6 +176,58 @@ def cmd_validate(args, paths, now) -> int:
     print()
     print(f"{len(report.errors)} error(s), {len(report.suggestions)} suggestion(s).")
     return 0 if report.ok else 1
+
+
+def cmd_validate_contract(args, paths, now) -> int:
+    try:
+        text = Path(args.path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RegistryError(f"cannot read contract {args.path!r}: {exc}") from exc
+    report = validate_contract(
+        parse_contract(text), expected_registry_id=args.project_id
+    )
+    if emit(report.to_dict(), args):
+        return 0 if report.ok else 1
+
+    if not report.findings:
+        print("OK — contract is valid and runnable.")
+        return 0
+    for finding in report.findings:
+        print(finding.render())
+    print()
+    print(f"{len(report.errors)} error(s), {len(report.suggestions)} suggestion(s).")
+    return 0 if report.ok else 1
+
+
+def cmd_validate_spec(args, paths, now) -> int:
+    registry = load_registry(paths)
+    project = registry.require(args.project_id)
+    try:
+        text = Path(args.path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RegistryError(f"cannot read spec {args.path!r}: {exc}") from exc
+    report = validate_spec(text, project=project)
+    success = report.structure_ok and (
+        report.unchecked_count == 0 or report.next_ready_index is not None
+    )
+    if emit(report.to_dict(), args):
+        return 0 if success else 1
+
+    for item in report.items:
+        status = "READY" if item.ready else "NOT READY"
+        detail = "" if item.ready else f" — {', '.join(item.problems)}"
+        print(f"{item.index:>3}  {status:9}  {item.title}{detail}")
+    for problem in report.problems:
+        print(f"STRUCTURE  {problem}")
+    for warning in report.warnings:
+        print(f"WARNING    {warning.message} ({warning.rule_id})")
+    if report.unchecked_count == 0 and report.structure_ok:
+        print("OK — all SPEC items are checked.")
+    elif report.next_ready_index is not None:
+        print(f"\nNext ready item: {report.next_ready_index}")
+    else:
+        print("\nNo unchecked SPEC item is ready.")
+    return 0 if success else 1
 
 
 def cmd_list(args, paths, now) -> int:
@@ -354,6 +430,46 @@ def cmd_review_queue(args, paths, now) -> int:
     return 0
 
 
+def cmd_brief_status(args, paths, now) -> int:
+    registry = load_registry(paths)
+    report = filter_brief_status(
+        build_brief_status(registry, now=now),
+        incomplete=args.incomplete,
+        stale=args.stale,
+    )
+    if emit(report, args):
+        return 0
+    if not report["projects"]:
+        print("No projects match the brief-status filters.")
+        return 0
+    rows = [
+        [
+            item["project_id"],
+            item["name"],
+            item["lifecycle"],
+            item["automation_mode"],
+            "yes" if item["complete"] else "no",
+            ", ".join(item["gaps"]) or "—",
+            str(sum(d["status"] == "open" for d in item["open_decisions"])),
+            item["reviewed"] or "never",
+            "—" if item["age_days"] is None else str(item["age_days"]),
+            "yes" if item["stale"] else "no",
+        ]
+        for item in report["projects"]
+    ]
+    print(_table(rows, [
+        "PROJECT", "NAME", "LIFECYCLE", "AUTOMATION", "COMPLETE", "GAPS",
+        "OPEN", "REVIEWED", "AGE DAYS", "STALE",
+    ]))
+    summary = report["summary"]
+    print(
+        f"\n{summary['total']} project(s): {summary['complete']} complete, "
+        f"{summary['incomplete']} incomplete, {summary['stale']} stale, "
+        f"{summary['open_decisions']} open decision(s)."
+    )
+    return 0
+
+
 def cmd_prs(args, paths, now) -> int:
     snapshot = load_snapshot(paths)
     registry = load_registry(paths)
@@ -463,6 +579,66 @@ def cmd_dashboard(args, paths, now) -> int:
     with open(target, "w", encoding="utf-8") as handle:
         handle.write(text)
     print(f"Wrote {target}")
+    return 0
+
+
+def cmd_build_queue(args, paths, now) -> int:
+    registry = load_registry(paths)
+    snapshot = load_snapshot(paths)
+    queue = build_queue(registry, snapshot, load_state(paths), now.date())
+    candidates = queue["candidates"]
+    if args.state:
+        candidates = [item for item in candidates if item["state"] == args.state]
+    output = {**queue, "candidates": candidates}
+    if emit(output, args):
+        return 0
+
+    ready_ranks = {
+        item["project_id"]: index
+        for index, item in enumerate(
+            (item for item in queue["candidates"] if item["state"] == "ready"), 1
+        )
+    }
+    rows = [
+        [
+            item["project_id"],
+            item["state"],
+            "yes" if item["dry_run"] else "no",
+            str(ready_ranks.get(item["project_id"], "—")),
+            "; ".join(item["reasons"]),
+        ]
+        for item in candidates
+    ]
+    print(_table(rows, ["PROJECT", "STATE", "DRY_RUN", "RANK", "REASONS"]))
+    print(f"\n{queue['ready_count']} ready; {len(candidates)} shown.")
+    return 0
+
+
+def cmd_build_readiness(args, paths, now) -> int:
+    registry = load_registry(paths)
+    project = registry.require(args.project_id)
+    snapshot = load_snapshot(paths)
+    states = load_state(paths)
+    result = readiness(
+        project, states.get(project.id), snapshot.get(project.repo), now.date()
+    )
+    if emit(result, args):
+        return 0
+
+    print(f"{project.id}: {result['state']}")
+    print(f"  dry run      {'yes' if result['dry_run'] else 'no'}")
+    print(f"  reasons      {'; '.join(result['reasons'])}")
+    print(f"  brief gaps   {', '.join(result['brief_gaps']) or 'none'}")
+    print(f"  mode         {result['policy']['mode']}")
+    print(
+        "  allow        "
+        + (", ".join(result["policy"]["allow"]) or "none")
+    )
+    budget = result["policy"]["budget"]
+    print(
+        f"  budget       {budget['chunks_per_run']} chunks, "
+        f"{budget['minutes_per_run']} minutes"
+    )
     return 0
 
 
@@ -586,6 +762,158 @@ def cmd_push_report(args, paths, now) -> int:
             print(f"  line {item['line']}: {item['error']}")
     for error in prs["refresh_errors"]:
         print(f"  refresh error: {error['url']} — {error['error']}")
+    return 0
+
+
+def cmd_build_report(args, paths, now) -> int:
+    try:
+        report = build_report(paths, since=args.since, now=now)
+    except ValueError as exc:
+        raise RegistryError(str(exc)) from None
+    if emit(report, args):
+        return 0
+
+    runs = report["runs"]
+    chunks = report["chunks"]
+    timing = report["minutes_per_merged_chunk"]
+    timing_text = (
+        "—" if timing["count"] == 0
+        else f"mean {timing['mean']:.1f}, median {timing['median']:.1f}"
+    )
+    rows = [
+        ["build runs", str(runs["total"])],
+        ["legacy runs", str(report["legacy"]["runs"])],
+        ["chunks", f"{chunks['started']} started / {chunks['merged']} merged"],
+        ["reverts", str(report["reverts"])],
+        ["guard denials", str(report["guard_denials"])],
+        ["needs intent", str(report["needs_intent_events"])],
+        ["minutes/merge", timing_text],
+    ]
+    print(_table(rows, ["METRIC", "VALUE"]))
+    print(f"\nwhy: outcomes {json.dumps(runs['by_outcome'])}")
+    print(f"why: projects {json.dumps(runs['by_project'])}")
+    print(f"why: rejected {json.dumps(chunks['rejected_by_reason'])}")
+    print(f"why: skipped {json.dumps(chunks['skipped_by_reason'])}")
+    if report["paused_projects"]:
+        for item in report["paused_projects"]:
+            print(f"why: paused {item['project_id']} — {item['paused_reason']}")
+    if report["journal"]["malformed_count"]:
+        print(f"malformed       {report['journal']['malformed_count']} journal line(s)")
+        for item in report["journal"]["malformed"]:
+            print(f"  line {item['line']}: {item['error']}")
+    return 0
+
+
+def cmd_build_resume(args, paths, now) -> int:
+    state = resume_project(paths, args.project_id, now=now)
+    payload = {"project_id": args.project_id, **state.to_dict()}
+    if emit(payload, args):
+        return 0
+    print(f"Resumed {args.project_id}.")
+    for field, value in state.to_dict().items():
+        print(f"  {field:<24} {_dash(value)}")
+    return 0
+
+
+def cmd_build_start(args, paths, now) -> int:
+    registry = load_registry(paths)
+    snapshot = load_snapshot(paths)
+    result = begin_run(
+        paths, host=args.host, project_id=args.project,
+        force_named=args.force_named, ttl_seconds=args.ttl, now=now,
+        registry=registry, snapshot=snapshot,
+    )
+    if emit(result, args):
+        return 0 if "run_id" in result else 3
+    if "run_id" in result:
+        print(f"Started {result['run_id']} for {result['candidate']['project_id']}.")
+    else:
+        print(result.get("outcome", "not started"))
+        if result.get("reason"):
+            print(f"  {result['reason']}")
+    return 0 if "run_id" in result else 3
+
+
+def cmd_build_finish(args, paths, now) -> int:
+    if args.confirm_writeback:
+        result = confirm_writeback(paths, args.run_id, now=now)
+        if emit(result, args):
+            return 0
+        print(f"Confirmed registry write-back for {args.run_id}.")
+        return 0
+    registry = load_registry(paths)
+    result = finish_run(
+        paths, args.run_id, outcome=args.outcome, summary=args.summary,
+        now=now, registry=registry, snapshot=load_snapshot(paths),
+    )
+    if emit(result, args):
+        return 0
+    print(f"Finished {args.run_id}: {args.outcome}")
+    print(f"Digest: {result['digest_path']}")
+    return 0
+
+
+def cmd_build_event(args, paths, now) -> int:
+    detail: dict[str, Any] = {}
+    if args.detail_json:
+        try:
+            loaded = json.loads(args.detail_json)
+        except json.JSONDecodeError as exc:
+            raise BuildError(f"invalid --detail-json: {exc}") from exc
+        if not isinstance(loaded, dict):
+            raise BuildError("--detail-json must be a JSON object")
+        detail.update(loaded)
+    for key, value in _parse_sets(args.detail):
+        detail[key] = value
+    event = {
+        "type": args.type,
+        "chunk_id": args.chunk_id,
+        "pr_url": args.pr_url,
+        "tag": args.tag,
+        "reason": args.reason,
+        "outcome": args.outcome,
+        "detail": detail or None,
+    }
+    result = record_event(paths, args.run_id, event)
+    if emit(result, args):
+        return 0
+    print(f"Recorded {args.type} as event {result['seq']}.")
+    return 0
+
+
+def cmd_build_context(args, paths, now) -> int:
+    registry = load_registry(paths)
+    result = get_build_context(
+        paths, registry, load_snapshot(paths), args.project_id, now
+    )
+    if emit(result, args):
+        return 0
+    print(f"{result['project_id']}: {result['eligibility']['state']}")
+    print(f"  repo: {result['repo']}")
+    print(f"  purpose: {_dash(result['purpose'])}")
+    return 0
+
+
+def cmd_build_reconcile(args, paths, now) -> int:
+    result = reconcile_done(paths, now=now) if args.done else reconcile(paths, now=now)
+    if emit(result, args):
+        return 0
+    if args.done:
+        print("Reconciliation complete." if result.get("reconciled") else result["note"])
+    elif not result.get("actions"):
+        print(result.get("note", "No cleanup actions."))
+    else:
+        for action in result["actions"]:
+            print(json.dumps(action, sort_keys=True))
+    return 0
+
+
+def cmd_build_env(args, paths, now) -> int:
+    result = build_env(paths.root)
+    if emit(result, args):
+        return 0
+    for key, value in result.items():
+        print(f"{key:<18} {json.dumps(value) if isinstance(value, dict) else _dash(value)}")
     return 0
 
 
@@ -748,6 +1076,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     add("validate", cmd_validate, "Check the registry against the operating rules.")
 
+    sub = add("validate-contract", cmd_validate_contract, "Validate a target-repository contract.")
+    sub.add_argument("path")
+    sub.add_argument("--project-id", help="Expected registry project id.")
+
+    sub = add("validate-spec", cmd_validate_spec, "Validate an agent-owned repository roadmap.")
+    sub.add_argument("project_id")
+    sub.add_argument("path")
+
     sub = add("list", cmd_list, "List projects.")
     add_project_filters(sub)
 
@@ -770,6 +1106,10 @@ def build_parser() -> argparse.ArgumentParser:
     add_project_filters(sub)
 
     add("review-queue", cmd_review_queue, "Projects due for a deliberate review.")
+
+    sub = add("brief-status", cmd_brief_status, "Report brief completeness and staleness.")
+    sub.add_argument("--incomplete", action="store_true", help="Only incomplete briefs.")
+    sub.add_argument("--stale", action="store_true", help="Only stale briefs.")
 
     sub = add("prs", cmd_prs, "Open pull requests across the portfolio.")
     sub.add_argument("--draft", action="store_true", help="Only drafts.")
@@ -807,6 +1147,69 @@ def build_parser() -> argparse.ArgumentParser:
                      help="Refresh linked PR states through read-only GitHub GETs.")
     sub.add_argument("--since", metavar="YYYY-MM-DD",
                      help="Include runs on or after this UTC date.")
+
+    sub = add("build-report", cmd_build_report, "Summarize autonomous build runs.")
+    sub.add_argument("--since", metavar="YYYY-MM-DD",
+                     help="Include events on or after this UTC date.")
+
+    sub = add("build-queue", cmd_build_queue, "Show autonomous build eligibility and rank.")
+    sub.add_argument("--state", choices=ELIGIBILITY_STATES)
+
+    sub = add("build-readiness", cmd_build_readiness, "Explain one project's build readiness.")
+    sub.add_argument("project_id")
+
+    build = subparsers.add_parser("build", help="Manage autonomous build state.")
+    build_subparsers = build.add_subparsers(dest="build_command", required=True)
+    resume = build_subparsers.add_parser("resume", help="Clear a project's build pause.")
+    resume.add_argument("project_id")
+    resume.add_argument("--json", action="store_true", help="Emit JSON.")
+    resume.set_defaults(handler=cmd_build_resume)
+
+    start = build_subparsers.add_parser("start", help="Select and lease a build run.")
+    start.add_argument("--host", required=True)
+    start.add_argument("--project")
+    start.add_argument("--force-named", action="store_true")
+    start.add_argument("--ttl", type=int, default=10800)
+    start.add_argument("--json", action="store_true", help="Emit JSON.")
+    start.set_defaults(handler=cmd_build_start)
+
+    finish = build_subparsers.add_parser("finish", help="Finalize a build run.")
+    finish.add_argument("run_id")
+    finish_mode = finish.add_mutually_exclusive_group(required=True)
+    finish_mode.add_argument("--outcome", choices=sorted(RUN_OUTCOMES))
+    finish_mode.add_argument("--confirm-writeback", action="store_true")
+    finish.add_argument("--summary")
+    finish.add_argument("--json", action="store_true", help="Emit JSON.")
+    finish.set_defaults(handler=cmd_build_finish)
+
+    event = build_subparsers.add_parser("event", help="Record a leased-run event.")
+    event.add_argument("run_id")
+    event.add_argument("type", choices=sorted(EVENT_TYPES))
+    event.add_argument("--chunk-id")
+    event.add_argument("--pr-url")
+    event.add_argument("--tag")
+    event.add_argument("--reason")
+    event.add_argument("--outcome")
+    event.add_argument("--detail", action="append", default=[], metavar="KEY=VALUE")
+    event.add_argument("--detail-json")
+    event.add_argument("--json", action="store_true", help="Emit JSON.")
+    event.set_defaults(handler=cmd_build_event)
+
+    context = build_subparsers.add_parser("context", help="Show build context.")
+    context.add_argument("project_id")
+    context.add_argument("--json", action="store_true", help="Emit JSON.")
+    context.set_defaults(handler=cmd_build_context)
+
+    reconcile_parser = build_subparsers.add_parser(
+        "reconcile", help="Plan or complete expired-run cleanup."
+    )
+    reconcile_parser.add_argument("--done", action="store_true")
+    reconcile_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    reconcile_parser.set_defaults(handler=cmd_build_reconcile)
+
+    environment = build_subparsers.add_parser("env", help="Show builder environment.")
+    environment.add_argument("--json", action="store_true", help="Emit JSON.")
+    environment.set_defaults(handler=cmd_build_env)
 
     sub = add("import-github", cmd_import_github, "Create stubs from an owner's repositories.")
     sub.add_argument("--owner", required=True)

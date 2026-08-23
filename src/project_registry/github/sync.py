@@ -90,7 +90,9 @@ def sync(
         {p.repo for p in registry if p.repo}
     )
     result = SyncResult(started_at=now, repos_requested=list(targets))
-    fresh: dict[str, RepoState] = {}
+    fresh: dict[str, RepoState] = dict(previous.repos) if repos is not None else {}
+    for full_name in targets:
+        fresh.pop(full_name, None)
 
     for full_name in targets:
         try:

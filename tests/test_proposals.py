@@ -159,6 +159,15 @@ def test_proposal_for_unknown_project_is_refused(paths):
         ("showcase_order", "3", 3),
         ("tags", "one, two", ["one", "two"]),
         ("tags", ["one", "two"], ["one", "two"]),
+        ("brief.done_criteria", "one, two", ["one", "two"]),
+        ("brief.non_goals", ["one", "two"], ["one", "two"]),
+        ("brief.constraints", "local, private", ["local", "private"]),
+        ("brief.reviewed", "2026-08-22", "2026-08-22"),
+        ("automation.allow", "dependencies, ci", ["dependencies", "ci"]),
+        ("automation.budget.chunks_per_run", "2", 2),
+        ("automation.budget.minutes_per_run", "30", 30),
+        ("automation.paused", "true", True),
+        ("automation.mode", "spec_only", "spec_only"),
         ("last_reviewed", "2026-07-01", "2026-07-01"),
         ("purpose", "null", None),
     ],
@@ -183,6 +192,72 @@ def test_bad_boolean_is_rejected(paths, write_project):
     registry = load_registry(paths)
     with pytest.raises(ProposalError, match="expected a boolean"):
         propose_update(registry, "p", {"active": "maybe"}, paths=paths, now=NOW)
+
+
+def test_open_decisions_accept_json_or_a_list_of_objects(paths, write_project):
+    write_project(id="p", purpose="p")
+    registry = load_registry(paths)
+    for offset, value in enumerate(
+        [
+            '[{"question":"Which database?"}]',
+            [{"question": "Which format?", "status": "answered", "answer": "YAML"}],
+        ]
+    ):
+        proposal = propose_update(
+            registry,
+            "p",
+            {"brief.open_decisions": value},
+            paths=paths,
+            now=NOW + dt.timedelta(seconds=offset),
+        )
+        assert isinstance(proposal.changes["brief.open_decisions"]["after"], list)
+
+
+@pytest.mark.parametrize(
+    "path,value,match",
+    [
+        ("automation.mode", "automatic", "expected one of"),
+        ("automation.allow", "dependencies, source_code", "expected values"),
+        ("automation.budget.chunks_per_run", "0", ">= 1"),
+        ("brief.open_decisions", "not json", "JSON list"),
+    ],
+)
+def test_invalid_brief_and_automation_proposal_values_are_rejected(
+    paths, write_project, path, value, match
+):
+    write_project(id="p", purpose="p")
+    with pytest.raises(ProposalError, match=match):
+        propose_update(
+            load_registry(paths), "p", {path: value}, paths=paths, now=NOW
+        )
+
+
+def test_brief_and_nested_automation_paths_apply_together(paths, write_project):
+    write_project(
+        id="p",
+        purpose="why",
+        desired_outcome="done",
+        lifecycle="maintained",
+        repo="owner/repo",
+    )
+    registry = load_registry(paths)
+    proposal = propose_update(
+        registry,
+        "p",
+        {
+            "automation.mode": "build",
+            "automation.budget.chunks_per_run": "2",
+            "brief.done_criteria": "a,b",
+        },
+        paths=paths,
+        now=NOW,
+    )
+    apply_proposal(registry, proposal.id, approved=True, paths=paths, now=NOW)
+
+    project = load_registry(paths).require("p")
+    assert project.automation.mode.value == "build"
+    assert project.automation.budget.chunks_per_run == 2
+    assert project.brief.done_criteria == ["a", "b"]
 
 
 def test_nested_paths_can_be_proposed(paths, write_project):

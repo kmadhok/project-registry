@@ -10,6 +10,8 @@ from __future__ import annotations
 import datetime as dt
 from typing import Any
 
+from .automation import build_queue
+from .build import load_state
 from .github.snapshot import Snapshot, humanize_age
 from .model import Lifecycle, Project
 from .queries import (
@@ -53,6 +55,7 @@ def render_dashboard(
     lines += _lifecycle_section(registry)
     lines += _active_section(registry, now)
     lines += _work_queue_section(registry, snapshot, now, config)
+    lines += _build_section(registry, snapshot, now)
     lines += _missing_next_actions_section(registry)
     lines += _prs_section(registry, snapshot, now)
     lines += _attention_section(registry, snapshot, now, config)
@@ -154,6 +157,44 @@ def _missing_next_actions_section(registry: Registry) -> list[str]:
         return lines + _empty("Every active project has a next action.")
     for row in missing:
         lines.append(f"- `{row['project_id']}` — {row['reason']}")
+    lines.append("")
+    return lines
+
+
+def _build_section(
+    registry: Registry, snapshot: Snapshot, now: dt.datetime
+) -> list[str]:
+    states = load_state(registry.paths) if registry.paths is not None else {}
+    queue = build_queue(registry, snapshot, states, now.date())
+    lines = _heading("Build", queue["ready_count"])
+
+    ready = [item for item in queue["candidates"] if item["state"] == "ready"]
+    spec_only = [
+        item for item in queue["candidates"] if item["state"] == "spec_only"
+    ]
+    needs_intent = [
+        item for item in queue["candidates"] if item["state"] == "needs_intent"
+    ]
+    paused = [item for item in queue["candidates"] if item["state"] == "paused"]
+    for rank, item in enumerate(ready, 1):
+        marker = " (dry run)" if item["dry_run"] else ""
+        lines.append(f"- **#{rank} ready** `{item['project_id']}`{marker}")
+    for item in needs_intent:
+        gaps = "; ".join(item["brief_gaps"])
+        lines.append(f"- **needs intent** `{item['project_id']}` — {gaps}")
+    for item in paused:
+        reason = item["paused_reason"] or "; ".join(item["reasons"])
+        lines.append(f"- **paused** `{item['project_id']}` — {reason}")
+    for item in spec_only:
+        lines.append(f"- **spec only** `{item['project_id']}`")
+    if not (ready or spec_only or needs_intent or paused):
+        lines.append("_No automated builds queued._")
+
+    hidden = queue["by_state"]
+    lines.append(
+        f"- Summary: {hidden['manual_only']} manual only; "
+        f"{hidden['ineligible']} ineligible."
+    )
     lines.append("")
     return lines
 

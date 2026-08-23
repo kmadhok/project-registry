@@ -16,10 +16,11 @@ land one (operating rule 8).
 from __future__ import annotations
 
 import datetime as dt
+import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from .model import Project, RegistryError
+from .model import AutomationMode, ChangeClass, Project, RegistryError
 from .storage import (
     Paths,
     Registry,
@@ -44,13 +45,27 @@ EDITABLE_PATHS: frozenset[str] = frozenset(
         "visibility", "last_reviewed", "public", "showcase_order", "notes", "tags",
         "next_action.description", "next_action.reviewed", "next_action.link",
         "descriptions.private", "descriptions.public_safe",
+        "brief.done_criteria", "brief.non_goals", "brief.constraints",
+        "brief.open_decisions", "brief.reviewed", "automation.mode",
+        "automation.allow", "automation.budget.chunks_per_run",
+        "automation.budget.minutes_per_run", "automation.paused",
     }
 )
 
-_BOOL_PATHS = {"active", "needs_review", "public", "is_fork"}
-_DATE_PATHS = {"last_reviewed", "next_action.reviewed"}
-_INT_PATHS = {"showcase_order"}
-_LIST_PATHS = {"tags"}
+_BOOL_PATHS = {"active", "needs_review", "public", "is_fork", "automation.paused"}
+_DATE_PATHS = {"last_reviewed", "next_action.reviewed", "brief.reviewed"}
+_INT_PATHS = {
+    "showcase_order",
+    "automation.budget.chunks_per_run",
+    "automation.budget.minutes_per_run",
+}
+_LIST_PATHS = {
+    "tags",
+    "brief.done_criteria",
+    "brief.non_goals",
+    "brief.constraints",
+    "automation.allow",
+}
 
 
 class ProposalError(RuntimeError):
@@ -133,10 +148,22 @@ def coerce_value(path: str, value: Any) -> Any:
         raise ProposalError(f"{path}: expected a boolean, got {value!r}")
 
     if path in _INT_PATHS:
+        if isinstance(value, bool) or (
+            isinstance(value, float) and not value.is_integer()
+        ):
+            expectation = (
+                "an integer >= 1"
+                if path.startswith("automation.budget.")
+                else "an integer"
+            )
+            raise ProposalError(f"{path}: expected {expectation}, got {value!r}")
         try:
-            return int(value)
+            parsed = int(value)
         except (TypeError, ValueError):
             raise ProposalError(f"{path}: expected an integer, got {value!r}") from None
+        if path.startswith("automation.budget.") and parsed < 1:
+            raise ProposalError(f"{path}: expected an integer >= 1, got {value!r}")
+        return parsed
 
     if path in _DATE_PATHS:
         if isinstance(value, dt.date):
@@ -148,8 +175,40 @@ def coerce_value(path: str, value: Any) -> Any:
 
     if path in _LIST_PATHS:
         if isinstance(value, list):
-            return [str(item) for item in value]
-        return [part.strip() for part in str(value).split(",") if part.strip()]
+            items = [str(item) for item in value]
+        else:
+            items = [part.strip() for part in str(value).split(",") if part.strip()]
+        if path == "automation.allow":
+            try:
+                return [ChangeClass(item).value for item in items]
+            except ValueError as exc:
+                allowed = ", ".join(member.value for member in ChangeClass)
+                raise ProposalError(
+                    f"{path}: expected values from [{allowed}], got {exc.args[0]!r}"
+                ) from None
+        return items
+
+    if path == "brief.open_decisions":
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                raise ProposalError(
+                    f"{path}: expected a JSON list of objects, got {value!r}"
+                ) from None
+        if not isinstance(value, list) or not all(isinstance(item, dict) for item in value):
+            raise ProposalError(f"{path}: expected a list of objects, got {value!r}")
+        return value
+
+    if path == "automation.mode":
+        raw_mode = value.value if isinstance(value, AutomationMode) else str(value)
+        try:
+            return AutomationMode(raw_mode).value
+        except ValueError:
+            allowed = ", ".join(member.value for member in AutomationMode)
+            raise ProposalError(
+                f"{path}: expected one of [{allowed}], got {value!r}"
+            ) from None
 
     return str(value)
 

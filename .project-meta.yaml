@@ -1,7 +1,11 @@
+schema: 1
 registry_id: project-registry
-interpreter: "3.11"
+runtime:
+  kind: python
+  version: "3.11"
+package_manager: pip
 test:
   - ".venv/bin/python -m pytest -q"
   - "PYTHONPATH=src .venv/bin/python -m pytest -q"
-validate:
+verify:
   - "registry validate"

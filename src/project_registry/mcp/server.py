@@ -20,8 +20,25 @@ from dataclasses import dataclass
 from typing import Any, Callable, Iterable, TextIO
 
 from ..briefs import build_briefs_status, build_sync_status
+from ..automation import ELIGIBILITY_STATES, build_queue, readiness
+from ..contracts import parse_contract, validate_contract
+from ..build import (
+    BuildError,
+    EVENT_TYPES,
+    RUN_OUTCOMES,
+    begin_run,
+    build_report,
+    confirm_writeback,
+    finish_run,
+    get_build_context,
+    load_state,
+    reconcile,
+    reconcile_done,
+    record_event,
+)
 from ..github.client import GitHubClient
 from ..github.sync import load_snapshot, sync
+from ..intent import build_brief_status, filter_brief_status
 from ..model import Effort, Lifecycle, Priority
 from ..proposals import (
     ProposalError,
@@ -46,6 +63,7 @@ from ..queries import (
     source_timestamps,
 )
 from ..signals import build_attention_queue, describe_rules, find_mismatches
+from ..specs import validate_spec
 from ..storage import Paths, load_registry
 from ..validation import validate
 
@@ -209,6 +227,16 @@ def tool_get_attention_queue(paths: Paths, args: dict[str, Any]) -> dict[str, An
     })
 
 
+def tool_get_brief_status(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = filter_brief_status(
+        build_brief_status(registry, now=now),
+        incomplete=bool(args.get("incomplete", False)),
+        stale=bool(args.get("stale", False)),
+    )
+    return _envelope(registry, snapshot, now, report)
+
+
 # -- MCP-003: GitHub work -------------------------------------------------
 
 
@@ -259,6 +287,92 @@ def tool_get_push_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     return _envelope(registry, snapshot, now, {"report": report})
 
 
+def tool_get_build_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = build_report(paths, since=args.get("since"), now=now)
+    return _envelope(registry, snapshot, now, {"report": report})
+
+
+def tool_get_build_queue(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    queue = build_queue(registry, snapshot, load_state(paths), now.date())
+    candidates = queue["candidates"]
+    if args.get("state"):
+        candidates = [item for item in candidates if item["state"] == args["state"]]
+    if args.get("limit") is not None:
+        candidates = candidates[:max(0, args["limit"])]
+    return _envelope(registry, snapshot, now, {**queue, "candidates": candidates})
+
+
+def tool_validate_project_readiness(
+    paths: Paths, args: dict[str, Any]
+) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    project = registry.get(args["project_id"])
+    if project is None:
+        raise ToolError(f"unknown project id: {args['project_id']}")
+    states = load_state(paths)
+    result = readiness(
+        project, states.get(project.id), snapshot.get(project.repo), now.date()
+    )
+    return _envelope(registry, snapshot, now, result)
+
+
+def tool_get_build_context(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    return _envelope(
+        registry, snapshot, now,
+        get_build_context(paths, registry, snapshot, args["project_id"], now),
+    )
+
+
+def tool_begin_build_run(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    result = begin_run(
+        paths, host=args["host"], project_id=args.get("project_id"),
+        force_named=bool(args.get("force_named", False)),
+        ttl_seconds=args.get("ttl_seconds", 10800), now=now,
+        registry=registry, snapshot=snapshot,
+    )
+    return _envelope(registry, snapshot, now, result)
+
+
+def tool_record_build_event(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    event = {
+        "type": args["type"],
+        "chunk_id": args.get("chunk_id"),
+        "pr_url": args.get("pr_url"),
+        "tag": args.get("tag"),
+        "reason": args.get("reason"),
+        "outcome": args.get("outcome"),
+        "detail": args.get("detail"),
+    }
+    result = record_event(paths, args["run_id"], event)
+    registry, snapshot, now = _context(paths)
+    return _envelope(registry, snapshot, now, result)
+
+
+def tool_finish_build_run(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    if args.get("confirm_writeback"):
+        result = confirm_writeback(paths, args["run_id"])
+        registry, snapshot, now = _context(paths)
+        return _envelope(registry, snapshot, now, result)
+    if "outcome" not in args:
+        raise BuildError("outcome is required unless confirm_writeback is true")
+    registry, snapshot, now = _context(paths)
+    result = finish_run(
+        paths, args["run_id"], outcome=args["outcome"],
+        summary=args.get("summary"), now=now, registry=registry, snapshot=snapshot,
+    )
+    return _envelope(registry, snapshot, now, result)
+
+
+def tool_reconcile_build_runs(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    result = reconcile_done(paths) if args.get("done") else reconcile(paths)
+    registry, snapshot, now = _context(paths)
+    return _envelope(registry, snapshot, now, result)
+
+
 def tool_find_registry_mismatches(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
     found = find_mismatches(registry, snapshot, now=now)
@@ -273,6 +387,24 @@ def tool_find_registry_mismatches(paths: Paths, args: dict[str, Any]) -> dict[st
 def tool_validate_registry(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
     return _envelope(registry, snapshot, now, validate(registry, today=now.date()).to_dict())
+
+
+def tool_validate_contract(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = validate_contract(
+        parse_contract(args["contract_text"]),
+        expected_registry_id=args.get("project_id"),
+    )
+    return _envelope(registry, snapshot, now, report.to_dict())
+
+
+def tool_validate_spec(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    project = registry.get(args["project_id"])
+    if project is None:
+        raise ToolError(f"unknown project id: {args['project_id']}")
+    report = validate_spec(args["spec_text"], project=project)
+    return _envelope(registry, snapshot, now, report.to_dict())
 
 
 # -- MCP-004: refresh -----------------------------------------------------
@@ -397,6 +529,9 @@ TOOLS: tuple[Tool, ...] = (
     Tool("get_attention_queue", "Ranked work combining curated next actions with live GitHub signals.",
          _schema({**_FILTER_PROPERTIES, "limit": {"type": "integer"}}),
          tool_get_attention_queue, "MCP-002"),
+    Tool("get_brief_status", "Brief completeness, open decisions, and owner-review age.",
+         _schema({"incomplete": {"type": "boolean"}, "stale": {"type": "boolean"}}),
+         tool_get_brief_status, "MCP-002"),
 
     Tool("list_open_prs", "Open pull requests across the portfolio, from the last snapshot.",
          _schema({"draft": {"type": "boolean"}, "repo": {"type": "string"}}),
@@ -415,10 +550,62 @@ TOOLS: tuple[Tool, ...] = (
              "refresh": {"type": "boolean"},
              "since": {"type": "string", "format": "date"},
          }), tool_get_push_report, "MCP-003"),
+    Tool("get_build_report", "Autonomous build-run, chunk, breaker, and journal metrics.",
+         _schema({"since": {"type": "string", "format": "date"}}),
+         tool_get_build_report, "MCP-003"),
+    Tool("get_build_queue", "Explain and rank autonomous build eligibility across projects.",
+         _schema({
+             "limit": {"type": "integer", "minimum": 0},
+             "state": {"enum": list(ELIGIBILITY_STATES)},
+         }), tool_get_build_queue, "US-013"),
+    Tool("validate_project_readiness", "Explain one project's build readiness and policy.",
+         _schema({"project_id": {"type": "string"}}, ["project_id"]),
+         tool_validate_project_readiness, "US-013"),
+    Tool("get_build_context", "Get authoritative context for one autonomous build candidate.",
+         _schema({"project_id": {"type": "string"}}, ["project_id"]),
+         tool_get_build_context, "US-014"),
+    Tool("begin_build_run", "Start a leased run; writes only under data/build/.",
+         _schema({
+             "host": {"type": "string"},
+             "project_id": {"type": "string"},
+             "force_named": {"type": "boolean"},
+             "ttl_seconds": {"type": "integer", "minimum": 1},
+         }, ["host"]), tool_begin_build_run, "US-014"),
+    Tool("record_build_event", "Record a leased run event; writes only under data/build/.",
+         _schema({
+             "run_id": {"type": "string"},
+             "type": {"enum": sorted(EVENT_TYPES)},
+             "chunk_id": {"type": "string"},
+             "pr_url": {"type": "string"},
+             "tag": {"type": "string"},
+             "reason": {"type": "string"},
+             "outcome": {"type": "string"},
+             "detail": {"type": "object"},
+         }, ["run_id", "type"]), tool_record_build_event, "US-014"),
+    Tool("finish_build_run", "Finish a leased run; writes only under data/build/.",
+         _schema({
+             "run_id": {"type": "string"},
+             "outcome": {"enum": sorted(RUN_OUTCOMES)},
+             "summary": {"type": "string"},
+             "confirm_writeback": {"type": "boolean"},
+         }, ["run_id"]), tool_finish_build_run, "US-014"),
+    Tool("reconcile_build_runs", "Reconcile an expired run; writes only under data/build/.",
+         _schema({"done": {"type": "boolean"}}),
+         tool_reconcile_build_runs, "US-014"),
     Tool("find_registry_mismatches", "Conflicts between registry intent and observed GitHub state.",
          _schema(), tool_find_registry_mismatches, "MCP-003"),
     Tool("validate_registry", "Run the registry's own operating rules.",
          _schema(), tool_validate_registry, "MCP-003"),
+    Tool("validate_contract", "Validate a target repository contract without changing it.",
+         _schema({
+             "contract_text": {"type": "string"},
+             "project_id": {"type": "string"},
+         }, ["contract_text"]), tool_validate_contract, "MCP-003"),
+    Tool("validate_spec", "Validate an agent-owned repository roadmap without changing it.",
+         _schema({
+             "project_id": {"type": "string"},
+             "spec_text": {"type": "string"},
+         }, ["project_id", "spec_text"]), tool_validate_spec, "MCP-003"),
 
     Tool("refresh_github", "Re-read GitHub into the local snapshot. Read-only with respect to GitHub.",
          _schema({
@@ -497,7 +684,7 @@ def handle_request(request: dict[str, Any], paths: Paths) -> dict[str, Any] | No
         arguments = params.get("arguments") or {}
         try:
             payload = tool.handler(paths, arguments)
-        except (ToolError, ProposalError, KeyError, ValueError) as exc:
+        except (ToolError, ProposalError, BuildError, KeyError, ValueError) as exc:
             return _result(request_id, {
                 "content": [{"type": "text", "text": json.dumps({"error": str(exc)})}],
                 "isError": True,

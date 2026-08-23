@@ -60,6 +60,27 @@ class Visibility(str, Enum):
     PRIVATE = "private"
 
 
+class AutomationMode(str, Enum):
+    OFF = "off"
+    SHADOW = "shadow"
+    SPEC_ONLY = "spec_only"
+    BUILD = "build"
+
+
+class ChangeClass(str, Enum):
+    DEPENDENCIES = "dependencies"
+    CI = "ci"
+    GENERATED_DATA = "generated_data"
+    PUBLIC_API = "public_api"
+    MIGRATIONS = "migrations"
+    PERSONAL_DATA = "personal_data"
+
+
+class OpenDecisionStatus(str, Enum):
+    OPEN = "open"
+    ANSWERED = "answered"
+
+
 class AccomplishmentKind(str, Enum):
     MILESTONE = "milestone"
     ARTIFACT = "artifact"
@@ -146,6 +167,220 @@ def _clean(value: Any) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _unknown_keys(
+    raw: dict[str, Any], allowed: set[str], field_name: str, project_id: str
+) -> None:
+    unknown = set(raw) - allowed
+    if unknown:
+        raise RegistryError(
+            f"{project_id}: unknown {field_name} field(s): "
+            f"{', '.join(sorted(unknown))}"
+        )
+
+
+def _positive_int(value: Any, field_name: str, project_id: str) -> int:
+    if isinstance(value, bool):
+        raise RegistryError(f"{project_id}: {field_name} must be an integer >= 1")
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        raise RegistryError(
+            f"{project_id}: {field_name} must be an integer >= 1, got {value!r}"
+        ) from None
+    if parsed < 1 or (isinstance(value, float) and not value.is_integer()):
+        raise RegistryError(
+            f"{project_id}: {field_name} must be an integer >= 1, got {value!r}"
+        )
+    return parsed
+
+
+@dataclass
+class OpenDecision:
+    question: str
+    status: OpenDecisionStatus = OpenDecisionStatus.OPEN
+    answer: str | None = None
+    source_fields: frozenset[str] = field(default_factory=frozenset, repr=False)
+
+    @classmethod
+    def parse(cls, raw: Any, project_id: str) -> "OpenDecision":
+        if not isinstance(raw, dict):
+            raise RegistryError(
+                f"{project_id}: each brief.open_decisions item must be a mapping"
+            )
+        _unknown_keys(raw, {"question", "status", "answer"}, "open decision", project_id)
+        question = _clean(raw.get("question"))
+        if not question:
+            raise RegistryError(
+                f"{project_id}: brief.open_decisions.question is required"
+            )
+        status = _enum(
+            raw.get("status", OpenDecisionStatus.OPEN),
+            OpenDecisionStatus,
+            "brief.open_decisions.status",
+            project_id,
+        )
+        return cls(
+            question=question,
+            status=status or OpenDecisionStatus.OPEN,
+            answer=_clean(raw.get("answer")),
+            source_fields=frozenset(raw),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        out: dict[str, Any] = {"question": self.question}
+        if self.status is not OpenDecisionStatus.OPEN or "status" in self.source_fields:
+            out["status"] = self.status.value
+        if self.answer is not None or "answer" in self.source_fields:
+            out["answer"] = self.answer
+        return out
+
+
+@dataclass
+class Brief:
+    done_criteria: list[str] = field(default_factory=list)
+    non_goals: list[str] = field(default_factory=list)
+    constraints: list[str] = field(default_factory=list)
+    open_decisions: list[OpenDecision] = field(default_factory=list)
+    reviewed: dt.date | None = None
+    source_fields: frozenset[str] = field(default_factory=frozenset, repr=False)
+
+    @classmethod
+    def parse(cls, raw: Any, project_id: str) -> "Brief":
+        if raw is None:
+            return cls()
+        if not isinstance(raw, dict):
+            raise RegistryError(f"{project_id}: brief must be a mapping")
+        _unknown_keys(
+            raw,
+            {"done_criteria", "non_goals", "constraints", "open_decisions", "reviewed"},
+            "brief",
+            project_id,
+        )
+        decisions = raw.get("open_decisions")
+        if decisions is None:
+            decisions = []
+        if not isinstance(decisions, list):
+            raise RegistryError(f"{project_id}: brief.open_decisions must be a list")
+        return cls(
+            done_criteria=_str_list(
+                raw.get("done_criteria"), "brief.done_criteria", project_id
+            ),
+            non_goals=_str_list(raw.get("non_goals"), "brief.non_goals", project_id),
+            constraints=_str_list(
+                raw.get("constraints"), "brief.constraints", project_id
+            ),
+            open_decisions=[OpenDecision.parse(item, project_id) for item in decisions],
+            reviewed=_date(raw.get("reviewed"), "brief.reviewed", project_id),
+            source_fields=frozenset(raw),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        for name in ("done_criteria", "non_goals", "constraints"):
+            value = getattr(self, name)
+            if value or name in self.source_fields:
+                out[name] = list(value)
+        if self.open_decisions or "open_decisions" in self.source_fields:
+            out["open_decisions"] = [item.to_dict() for item in self.open_decisions]
+        if self.reviewed is not None or "reviewed" in self.source_fields:
+            out["reviewed"] = self.reviewed.isoformat() if self.reviewed else None
+        return out
+
+
+@dataclass
+class AutomationBudget:
+    chunks_per_run: int = 6
+    minutes_per_run: int = 120
+    source_fields: frozenset[str] = field(default_factory=frozenset, repr=False)
+
+    @classmethod
+    def parse(cls, raw: Any, project_id: str) -> "AutomationBudget":
+        if raw is None:
+            return cls()
+        if not isinstance(raw, dict):
+            raise RegistryError(f"{project_id}: automation.budget must be a mapping")
+        _unknown_keys(
+            raw, {"chunks_per_run", "minutes_per_run"}, "automation.budget", project_id
+        )
+        return cls(
+            chunks_per_run=_positive_int(
+                raw.get("chunks_per_run", 6),
+                "automation.budget.chunks_per_run",
+                project_id,
+            ),
+            minutes_per_run=_positive_int(
+                raw.get("minutes_per_run", 120),
+                "automation.budget.minutes_per_run",
+                project_id,
+            ),
+            source_fields=frozenset(raw),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        if self.chunks_per_run != 6 or "chunks_per_run" in self.source_fields:
+            out["chunks_per_run"] = self.chunks_per_run
+        if self.minutes_per_run != 120 or "minutes_per_run" in self.source_fields:
+            out["minutes_per_run"] = self.minutes_per_run
+        return out
+
+
+@dataclass
+class Automation:
+    mode: AutomationMode = AutomationMode.OFF
+    allow: list[ChangeClass] = field(default_factory=list)
+    budget: AutomationBudget = field(default_factory=AutomationBudget)
+    paused: bool = False
+    source_fields: frozenset[str] = field(default_factory=frozenset, repr=False)
+
+    @classmethod
+    def parse(cls, raw: Any, project_id: str) -> "Automation":
+        if raw is None:
+            return cls()
+        if not isinstance(raw, dict):
+            raise RegistryError(f"{project_id}: automation must be a mapping")
+        _unknown_keys(raw, {"mode", "allow", "budget", "paused"}, "automation", project_id)
+        allowed = raw.get("allow")
+        if allowed is None:
+            allowed = []
+        if isinstance(allowed, str) or not isinstance(allowed, list):
+            raise RegistryError(f"{project_id}: automation.allow must be a list")
+        change_classes: list[ChangeClass] = []
+        for item in allowed:
+            change_class = _enum(item, ChangeClass, "automation.allow", project_id)
+            if change_class is None:
+                choices = ", ".join(member.value for member in ChangeClass)
+                raise RegistryError(
+                    f"{project_id}: automation.allow must contain only [{choices}]"
+                )
+            change_classes.append(change_class)
+        return cls(
+            mode=_enum(
+                raw.get("mode", AutomationMode.OFF),
+                AutomationMode,
+                "automation.mode",
+                project_id,
+            ) or AutomationMode.OFF,
+            allow=change_classes,
+            budget=AutomationBudget.parse(raw.get("budget"), project_id),
+            paused=bool(raw.get("paused", False)),
+            source_fields=frozenset(raw),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        if self.mode is not AutomationMode.OFF or "mode" in self.source_fields:
+            out["mode"] = self.mode.value
+        if self.allow or "allow" in self.source_fields:
+            out["allow"] = [item.value for item in self.allow]
+        budget = self.budget.to_dict()
+        if budget or "budget" in self.source_fields:
+            out["budget"] = budget
+        if self.paused or "paused" in self.source_fields:
+            out["paused"] = self.paused
+        return out
 
 
 @dataclass
@@ -306,6 +541,7 @@ class Project:
     name: str
     purpose: str | None = None
     desired_outcome: str | None = None
+    brief: Brief = field(default_factory=Brief)
     lifecycle: Lifecycle = Lifecycle.INCUBATING
     active: bool = False
     needs_review: bool = False
@@ -314,6 +550,7 @@ class Project:
     effort: Effort | None = None
     horizon: Horizon | None = None
     blocked_by: str | None = None
+    automation: Automation = field(default_factory=Automation)
     repo: str | None = None
     is_fork: bool = False
     visibility: Visibility = Visibility.PRIVATE
@@ -337,9 +574,9 @@ class Project:
 
     KNOWN_FIELDS = frozenset(
         {
-            "id", "name", "purpose", "desired_outcome", "lifecycle", "active",
+            "id", "name", "purpose", "desired_outcome", "brief", "lifecycle", "active",
             "needs_review", "category", "priority", "effort", "horizon",
-            "blocked_by", "repo", "is_fork", "visibility", "last_reviewed",
+            "blocked_by", "automation", "repo", "is_fork", "visibility", "last_reviewed",
             "next_action", "accomplishments", "relationships", "descriptions",
             "public", "showcase_order", "tags", "notes",
         }
@@ -397,6 +634,7 @@ class Project:
             name=name,
             purpose=_clean(raw.get("purpose")),
             desired_outcome=_clean(raw.get("desired_outcome")),
+            brief=Brief.parse(raw.get("brief"), project_id),
             lifecycle=_enum(
                 raw.get("lifecycle", Lifecycle.INCUBATING),
                 Lifecycle, "lifecycle", project_id,
@@ -408,6 +646,7 @@ class Project:
             effort=_enum(raw.get("effort"), Effort, "effort", project_id),
             horizon=_enum(raw.get("horizon"), Horizon, "horizon", project_id),
             blocked_by=_clean(raw.get("blocked_by")),
+            automation=Automation.parse(raw.get("automation"), project_id),
             repo=repo,
             is_fork=bool(raw.get("is_fork", False)),
             visibility=_enum(
@@ -450,6 +689,9 @@ class Project:
             out["desired_outcome"] = self.desired_outcome or self._source_falsy(
                 "desired_outcome", ""
             )
+        brief = self.brief.to_dict()
+        if self._include("brief", brief):
+            out["brief"] = brief
         out["lifecycle"] = self.lifecycle.value
         out["active"] = self.active
         if self._include("needs_review", self.needs_review):
@@ -476,6 +718,9 @@ class Project:
             )
         if self._include("blocked_by", self.blocked_by):
             out["blocked_by"] = self.blocked_by or self._source_falsy("blocked_by", "")
+        automation = self.automation.to_dict()
+        if self._include("automation", automation):
+            out["automation"] = automation
         if self._include("repo", self.repo):
             out["repo"] = self.repo or self._source_falsy("repo", "")
         if self._include("is_fork", self.is_fork):
@@ -562,6 +807,24 @@ class Project:
             for a in self.accomplishments[:limit]
         ]
 
+    def brief_gaps(self) -> list[str]:
+        """Missing owner intent that prevents build or shadow automation."""
+        gaps: list[str] = []
+        if not self.purpose:
+            gaps.append("purpose")
+        if not self.desired_outcome:
+            gaps.append("desired_outcome")
+        if not self.brief.done_criteria:
+            gaps.append("brief.done_criteria")
+        if not self.repo:
+            gaps.append("repo")
+        gaps.extend(
+            f"open_decision: {decision.question}"
+            for decision in self.brief.open_decisions
+            if decision.status is OpenDecisionStatus.OPEN
+        )
+        return gaps
+
     def relationships_of_kind(self, kind: RelationKind) -> list[Relationship]:
         return [r for r in self.relationships if r.kind is kind]
 
@@ -578,6 +841,13 @@ class Project:
         ):
             if value:
                 parts.append(value)
+        parts.extend(self.brief.done_criteria)
+        parts.extend(self.brief.non_goals)
+        parts.extend(self.brief.constraints)
+        for decision in self.brief.open_decisions:
+            parts.append(decision.question)
+            if decision.answer:
+                parts.append(decision.answer)
         parts.extend(self.tags)
         if self.next_action:
             parts.append(self.next_action.description)

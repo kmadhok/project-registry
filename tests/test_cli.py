@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from project_registry import cli as cli_module
+from project_registry.build import append_event
 from project_registry.cli import main
 from project_registry.dashboard import render_dashboard
 from project_registry.github.sync import save_snapshot
@@ -33,11 +35,76 @@ def test_validate_exits_zero_when_clean(paths, write_project, capsys):
     assert "OK" in out
 
 
+def test_validate_contract_accepts_the_repository_contract(paths, capsys):
+    contract = Path(__file__).parents[1] / ".project-meta.yaml"
+    code, out = run(
+        paths,
+        "validate-contract",
+        str(contract),
+        "--project-id",
+        "project-registry",
+        "--json",
+        capsys=capsys,
+    )
+    assert code == 0
+    payload = json.loads(out)
+    assert payload["ok"] is True
+    assert payload["contract"]["schema"] == 1
+
+
+def test_validate_spec_exit_codes(paths, write_project, tmp_path, capsys):
+    write_project(id="target", automation={"allow": []})
+    ready = tmp_path / "ready.md"
+    ready.write_text(
+        "## Remaining work\n"
+        "- [ ] Add a bounded test\n"
+        "      Acceptance: the test passes\n"
+        "      Tests: tests/test_one.py\n"
+        "      Size: S\n"
+        "      Classes: none\n"
+        "      Verified-missing: the test file is absent\n",
+        encoding="utf-8",
+    )
+    code, out = run(paths, "validate-spec", "target", str(ready), "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["next_ready_index"] == 1
+
+    blocked = tmp_path / "blocked.md"
+    blocked.write_text("## Remaining work\n- [ ] Legacy item\n", encoding="utf-8")
+    code, out = run(paths, "validate-spec", "target", str(blocked), "--json", capsys=capsys)
+    assert code == 1
+    assert json.loads(out)["next_ready_index"] is None
+
+    done = tmp_path / "done.md"
+    done.write_text("## Remaining work\n- [x] Finished\n", encoding="utf-8")
+    code, _ = run(paths, "validate-spec", "target", str(done), capsys=capsys)
+    assert code == 0
+
+
 def test_json_output_is_machine_readable(paths, write_project, capsys):
     write_project(id="p", purpose="why", lifecycle="maintained")
     code, out = run(paths, "list", "--json", capsys=capsys)
     assert code == 0
     assert json.loads(out)[0]["id"] == "p"
+
+
+def test_brief_status_table_and_json(paths, write_project, capsys):
+    write_project(
+        id="p", name="Project P", purpose="why", desired_outcome="result",
+        repo="owner/p", lifecycle="now", automation={"mode": "build"},
+        brief={"done_criteria": ["Tests pass"], "reviewed": "2026-08-01"},
+    )
+    code, out = run(paths, "brief-status", capsys=capsys)
+    assert code == 0
+    assert "PROJECT" in out
+    assert "AUTOMATION" in out
+    assert "Project P" in out
+
+    code, out = run(paths, "brief-status", "--json", capsys=capsys)
+    assert code == 0
+    payload = json.loads(out)
+    assert payload["projects"][0]["project_id"] == "p"
+    assert payload["summary"]["complete"] == 1
 
 
 def test_list_filters(paths, write_project, capsys):
@@ -285,6 +352,78 @@ def test_no_command_prints_help(paths, capsys):
     assert "usage:" in out
 
 
+def test_build_report_and_resume_commands(paths, capsys):
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "run_finished",
+        "project_id": "alpha", "outcome": "completed",
+    }, now=NOW)
+    code, out = run(paths, "build-report", "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["runs"]["total"] == 1
+
+    code, out = run(paths, "build", "resume", "alpha", "--json", capsys=capsys)
+    assert code == 0
+    state = json.loads(out)
+    assert state["project_id"] == "alpha"
+    assert state["paused_reason"] is None
+
+
+def test_build_queue_and_readiness_commands(paths, write_project, capsys):
+    write_project(
+        id="builder", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/builder", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "shadow"},
+    )
+    code, out = run(paths, "build-queue", "--json", capsys=capsys)
+    assert code == 0
+    queue = json.loads(out)
+    assert queue["ready_count"] == 1
+    assert queue["candidates"][0]["dry_run"] is True
+
+    code, out = run(paths, "build-readiness", "builder", "--json", capsys=capsys)
+    assert code == 0
+    result = json.loads(out)
+    assert result["brief"] == {"complete": True, "missing": []}
+    assert result["policy"]["mode"] == "shadow"
+
+
+def test_build_lifecycle_commands_start_context_finish(paths, write_project, capsys):
+    write_project(
+        id="builder", name="Builder", purpose="Ship it",
+        desired_outcome="It ships", repo="owner/builder",
+        brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    code, out = run(
+        paths, "build", "context", "builder", "--json", capsys=capsys
+    )
+    assert code == 0
+    assert json.loads(out)["project_id"] == "builder"
+
+    code, out = run(
+        paths, "build", "start", "--host", "mac", "--project", "builder",
+        "--json", capsys=capsys,
+    )
+    assert code == 0
+    started = json.loads(out)
+    assert started["candidate"]["project_id"] == "builder"
+
+    code, out = run(
+        paths, "build", "finish", started["run_id"], "--outcome", "completed",
+        "--json", capsys=capsys,
+    )
+    assert code == 0
+    assert json.loads(out)["state_after"]["last_outcome"] == "completed"
+    assert paths.build_lease_file.exists()
+    code, out = run(
+        paths, "build", "finish", started["run_id"], "--confirm-writeback",
+        "--json", capsys=capsys,
+    )
+    assert code == 0
+    assert json.loads(out)["writeback_confirmed"] is True
+    assert not paths.build_lease_file.exists()
+
+
 # -- dashboard rendering --------------------------------------------------
 
 
@@ -302,11 +441,39 @@ def test_dashboard_contains_every_section(paths, write_project):
 
     for heading in (
         "## Registry health", "## Lifecycle", "## Active projects", "## Work queue",
+        "## Build",
         "## Missing next actions", "## Open pull requests", "## Needs attention",
         "## Registry / GitHub mismatches", "## Review queue",
         "## Recent accomplishments", "## Relationships",
     ):
         assert heading in text
+
+
+def test_dashboard_build_section_groups_actionable_states(paths, write_project):
+    write_project(
+        id="ready", purpose="Ship", desired_outcome="Shipped", repo="owner/ready",
+        brief={"done_criteria": ["Tests pass"]}, automation={"mode": "build"},
+    )
+    write_project(
+        id="intent", purpose="Choose", desired_outcome="Chosen", repo="owner/intent",
+        brief={"done_criteria": []}, automation={"mode": "build"},
+    )
+    write_project(
+        id="paused", purpose="Wait", desired_outcome="Resume", repo="owner/paused",
+        brief={"done_criteria": ["Tests pass"]}, automation={"mode": "build"},
+        blocked_by="owner approval",
+    )
+    write_project(
+        id="spec", purpose="Specify", desired_outcome="Specified", repo="owner/spec",
+        brief={"done_criteria": ["Spec is complete"]},
+        automation={"mode": "spec_only"},
+    )
+    text = render_dashboard(load_registry(paths), make_snapshot(), now=NOW)
+    assert "**#1 ready** `ready`" in text
+    assert "**spec only** `spec`" in text
+    assert "**needs intent** `intent` — brief.done_criteria" in text
+    assert "**paused** `paused` — owner approval" in text
+    assert "manual only;" in text and "ineligible." in text
 
 
 def test_dashboard_states_evidence_age(paths, write_project):

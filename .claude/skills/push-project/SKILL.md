@@ -1,278 +1,164 @@
 ---
 name: push-project
-description: Autonomous portfolio-advancement loop. Use when invoked by the scheduled morning run or as /push-project [project-id]. Picks the top focus project from the project-registry MCP (or uses the named one) and either drafts a spec PR (gear 1, no docs/SPEC.md yet) or ships one implementation PR against the spec's next unchecked chunk (gear 2). At most one project and one PR per run.
+description: "Autonomous builder — selects a ready project via the registry, plans from the brief, implements chunks, reviews independently, self-merges per chunk, and records everything; `/push-project [project-id] [--force-named]`."
 ---
 
 # push-project
 
-Convert approved intent into shipped diffs. You never invent priorities:
-selection comes from the registry's ranking, intent comes from specs the owner
-has merged, and every run ends with at most one PR — or a clean "nothing to
-do" notification.
+Turn one approved project brief into independently reviewed, squash-merged chunks. Follow the phases in order. Accept an optional project id and `--force-named` only as `/push-project [project-id] [--force-named]`.
 
-## Constants
+## Constants from `registry build env --json`
 
-First detect where you are running — the three environments differ:
+1. Run `registry build env --json` before all other CLI calls.
+2. Set `HOST`, `REGISTRY_ROOT`, `REGISTRY_CLI`, `CODEX_BIN`, `WORKDIR_BASE`, and `TTL` from `host`, `registry_root`, `registry_cli`, `codex_bin`, `workdir_base`, and `ttl_seconds`.
+3. Treat a null `CODEX_BIN` as an instruction to implement chunks directly.
 
-- **Mac (interactive)**: `REGISTRY_ROOT` = `/Users/kanumadhok/Documents/Claude/Projects/project-registry`,
-  `REGISTRY_CLI` = `$REGISTRY_ROOT/.venv/bin/registry`, `WORKDIR` =
-  `<your scratchpad dir>/push/<project-id>` (fresh clone per run, deleted at
-  the end), and the Codex adapter at `~/.claude/model-adapters/codex.sh` is
-  available for delegation.
-- **PC (WSL Ubuntu on the always-on workstation, scheduled)**:
-  `REGISTRY_ROOT` = `/home/learnmsds/Github/project-registry`.
-  `REGISTRY_CLI` =
-  `PYTHONPATH=src python3 -m project_registry.cli --root $REGISTRY_ROOT`.
-  `WORKDIR` = `/home/learnmsds/Github/push-work/<project-id>` (fresh clone
-  per run, deleted at the end). Codex is `~/bin/codex` (native Linux
-  binary) — no adapter script; `gh` is `~/bin/gh` if not on PATH.
-  Before selecting, run `git -C $REGISTRY_ROOT pull --ff-only` so the run
-  sees the latest curated intent.
-- **Cloud routine**: `REGISTRY_ROOT` = the cloned `project-registry`
-  checkout (find it — you are started inside or beside it; `ls` the parent of
-  your cwd). There is no `.venv`, so `REGISTRY_CLI` =
-  `PYTHONPATH=src python3 -m project_registry.cli --root $REGISTRY_ROOT`.
-  Target repos are cloned beside it, so `WORKDIR` = the existing checkout of
-  the target repo — do NOT `gh repo clone` one that is already present. There
-  is no Codex adapter: implement chunks yourself.
+The environment decides; never hardcode paths.
 
-Detect in this order: if
-`/Users/kanumadhok/Documents/Claude/Projects/project-registry` exists you are
-on the Mac; else if `/home/learnmsds/Github/project-registry` exists you are
-on the PC; otherwise you are in a cloud routine. Everything else in this
-skill is identical everywhere.
+## Phase 0 — preflight
 
-- Branch namespace: every branch this skill creates is named `push/<slug>`.
+1. Run `git -C "$REGISTRY_ROOT" pull --ff-only`.
+2. Run `$REGISTRY_CLI build start --host "$HOST" [--project <id>] [--force-named] --json`. Include only invocation arguments actually supplied.
+3. For `finalize_pending`, redo `$REGISTRY_CLI dashboard`, then `git -C "$REGISTRY_ROOT" add data/build DASHBOARD.md`, commit and push `origin main`, run `$REGISTRY_CLI build finish "<pending-run-id>" --confirm-writeback --json`, and repeat step 2. For `lease_held`, `registry_dirty`, `stopped`, or `no_candidate`, print the registry's reason and stop; the attempt is already journaled.
+4. Only when the output contains reconciliation `actions`: execute each under the guard —
+   - `close_pr`: `gh pr close <n> --repo <repo>`.
+   - `delete_branch`: from a checkout of `<repo>`, run `git push origin --delete <branch>`.
+   — then run `$REGISTRY_CLI build reconcile --done --json` and repeat step 2 exactly once.
+5. Save `RUN_ID` from `run_id`; `PROJECT`, `REPO`, the brief, automation policy, and contract expectations from `candidate`; and `DRY_RUN`, `BUDGET` (`chunks_per_run`, `minutes_per_run`), and `ALLOW` from `lease`.
 
-## Invariants — read first, never break
+## Phase 1 — clone
 
-1. One project, at most one PR, per run.
-2. Branches and PRs only. Never commit to a default branch, never
-   force-push, never touch a repo outside the focus list (exception: a
-   project the owner named explicitly in the invocation).
-3. Never read, copy, or quote secret values found in a clone — several repos
-   have tracked `.env` files and hard-coded keys. Reference filenames only,
-   and never into specs, PR bodies, or logs.
-4. Registry writes: `record_project_review` (notes + rationale) only. NEVER
-   set `lifecycle`, `active`, `priority`, or `next_action` — anything
-   intent-shaped goes into `propose_project_update` and stops there for the
-   owner.
-5. Never open a PR you could not verify (tests run + entire diff read).
-6. Never target `project-registry` itself, even though its lifecycle is
-   `now` and it would otherwise rank first. It is this skill's own control
-   plane, it already has a spec and plan under `docs/superpowers/`, and the
-   owner develops it interactively — a cron-opened PR against it would
-   collide with live sessions. Skip it during selection and move to the
-   next candidate.
+1. Set `WORKDIR="$WORKDIR_BASE/$RUN_ID"`.
+2. Run `gh repo clone "$REPO" "$WORKDIR" -- --depth 50`.
+3. Read README, `CLAUDE.md` or `AGENTS.md`, `docs/SPEC.md`, `.project-meta.yaml`, and `git log --oneline -15` when present.
+4. Never read `data/understanding/*`.
+5. Optionally run `$REGISTRY_CLI sync --repo "$REPO"` only to refresh PR listing data.
+6. Every git/gh command in Phases 2–4 runs inside `$WORKDIR` unless it names `$REGISTRY_ROOT`.
 
-## Step 1 — Select
+## Phase 2 — contract
 
-**Named invocation** (`/push-project <id>`): use that project. Still apply
-the open-PR brake below unless the owner's message overrides it.
+1. When `.project-meta.yaml` is absent, make the first chunk `bootstrap_contract`, class `contract`:
+   - Discover setup, test, lint, typecheck, and verify commands from CI workflows, Makefile, `pyproject.toml`, `package.json`, and agent instructions.
+   - Run every discovered command and prove it works.
+   - Write `.project-meta.yaml` to the Phase 0 contract expectations.
+   - Require `$REGISTRY_CLI validate-contract .project-meta.yaml --project-id "$PROJECT"` to pass.
+   - Create its branch and `chunk_started` event as in Phase 4b, implement it directly, and ship it through Phase 4d–g. Contract and `plan` chunks have no SPEC checkbox to tick; give the reviewer a synthetic item instead (title, acceptance — e.g. "validate-contract passes", `Classes: contract` or `plan`).
+   - Record `$REGISTRY_CLI build event "$RUN_ID" contract_bootstrapped --chunk-id bootstrap_contract`.
+2. When the contract is invalid, or its baseline `test` command has a collection or command error, allow one `repair_contract` chunk through the same path and run `$REGISTRY_CLI build event "$RUN_ID" contract_repaired --chunk-id repair_contract`.
+3. On a second contract failure, run `$REGISTRY_CLI build finish "$RUN_ID" --outcome contract_broken --summary "<reason>" --json` and proceed to Phase 5 finalization.
+4. If `services` is non-empty, or `network.allowed` is false while tests require network, finish `contract_broken` with the reason.
 
-**Bare invocation:**
-1. Focus list = `list_projects` (project-registry MCP) with lifecycle `now`,
-   then lifecycle `next`, in that order. Empty → Step 4 (outcome
-   `empty_focus`), notify
-   "focus list is empty — mark projects with: registry record-review <id> --set lifecycle=next"
-   and stop.
-2. Rank: call `get_attention_queue`. Candidate order = focus-list ids in
-   queue order, then focus-list ids absent from the queue. Order the
-   absent group by this skill's last touch, oldest first: per repo, run
-   `gh pr list --repo <repo> --state all --json headRefName,createdAt`,
-   keep PRs whose `headRefName` starts with `push/`, and the newest
-   `createdAt` among them is the touch time. Repos with no `push/` PRs
-   sort first (never touched); break remaining ties alphabetically by id.
-3. Brake: for each candidate in order, run
-   `gh pr list --repo <repo> --state open --json number,headRefName,createdAt`
-   and skip the project if any `headRefName` starts with `push/`.
-4. First surviving candidate wins. If none survive → Step 4 (outcome
-   `parked`), notify
-   "all focus projects are waiting on your review: <open push/ PR urls>"
-   and stop. That is a successful run.
+## Phase 3 — baseline
 
-## Step 2 — Load context
+1. On the clean clone, run contract `setup`, then `test`, then declared `lint`, `typecheck`, and `verify` commands.
+2. On green, run `$REGISTRY_CLI build event "$RUN_ID" verify_passed --detail baseline=green`.
+3. On red, run `$REGISTRY_CLI build event "$RUN_ID" verify_failed --detail baseline=red`, then attribute it:
+   - Collection or command error: return once to Phase 2 for `repair_contract`.
+   - Genuine test failures: save the counts/output, continue with **no NEW failures** as the bar, and flag the red baseline in every PR body.
+   - Unattributable: finish with outcome `baseline_red` and proceed to Phase 5.
 
-- `get_project <id>` → purpose, notes, relationships, `repo`, visibility,
-  observed GitHub state.
-- Evidence brief: read `$REGISTRY_ROOT/data/understanding/<id>.json` if it
-  exists. If absent, use the fallback context from README,
-  `CLAUDE.md` / `AGENTS.md`, `docs/`, and `git log`.
-- Get the code: on the Mac and the PC, `gh repo clone <repo> $WORKDIR -- --depth 50`. In a
-  cloud routine the repo is already checked out beside the registry — use
-  that checkout and skip cloning. Either way, then read README,
-  CLAUDE.md / AGENTS.md if present, `docs/`, and `git log --oneline -15`.
+## Phase 4 — chunk loop
 
-## Step 3 — Gear check
+Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed minutes are at least `BUDGET.minutes_per_run`, `$REGISTRY_ROOT/data/build/STOP` exists, or the control plane returns a stop outcome.
 
-Does `docs/SPEC.md` exist on the default branch of the clone?
-Absent → Gear 1. Present → Gear 2. An empty repo (no commits, unborn
-branch) counts as absent → Gear 1.
+### a. Plan
 
-## Gear 1 — draft the spec, stop
+1. Run `$REGISTRY_CLI validate-spec "$PROJECT" docs/SPEC.md --json`; treat a missing file as no ready item.
+2. If `next_ready_index` is null, invoke the `build-planner` subagent with the Agent tool, `subagent_type: build-planner`, and fresh context. Supply the Phase 0 brief and automation policy JSON, current SPEC text or `absent`, gathered clone facts, and the complete validation report.
+3. Handle the planner response:
+   - `needs_intent`: run `$REGISTRY_CLI propose "$PROJECT" --set brief.open_decisions='<json>' --rationale "<reason>"`, then `$REGISTRY_CLI build event "$RUN_ID" needs_intent --reason "<reason>"`, finish `needs_intent`, and stop the loop. Permit only `brief.*` proposal paths.
+   - `roadmap_done`: finish `roadmap_done` and stop the loop.
+   - Full SPEC text: write `docs/SPEC.md` and rerun validation. If no item is ready, make one more fresh planner attempt; if still none is ready, finish `aborted` with summary `planner_no_ready_item`.
+4. Treat a planner rewrite as a `plan` chunk: create its branch/event as in b, implement directly, and ship through d–g. Skip tests and checkbox ticking for this plan-only diff; still invoke the reviewer. Then continue the loop.
 
-Write `docs/SPEC.md` in exactly this shape:
+### b. Select
 
-```markdown
-# <Project name> — spec
+1. Select the item at `next_ready_index` and set `CHUNK_ID` to its index.
+2. Set `SLUG` to a kebab-case form of its title, at most 40 characters.
+3. Set `BRANCH="push/$RUN_ID-$CHUNK_ID-$SLUG"` and run `git checkout -b "$BRANCH"`.
+4. Run `$REGISTRY_CLI build event "$RUN_ID" chunk_started --chunk-id "$CHUNK_ID" --detail branch="$BRANCH"`.
 
-_Drafted by push-project on <date>. Merging this PR approves the spec;
-editing the checklist re-prioritizes the work._
+### c. Implement
 
-## Goal
-<the registry purpose, adjusted only for wording — never re-invented>
+1. Implement `plan`, `contract`, UI, user-facing copy, and API/SDK-shape work directly.
+2. Otherwise write a precise task spec containing files, behavior, acceptance criteria, tests to add, and verified imports, local modules, and environment facts.
+3. Run Codex synchronously in the foreground with the Bash timeout at maximum and the task spec on stdin:
+   - Mac: `$CODEX_BIN exec --cd "$WORKDIR" --sandbox workspace-write --label "push-$PROJECT-$CHUNK_ID" --prompt -`.
+   - PC: `$CODEX_BIN exec --cd "$WORKDIR" --sandbox workspace-write -`.
+4. Never background Codex or end the turn while it runs. Retry one invocation or login error once; then finish `codex_unavailable`. When `CODEX_BIN` is null, implement directly to the same standard.
 
-## Done looks like
-- <3–5 concrete, checkable acceptance criteria>
+### d. Verify
 
-## Current state
-<what already exists — facts only, grounded in the evidence brief and code>
+1. Run contract `test`, plus declared `lint`, `typecheck`, and `verify` commands. Require no new failures versus baseline and explain changed counts.
+2. Read the entire diff. Reject any contract `forbidden_paths` match.
+3. Confirm every change class is declared by the item's `Classes` and allowed by `ALLOW`.
+4. Tick the selected SPEC checkbox in the same diff.
+5. On failure, fix once and repeat verification. On a second failure, run:
+   - `$REGISTRY_CLI build event "$RUN_ID" verify_failed --chunk-id "$CHUNK_ID" --reason verify`.
+   - `git checkout main && git branch -D "$BRANCH"`.
+   - `$REGISTRY_CLI build event "$RUN_ID" chunk_rejected --chunk-id "$CHUNK_ID" --reason verify`.
+   - Continue; let the circuit breaker decide whether to pause.
+6. On success, run `$REGISTRY_CLI build event "$RUN_ID" verify_passed --chunk-id "$CHUNK_ID"`.
 
-## Remaining work
-- [ ] <chunk 1 — one coherent capability, reviewable in one sitting, tests included>
-- [ ] <chunk 2>
+### e. Open PR
 
-## Non-goals
-- <what this project deliberately will not do>
-```
+1. Commit the diff and run `git push -u origin "$BRANCH"`.
+2. Run `gh pr create --head "$BRANCH" --title "<item title>" --body "<item text, acceptance, before/after tests, red-baseline flag if any, run $RUN_ID, chunk $CHUNK_ID>"`; save its URL and number.
+3. Run `$REGISTRY_CLI build event "$RUN_ID" pr_opened --chunk-id "$CHUNK_ID" --pr-url "$PR_URL" --detail branch="$BRANCH" --detail pr_number="$PR_NUMBER"`.
 
-Rules: 3–8 chunks, ordered, each shippable as a single PR. If the repo is
-too immature to spec honestly, say so under Current state and make chunk 1
-the smallest step that changes that.
+### f. Review
 
-Before writing any chunk that adds a capability, prove the capability is
-missing. Grep the codebase for it and enumerate the CLI's registered
-subcommands (for argparse, `grep -n "add_parser("`); a mature repo often
-already has the thing the issue tracker still asks for. A chunk that
-rebuilds working code is worse than no chunk — it burns a run and produces
-a PR the owner must reject. If the capability exists but is unused,
-untested, or stale, say so and make the chunk "run it, verify the result,
-add the missing test" instead of "build it".
+1. Invoke the `build-reviewer` subagent in fresh, read-only context. Supply the brief, exact SPEC item, `git diff main...$BRANCH`, before/after test output, and `.project-meta.yaml`.
+2. Save only its JSON as `$WORKDIR/../review-$RUN_ID-$CHUNK_ID.json`.
+3. Run `$REGISTRY_CLI build event "$RUN_ID" review_verdict --chunk-id "$CHUNK_ID" --detail-json "$(cat "$WORKDIR/../review-$RUN_ID-$CHUNK_ID.json")"`.
+4. On `request_changes`, address the findings once, repeat d, push, and invoke a fresh review.
+5. On `reject` or a second non-approve, run `gh pr close "$PR_NUMBER" --repo "$REPO"`, then `git push origin --delete "$BRANCH"`, run `$REGISTRY_CLI build event "$RUN_ID" chunk_rejected --chunk-id "$CHUNK_ID" --reason review`, and continue.
 
-Every number in *Current state* must come from a command you ran against
-this clone in this run, and the command must be scoped to exactly what you
-claim. Counting files in a subdirectory means `ls <dir>/<glob> | wc -l`, not
-a repo-wide `find` — a recursive sweep silently pulls in matches from other
-directories and inflates the count. Re-run each count immediately before
-writing the sentence that cites it, and never carry a number over from the
-evidence brief: the brief is a cache from an older commit and its counts
-drift. A number you cannot reproduce on demand does not go in the spec.
+### g. Merge
 
-Then: branch `push/spec`, commit only
-`docs/SPEC.md`, open a PR titled `Spec: <one-line goal>` whose body restates
-the merge-is-approval contract. Do Step 4 and Step 5, then stop.
+1. If `DRY_RUN` is true, leave the PR open, record `$REGISTRY_CLI build event "$RUN_ID" chunk_skipped --chunk-id "$CHUNK_ID" --reason shadow`, and continue.
+2. Otherwise run `gh pr merge "$PR_NUMBER" --squash --delete-branch`.
+3. Run `SHA=$(gh pr view "$PR_NUMBER" --json mergeCommit -q .mergeCommit.oid)`.
+4. Run `git fetch origin main && git tag "checkpoint/$RUN_ID-$CHUNK_ID" "$SHA" && git push origin "checkpoint/$RUN_ID-$CHUNK_ID"`.
+5. Run `$REGISTRY_CLI build event "$RUN_ID" merged --chunk-id "$CHUNK_ID" --pr-url "$PR_URL" --tag "checkpoint/$RUN_ID-$CHUNK_ID" --detail merge_sha="$SHA"`.
+6. Run `git checkout main && git pull --ff-only`. On conflict, re-clone before the next chunk.
 
-## Gear 2 — ship one chunk
+## Phase 5 — finish
 
-1. Take the first unchecked `- [ ]` item under **Remaining work**.
-2. Reality-check it against the clone. Already done, or obsoleted by how the
-   code has evolved? → open a spec-amendment PR instead (branch
-   `push/spec-amend`, checklist updated, reason in the body), Step 4 + 5, stop.
-3. Baseline: run the repo's test suite before touching anything; record the
-   result. No test suite → note that in the PR body. "Verified" below means
-   **no new failures**, and a red baseline is flagged, not silently fixed.
-   Find the test command in this order: `.project-meta.yaml` marker →
-   `CLAUDE.md` / `AGENTS.md` → `Makefile` / `pyproject.toml` / `package.json`
-   → docs. If a candidate command fails, distinguish a test collection error
-   from a test failure before reporting a red baseline.
-4. Expand the chunk into a precise task spec: files to touch, behavior,
-   acceptance criteria, tests to add.
-5. Implement per the model-routing policy:
-   - Taste-critical (UI, user-facing copy, API/SDK shape) → implement it
-     yourself.
-   - Otherwise delegate the task spec (plus relevant file excerpts):
-     Before delegating, verify the facts the worker needs and include them in
-     the task spec; this is required when the chunk touches dependencies,
-     imports, or environment.
-     - Mac: pipe it to `~/.claude/model-adapters/codex.sh exec --prompt -
-       --cd $WORKDIR --sandbox workspace-write --label push-<id>`.
-     - PC: pipe it to `~/bin/codex exec --cd $WORKDIR --sandbox
-       workspace-write -` (prompt on stdin).
-     Codex not logged in or the invocation itself errors → abort and
-     notify; no silent fallback.
-     In a cloud routine there is no Codex: implement the chunk yourself to
-     the same standard, and verify it identically.
-     **Run Codex synchronously, in the foreground, with your Bash timeout
-     raised to its maximum.** Never launch it in the background and never
-     end your turn while it is still running: in a headless (`claude -p`)
-     run, ending your turn terminates the whole session and the run dies
-     mid-flight — this exact mistake killed two validation runs. If the
-     timeout cap fires anyway, keep waiting with repeated foreground checks
-     until the Codex process has exited, then read its output and continue.
-6. Verify: run the full test suite (no new failures) and read the entire
-   diff. If the test count changed, explain why; do not just require the old
-   count to match. Misses the bar → fix inline or redo once; a second miss →
-   delete the branch, Step 4 with outcome "aborted", notify with what was
-   attempted, stop.
-7. Check off the chunk in `docs/SPEC.md` in the same diff. Branch
-   `push/<chunk-slug>`, open the PR: chunk text, acceptance criteria, test
-   results, any red-baseline flag.
+1. Choose the registry-defined outcome: `completed`, `budget_exhausted`, `roadmap_done`, `needs_intent`, `blocked_by_policy`, `shadow_completed`, `aborted`, or the applicable earlier stop outcome.
+2. Unless already finished, run `$REGISTRY_CLI build finish "$RUN_ID" --outcome <outcome> --summary "<one line>" --json`; save the digest path.
+3. Run `$REGISTRY_CLI dashboard`.
+4. Run `cd "$REGISTRY_ROOT" && git add data/build DASHBOARD.md && git commit -m "build: $RUN_ID $PROJECT <outcome>" && git push origin main`.
+5. On non-fast-forward, run `git pull --rebase` once and push again. If it still fails, leave it for the next run's reconciliation.
+6. After the successful `git push origin main`, run `$REGISTRY_CLI build finish "$RUN_ID" --confirm-writeback --json`.
+7. Load PushNotification through ToolSearch when available and send `<project> · <outcome> · <merged n> · digest <path>`; otherwise print that line.
+8. Delete only `"$WORKDIR"`.
 
-## Step 4 — Write back
+## Invariants
 
-Every run writes back, whatever the outcome — parked and empty-focus runs
-are recorded too (they used to leave no trace, which made "ran, nothing to
-do" indistinguishable from "never ran").
+- Keep one project per run. enforced by: registry.
+- Create only `push/<run_id>-*` branches. enforced by: guard.
+- Never force-push. enforced by: guard.
+- Merge only after recorded passed verification and an `approve` verdict; squash only. enforced by: guard.
+- Never write curated YAML; use `registry propose --set brief.*` only. enforced by: guard.
+- Never target `project-registry`. enforced by: registry.
+- Never read or quote secrets. enforced by: guard.
+- Never deploy, send outbound messages, pay, or mutate external systems. enforced by: never-classes in validate-spec + guard (gh/api mutations).
+- Never close or edit issues or PRs the builder did not open. enforced by: guard.
 
-**Run journal (always):** append exactly one line to
-`$REGISTRY_ROOT/data/push_runs.jsonl` (git-tracked, append-only; create if
-absent):
-
-```json
-{"ts": "<UTC ISO-8601>", "host": "mac|pc|cloud", "project": "<id or null>", "gear": 1, "outcome": "spec|chunk|amend|aborted|parked|empty_focus", "pr": "<url or null>"}
-```
-
-`gear` is `null` when no gear was reached. Never rewrite or delete earlier
-lines.
-
-**Project review (only when a project was advanced or aborted):** call
-`record_project_review` on the registry MCP with exactly these arguments
-and no others:
-
-- `project_id`: the project id
-- `approved`: `true` — REQUIRED on the MCP surface. Without it MCP files a
-  pending proposal, applies nothing, and returns an error; the CLI equivalent,
-  `registry record-review`, has no approval flag and applies directly.
-- `rationale`: `push-project <date>: gear <1|2>, <PR url or outcome>`
-- `updates`: `{"notes": "<full replacement text>"}` — the existing notes
-  (read them via `get_project` first) plus one appended line
-  `push-project <date>: <spec drafted | chunk shipped | amended | aborted> <PR url>`.
-  Notes replace wholesale; there is no top-level `notes` parameter.
-
-The tool will technically accept other curated paths inside `updates`
-(`lifecycle`, `active`, `priority`, `next_action.*`). You MUST NOT pass
-them — Invariant 4 binds you, not the tool's permissiveness; `notes` is
-the only allowed key.
-
-Then commit the registry's own changes:
-`cd $REGISTRY_ROOT && $REGISTRY_CLI dashboard && git add registry/ data/proposals/ data/audit_log.jsonl data/push_runs.jsonl DASHBOARD.md && git commit -m "push-project: record run for <id or outcome>" && git push`
-(`record_project_review` also writes `data/proposals/` and `data/audit_log.jsonl`, which are git-tracked by design).
-
-On the Mac and the PC that push goes straight to `main`. In a cloud routine,
-if `main` is protected, push a `push/registry-run-<date>` branch **and open a
-PR for it** — a write-back branch without a PR strands the run record, which
-is exactly what happened to the 2026-08 cloud runs.
-
-## Step 5 — Notify
-
-Load the PushNotification tool via ToolSearch (`select:PushNotification`)
-and send one line: `<id> · gear <1|2> · <PR title> — <url>` (or the
-parked / empty-focus message). If the tool is unavailable, print the same
-line as the final message instead — the tool being absent in a headless
-run is normal, not an error.
-
-Finally, delete `$WORKDIR`.
+Treat a guard denial as a bug in the plan, never an obstacle to route around. Stop and finish `aborted` with the denial reason.
 
 ## Failure handling
 
-| Case | Behavior |
+| Case | Record and action |
 |---|---|
-| Clone or auth failure | Skip to the next focus candidate; notify if all fail |
-| Codex not logged in / invocation errors | Abort with notification |
-| Pre-existing red tests | Baseline first; verify = no NEW failures; flag in PR body |
-| Verification fails twice | Abort, delete branch, notify with what was attempted |
-| Spec chunk obsolete | Spec-amendment PR instead of code |
-
-Nothing is written anywhere until a branch is pushed or Step 4 runs, so a
-crashed run is safe to simply rerun. (A crash before Step 4 leaves no
-journal line — the scheduler's own log is the record that the run started.)
+| Duplicate scheduled run | The start attempt records `lease_held`; print its reason and stop. |
+| Crash mid-chunk | Execute returned reconcile actions, run `build reconcile --done`, and restart; reconciliation records `crashed` and `reconciled`. |
+| Merge succeeded but write-back failed | Leave the lease `finalize_pending`; the next start redoes dashboard/add/commit/push, calls `--confirm-writeback`, and repeats start. |
+| Registry push is non-fast-forward | Rebase and retry once; otherwise leave `finalize_pending` for reconciliation. |
+| Branch-name collision | Let start reconciliation sweep the stale `push/*` branch; record `reconciled`. |
+| Codex unavailable or logged out | Retry once; finish `codex_unavailable`. |
+| Baseline red | Record `verify_failed`; repair collection/command errors, continue genuine failures with no-new-failures, or finish `baseline_red`. |
+| Reviewer rejects twice | Record `chunk_rejected --reason review` and continue. |
+| Breaker threshold reached or revert detected | Finish `paused`; only the owner resumes it. |
+| STOP file or automation pause | Finish the current verification/review, record `stopped`, and finish `stopped` before another chunk. |

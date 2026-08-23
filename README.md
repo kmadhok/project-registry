@@ -13,12 +13,14 @@ Human intent remains authoritative. Automation may surface evidence and suggest 
 
 ```
 registry/projects/*.yaml     curated intent      hand-edited, git-tracked, authoritative
+  brief / automation         approval + policy   owner-controlled through proposals
 data/github/snapshot.json    observed evidence   machine-written, refreshable, timestamped
 data/understanding/*.json    evidence briefs     out-of-band, coverage/staleness reported
 data/proposals/*.json        pending changes     proposed but not applied
+data/build/                  run journal/state   machine-written runs, digests; lease gitignored
 ```
 
-Sync writes only under `data/`. Nothing in that path can touch `registry/`, which is what makes "generated data must never overwrite human-curated fields" a structural guarantee rather than a convention.
+Sync and autonomous run state write only under `data/`. Nothing in that path can touch `registry/`, which is what makes "generated data must never overwrite human-curated fields" a structural guarantee rather than a convention.
 
 ## Quick start
 
@@ -26,6 +28,8 @@ Sync writes only under `data/`. Nothing in that path can touch `registry/`, whic
 pip install -e .              # or: PYTHONPATH=src python3 -m project_registry.cli ...
 
 registry validate             # check the registry against its own operating rules
+registry validate-contract <path> [--project-id <id>] # check a target-repo contract
+registry validate-spec <project-id> <path>  # check an agent-owned docs/SPEC.md roadmap
 registry list                 # the whole portfolio
 registry show project-registry
 registry dashboard            # regenerate DASHBOARD.md
@@ -37,10 +41,22 @@ To pull in GitHub evidence, export a token with read access ([docs/SETUP.md](doc
 export GITHUB_TOKEN=...
 registry import-github --owner kmadhok   # create stubs marked needs_review
 registry sync [--no-branches]            # refresh observed state; optionally skip branch capture (read-only)
+registry sync --repo owner/repo          # refresh one repo while preserving all other snapshot entries
 registry prs                             # open PRs across the portfolio
 registry attention                       # work needing a human, with the rule behind each signal
 registry mismatches                      # where registry intent and GitHub disagree
 registry push-report                     # push-run totals and cached linked-PR states
+registry build-report                    # autonomous build-run and chunk metrics
+registry build-queue [--state ready]     # explain eligibility and rank every project
+registry build-readiness <id>            # explain one project's brief and automation policy
+registry brief-status [--incomplete] [--stale] # brief completeness and owner-review age
+registry build resume <id>               # clear a project's build pause
+registry build env --json                # resolve host, CLI, workdir, budget, and TTL
+registry build context <id> --json       # authoritative context for one candidate
+registry build start --host mac --json   # preflight, select, and atomically lease a run
+registry build event <run> <type>         # journal progress and update lease counters
+registry build finish <run> --outcome completed # state, digest, and lease release
+registry build reconcile [--done]         # plan/acknowledge expired-run cleanup
 ```
 
 Day-to-day:
@@ -52,6 +68,11 @@ registry review-queue         # what is due for a deliberate look
 registry briefs-status        # which repo-backed projects have current/stale/unknown briefs
 registry record-review my-project --set lifecycle=next
 ```
+
+Autonomous building uses the canonical `.claude/skills/push-project/SKILL.md`
+orchestrator and the cross-platform `scripts/run-build.sh` launcher. The launcher
+runs scheduled builds on PC and supports interactive Mac runs; use
+`scripts/run-build.sh --dry-run` to inspect its resolved Claude command.
 
 Changing curated fields from a script or an agent goes through propose-then-apply:
 
@@ -68,17 +89,21 @@ registry audit
 registry mcp                  # JSON-RPC 2.0 over stdio
 ```
 
-23 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, brief and push-run reporting, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — REST remains restricted to `GET`, and a test enforces both.
+34 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, a GitHub refresh, and the propose/apply pair. The builder tools are `get_brief_status`, `get_build_report`, `get_build_queue`, `validate_project_readiness`, `get_build_context`, `begin_build_run`, `record_build_event`, `finish_build_run`, `reconcile_build_runs`, `validate_contract`, and `validate_spec`. Every response carries `source_timestamps` so a client can tell live data from cached data. Build lifecycle writes are confined to `data/build/`; no tool mutates GitHub.
 
 **Claude Code discovers the server automatically** via [`.mcp.json`](.mcp.json) when this repo is open. Claude Desktop and global registration are covered in [docs/SETUP.md](docs/SETUP.md). Sessions without MCP still work: [`CLAUDE.md`](CLAUDE.md) gives any LLM session the CLI commands and the rules.
 
 ## Documents
 
 - [Setup](docs/SETUP.md) — token creation, inventory import, curation loop, MCP registration
+- [Autonomous build guard](docs/BUILD_GUARD.md) — active-lease command and MCP safety rules
+- [Builder agents](docs/BUILDER_AGENTS.md) — planner and independent reviewer contracts
+- [ADR-006: Autonomous builder](docs/ADRs/ADR-006-autonomous-builder.md) — policy, execution guard, and per-chunk self-merge decisions
 - [Agent instructions](CLAUDE.md) — how LLM sessions should use this repo
 - [Purpose and operating model](docs/PURPOSE.md) — the problem, sources of truth, lifecycle vocabulary, safety boundaries
-- [User stories and MCP capabilities](docs/USER_STORIES.md) — 18 stories with acceptance criteria
+- [User stories and MCP capabilities](docs/USER_STORIES.md) — 19 stories with acceptance criteria
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md) — how each story is built and verified
+- [Build observation and fault injection](docs/observations/README.md) — disposable sandbox runs, provenance, and the F1–F24 harness
 - [Schema reference](docs/SCHEMA.md) — every field, every validation rule
 - [Dashboard](DASHBOARD.md) — generated portfolio view
 
@@ -91,6 +116,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 | 3. GitHub sync — read-only collection of repos, PRs, issues, activity, CI | done |
 | 4. Decision support — active work, stale work, missing next actions | done |
 | 5. MCP server — query and maintain the registry with explicit write controls | done |
+| 6. Autonomous builder — eligibility, leasing, guard, agents, skills | done (rollout per [E. Test and rollout](docs/superpowers/specs/2026-08-22-autonomous-builder-E-test-and-rollout.md)) |
 
 What remains is data, not code: follow [docs/SETUP.md](docs/SETUP.md) to import your repositories, then curate a purpose, lifecycle, and next action for each imported stub.
 
@@ -100,5 +126,5 @@ Tests: `python3 -m pytest` (no network required).
 
 - Replacing GitHub as the source of repository and pull-request data.
 - Automatically deciding which projects matter.
-- Automatically closing issues, merging PRs, deleting code, or archiving repositories.
+- Letting the registry CLI or MCP server close issues, merge PRs, delete code, or archive repositories; autonomous builder GitHub mutations are separately guard-enforced.
 - Storing credentials, source code from other projects, or private document contents.

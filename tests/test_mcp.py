@@ -7,6 +7,8 @@ import json
 
 import pytest
 
+from project_registry.build import append_event
+from project_registry.cli import main
 from project_registry.github.sync import save_snapshot
 from project_registry.mcp.server import (
     FORBIDDEN_TOOL_VERBS,
@@ -178,6 +180,28 @@ def test_attention_queue_items_carry_reasons(seeded):
     assert all(item["reasons"] for item in payload["items"])
 
 
+def test_get_brief_status_matches_cli(paths, write_project, capsys):
+    write_project(
+        id="p", purpose="why", desired_outcome="result", repo="owner/p",
+        automation={"mode": "build"}, brief={"done_criteria": ["Tests pass"]},
+    )
+    payload, is_error = call(paths, "get_brief_status", {"stale": True})
+    assert not is_error
+
+    code = main([
+        "--root", str(paths.root), "brief-status", "--stale", "--json"
+    ])
+    cli_payload = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert payload["projects"] == cli_payload["projects"]
+    assert payload["summary"] == cli_payload["summary"]
+
+
+def test_get_brief_status_tool_name_is_allowed():
+    assert "get_brief_status" in TOOLS_BY_NAME
+    assert FORBIDDEN_TOOL_VERBS.search("get_brief_status") is None
+
+
 def test_attention_queue_reports_null_for_unrecorded_priority(paths, write_project):
     """MCP-002: never invent a project priority."""
     write_project(id="p", purpose="p", active=True,
@@ -250,6 +274,133 @@ def test_validate_registry_tool(paths, write_project):
     assert payload["error_count"] == 1
 
 
+def test_validate_contract_tool_returns_report_in_standard_envelope(paths):
+    payload, is_error = call(paths, "validate_contract", {
+        "contract_text": (
+            'schema: 1\nregistry_id: target\n'
+            'runtime: {kind: python, version: "3.11"}\n'
+            'test: ["python3 -m pytest -q"]\n'
+        ),
+        "project_id": "target",
+    })
+    assert not is_error
+    assert payload["ok"] is True
+    assert payload["runnable"] is True
+    assert payload["contract"]["registry_id"] == "target"
+    assert payload["source_timestamps"]["registry_loaded_at"]
+
+
+def test_build_report_cli_and_mcp_return_same_numbers(paths, capsys):
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "chunk_started",
+        "project_id": "alpha", "chunk_id": "c1",
+        "ts": "2026-08-22T12:00:00+00:00",
+    })
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "merged",
+        "project_id": "alpha", "chunk_id": "c1",
+        "ts": "2026-08-22T12:15:00+00:00",
+    })
+    append_event(paths, {
+        "run_id": "run-1", "host": "mac", "type": "run_finished",
+        "project_id": "alpha", "outcome": "completed",
+        "ts": "2026-08-22T12:16:00+00:00",
+    })
+
+    assert main(["--root", str(paths.root), "build-report", "--json"]) == 0
+    cli_report = json.loads(capsys.readouterr().out)
+    payload, is_error = call(paths, "get_build_report")
+    assert not is_error
+    mcp_report = payload["report"]
+    assert mcp_report["runs"] == cli_report["runs"]
+    assert mcp_report["chunks"] == cli_report["chunks"]
+    assert mcp_report["minutes_per_merged_chunk"] == cli_report["minutes_per_merged_chunk"]
+
+
+def test_build_queue_cli_and_mcp_are_identical(paths, write_project, capsys):
+    write_project(
+        id="builder", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/builder", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"}, priority="high",
+    )
+    write_project(id="manual", purpose="Human work", repo="owner/manual")
+
+    assert main(["--root", str(paths.root), "build-queue", "--json"]) == 0
+    cli_queue = json.loads(capsys.readouterr().out)
+    payload, is_error = call(paths, "get_build_queue")
+    assert not is_error
+    assert payload["candidates"] == cli_queue["candidates"]
+    assert payload["by_state"] == cli_queue["by_state"]
+    assert payload["ready_count"] == cli_queue["ready_count"]
+
+    readiness, is_error = call(
+        paths, "validate_project_readiness", {"project_id": "builder"}
+    )
+    assert not is_error
+    assert readiness["state"] == "ready"
+    assert readiness["policy"]["mode"] == "build"
+
+
+def test_build_lifecycle_mcp_begin_context_finish(paths, write_project):
+    write_project(
+        id="builder", name="Builder", purpose="Ship it",
+        desired_outcome="It ships", repo="owner/builder",
+        brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    context, is_error = call(paths, "get_build_context", {"project_id": "builder"})
+    assert not is_error
+    assert context["eligibility"]["state"] == "ready"
+
+    started, is_error = call(paths, "begin_build_run", {
+        "host": "mac", "project_id": "builder",
+    })
+    assert not is_error
+    assert started["candidate"]["project_id"] == context["project_id"]
+    assert started["candidate"]["contract_expectations"] == context["contract_expectations"]
+
+    finished, is_error = call(paths, "finish_build_run", {
+        "run_id": started["run_id"], "outcome": "completed",
+    })
+    assert not is_error
+    assert finished["state_after"]["last_outcome"] == "completed"
+    assert paths.build_lease_file.exists()
+    confirmed, is_error = call(paths, "finish_build_run", {
+        "run_id": started["run_id"], "confirm_writeback": True,
+    })
+    assert not is_error
+    assert confirmed["writeback_confirmed"] is True
+    assert not paths.build_lease_file.exists()
+
+    error, is_error = call(
+        paths, "validate_project_readiness", {"project_id": "missing"}
+    )
+    assert is_error
+    assert error["error"] == "unknown project id: missing"
+
+
+def test_validate_spec_tool_matches_validator_and_rejects_unknown_id(paths, write_project):
+    write_project(id="target", automation={"allow": []})
+    spec_text = (
+        "## Remaining work\n- [ ] Add one test\n"
+        "      Acceptance: the test passes\n      Tests: tests/test_one.py\n"
+        "      Size: S\n      Classes: none\n"
+        "      Verified-missing: the test does not exist\n"
+    )
+    payload, is_error = call(
+        paths, "validate_spec", {"project_id": "target", "spec_text": spec_text}
+    )
+    assert not is_error
+    assert payload["next_ready_index"] == 1
+    assert payload["source_timestamps"]["registry_loaded_at"]
+
+    payload, is_error = call(
+        paths, "validate_spec", {"project_id": "missing", "spec_text": spec_text}
+    )
+    assert is_error
+    assert payload["error"] == "unknown project id: missing"
+
+
 # -- MCP-005: proposals ---------------------------------------------------
 
 
@@ -262,6 +413,21 @@ def test_propose_tool_changes_nothing(seeded):
     assert payload["applied"] is False
     assert payload["proposal"]["changes"]["purpose"]["before"] == "Parse invoices"
     assert load_registry(seeded).require("alpha").purpose == "Parse invoices"
+
+
+def test_propose_tool_accepts_a_brief_path(seeded):
+    payload, is_error = call(
+        seeded,
+        "propose_project_update",
+        {
+            "project_id": "alpha",
+            "changes": {"brief.done_criteria": "parser succeeds,tests pass"},
+        },
+    )
+    assert not is_error
+    change = payload["proposal"]["changes"]["brief.done_criteria"]
+    assert change == {"before": None, "after": ["parser succeeds", "tests pass"]}
+    assert load_registry(seeded).require("alpha").brief.done_criteria == []
 
 
 def test_apply_requires_approved_true(seeded):
@@ -343,11 +509,26 @@ def test_the_only_write_tools_target_the_registry_itself():
         "propose_project_update",
         "apply_approved_project_update",
         "record_project_review",
+        "begin_build_run",
+        "record_build_event",
+        "finish_build_run",
+        "reconcile_build_runs",
     }
     # refresh_github writes only the local cache; everything else is a read.
     assert write_tools <= set(TOOLS_BY_NAME)
     for name in write_tools:
         assert "GitHub" not in TOOLS_BY_NAME[name].description or name == "refresh_github"
+    for name in {
+        "begin_build_run", "record_build_event", "finish_build_run",
+        "reconcile_build_runs",
+    }:
+        assert "writes only under data/build/" in TOOLS_BY_NAME[name].description
+
+
+def test_finish_build_run_schema_supports_writeback_confirmation():
+    schema = TOOLS_BY_NAME["finish_build_run"].input_schema
+    assert schema["properties"]["confirm_writeback"] == {"type": "boolean"}
+    assert schema["required"] == ["run_id"]
 
 
 def test_apply_and_review_tools_require_approval_in_their_schema():

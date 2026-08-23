@@ -1,0 +1,12 @@
+schema: 1
+registry_id: ai-news-aggregator
+runtime: {kind: python, version: "3.11"}
+package_manager: pip
+setup:
+  - python3 -m pip install -r requirements-dev.txt
+test:
+  - python3 -m pytest tests -q
+generated_files:
+  - content.db
+generate:
+  - python run.py index

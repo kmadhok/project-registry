@@ -21,6 +21,51 @@
       "type": "string",
       "description": "The result that matters. Required for lifecycle `now`."
     },
+    "brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Owner-curated intent and the criteria that make a project ready to build.",
+      "properties": {
+        "done_criteria": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Observable outcomes that define completion. At least one is required for build or shadow automation."
+        },
+        "non_goals": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Work explicitly outside this project's intended scope."
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Owner-defined boundaries the implementation must respect."
+        },
+        "open_decisions": {
+          "type": "array",
+          "default": [],
+          "description": "Intent questions that remain open or have been explicitly answered.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["question"],
+            "properties": {
+              "question": { "type": "string", "minLength": 1 },
+              "status": { "enum": ["open", "answered"], "default": "open" },
+              "answer": { "type": ["string", "null"], "default": null }
+            }
+          }
+        },
+        "reviewed": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Date the owner last confirmed that this brief is current."
+        }
+      }
+    },
     "lifecycle": {
       "enum": ["now", "next", "incubating", "showcase", "maintained", "reference", "superseded", "archived"],
       "default": "incubating"
@@ -39,6 +84,51 @@
     "effort": { "enum": ["small", "medium", "large"] },
     "horizon": { "enum": ["week", "month", "quarter", "year", "someday"] },
     "blocked_by": { "type": "string" },
+    "automation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Owner-controlled policy for autonomous project work.",
+      "properties": {
+        "mode": {
+          "enum": ["off", "shadow", "spec_only", "build"],
+          "default": "off",
+          "description": "Maximum automation level permitted for this project."
+        },
+        "allow": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["dependencies", "ci", "generated_data", "public_api", "migrations", "personal_data"]
+          },
+          "default": [],
+          "description": "Change classes the owner permits automation to make."
+        },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Per-run limits for autonomous work.",
+          "properties": {
+            "chunks_per_run": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 6,
+              "description": "Maximum work chunks attempted in one run."
+            },
+            "minutes_per_run": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 120,
+              "description": "Maximum elapsed minutes permitted in one run."
+            }
+          }
+        },
+        "paused": {
+          "type": "boolean",
+          "default": false,
+          "description": "Owner kill switch that prevents new automated work from starting."
+        }
+      }
+    },
     "repo": {
       "type": "string",
       "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$",

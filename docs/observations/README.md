@@ -1,6 +1,10 @@
 # Observations
 
-One file per `push-project-observe` run: `<date>-<sandbox>.md`.
+## Documents
+
+- [`build-observe`](../../.claude/skills/build-observe/SKILL.md) runs:
+  `<date>-build-sandbox-<name>.md`
+- Legacy `push-project-observe` runs: `<date>-<sandbox>.md`
 
 **Facts only.** Session ids, PR URLs, commit SHAs, which registry path ran.
 No analysis — the transcripts named in each file hold the full record, and a
@@ -25,3 +29,23 @@ jq -r 'select(.type=="assistant") | .timestamp as $t | .attributionSkill as $s
 Subagent work is **not** in the parent transcript. It lives in
 `<session-id>/subagents/agent-*.jsonl` and must be unioned in for a complete
 picture.
+
+## Fault injection
+
+Run the implemented fault scenarios from the repository root:
+
+```bash
+bash scripts/faults/run-all.sh
+```
+
+Set `FAULT_TMP` to choose the scratch parent. Every scenario operates only in
+a fresh directory beneath that parent. The runner prints `PASS`, `FAIL`, or
+`SKIP` for all F1–F24 scenarios and exits non-zero if any implemented scenario
+fails. `SKIP` denotes a documented stub that has not yet been staged.
+
+Record a manual or rollout run in `docs/observations/<date>-faults.md`. Keep the
+record factual and use this table:
+
+| F# | Staged | Expected | Observed | Pass |
+|---|---|---|---|---|
+| F1 |  |  |  |  |

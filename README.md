@@ -95,6 +95,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 - [User stories and MCP capabilities](docs/USER_STORIES.md) — 19 stories with acceptance criteria
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md) — how each story is built and verified
 - [Builder agents](docs/BUILDER_AGENTS.md) — planner and independent reviewer contracts
+- [Build observation and fault injection](docs/observations/README.md) — disposable sandbox runs, provenance, and the F1–F24 harness
 - [Schema reference](docs/SCHEMA.md) — every field, every validation rule
 - [Dashboard](DASHBOARD.md) — generated portfolio view
 

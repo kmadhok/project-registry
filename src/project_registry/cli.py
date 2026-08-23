@@ -17,7 +17,21 @@ from typing import Any, Sequence
 from .briefs import build_briefs_status, build_sync_status
 from .contracts import parse_contract, validate_contract
 from .automation import ELIGIBILITY_STATES, build_queue, readiness
-from .build import BuildError, build_report, load_state, resume_project
+from .build import (
+    BuildError,
+    EVENT_TYPES,
+    RUN_OUTCOMES,
+    begin_run,
+    build_env,
+    build_report,
+    finish_run,
+    get_build_context,
+    load_state,
+    reconcile,
+    reconcile_done,
+    record_event,
+    resume_project,
+)
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -800,6 +814,102 @@ def cmd_build_resume(args, paths, now) -> int:
     return 0
 
 
+def cmd_build_start(args, paths, now) -> int:
+    registry = load_registry(paths)
+    snapshot = load_snapshot(paths)
+    result = begin_run(
+        paths, host=args.host, project_id=args.project,
+        force_named=args.force_named, ttl_seconds=args.ttl, now=now,
+        registry=registry, snapshot=snapshot,
+    )
+    if emit(result, args):
+        return 0 if "run_id" in result else 3
+    if "run_id" in result:
+        print(f"Started {result['run_id']} for {result['candidate']['project_id']}.")
+    else:
+        print(result.get("outcome", "not started"))
+        if result.get("reason"):
+            print(f"  {result['reason']}")
+    return 0 if "run_id" in result else 3
+
+
+def cmd_build_finish(args, paths, now) -> int:
+    registry = load_registry(paths)
+    result = finish_run(
+        paths, args.run_id, outcome=args.outcome, summary=args.summary,
+        now=now, registry=registry, snapshot=load_snapshot(paths),
+    )
+    if emit(result, args):
+        return 0
+    print(f"Finished {args.run_id}: {args.outcome}")
+    print(f"Digest: {result['digest_path']}")
+    return 0
+
+
+def cmd_build_event(args, paths, now) -> int:
+    detail: dict[str, Any] = {}
+    if args.detail_json:
+        try:
+            loaded = json.loads(args.detail_json)
+        except json.JSONDecodeError as exc:
+            raise BuildError(f"invalid --detail-json: {exc}") from exc
+        if not isinstance(loaded, dict):
+            raise BuildError("--detail-json must be a JSON object")
+        detail.update(loaded)
+    for key, value in _parse_sets(args.detail):
+        detail[key] = value
+    event = {
+        "type": args.type,
+        "chunk_id": args.chunk_id,
+        "pr_url": args.pr_url,
+        "tag": args.tag,
+        "reason": args.reason,
+        "outcome": args.outcome,
+        "detail": detail or None,
+    }
+    result = record_event(paths, args.run_id, event)
+    if emit(result, args):
+        return 0
+    print(f"Recorded {args.type} as event {result['seq']}.")
+    return 0
+
+
+def cmd_build_context(args, paths, now) -> int:
+    registry = load_registry(paths)
+    result = get_build_context(
+        paths, registry, load_snapshot(paths), args.project_id, now
+    )
+    if emit(result, args):
+        return 0
+    print(f"{result['project_id']}: {result['eligibility']['state']}")
+    print(f"  repo: {result['repo']}")
+    print(f"  purpose: {_dash(result['purpose'])}")
+    return 0
+
+
+def cmd_build_reconcile(args, paths, now) -> int:
+    result = reconcile_done(paths, now=now) if args.done else reconcile(paths, now=now)
+    if emit(result, args):
+        return 0
+    if args.done:
+        print("Reconciliation complete." if result.get("reconciled") else result["note"])
+    elif not result.get("actions"):
+        print(result.get("note", "No cleanup actions."))
+    else:
+        for action in result["actions"]:
+            print(json.dumps(action, sort_keys=True))
+    return 0
+
+
+def cmd_build_env(args, paths, now) -> int:
+    result = build_env(paths.root)
+    if emit(result, args):
+        return 0
+    for key, value in result.items():
+        print(f"{key:<18} {json.dumps(value) if isinstance(value, dict) else _dash(value)}")
+    return 0
+
+
 def cmd_import_github(args, paths, now) -> int:
     registry = load_registry(paths)
     client = GitHubClient()
@@ -1047,6 +1157,50 @@ def build_parser() -> argparse.ArgumentParser:
     resume.add_argument("project_id")
     resume.add_argument("--json", action="store_true", help="Emit JSON.")
     resume.set_defaults(handler=cmd_build_resume)
+
+    start = build_subparsers.add_parser("start", help="Select and lease a build run.")
+    start.add_argument("--host", required=True)
+    start.add_argument("--project")
+    start.add_argument("--force-named", action="store_true")
+    start.add_argument("--ttl", type=int, default=10800)
+    start.add_argument("--json", action="store_true", help="Emit JSON.")
+    start.set_defaults(handler=cmd_build_start)
+
+    finish = build_subparsers.add_parser("finish", help="Finalize a build run.")
+    finish.add_argument("run_id")
+    finish.add_argument("--outcome", required=True, choices=sorted(RUN_OUTCOMES))
+    finish.add_argument("--summary")
+    finish.add_argument("--json", action="store_true", help="Emit JSON.")
+    finish.set_defaults(handler=cmd_build_finish)
+
+    event = build_subparsers.add_parser("event", help="Record a leased-run event.")
+    event.add_argument("run_id")
+    event.add_argument("type", choices=sorted(EVENT_TYPES))
+    event.add_argument("--chunk-id")
+    event.add_argument("--pr-url")
+    event.add_argument("--tag")
+    event.add_argument("--reason")
+    event.add_argument("--outcome")
+    event.add_argument("--detail", action="append", default=[], metavar="KEY=VALUE")
+    event.add_argument("--detail-json")
+    event.add_argument("--json", action="store_true", help="Emit JSON.")
+    event.set_defaults(handler=cmd_build_event)
+
+    context = build_subparsers.add_parser("context", help="Show build context.")
+    context.add_argument("project_id")
+    context.add_argument("--json", action="store_true", help="Emit JSON.")
+    context.set_defaults(handler=cmd_build_context)
+
+    reconcile_parser = build_subparsers.add_parser(
+        "reconcile", help="Plan or complete expired-run cleanup."
+    )
+    reconcile_parser.add_argument("--done", action="store_true")
+    reconcile_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    reconcile_parser.set_defaults(handler=cmd_build_reconcile)
+
+    environment = build_subparsers.add_parser("env", help="Show builder environment.")
+    environment.add_argument("--json", action="store_true", help="Emit JSON.")
+    environment.set_defaults(handler=cmd_build_env)
 
     sub = add("import-github", cmd_import_github, "Create stubs from an owner's repositories.")
     sub.add_argument("--owner", required=True)

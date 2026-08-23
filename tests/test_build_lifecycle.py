@@ -1,0 +1,224 @@
+"""Atomic leasing and autonomous build run lifecycle."""
+
+from __future__ import annotations
+
+import datetime as dt
+import json
+import subprocess
+from concurrent.futures import ThreadPoolExecutor
+
+import pytest
+
+from project_registry.build import (
+    BuildError,
+    begin_run,
+    build_env,
+    finish_run,
+    read_events,
+    reconcile,
+    reconcile_done,
+    record_event,
+    registry_checkout_status,
+)
+from project_registry.github.snapshot import Snapshot
+from project_registry.storage import load_registry, read_json, write_json
+
+
+NOW = dt.datetime(2026, 8, 22, 12, 0, tzinfo=dt.timezone.utc)
+
+
+def ready_project(write_project, project_id="builder"):
+    write_project(
+        id=project_id,
+        name="Builder",
+        purpose="Ship it",
+        desired_outcome="It ships",
+        repo="owner/builder",
+        brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build", "allow": ["ci"]},
+    )
+
+
+def start(paths, *, now=NOW, project_id=None, force_named=False, run_id=None):
+    return begin_run(
+        paths,
+        host="mac",
+        project_id=project_id,
+        force_named=force_named,
+        now=now,
+        run_id=run_id,
+        registry=load_registry(paths),
+        snapshot=Snapshot(),
+    )
+
+
+def test_second_begin_reports_lease_held_without_changing_lease(paths, write_project):
+    ready_project(write_project)
+    first = start(paths, run_id="first")
+    lease_before = paths.build_lease_file.read_bytes()
+    second = start(paths, run_id="second")
+    assert second["outcome"] == "lease_held"
+    assert second["lease"]["run_id"] == first["run_id"]
+    assert paths.build_lease_file.read_bytes() == lease_before
+    events, _ = read_events(paths)
+    assert any(
+        item["run_id"] == "second" and item.get("outcome") == "lease_held"
+        for item in events
+    )
+
+
+def test_expired_run_reconciles_then_next_begin_can_start(paths, write_project):
+    ready_project(write_project)
+    first = start(paths, run_id="dead")
+    record_event(paths, first["run_id"], {
+        "type": "pr_opened", "chunk_id": "c1",
+        "pr_url": "https://github.com/owner/builder/pull/7",
+        "detail": {"pr_number": 7, "branch": "push/dead-1-fix"},
+    })
+    lease = read_json(paths.build_lease_file)
+    lease["ttl_seconds"] = 1
+    write_json(paths.build_lease_file, lease)
+
+    result = start(paths, now=NOW + dt.timedelta(seconds=2), run_id="next")
+    assert result["outcome"] == "reconciling"
+    assert result["actions"] == [
+        {"action": "close_pr", "repo": "owner/builder", "number": 7},
+        {"action": "delete_branch", "repo": "owner/builder", "branch": "push/dead-1-fix"},
+    ]
+    events, _ = read_events(paths)
+    assert [(e["type"], e.get("outcome")) for e in events[-2:]] == [
+        ("crashed", None), ("run_finished", "crashed")
+    ]
+    assert reconcile_done(paths)["reconciled"] is True
+    assert start(paths, run_id="next")["run_id"] == "next"
+
+
+def test_checkout_preflight_dirty_ignored_paths_and_branch(paths, write_project):
+    ready_project(write_project)
+    subprocess.run(["git", "init", "-b", "main"], cwd=paths.root, check=True,
+                   capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=paths.root)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=paths.root)
+    subprocess.run(["git", "add", "."], cwd=paths.root, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=paths.root, check=True,
+                   capture_output=True)
+    (paths.root / "registry" / "dirty.txt").write_text("dirty", encoding="utf-8")
+    assert start(paths, run_id="dirty")["outcome"] == "registry_dirty"
+    assert not paths.build_lease_file.exists()
+    (paths.root / "registry" / "dirty.txt").unlink()
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    (paths.build_dir / "machine.txt").write_text("allowed", encoding="utf-8")
+    assert registry_checkout_status(paths.root)["clean"] is True
+    allowed = start(paths, run_id="allowed")
+    assert allowed["run_id"] == "allowed"
+    finish_run(paths, "allowed", outcome="completed", now=NOW)
+    subprocess.run(["git", "switch", "-c", "topic"], cwd=paths.root, check=True,
+                   capture_output=True)
+    assert start(paths, run_id="branch")["outcome"] == "registry_dirty"
+
+
+def test_named_needs_intent_refused_unless_forced(paths, write_project):
+    write_project(
+        id="vague", name="Vague", repo="owner/vague",
+        automation={"mode": "build"},
+    )
+    refused = start(paths, project_id="vague", run_id="refused")
+    assert refused["outcome"] == "no_candidate"
+    assert "vague is needs_intent" in refused["reason"]
+    forced = start(
+        paths, project_id="vague", force_named=True, run_id="forced"
+    )
+    assert forced["outcome"] == "forced_named"
+    assert forced["candidate"]["state"] == "needs_intent"
+
+
+def test_event_counters_and_finish_digest(paths, write_project):
+    ready_project(write_project)
+    result = start(paths, run_id="run")
+    with pytest.raises(BuildError):
+        record_event(paths, "wrong", {"type": "chunk_started", "chunk_id": "c1"})
+    record_event(paths, "run", {
+        "type": "pr_opened", "chunk_id": "c1",
+        "pr_url": "https://github.com/owner/builder/pull/9",
+        "detail": {"pr_number": 9, "branch": "push/run-1-work"},
+    })
+    record_event(paths, "run", {"type": "verify_passed", "chunk_id": "c1"})
+    record_event(paths, "run", {
+        "type": "review_verdict", "chunk_id": "c1",
+        "detail": {"verdict": "approve"},
+    })
+    recorded = record_event(paths, "run", {
+        "type": "merged", "chunk_id": "c1", "tag": "checkpoint/run-1",
+        "detail": {"merge_sha": "abc123"},
+    })
+    assert recorded["lease_summary"]["prs_open"] == 0
+    assert recorded["lease_summary"]["merges"] == 1
+    lease = read_json(paths.build_lease_file)
+    assert lease["chunks"]["c1"]["verify"] == "passed"
+    assert lease["chunks"]["c1"]["verdict"] == "approve"
+    finished = finish_run(paths, result["run_id"], outcome="completed", now=NOW)
+    assert finished["state_after"]["chunks_merged_total"] == 1
+    digest = open(finished["digest_path"], encoding="utf-8").read()
+    assert "https://github.com/owner/builder/pull/9" in digest
+    assert "git revert abc123" in digest
+    assert not paths.build_lease_file.exists()
+
+
+def test_reconcile_lists_stale_builder_pr_without_mutation(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="dead")
+    lease = read_json(paths.build_lease_file)
+    lease["ttl_seconds"] = 1
+    write_json(paths.build_lease_file, lease)
+    calls = []
+
+    def fake(repo):
+        calls.append(repo)
+        return [{"number": 12, "headRefName": "push/old-1-x"}]
+
+    result = reconcile(
+        paths, now=NOW + dt.timedelta(seconds=2), list_open_builder_prs=fake
+    )
+    assert calls == ["owner/builder"]
+    assert result["actions"] == [
+        {"action": "close_pr", "repo": "owner/builder", "number": 12},
+        {"action": "delete_branch", "repo": "owner/builder", "branch": "push/old-1-x"},
+    ]
+
+
+def test_build_env_detects_overridden_hosts(paths, tmp_path, monkeypatch):
+    mac = tmp_path / "mac"
+    pc = tmp_path / "pc"
+    monkeypatch.setenv("BUILD_ENV_MAC_ROOT", str(mac))
+    monkeypatch.setenv("BUILD_ENV_PC_ROOT", str(pc))
+    assert build_env(paths.root)["host"] == "unknown"
+    pc.mkdir()
+    assert build_env(paths.root)["host"] == "pc"
+    mac.mkdir()
+    assert build_env(paths.root)["host"] == "mac"
+
+
+def test_atomic_begin_race_issues_exactly_one_lease(paths, write_project):
+    ready_project(write_project)
+    registry = load_registry(paths)
+
+    def race(run_id):
+        return begin_run(
+            paths, host="mac", now=NOW, run_id=run_id,
+            registry=registry, snapshot=Snapshot(),
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(race, ["one", "two"]))
+    assert sum("run_id" in result for result in results) == 1
+    assert sum(result.get("outcome") == "lease_held" for result in results) == 1
+
+
+def test_stop_file_journals_stopped(paths, write_project):
+    ready_project(write_project)
+    paths.build_stop_file.parent.mkdir(parents=True)
+    paths.build_stop_file.write_text("stop\n", encoding="utf-8")
+    assert start(paths, run_id="stopped")["outcome"] == "stopped"
+    assert not paths.build_lease_file.exists()
+    events, _ = read_events(paths)
+    assert events[-1]["outcome"] == "stopped"

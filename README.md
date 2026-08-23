@@ -48,6 +48,12 @@ registry build-queue [--state ready]     # explain eligibility and rank every pr
 registry build-readiness <id>            # explain one project's brief and automation policy
 registry brief-status [--incomplete] [--stale] # brief completeness and owner-review age
 registry build resume <id>               # clear a project's build pause
+registry build env --json                # resolve host, CLI, workdir, budget, and TTL
+registry build context <id> --json       # authoritative context for one candidate
+registry build start --host mac --json   # preflight, select, and atomically lease a run
+registry build event <run> <type>         # journal progress and update lease counters
+registry build finish <run> --outcome completed # state, digest, and lease release
+registry build reconcile [--done]         # plan/acknowledge expired-run cleanup
 ```
 
 Day-to-day:
@@ -76,7 +82,7 @@ registry audit
 registry mcp                  # JSON-RPC 2.0 over stdio
 ```
 
-28 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, brief, push-run, build-run, and builder-readiness reporting, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — REST remains restricted to `GET`, and a test enforces both.
+33 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, build lifecycle and readiness tools, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. Build lifecycle writes are confined to `data/build/`; no tool mutates GitHub.
 
 **Claude Code discovers the server automatically** via [`.mcp.json`](.mcp.json) when this repo is open. Claude Desktop and global registration are covered in [docs/SETUP.md](docs/SETUP.md). Sessions without MCP still work: [`CLAUDE.md`](CLAUDE.md) gives any LLM session the CLI commands and the rules.
 

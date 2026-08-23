@@ -53,6 +53,12 @@ registry build-report           # build-run/chunk metrics; add --since/--json
 registry build-queue            # explain eligibility and builder rank; add --state/--json
 registry build-readiness <id>   # explain one project's brief gaps and automation policy
 registry build resume <id>      # clear a project's build pause and failure count
+registry build env --json       # resolved host, CLI, workdir, budget, and TTL
+registry build context <id> --json # authoritative context for one candidate
+registry build start --host <host> [--project <id>] [--force-named] [--json]
+registry build event <run> <type> [--chunk-id <id>] [--detail key=value]
+registry build finish <run> --outcome <outcome> [--summary <text>]
+registry build reconcile [--done] [--json] # plan or acknowledge crash cleanup
 registry portfolio              # public-safe export; add --format json|markdown/-o
 registry proposals              # pending/applied/rejected proposal records
 registry proposal-show <id>     # exact before/after proposal diff
@@ -94,6 +100,9 @@ registry mcp                                      # run the stdio MCP server
 7. **No external GitHub mutations from this codebase.** REST is GET-only; the
    guarded GraphQL POST accepts read queries only. Do not add
    merge/close/archive/delete capabilities.
+8. **Autonomous builds go through `registry build start/event/finish`; never
+   write curated YAML from a run.** Run output belongs only under
+   `data/build/` (plus the generated dashboard workflow).
 
 ## Answering "what should I work on?"
 

@@ -20,8 +20,9 @@ from dataclasses import dataclass
 from typing import Any, Callable, Iterable, TextIO
 
 from ..briefs import build_briefs_status, build_sync_status
+from ..automation import ELIGIBILITY_STATES, build_queue, readiness
 from ..contracts import parse_contract, validate_contract
-from ..build import build_report
+from ..build import build_report, load_state
 from ..github.client import GitHubClient
 from ..github.sync import load_snapshot, sync
 from ..model import Effort, Lifecycle, Priority
@@ -268,6 +269,31 @@ def tool_get_build_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     return _envelope(registry, snapshot, now, {"report": report})
 
 
+def tool_get_build_queue(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    queue = build_queue(registry, snapshot, load_state(paths), now.date())
+    candidates = queue["candidates"]
+    if args.get("state"):
+        candidates = [item for item in candidates if item["state"] == args["state"]]
+    if args.get("limit") is not None:
+        candidates = candidates[:max(0, args["limit"])]
+    return _envelope(registry, snapshot, now, {**queue, "candidates": candidates})
+
+
+def tool_validate_project_readiness(
+    paths: Paths, args: dict[str, Any]
+) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    project = registry.get(args["project_id"])
+    if project is None:
+        raise ToolError(f"unknown project id: {args['project_id']}")
+    states = load_state(paths)
+    result = readiness(
+        project, states.get(project.id), snapshot.get(project.repo), now.date()
+    )
+    return _envelope(registry, snapshot, now, result)
+
+
 def tool_find_registry_mismatches(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
     found = find_mismatches(registry, snapshot, now=now)
@@ -445,6 +471,14 @@ TOOLS: tuple[Tool, ...] = (
     Tool("get_build_report", "Autonomous build-run, chunk, breaker, and journal metrics.",
          _schema({"since": {"type": "string", "format": "date"}}),
          tool_get_build_report, "MCP-003"),
+    Tool("get_build_queue", "Explain and rank autonomous build eligibility across projects.",
+         _schema({
+             "limit": {"type": "integer", "minimum": 0},
+             "state": {"enum": list(ELIGIBILITY_STATES)},
+         }), tool_get_build_queue, "US-013"),
+    Tool("validate_project_readiness", "Explain one project's build readiness and policy.",
+         _schema({"project_id": {"type": "string"}}, ["project_id"]),
+         tool_validate_project_readiness, "US-013"),
     Tool("find_registry_mismatches", "Conflicts between registry intent and observed GitHub state.",
          _schema(), tool_find_registry_mismatches, "MCP-003"),
     Tool("validate_registry", "Run the registry's own operating rules.",

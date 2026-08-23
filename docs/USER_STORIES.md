@@ -136,6 +136,24 @@ Acceptance criteria:
 - Sync does not resolve mismatches automatically.
 - The report distinguishes errors from suggestions.
 
+#### US-013 — Builder queue (`P1`)
+
+As the project owner, I want an explainable autonomous-builder queue so that only eligible, intentional work is selected in a fair and deterministic order.
+
+Acceptance criteria:
+
+- Every project is classified as `ready`, `spec_only`, `paused`, `needs_intent`, `manual_only`, or `ineligible`, with human-readable reasons.
+- `project-registry` is always ineligible, `blocked_by` pauses a project, open decisions require intent, and shadow mode is ready only as a dry run.
+- Ranking uses recorded human priority, oldest successful build, lifecycle order, and project id; never-built projects come first among equal priorities.
+- GitHub urgency, snapshot freshness, and evidence briefs do not affect rank.
+- Queue order is deterministic regardless of registry input order.
+- CLI and MCP return the same candidate, state-count, and readiness structures.
+
+Expected read tools:
+
+- `get_build_queue`
+- `validate_project_readiness`
+
 ## MCP client stories
 
 #### MCP-001 — Query projects (`P1`)

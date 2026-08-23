@@ -12,7 +12,7 @@ import pytest
 GUARD = Path(__file__).parents[1] / "scripts" / "build-guard.py"
 
 
-def write_lease(root: Path, *, prs_open: int = 0) -> dict:
+def write_lease(root: Path, *, prs_open: int = 0, dry_run: bool = False) -> dict:
     lease = {
         "run_id": "R1",
         "host": "test-host",
@@ -20,6 +20,7 @@ def write_lease(root: Path, *, prs_open: int = 0) -> dict:
         "repo": "kmadhok/target",
         "status": "running",
         "prs_open": prs_open,
+        "dry_run": dry_run,
         "chunks": {
             "c1": {
                 "pr_number": 7,
@@ -147,6 +148,36 @@ def test_target_push_branch_is_allowed(tmp_path: Path, command: str) -> None:
 
 
 @pytest.mark.parametrize(
+    "command",
+    [
+        "git push origin checkpoint/R1-1",
+        "git push origin refs/tags/checkpoint/R1-2",
+        "git push origin tag checkpoint/R1-3",
+    ],
+)
+def test_target_checkpoint_tag_push_is_allowed(tmp_path: Path, command: str) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    clone.mkdir()
+    assert run_guard(tmp_path, command, cwd=clone).returncode == 0
+
+
+@pytest.mark.parametrize(
+    ("command", "rule_id"),
+    [
+        ("git push origin checkpoint/OTHER-1", "tag_push_scope"),
+        ("git push origin --tags", "tag_push_scope"),
+        ("git push origin --follow-tags", "tag_push_scope"),
+    ],
+)
+def test_target_tag_push_scope(tmp_path: Path, command: str, rule_id: str) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    clone.mkdir()
+    assert_denied(run_guard(tmp_path, command, cwd=clone), rule_id)
+
+
+@pytest.mark.parametrize(
     ("branch", "expected", "rule_id"),
     [("push/R1-1-x", 0, None), ("main", 2, "non_push_branch")],
 )
@@ -241,6 +272,20 @@ def test_pr_merge_policy(
 
 
 @pytest.mark.parametrize(
+    ("dry_run", "expected", "rule_id"),
+    [(True, 2, "shadow_mode"), (False, 0, None)],
+)
+def test_pr_merge_shadow_mode(
+    tmp_path: Path, dry_run: bool, expected: int, rule_id: str | None
+) -> None:
+    write_lease(tmp_path, dry_run=dry_run)
+    result = run_guard(tmp_path, "gh pr merge 7 --squash")
+    assert result.returncode == expected
+    if rule_id:
+        assert rule_id in result.stderr
+
+
+@pytest.mark.parametrize(
     ("command", "expected", "rule_id"),
     [
         ("gh pr close 12", 2, "foreign_pr"),
@@ -299,6 +344,30 @@ def test_compound_command_evaluates_every_segment(tmp_path: Path) -> None:
         run_guard(tmp_path, "git status && git push origin main", cwd=clone),
         "non_push_branch",
     )
+
+
+@pytest.mark.parametrize(
+    ("command", "expected", "rule_id"),
+    [
+        (
+            'python3 -c "import subprocess; subprocess.run([\'git\',\'push\',\'origin\',\'main\'])"',
+            2,
+            "indirect_invocation",
+        ),
+        ('bash -c "gh pr merge 7 --squash"', 2, "indirect_invocation"),
+        ("python3 - <<'EOF'\n# git push origin main\nEOF", 2, "indirect_invocation"),
+        ("python3 -m pytest -q", 0, None),
+        ("bash scripts/run.sh", 0, None),
+    ],
+)
+def test_indirect_invocation_policy(
+    tmp_path: Path, command: str, expected: int, rule_id: str | None
+) -> None:
+    write_lease(tmp_path)
+    result = run_guard(tmp_path, command)
+    assert result.returncode == expected
+    if rule_id:
+        assert rule_id in result.stderr
 
 
 def test_cd_prefix_controls_branch_policy(tmp_path: Path) -> None:

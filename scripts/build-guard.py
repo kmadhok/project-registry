@@ -33,6 +33,14 @@ SECRET_READERS = {
     "xxd", "od", "get-content",
 }
 SECRET_WORDS = re.compile(r"(?:KEY|TOKEN|SECRET|PASSWORD)", re.IGNORECASE)
+INDIRECT_INTERPRETERS = {"python", "python3", "node", "perl", "ruby", "php"}
+INDIRECT_SHELLS = {"bash", "sh", "zsh"}
+INDIRECT_WRAPPERS = {"eval", "exec", "xargs", "nohup", "timeout"}
+INDIRECT_TARGETS = (
+    "git push", "gh pr", "gh api", "gh repo", "gh issue", "gh release",
+    "gh secret", "gh variable", "proposal-apply", "record-review",
+    "apply_approved_project_update", "record_project_review",
+)
 
 
 class Denied(Exception):
@@ -180,7 +188,7 @@ def _positional_args(args: list[str], value_options: set[str]) -> list[str]:
     return result
 
 
-def _push_ref(args: list[str], git_dir: Path) -> tuple[str, bool]:
+def _push_ref(args: list[str], git_dir: Path) -> tuple[str, bool, bool]:
     deletion = "--delete" in args or "-d" in args
     positional = _positional_args(
         args,
@@ -188,17 +196,25 @@ def _push_ref(args: list[str], git_dir: Path) -> tuple[str, bool]:
     )
     # The first positional is the remote; subsequent values are refspecs.
     refspecs = positional[1:] if positional else []
+    explicit_tag = bool(refspecs and refspecs[0] == "tag")
+    if explicit_tag:
+        refspecs = refspecs[1:]
     if deletion and refspecs:
-        return refspecs[-1].removeprefix(":"), True
+        ref = refspecs[-1].removeprefix(":")
+        return ref, True, explicit_tag or ref.startswith("refs/tags/")
     if refspecs:
         refspec = refspecs[-1]
         if refspec.startswith(":"):
-            return refspec[1:], True
+            ref = refspec[1:]
+            return ref, True, explicit_tag or ref.startswith("refs/tags/")
         if ":" in refspec:
             source, destination = refspec.split(":", 1)
-            return destination or source.removeprefix("+"), not source
-        return refspec.removeprefix("+"), deletion
-    return _current_branch(git_dir), deletion
+            ref = destination or source.removeprefix("+")
+            is_tag = explicit_tag or source.lstrip("+").startswith("refs/tags/") or ref.startswith("refs/tags/")
+            return ref, not source, is_tag
+        ref = refspec.removeprefix("+")
+        return ref, deletion, explicit_tag or ref.startswith("refs/tags/") or ref.startswith("checkpoint/")
+    return _current_branch(git_dir), deletion, False
 
 
 def _force_push(args: list[str]) -> bool:
@@ -314,12 +330,24 @@ def _evaluate_git(
     if subcommand == "push":
         if _force_push(args):
             raise Denied("force_push")
-        branch, deletion = _push_ref(args, git_dir)
+        if any(
+            token in {"--tags", "--follow-tags"}
+            or token.startswith("--tags=")
+            or token.startswith("--follow-tags=")
+            for token in args
+        ):
+            raise Denied("tag_push_scope")
+        branch, deletion, is_tag = _push_ref(args, git_dir)
         prefix = f"push/{lease['run_id']}-"
         if deletion:
             targets = {str(value).removeprefix("refs/heads/") for value in lease.get("reconcile_targets", [])}
             if branch.removeprefix("refs/heads/") not in targets and not branch.startswith(prefix):
                 raise Denied("branch_delete")
+            return
+        if is_tag:
+            tag = branch.removeprefix("refs/tags/")
+            if git_dir == root or not tag.startswith(f"checkpoint/{lease['run_id']}-"):
+                raise Denied("tag_push_scope")
             return
         branch = branch.removeprefix("refs/heads/")
         if git_dir == root:
@@ -361,6 +389,8 @@ def _evaluate_gh(args: list[str], command_dir: Path, lease: dict[str, Any]) -> N
             raise Denied("pr_head_branch")
         return
     if group == "pr" and action == "merge":
+        if lease.get("dry_run") is True:
+            raise Denied("shadow_mode")
         if "--squash" not in rest:
             raise Denied("merge_method")
         if "--admin" in rest:
@@ -458,7 +488,73 @@ def _evaluate_segment(
     return command_dir
 
 
+def _indirect_executable(tokens: list[str]) -> tuple[str, list[str]] | None:
+    index = 0
+    while index < len(tokens) and "=" in tokens[index] and not tokens[index].startswith("-"):
+        index += 1
+    if index < len(tokens) and Path(tokens[index]).name.lower() == "env":
+        index += 1
+        while index < len(tokens) and (
+            tokens[index].startswith("-")
+            or ("=" in tokens[index] and not tokens[index].startswith("="))
+        ):
+            index += 1
+    if index >= len(tokens):
+        return None
+    return Path(tokens[index]).name.lower(), tokens[index + 1:]
+
+
+def _has_inline_option(args: list[str], options: set[str]) -> bool:
+    for arg in args:
+        if arg == "--" or not arg.startswith("-"):
+            return False
+        if arg in options:
+            return True
+        if arg.startswith("--"):
+            continue
+        if any(arg.startswith(option) for option in options):
+            return True
+        if arg.startswith("-") and any(option[1:] in arg[1:] for option in options):
+            return True
+    return False
+
+
 def _evaluate_bash(command: str, cwd: Path, root: Path, lease: dict[str, Any]) -> None:
+    normalized = re.sub(r"[^A-Za-z0-9_-]+", " ", command).lower()
+    if any(target in normalized for target in INDIRECT_TARGETS):
+        indirect = False
+        for piece in _split_shell(command):
+            if piece in SHELL_OPERATORS:
+                continue
+            try:
+                tokens = _tokens(piece)
+            except ValueError:
+                # Let the normal fail-closed parsing path report malformed shell syntax.
+                continue
+            invocation = _indirect_executable(tokens)
+            if invocation is None:
+                continue
+            name, tail = invocation
+            if name in INDIRECT_INTERPRETERS and _has_inline_option(tail, {"-c", "-e"}):
+                indirect = True
+            elif name in INDIRECT_SHELLS and _has_inline_option(tail, {"-c"}):
+                indirect = True
+            elif name in INDIRECT_WRAPPERS:
+                indirect = True
+        if not indirect:
+            for line in command.splitlines():
+                if "<<" not in line:
+                    continue
+                prefix = line.split("<<", 1)[0]
+                try:
+                    invocation = _indirect_executable(_tokens(prefix))
+                except ValueError:
+                    continue
+                if invocation is not None and invocation[0] in INDIRECT_INTERPRETERS | INDIRECT_SHELLS:
+                    indirect = True
+                    break
+        if indirect:
+            raise Denied("indirect_invocation")
     if re.search(
         r"(?:^|[;&|\n])\s*(?:printenv|env|set)\b[^|]*\|\s*grep\b[^\n;&]*(?:KEY|TOKEN|SECRET|PASSWORD)",
         command,

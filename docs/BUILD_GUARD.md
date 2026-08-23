@@ -19,7 +19,8 @@ when deciding whether a command operates in the registry or target clone.
 | Rule ID | Enforced boundary |
 |---|---|
 | `force_push` | Blocks force flags and `+` refspecs on `git push`. |
-| `non_push_branch` | Target-repository pushes must use `push/<run_id>-*`. |
+| `tag_push_scope` | Target-repository tag pushes are limited to one explicit `checkpoint/<run_id>-*` tag; `--tags` and `--follow-tags` are forbidden. |
+| `non_push_branch` | Target-repository branch pushes must use `push/<run_id>-*`. |
 | `registry_push_branch` | Registry-repository pushes may target only `main`. |
 | `branch_delete` | Branch deletion is limited to run branches and reconciliation targets. |
 | `registry_commit_scope` | Registry commits may stage only `data/build/**` and `DASHBOARD.md`. |
@@ -29,6 +30,7 @@ when deciding whether a command operates in the registry or target clone.
 | `merge_method` | Builder PRs may be merged only with squash. |
 | `merge_admin` | Administrative merge bypasses are forbidden. |
 | `unverified_merge` | A merge requires a known, unmerged lease PR with passed verification and an approve verdict. |
+| `shadow_mode` | PR merges are forbidden while `lease.dry_run` is true. |
 | `foreign_pr` | Close/edit/reopen/lock/ready/review operations are limited to lease PRs. |
 | `pr_close_policy` | A lease PR may close only during reconciliation or after rejection, requested changes, or failed verification. |
 | `issue_mutation` | GitHub issue mutations are forbidden. |
@@ -37,6 +39,7 @@ when deciding whether a command operates in the registry or target clone.
 | `release_mutation` | GitHub release mutations are forbidden. |
 | `secret_mutation` | GitHub secret and variable commands are forbidden. |
 | `registry_write_tool` | Direct registry write CLI commands and MCP review/apply tools are forbidden. |
+| `indirect_invocation` | Inline interpreter/shell code, heredocs, and command wrappers cannot conceal GitHub or registry write commands. |
 | `intent_only_proposal` | CLI and MCP proposals may change only `brief.*` fields. |
 | `breaker_bypass` | `registry build resume` cannot bypass the circuit breaker. |
 | `secret_read` | Secret-looking files and contract-forbidden paths cannot be read. |
@@ -49,6 +52,11 @@ when deciding whether a command operates in the registry or target clone.
 
 Every policy denial is also appended best-effort to `data/build/runs.jsonl` as a
 `guard_denied` event. Logging failure does not weaken the denial.
+
+The guard can inspect the command line and inline code, but it cannot inspect
+the behavior of scripts or files invoked by otherwise ordinary commands. Such
+files may themselves push or mutate GitHub state. Reconciliation therefore
+compares actual GitHub state with the build journal and records any divergence.
 
 ## Test a command by hand
 

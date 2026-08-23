@@ -116,6 +116,7 @@ explanations rather than re-ranking by your own judgment.
 ## Development
 
 - Tests: `python3 -m pytest` (no network needed). Keep them green.
+- Autonomous builder launcher: `scripts/run-build.sh` (PC scheduled, Mac interactive).
 - Layout: `src/project_registry/` — `model` → `storage` → `validation` /
   `queries` / `signals` → `dashboard` / `portfolio` / `proposals` → `cli` /
   `mcp.server`. CLI and MCP call the same query functions; keep it that way.

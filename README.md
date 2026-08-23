@@ -67,6 +67,11 @@ registry brief-status         # owner brief completeness, open decisions, and st
 registry record-review my-project --set lifecycle=next
 ```
 
+Autonomous building uses the canonical `.claude/skills/push-project/SKILL.md`
+orchestrator and the cross-platform `scripts/run-build.sh` launcher. The launcher
+runs scheduled builds on PC and supports interactive Mac runs; use
+`scripts/run-build.sh --dry-run` to inspect its resolved Claude command.
+
 Changing curated fields from a script or an agent goes through propose-then-apply:
 
 ```bash
@@ -116,5 +121,5 @@ Tests: `python3 -m pytest` (no network required).
 
 - Replacing GitHub as the source of repository and pull-request data.
 - Automatically deciding which projects matter.
-- Automatically closing issues, merging PRs, deleting code, or archiving repositories.
+- Letting the registry CLI or MCP server close issues, merge PRs, delete code, or archive repositories; autonomous builder GitHub mutations are separately guard-enforced.
 - Storing credentials, source code from other projects, or private document contents.

@@ -1,3 +1,5 @@
+> **Retired 2026-08-22:** The cloud Routine is disabled. The PC scheduled run is primary; Mac runs are interactive. The remainder of this page is retained for history.
+
 # Running push-project as a cloud Routine
 
 The `push-project` skill was built to run locally. Routines run it on

@@ -180,6 +180,28 @@ def test_attention_queue_items_carry_reasons(seeded):
     assert all(item["reasons"] for item in payload["items"])
 
 
+def test_get_brief_status_matches_cli(paths, write_project, capsys):
+    write_project(
+        id="p", purpose="why", desired_outcome="result", repo="owner/p",
+        automation={"mode": "build"}, brief={"done_criteria": ["Tests pass"]},
+    )
+    payload, is_error = call(paths, "get_brief_status", {"stale": True})
+    assert not is_error
+
+    code = main([
+        "--root", str(paths.root), "brief-status", "--stale", "--json"
+    ])
+    cli_payload = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert payload["projects"] == cli_payload["projects"]
+    assert payload["summary"] == cli_payload["summary"]
+
+
+def test_get_brief_status_tool_name_is_allowed():
+    assert "get_brief_status" in TOOLS_BY_NAME
+    assert FORBIDDEN_TOOL_VERBS.search("get_brief_status") is None
+
+
 def test_attention_queue_reports_null_for_unrecorded_priority(paths, write_project):
     """MCP-002: never invent a project priority."""
     write_project(id="p", purpose="p", active=True,

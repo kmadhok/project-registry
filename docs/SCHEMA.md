@@ -44,6 +44,12 @@ brief:
 
 All lists default to empty. `open_decisions[].question` is required; `answer` may be a string or null. Build readiness requires a purpose, desired outcome, at least one done criterion, a repository, and no open decisions.
 
+`registry brief-status` reports those completeness gaps plus review freshness.
+A brief with `brief.reviewed` more than 90 days ago is stale. A brief that has
+never been reviewed is stale when `automation.mode` is `build`, `shadow`, or
+`spec_only`; never-reviewed projects with automation off are not marked stale.
+Use `--incomplete`, `--stale`, or both to narrow the report.
+
 ### Automation policy
 
 `automation` is optional and defaults to a safe, disabled policy.

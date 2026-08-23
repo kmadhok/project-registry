@@ -88,6 +88,25 @@ def test_json_output_is_machine_readable(paths, write_project, capsys):
     assert json.loads(out)[0]["id"] == "p"
 
 
+def test_brief_status_table_and_json(paths, write_project, capsys):
+    write_project(
+        id="p", name="Project P", purpose="why", desired_outcome="result",
+        repo="owner/p", lifecycle="now", automation={"mode": "build"},
+        brief={"done_criteria": ["Tests pass"], "reviewed": "2026-08-01"},
+    )
+    code, out = run(paths, "brief-status", capsys=capsys)
+    assert code == 0
+    assert "PROJECT" in out
+    assert "AUTOMATION" in out
+    assert "Project P" in out
+
+    code, out = run(paths, "brief-status", "--json", capsys=capsys)
+    assert code == 0
+    payload = json.loads(out)
+    assert payload["projects"][0]["project_id"] == "p"
+    assert payload["summary"]["complete"] == 1
+
+
 def test_list_filters(paths, write_project, capsys):
     write_project(id="a", purpose="p", lifecycle="reference")
     write_project(id="b", purpose="p", lifecycle="maintained")

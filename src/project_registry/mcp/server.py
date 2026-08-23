@@ -25,6 +25,7 @@ from ..contracts import parse_contract, validate_contract
 from ..build import build_report, load_state
 from ..github.client import GitHubClient
 from ..github.sync import load_snapshot, sync
+from ..intent import build_brief_status, filter_brief_status
 from ..model import Effort, Lifecycle, Priority
 from ..proposals import (
     ProposalError,
@@ -211,6 +212,16 @@ def tool_get_attention_queue(paths: Paths, args: dict[str, Any]) -> dict[str, An
             "given a default value."
         ),
     })
+
+
+def tool_get_brief_status(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = filter_brief_status(
+        build_brief_status(registry, now=now),
+        incomplete=bool(args.get("incomplete", False)),
+        stale=bool(args.get("stale", False)),
+    )
+    return _envelope(registry, snapshot, now, report)
 
 
 # -- MCP-003: GitHub work -------------------------------------------------
@@ -450,6 +461,9 @@ TOOLS: tuple[Tool, ...] = (
     Tool("get_attention_queue", "Ranked work combining curated next actions with live GitHub signals.",
          _schema({**_FILTER_PROPERTIES, "limit": {"type": "integer"}}),
          tool_get_attention_queue, "MCP-002"),
+    Tool("get_brief_status", "Brief completeness, open decisions, and owner-review age.",
+         _schema({"incomplete": {"type": "boolean"}, "stale": {"type": "boolean"}}),
+         tool_get_brief_status, "MCP-002"),
 
     Tool("list_open_prs", "Open pull requests across the portfolio, from the last snapshot.",
          _schema({"draft": {"type": "boolean"}, "repo": {"type": "string"}}),

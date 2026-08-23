@@ -22,6 +22,7 @@ from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
 from .github.sync import load_snapshot, sync
+from .intent import build_brief_status, filter_brief_status
 from .model import Effort, Lifecycle, Priority, RegistryError
 from .portfolio import export_portfolio, render_portfolio_markdown
 from .proposals import (
@@ -411,6 +412,46 @@ def cmd_review_queue(args, paths, now) -> int:
             print(f"    - {reason}")
     print(f"\n{len(queue)} project(s) due for review. Reviewing never changes "
           "lifecycle automatically.")
+    return 0
+
+
+def cmd_brief_status(args, paths, now) -> int:
+    registry = load_registry(paths)
+    report = filter_brief_status(
+        build_brief_status(registry, now=now),
+        incomplete=args.incomplete,
+        stale=args.stale,
+    )
+    if emit(report, args):
+        return 0
+    if not report["projects"]:
+        print("No projects match the brief-status filters.")
+        return 0
+    rows = [
+        [
+            item["project_id"],
+            item["name"],
+            item["lifecycle"],
+            item["automation_mode"],
+            "yes" if item["complete"] else "no",
+            ", ".join(item["gaps"]) or "—",
+            str(sum(d["status"] == "open" for d in item["open_decisions"])),
+            item["reviewed"] or "never",
+            "—" if item["age_days"] is None else str(item["age_days"]),
+            "yes" if item["stale"] else "no",
+        ]
+        for item in report["projects"]
+    ]
+    print(_table(rows, [
+        "PROJECT", "NAME", "LIFECYCLE", "AUTOMATION", "COMPLETE", "GAPS",
+        "OPEN", "REVIEWED", "AGE DAYS", "STALE",
+    ]))
+    summary = report["summary"]
+    print(
+        f"\n{summary['total']} project(s): {summary['complete']} complete, "
+        f"{summary['incomplete']} incomplete, {summary['stale']} stale, "
+        f"{summary['open_decisions']} open decision(s)."
+    )
     return 0
 
 
@@ -948,6 +989,10 @@ def build_parser() -> argparse.ArgumentParser:
     add_project_filters(sub)
 
     add("review-queue", cmd_review_queue, "Projects due for a deliberate review.")
+
+    sub = add("brief-status", cmd_brief_status, "Report brief completeness and staleness.")
+    sub.add_argument("--incomplete", action="store_true", help="Only incomplete briefs.")
+    sub.add_argument("--stale", action="store_true", help="Only stale briefs.")
 
     sub = add("prs", cmd_prs, "Open pull requests across the portfolio.")
     sub.add_argument("--draft", action="store_true", help="Only drafts.")

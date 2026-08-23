@@ -349,6 +349,25 @@ def test_build_report_and_resume_commands(paths, capsys):
     assert state["paused_reason"] is None
 
 
+def test_build_queue_and_readiness_commands(paths, write_project, capsys):
+    write_project(
+        id="builder", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/builder", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "shadow"},
+    )
+    code, out = run(paths, "build-queue", "--json", capsys=capsys)
+    assert code == 0
+    queue = json.loads(out)
+    assert queue["ready_count"] == 1
+    assert queue["candidates"][0]["dry_run"] is True
+
+    code, out = run(paths, "build-readiness", "builder", "--json", capsys=capsys)
+    assert code == 0
+    result = json.loads(out)
+    assert result["brief"] == {"complete": True, "missing": []}
+    assert result["policy"]["mode"] == "shadow"
+
+
 # -- dashboard rendering --------------------------------------------------
 
 
@@ -366,11 +385,39 @@ def test_dashboard_contains_every_section(paths, write_project):
 
     for heading in (
         "## Registry health", "## Lifecycle", "## Active projects", "## Work queue",
+        "## Build",
         "## Missing next actions", "## Open pull requests", "## Needs attention",
         "## Registry / GitHub mismatches", "## Review queue",
         "## Recent accomplishments", "## Relationships",
     ):
         assert heading in text
+
+
+def test_dashboard_build_section_groups_actionable_states(paths, write_project):
+    write_project(
+        id="ready", purpose="Ship", desired_outcome="Shipped", repo="owner/ready",
+        brief={"done_criteria": ["Tests pass"]}, automation={"mode": "build"},
+    )
+    write_project(
+        id="intent", purpose="Choose", desired_outcome="Chosen", repo="owner/intent",
+        brief={"done_criteria": []}, automation={"mode": "build"},
+    )
+    write_project(
+        id="paused", purpose="Wait", desired_outcome="Resume", repo="owner/paused",
+        brief={"done_criteria": ["Tests pass"]}, automation={"mode": "build"},
+        blocked_by="owner approval",
+    )
+    write_project(
+        id="spec", purpose="Specify", desired_outcome="Specified", repo="owner/spec",
+        brief={"done_criteria": ["Spec is complete"]},
+        automation={"mode": "spec_only"},
+    )
+    text = render_dashboard(load_registry(paths), make_snapshot(), now=NOW)
+    assert "**#1 ready** `ready`" in text
+    assert "**spec only** `spec`" in text
+    assert "**needs intent** `intent` — brief.done_criteria" in text
+    assert "**paused** `paused` — owner approval" in text
+    assert "manual only;" in text and "ineligible." in text
 
 
 def test_dashboard_states_evidence_age(paths, write_project):

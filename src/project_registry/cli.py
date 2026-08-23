@@ -16,7 +16,8 @@ from typing import Any, Sequence
 
 from .briefs import build_briefs_status, build_sync_status
 from .contracts import parse_contract, validate_contract
-from .build import BuildError, build_report, resume_project
+from .automation import ELIGIBILITY_STATES, build_queue, readiness
+from .build import BuildError, build_report, load_state, resume_project
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -525,6 +526,66 @@ def cmd_dashboard(args, paths, now) -> int:
     return 0
 
 
+def cmd_build_queue(args, paths, now) -> int:
+    registry = load_registry(paths)
+    snapshot = load_snapshot(paths)
+    queue = build_queue(registry, snapshot, load_state(paths), now.date())
+    candidates = queue["candidates"]
+    if args.state:
+        candidates = [item for item in candidates if item["state"] == args.state]
+    output = {**queue, "candidates": candidates}
+    if emit(output, args):
+        return 0
+
+    ready_ranks = {
+        item["project_id"]: index
+        for index, item in enumerate(
+            (item for item in queue["candidates"] if item["state"] == "ready"), 1
+        )
+    }
+    rows = [
+        [
+            item["project_id"],
+            item["state"],
+            "yes" if item["dry_run"] else "no",
+            str(ready_ranks.get(item["project_id"], "—")),
+            "; ".join(item["reasons"]),
+        ]
+        for item in candidates
+    ]
+    print(_table(rows, ["PROJECT", "STATE", "DRY_RUN", "RANK", "REASONS"]))
+    print(f"\n{queue['ready_count']} ready; {len(candidates)} shown.")
+    return 0
+
+
+def cmd_build_readiness(args, paths, now) -> int:
+    registry = load_registry(paths)
+    project = registry.require(args.project_id)
+    snapshot = load_snapshot(paths)
+    states = load_state(paths)
+    result = readiness(
+        project, states.get(project.id), snapshot.get(project.repo), now.date()
+    )
+    if emit(result, args):
+        return 0
+
+    print(f"{project.id}: {result['state']}")
+    print(f"  dry run      {'yes' if result['dry_run'] else 'no'}")
+    print(f"  reasons      {'; '.join(result['reasons'])}")
+    print(f"  brief gaps   {', '.join(result['brief_gaps']) or 'none'}")
+    print(f"  mode         {result['policy']['mode']}")
+    print(
+        "  allow        "
+        + (", ".join(result["policy"]["allow"]) or "none")
+    )
+    budget = result["policy"]["budget"]
+    print(
+        f"  budget       {budget['chunks_per_run']} chunks, "
+        f"{budget['minutes_per_run']} minutes"
+    )
+    return 0
+
+
 def cmd_portfolio(args, paths, now) -> int:
     registry = load_registry(paths)
     snapshot = load_snapshot(paths)
@@ -928,6 +989,12 @@ def build_parser() -> argparse.ArgumentParser:
     sub = add("build-report", cmd_build_report, "Summarize autonomous build runs.")
     sub.add_argument("--since", metavar="YYYY-MM-DD",
                      help="Include events on or after this UTC date.")
+
+    sub = add("build-queue", cmd_build_queue, "Show autonomous build eligibility and rank.")
+    sub.add_argument("--state", choices=ELIGIBILITY_STATES)
+
+    sub = add("build-readiness", cmd_build_readiness, "Explain one project's build readiness.")
+    sub.add_argument("project_id")
 
     build = subparsers.add_parser("build", help="Manage autonomous build state.")
     build_subparsers = build.add_subparsers(dest="build_command", required=True)

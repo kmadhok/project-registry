@@ -295,6 +295,36 @@ def test_build_report_cli_and_mcp_return_same_numbers(paths, capsys):
     assert mcp_report["minutes_per_merged_chunk"] == cli_report["minutes_per_merged_chunk"]
 
 
+def test_build_queue_cli_and_mcp_are_identical(paths, write_project, capsys):
+    write_project(
+        id="builder", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/builder", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"}, priority="high",
+    )
+    write_project(id="manual", purpose="Human work", repo="owner/manual")
+
+    assert main(["--root", str(paths.root), "build-queue", "--json"]) == 0
+    cli_queue = json.loads(capsys.readouterr().out)
+    payload, is_error = call(paths, "get_build_queue")
+    assert not is_error
+    assert payload["candidates"] == cli_queue["candidates"]
+    assert payload["by_state"] == cli_queue["by_state"]
+    assert payload["ready_count"] == cli_queue["ready_count"]
+
+    readiness, is_error = call(
+        paths, "validate_project_readiness", {"project_id": "builder"}
+    )
+    assert not is_error
+    assert readiness["state"] == "ready"
+    assert readiness["policy"]["mode"] == "build"
+
+    error, is_error = call(
+        paths, "validate_project_readiness", {"project_id": "missing"}
+    )
+    assert is_error
+    assert error["error"] == "unknown project id: missing"
+
+
 def test_validate_spec_tool_matches_validator_and_rejects_unknown_id(paths, write_project):
     write_project(id="target", automation={"allow": []})
     spec_text = (

@@ -44,6 +44,8 @@ registry attention                       # work needing a human, with the rule b
 registry mismatches                      # where registry intent and GitHub disagree
 registry push-report                     # push-run totals and cached linked-PR states
 registry build-report                    # autonomous build-run and chunk metrics
+registry build-queue [--state ready]     # explain eligibility and rank every project
+registry build-readiness <id>            # explain one project's brief and automation policy
 registry build resume <id>               # clear a project's build pause
 ```
 
@@ -72,7 +74,7 @@ registry audit
 registry mcp                  # JSON-RPC 2.0 over stdio
 ```
 
-24 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, brief, push-run, and build-run reporting, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — REST remains restricted to `GET`, and a test enforces both.
+28 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, brief, push-run, build-run, and builder-readiness reporting, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — REST remains restricted to `GET`, and a test enforces both.
 
 **Claude Code discovers the server automatically** via [`.mcp.json`](.mcp.json) when this repo is open. Claude Desktop and global registration are covered in [docs/SETUP.md](docs/SETUP.md). Sessions without MCP still work: [`CLAUDE.md`](CLAUDE.md) gives any LLM session the CLI commands and the rules.
 
@@ -81,7 +83,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 - [Setup](docs/SETUP.md) — token creation, inventory import, curation loop, MCP registration
 - [Agent instructions](CLAUDE.md) — how LLM sessions should use this repo
 - [Purpose and operating model](docs/PURPOSE.md) — the problem, sources of truth, lifecycle vocabulary, safety boundaries
-- [User stories and MCP capabilities](docs/USER_STORIES.md) — 18 stories with acceptance criteria
+- [User stories and MCP capabilities](docs/USER_STORIES.md) — 19 stories with acceptance criteria
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md) — how each story is built and verified
 - [Builder agents](docs/BUILDER_AGENTS.md) — planner and independent reviewer contracts
 - [Schema reference](docs/SCHEMA.md) — every field, every validation rule

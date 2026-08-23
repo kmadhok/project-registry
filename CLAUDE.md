@@ -47,6 +47,7 @@ registry rules                  # signal and mismatch rule catalogue
 registry review-queue           # projects due for a deliberate review
 registry sync-status            # when GitHub evidence was last refreshed
 registry briefs-status          # evidence-brief presence, age, and revision staleness
+registry brief-status           # owner brief completeness/age; add --incomplete/--stale/--json
 registry push-report            # push-run totals and cached PR states; add --refresh/--since/--json
 registry build-report           # build-run/chunk metrics; add --since/--json
 registry build resume <id>      # clear a project's build pause and failure count

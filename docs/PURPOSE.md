@@ -51,6 +51,13 @@ The registry owns:
 - relationships such as successor, predecessor, duplicate, or component;
 - private notes and public-safe summaries.
 
+### Briefs and automation
+
+The project brief—`purpose`, `desired_outcome`, and `brief.*`—is the
+owner-authored approval surface for autonomous work. Automation reads that
+intent but does not rewrite it; changes are filed through the proposal workflow
+for owner review and approval.
+
 ### GitHub-observed data
 
 GitHub owns:

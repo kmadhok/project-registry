@@ -44,6 +44,7 @@ registry attention                       # work needing a human, with the rule b
 registry mismatches                      # where registry intent and GitHub disagree
 registry push-report                     # push-run totals and cached linked-PR states
 registry build-report                    # autonomous build-run and chunk metrics
+registry brief-status [--incomplete] [--stale] # brief completeness and owner-review age
 registry build resume <id>               # clear a project's build pause
 ```
 
@@ -54,6 +55,7 @@ registry work-queue           # ranked work; human priority and GitHub urgency s
 registry next-actions --missing
 registry review-queue         # what is due for a deliberate look
 registry briefs-status        # which repo-backed projects have current/stale/unknown briefs
+registry brief-status         # owner brief completeness, open decisions, and staleness
 registry record-review my-project --set lifecycle=next
 ```
 

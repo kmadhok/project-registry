@@ -13,6 +13,7 @@ import json
 import sys
 from typing import Any, Sequence
 
+from .briefs import build_briefs_status, build_sync_status
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -28,6 +29,7 @@ from .proposals import (
     record_review,
     reject_proposal,
 )
+from .push_runs import build_push_report
 from .queries import (
     ProjectFilter,
     build_review_queue,
@@ -39,8 +41,15 @@ from .queries import (
     list_related_projects,
     list_selected_issues,
     search_projects,
+    signal_ref,
 )
-from .signals import build_attention_queue, describe_rules, find_mismatches
+from .signals import (
+    SignalConfig,
+    build_attention_queue,
+    classify_branches,
+    describe_rules,
+    find_mismatches,
+)
 from .storage import Paths, load_registry, read_jsonl
 from .validation import ERROR, validate
 
@@ -213,11 +222,22 @@ def cmd_show(args, paths, now) -> int:
             print(f"    - {edge['kind']} → {edge['target']}{tag}")
 
     if state:
-        print(f"\n  github: {state.full_name} · "
-              f"{'private' if state.private else 'public'} · "
-              f"{'archived' if state.archived else 'live'} · "
-              f"{len(state.pull_requests)} open PR(s) · "
-              f"{len(state.issues)} open issue(s)")
+        github = (
+            f"\n  github: {state.full_name} · "
+            f"{'private' if state.private else 'public'} · "
+            f"{'archived' if state.archived else 'live'} · "
+            f"{len(state.pull_requests)} open PR(s) · "
+            f"{len(state.issues)} open issue(s)"
+        )
+        if state.branches_fetched:
+            counts = classify_branches(state, now, SignalConfig())
+            github += (
+                f" · {counts.total} branches ({counts.stale} stale, "
+                f"{counts.open_pr_heads} open-PR heads)"
+            )
+        if state.branches_error:
+            github += f" · (branches: {state.branches_error})"
+        print(github)
     return 0
 
 
@@ -395,7 +415,7 @@ def cmd_attention(args, paths, now) -> int:
         print("No attention signals in the last snapshot.")
         return 0
     for item in items:
-        print(f"[{item.severity}] {item.repo}#{item.number} — {item.reason}")
+        print(f"[{item.severity}] {signal_ref(item.repo, item.number)} — {item.reason}")
         print(f"    rule: {item.rule_id}")
         print(f"    url:  {item.url}")
     print(f"\n{len(items)} signal(s).")
@@ -477,6 +497,7 @@ def cmd_sync(args, paths, now) -> int:
         paths=paths,
         repos=args.repo or None,
         with_details=not args.no_details,
+        with_branches=not args.no_branches,
     )
     if emit(result.to_dict(), args):
         return 0 if result.coverage["complete"] else 1
@@ -485,6 +506,8 @@ def cmd_sync(args, paths, now) -> int:
     print(f"Refreshed {coverage['repos_succeeded']}/{coverage['repos_requested']} repositories.")
     for error in result.errors:
         print(f"  failed: {error['repo']} — {error['error']}")
+    for error in result.partial_errors:
+        print(f"  partial: {error['repo']} — {error['error']}")
     if result.errors:
         print("\nPrevious data for failed repositories was kept and marked stale.")
     return 0 if coverage["complete"] else 1
@@ -492,7 +515,8 @@ def cmd_sync(args, paths, now) -> int:
 
 def cmd_sync_status(args, paths, now) -> int:
     snapshot = load_snapshot(paths)
-    status = snapshot.status(now)
+    registry = load_registry(paths)
+    status = build_sync_status(registry, snapshot, paths=paths, now=now)
     if emit(status, args):
         return 0
     print(f"last refresh   {_dash(status['completed_at'])} ({status['age']})")
@@ -500,8 +524,68 @@ def cmd_sync_status(args, paths, now) -> int:
     print(f"repositories   {status['repo_count']}")
     if status["coverage"]:
         print(f"coverage       {json.dumps(status['coverage'])}")
+    briefs = status["briefs"]
+    print(
+        f"briefs         {briefs['present']} present / {briefs['missing']} missing / "
+        f"{briefs['stale']} stale"
+    )
     for error in status["errors"]:
         print(f"  error: {error.get('repo')} — {error.get('error')}")
+    return 0
+
+
+def cmd_briefs_status(args, paths, now) -> int:
+    registry = load_registry(paths)
+    snapshot = load_snapshot(paths)
+    report = build_briefs_status(registry, snapshot, paths=paths, now=now)
+    if emit(report, args):
+        return 0
+    for item in report["projects"]:
+        presence = "present" if item["present"] else "missing"
+        age = "unknown age" if item["age_days"] is None else f"{item['age_days']}d"
+        print(
+            f"{item['project_id']:<32} {presence:<7} "
+            f"{item['revision_state']:<7} {age}"
+        )
+        if item["error"]:
+            print(f"  error: {item['error']}")
+    summary = report["summary"]
+    print(
+        f"\n{summary['present']} present / {summary['missing']} missing / "
+        f"{summary['stale']} stale ({summary['unknown']} revision unknown, "
+        f"{summary['malformed']} malformed)."
+    )
+    return 0
+
+
+def cmd_push_report(args, paths, now) -> int:
+    try:
+        report = build_push_report(
+            paths=paths, since=args.since, refresh=args.refresh, now=now
+        )
+    except ValueError as exc:
+        raise RegistryError(str(exc)) from None
+    if emit(report, args):
+        return 0
+
+    runs = report["runs"]
+    prs = report["pull_requests"]
+    rate = prs["merge_rate"]
+    print(f"push runs       {runs['total']}")
+    print(f"by host         {json.dumps(runs['by_host'])}")
+    print(f"by outcome      {json.dumps(runs['by_outcome'])}")
+    print(f"by project      {json.dumps(runs['by_project'])}")
+    print(f"by gear         {json.dumps(runs['by_gear'])}")
+    print(f"PR states       {json.dumps(prs['by_state'])}")
+    percent = "unknown" if rate["percent"] is None else f"{rate['percent']:.1f}%"
+    print(f"merge rate      {rate['merged']}/{rate['total']} ({percent})")
+    malformed = report["journal"]["malformed_count"]
+    if malformed:
+        print(f"malformed       {malformed} journal line(s)")
+        for item in report["journal"]["malformed"]:
+            print(f"  line {item['line']}: {item['error']}")
+    for error in prs["refresh_errors"]:
+        print(f"  refresh error: {error['url']} — {error['error']}")
     return 0
 
 
@@ -712,8 +796,17 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("--repo", action="append", help="Limit to these repositories.")
     sub.add_argument("--no-details", action="store_true",
                      help="Skip per-PR review and CI lookups.")
+    sub.add_argument("--no-branches", action="store_true",
+                     help="Skip branch capture and carry forward prior branch evidence.")
 
     add("sync-status", cmd_sync_status, "Report the last GitHub refresh.")
+    add("briefs-status", cmd_briefs_status, "Report evidence-brief coverage and staleness.")
+
+    sub = add("push-report", cmd_push_report, "Summarize push runs and cached PR states.")
+    sub.add_argument("--refresh", action="store_true",
+                     help="Refresh linked PR states through read-only GitHub GETs.")
+    sub.add_argument("--since", metavar="YYYY-MM-DD",
+                     help="Include runs on or after this UTC date.")
 
     sub = add("import-github", cmd_import_github, "Create stubs from an owner's repositories.")
     sub.add_argument("--owner", required=True)

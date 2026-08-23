@@ -17,6 +17,7 @@ from .queries import (
     build_work_queue,
     find_missing_next_actions,
     list_open_prs,
+    signal_ref,
 )
 from .signals import SignalConfig, build_attention_queue, find_mismatches
 from .storage import Registry
@@ -186,8 +187,8 @@ def _attention_section(
     if not items:
         return lines + _empty("No attention signals in the last snapshot.")
     for item in items[:15]:
-        link = f"[{item.repo}#{item.number}]({item.url})" if item.url else \
-            f"{item.repo}#{item.number}"
+        ref = signal_ref(item.repo, item.number)
+        link = f"[{ref}]({item.url})" if item.url else ref
         lines.append(
             f"- **{item.severity}** {link} — {item.reason} (`{item.rule_id}`)"
         )

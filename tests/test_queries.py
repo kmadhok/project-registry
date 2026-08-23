@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 from project_registry.model import Lifecycle, Priority
 from project_registry.queries import (
     ProjectFilter,
@@ -14,7 +16,7 @@ from project_registry.queries import (
     search_projects,
 )
 
-from .conftest import NOW, make_pr, make_repo_state, make_snapshot
+from .conftest import NOW, make_branch, make_pr, make_repo_state, make_snapshot
 
 
 def test_filters_compose(write_project, load):
@@ -224,3 +226,19 @@ def test_unregistered_repo_signal_appears_when_unfiltered(write_project, load):
     queue = build_work_queue(load(), snapshot, now=NOW)
     assert len(queue) == 1
     assert queue[0].project_id is None
+
+
+def test_branch_signal_reference_never_renders_none(write_project, load):
+    write_project(id="p", purpose="p")
+    snapshot = make_snapshot(make_repo_state(
+        "stranger/repo",
+        branches=[make_branch("old")],
+        branches_fetched=True,
+    ))
+    item = build_work_queue(load(), snapshot, now=NOW)[0]
+    rendered = json.dumps(item.to_dict())
+    assert item.title == "stranger/repo stranger/repo"
+    assert item.reasons == [
+        "stranger/repo 1 stale branches (1 old), oldest 100d [stale_branches]"
+    ]
+    assert "#None" not in rendered

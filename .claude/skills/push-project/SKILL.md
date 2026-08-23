@@ -95,7 +95,9 @@ the open-PR brake below unless the owner's message overrides it.
 
 - `get_project <id>` → purpose, notes, relationships, `repo`, visibility,
   observed GitHub state.
-- Evidence brief: read `$REGISTRY_ROOT/data/understanding/<id>.json`.
+- Evidence brief: read `$REGISTRY_ROOT/data/understanding/<id>.json` if it
+  exists. If absent, use the fallback context from README,
+  `CLAUDE.md` / `AGENTS.md`, `docs/`, and `git log`.
 - Get the code: on the Mac and the PC, `gh repo clone <repo> $WORKDIR -- --depth 50`. In a
   cloud routine the repo is already checked out beside the registry — use
   that checkout and skip cloning. Either way, then read README,
@@ -169,12 +171,19 @@ the merge-is-approval contract. Do Step 4 and Step 5, then stop.
 3. Baseline: run the repo's test suite before touching anything; record the
    result. No test suite → note that in the PR body. "Verified" below means
    **no new failures**, and a red baseline is flagged, not silently fixed.
+   Find the test command in this order: `.project-meta.yaml` marker →
+   `CLAUDE.md` / `AGENTS.md` → `Makefile` / `pyproject.toml` / `package.json`
+   → docs. If a candidate command fails, distinguish a test collection error
+   from a test failure before reporting a red baseline.
 4. Expand the chunk into a precise task spec: files to touch, behavior,
    acceptance criteria, tests to add.
 5. Implement per the model-routing policy:
    - Taste-critical (UI, user-facing copy, API/SDK shape) → implement it
      yourself.
    - Otherwise delegate the task spec (plus relevant file excerpts):
+     Before delegating, verify the facts the worker needs and include them in
+     the task spec; this is required when the chunk touches dependencies,
+     imports, or environment.
      - Mac: pipe it to `~/.claude/model-adapters/codex.sh exec --prompt -
        --cd $WORKDIR --sandbox workspace-write --label push-<id>`.
      - PC: pipe it to `~/bin/codex exec --cd $WORKDIR --sandbox
@@ -191,8 +200,9 @@ the merge-is-approval contract. Do Step 4 and Step 5, then stop.
      timeout cap fires anyway, keep waiting with repeated foreground checks
      until the Codex process has exited, then read its output and continue.
 6. Verify: run the full test suite (no new failures) and read the entire
-   diff. Misses the bar → fix inline or redo once; a second miss → delete
-   the branch, Step 4 with outcome "aborted", notify with what was
+   diff. If the test count changed, explain why; do not just require the old
+   count to match. Misses the bar → fix inline or redo once; a second miss →
+   delete the branch, Step 4 with outcome "aborted", notify with what was
    attempted, stop.
 7. Check off the chunk in `docs/SPEC.md` in the same diff. Branch
    `push/<chunk-slug>`, open the PR: chunk text, acceptance criteria, test
@@ -220,9 +230,9 @@ lines.
 and no others:
 
 - `project_id`: the project id
-- `approved`: `true` — REQUIRED. Without it the tool files a pending
-  proposal, applies nothing, and still reports success; the review is
-  silently lost.
+- `approved`: `true` — REQUIRED on the MCP surface. Without it MCP files a
+  pending proposal, applies nothing, and returns an error; the CLI equivalent,
+  `registry record-review`, has no approval flag and applies directly.
 - `rationale`: `push-project <date>: gear <1|2>, <PR url or outcome>`
 - `updates`: `{"notes": "<full replacement text>"}` — the existing notes
   (read them via `get_project` first) plus one appended line

@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 import yaml
 
-from project_registry.github.snapshot import Issue, PullRequest, RepoState, Snapshot
+from project_registry.github.snapshot import Branch, Issue, PullRequest, RepoState, Snapshot
 from project_registry.storage import Paths, load_registry
 
 NOW = dt.datetime(2026, 7, 25, 12, 0, tzinfo=dt.timezone.utc)
@@ -89,6 +89,25 @@ def make_issue(
     )
 
 
+def make_branch(
+    name: str = "feature/work",
+    *,
+    committed_days_ago: int | None = 100,
+    is_default: bool = False,
+    open_pr_numbers: list[int] | None = None,
+) -> Branch:
+    return Branch(
+        name=name,
+        head_sha=f"sha-{name}",
+        committed_at=(
+            NOW - dt.timedelta(days=committed_days_ago)
+            if committed_days_ago is not None else None
+        ),
+        is_default=is_default,
+        open_pr_numbers=open_pr_numbers or [],
+    )
+
+
 def make_repo_state(
     full_name: str = "owner/repo",
     *,
@@ -98,6 +117,10 @@ def make_repo_state(
     pushed_days_ago: int = 2,
     pull_requests: list[PullRequest] | None = None,
     issues: list[Issue] | None = None,
+    branches: list[Branch] | None = None,
+    branches_fetched: bool = False,
+    branches_partial: bool = False,
+    branches_error: str | None = None,
 ) -> RepoState:
     return RepoState(
         full_name=full_name,
@@ -109,6 +132,11 @@ def make_repo_state(
         updated_at=NOW - dt.timedelta(days=pushed_days_ago),
         pull_requests=pull_requests or [],
         issues=issues or [],
+        branches=branches or [],
+        branches_fetched=branches_fetched,
+        branches_fetched_at=NOW if branches or branches_fetched else None,
+        branches_partial=branches_partial,
+        branches_error=branches_error,
         fetched_at=NOW,
     )
 

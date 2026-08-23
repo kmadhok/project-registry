@@ -14,6 +14,7 @@ Human intent remains authoritative. Automation may surface evidence and suggest 
 ```
 registry/projects/*.yaml     curated intent      hand-edited, git-tracked, authoritative
 data/github/snapshot.json    observed evidence   machine-written, refreshable, timestamped
+data/understanding/*.json    evidence briefs     out-of-band, coverage/staleness reported
 data/proposals/*.json        pending changes     proposed but not applied
 ```
 
@@ -35,10 +36,11 @@ To pull in GitHub evidence, export a token with read access ([docs/SETUP.md](doc
 ```bash
 export GITHUB_TOKEN=...
 registry import-github --owner kmadhok   # create stubs marked needs_review
-registry sync                            # refresh observed state (read-only)
+registry sync [--no-branches]            # refresh observed state; optionally skip branch capture (read-only)
 registry prs                             # open PRs across the portfolio
 registry attention                       # work needing a human, with the rule behind each signal
 registry mismatches                      # where registry intent and GitHub disagree
+registry push-report                     # push-run totals and cached linked-PR states
 ```
 
 Day-to-day:
@@ -47,6 +49,7 @@ Day-to-day:
 registry work-queue           # ranked work; human priority and GitHub urgency shown separately
 registry next-actions --missing
 registry review-queue         # what is due for a deliberate look
+registry briefs-status        # which repo-backed projects have current/stale/unknown briefs
 registry record-review my-project --set lifecycle=next
 ```
 
@@ -65,7 +68,7 @@ registry audit
 registry mcp                  # JSON-RPC 2.0 over stdio
 ```
 
-21 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — the HTTP client is restricted to `GET`, and a test enforces both.
+23 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, brief and push-run reporting, a GitHub refresh, and the propose/apply pair. Every response carries `source_timestamps` so a client can tell live data from cached data. There is no tool that merges, closes, deletes, archives, or changes visibility on GitHub — REST remains restricted to `GET`, and a test enforces both.
 
 **Claude Code discovers the server automatically** via [`.mcp.json`](.mcp.json) when this repo is open. Claude Desktop and global registration are covered in [docs/SETUP.md](docs/SETUP.md). Sessions without MCP still work: [`CLAUDE.md`](CLAUDE.md) gives any LLM session the CLI commands and the rules.
 
@@ -91,7 +94,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 
 What remains is data, not code: follow [docs/SETUP.md](docs/SETUP.md) to import your repositories, then curate a purpose, lifecycle, and next action for each imported stub.
 
-Tests: `python3 -m pytest` (213 tests, no network required).
+Tests: `python3 -m pytest` (no network required).
 
 ## Non-goals for the first version
 

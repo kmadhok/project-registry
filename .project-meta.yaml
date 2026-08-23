@@ -1,0 +1,7 @@
+registry_id: project-registry
+interpreter: "3.11"
+test:
+  - ".venv/bin/python -m pytest -q"
+  - "PYTHONPATH=src .venv/bin/python -m pytest -q"
+validate:
+  - "registry validate"

@@ -19,6 +19,7 @@ import sys
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable, TextIO
 
+from ..briefs import build_briefs_status, build_sync_status
 from ..github.client import GitHubClient
 from ..github.sync import load_snapshot, sync
 from ..model import Effort, Lifecycle, Priority
@@ -30,6 +31,7 @@ from ..proposals import (
     propose_update,
     record_review,
 )
+from ..push_runs import build_push_report
 from ..queries import (
     ProjectFilter,
     build_review_queue,
@@ -236,7 +238,25 @@ def tool_list_selected_issues(paths: Paths, args: dict[str, Any]) -> dict[str, A
 
 def tool_get_github_sync_status(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
-    return _envelope(registry, snapshot, now, {"status": snapshot.status(now)})
+    status = build_sync_status(registry, snapshot, paths=paths, now=now)
+    return _envelope(registry, snapshot, now, {"status": status})
+
+
+def tool_get_briefs_status(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = build_briefs_status(registry, snapshot, paths=paths, now=now)
+    return _envelope(registry, snapshot, now, {"briefs": report})
+
+
+def tool_get_push_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    report = build_push_report(
+        paths=paths,
+        since=args.get("since"),
+        refresh=bool(args.get("refresh", False)),
+        now=now,
+    )
+    return _envelope(registry, snapshot, now, {"report": report})
 
 
 def tool_find_registry_mismatches(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
@@ -266,6 +286,7 @@ def tool_refresh_github(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
         registry, client, paths=paths,
         repos=args.get("repos"),
         with_details=args.get("with_details", True),
+        with_branches=args.get("with_branches", True),
     )
     snapshot = result.snapshot or load_snapshot(paths)
     now = dt.datetime.now(dt.timezone.utc)
@@ -274,6 +295,7 @@ def tool_refresh_github(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
         "completed_at": result.to_dict()["completed_at"],
         "coverage": result.coverage,
         "errors": result.errors,
+        "partial_errors": result.partial_errors,
         "note": (
             "Repositories that failed to refresh kept their previous data, "
             "marked stale."
@@ -386,6 +408,13 @@ TOOLS: tuple[Tool, ...] = (
          tool_list_selected_issues, "MCP-003"),
     Tool("get_github_sync_status", "When GitHub evidence was last refreshed, with coverage and errors.",
          _schema(), tool_get_github_sync_status, "MCP-003"),
+    Tool("get_briefs_status", "Evidence-brief presence, age, and revision staleness.",
+         _schema(), tool_get_briefs_status, "MCP-003"),
+    Tool("get_push_report", "Push-run totals and cached linked-PR states; refresh uses read-only GETs.",
+         _schema({
+             "refresh": {"type": "boolean"},
+             "since": {"type": "string", "format": "date"},
+         }), tool_get_push_report, "MCP-003"),
     Tool("find_registry_mismatches", "Conflicts between registry intent and observed GitHub state.",
          _schema(), tool_find_registry_mismatches, "MCP-003"),
     Tool("validate_registry", "Run the registry's own operating rules.",
@@ -395,6 +424,7 @@ TOOLS: tuple[Tool, ...] = (
          _schema({
              "repos": {"type": "array", "items": {"type": "string"}},
              "with_details": {"type": "boolean"},
+             "with_branches": {"type": "boolean"},
          }), tool_refresh_github, "MCP-004"),
 
     Tool("propose_project_update", "Propose changes to curated fields. Writes a proposal only; changes nothing.",

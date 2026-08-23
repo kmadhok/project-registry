@@ -1,0 +1,146 @@
+# Codex marathon progress
+
+[2026-08-21T19:54:30Z] START T0 attempt=1 base=64c1394e145f6cabd0dfd0be2fa162aac5dddf28
+[2026-08-21T19:54:30Z] CHECKPOINT T0 fetched origin and created codex/marathon-2026-08-21 from origin/main at 64c1394e145f6cabd0dfd0be2fa162aac5dddf28
+[2026-08-21T19:54:49Z] CHECKPOINT T0 verified the required seed set, executable runner, and ignore rules; protected untracked transcript and proposal remain untouched
+[2026-08-21T19:55:41Z] CHECKPOINT T0 pushed the branch and opened draft PR https://github.com/kmadhok/project-registry/pull/4
+[2026-08-21T19:55:41Z] CHECKPOINT T0 full gate passed: pytest collected and passed 213 cases; registry validate returned 0 errors and 3 suggestions
+[2026-08-21T19:55:41Z] CHECKPOINT T0 queue baseline says 141 passed, but the recorded origin/main base collects 213 cases; T0 changed no tests, so this is a baseline-count discrepancy rather than a test-count change caused by the task
+[2026-08-21T19:55:41Z] DONE T0 commits=6164f49 tests=213 passed
+[2026-08-21T19:56:23Z] START T1a attempt=1 base=f3cfd55a5bc016c09ed73c77884128bdd5e83eaa
+[2026-08-21T19:57:27Z] CHECKPOINT T1a read all 674 lines of BRANCH_CAPTURE_SPEC.md plus snapshot.py, client.py, sync.py, tests/conftest.py, and the existing client invariant in test_sync.py before code edits
+[2026-08-21T19:57:27Z] CHECKPOINT T1a live GraphQL first:2 probe matched Rev 3 and returned non-null committedDate on both nodes; totalCount is now 1251 (up from the spec's 802 and above its 1000-node default ceiling)
+[2026-08-21T19:57:27Z] CHECKPOINT T1a requirement scenarios enumerated before tests: Branch full/null/unicode round-trips; old RepoState defaults; malformed/future dates; GraphQL read openings; mutation/subscription/comment-obfuscated refusal before transport; GraphQL errors; cursor pagination and ceiling partial; malformed branch node including missing committedDate is skipped and counted
+[2026-08-21T19:57:27Z] CHECKPOINT T1a spec deviation to carry into Rev 4: §4.2.3 permits missing committedDate as an unknown date, but QUEUE T1a explicitly requires such a node to increment branches_skipped so the REST-style silent-zero regression cannot recur; the stricter queue requirement wins
+[2026-08-21T19:59:31Z] CHECKPOINT T1a Branch/RepoState snapshot fields, guarded GraphQL transport, paginated refs client, and tolerant GraphQL-node parser are implemented; targeted snapshot/client/sync suites pass 46 cases
+[2026-08-21T20:00:24Z] CHECKPOINT T1a parser helpers assigned to §4.3 landed early so the queue's missing-committedDate regression has a causal test in T1a; T1b will wire them into sync
+[2026-08-21T20:00:24Z] CHECKPOINT T1a the implemented client completed a live one-page read: nodes=100, partial=true, total=1251, missing_dates=0
+[2026-08-21T20:00:24Z] CHECKPOINT T1a full gate passed: 233 tests passed (20 more than the measured T0 baseline, all from 2 new requirement-driven test modules); registry validate returned 0 errors and 3 suggestions
+[2026-08-21T20:00:37Z] DONE T1a commits=cb4ea73 tests=233 passed
+[2026-08-21T20:01:58Z] START T1b attempt=1 base=f5745e495615bb5ecc7e5c01f8ab8b852e62db8c
+[2026-08-21T20:02:11Z] CHECKPOINT T1b read all 674 spec lines and inspected sync, signals, CLI, queries, dashboard, MCP handlers, fixtures, and existing sync/signal/CLI/query/MCP tests before code edits
+[2026-08-21T20:02:11Z] CHECKPOINT T1b requirement scenarios enumerated before tests: full/sorted fetch and PR mapping; partial ceiling; GraphQL failure carry-forward; disabled carry-forward; malformed skip count; later success clears error; threshold boundary/future/unknown/default/open-PR exclusions; one repo item and group summary; mixed-item sorting; CLI no-branches/show warning/JSON; query, dashboard, and MCP references never render #None
+[2026-08-21T20:03:35Z] CHECKPOINT T1b sync now threads previous state, captures or carries branches with partial-error accounting, and exposes cost control on CLI/MCP; shared classifier/rule/reference rendering is wired through CLI, queries, dashboard, and MCP; modules compile and the 20 T1a snapshot/client tests still pass
+[2026-08-21T20:05:31Z] CHECKPOINT T1b requirement tests added across sync, signals, queries, CLI/dashboard, and MCP; 144 targeted cases pass and git diff --check is clean
+[2026-08-21T20:05:57Z] CHECKPOINT T1b full gate passed: pytest collected and passed 251 cases; registry validate returned 0 errors and 3 suggestions; the 18-test increase from T1a is the requirement coverage added for sync failure/partial/opt-out states, branch classification, and CLI/dashboard/MCP rendering
+[2026-08-21T20:05:57Z] CHECKPOINT T1b registry rules lists stale_branches and sync --help exposes both --no-branches and --no-details
+[2026-08-21T20:06:18Z] DONE T1b commits=b20d090 tests=251 passed
+[2026-08-21T20:07:00Z] START T1c attempt=1 base=c07fb763f5077768f461bd5bd50bfa5cf3b2f62a
+[2026-08-21T20:07:00Z] CHECKPOINT T1c read PURPOSE.md and SCHEMA.md plus the already-reviewed full branch spec and implementation surfaces before edits; T1a's live totalCount=1251 proves the 1000-branch default ceiling would make the required smoke partial, so Q4 will use a branch-specific 5000-node ceiling plus the T1b visible warning while leaving REST pagination at 10 pages
+[2026-08-21T20:08:52Z] CHECKPOINT T1c read-only live sync succeeded: 1251 branches, branches_fetched=true, branches_partial=false, branches_skipped=0, 1 open-PR head, 13 inferred GraphQL pages at 100 nodes/page, started 20:07:47.421Z and completed 20:08:52.417Z (64.996s); the old ~9-page/~6s estimate is stale because the repo grew from 802 to 1251 branches
+[2026-08-21T20:09:20Z] CHECKPOINT T1c branch-age histogram at the completed_at timestamp: 0-6d=161, 7-13d=167, 14-29d=374, 30-44d=342, 45-59d=202, 60-74d=4, 75-89d=1, 90+d=0 (all branches; eligible differs only by excluding 2 branches total). Threshold counts among 1249 eligible branches: >=45d 207, >=60d 5, >=70d 1, >=90d 0
+[2026-08-21T20:09:20Z] CHECKPOINT T1c threshold decision: use 60 days because the observed distribution has a sharp cliff after day 59 (202 branches at 45-59d but only 5 at 60+d), producing a bounded triage signal while 90 days would falsely make the implemented rule look inactive on this repository
+[2026-08-21T20:10:08Z] CHECKPOINT T1c live cached queries after the threshold change show exactly one stale_branches attention item with 5 stale branches (3 pc/, 1 claude/, 1 feat/), oldest 75d; registry show interview-prep renders 1251 branches (5 stale, 1 open-PR heads)
+[2026-08-21T20:10:08Z] CHECKPOINT T1c Rev 4 answers all five open questions and records implementation deviations; SCHEMA and PURPOSE now describe observed branch evidence and the implemented attention rule
+[2026-08-21T20:10:08Z] CHECKPOINT T1c full gate passed: pytest collected and passed 253 cases; registry validate returned 0 errors and 3 suggestions; the 2-test increase from T1b covers the data-derived 60-day default and the branch-specific pagination ceiling without changing REST pagination
+[2026-08-21T20:10:25Z] DONE T1c commits=fb333c0 tests=253 passed
+[2026-08-21T20:11:19Z] START T2 attempt=1 base=578fbd045f52a143dd6fe9d84e75baf0cfa20e02
+[2026-08-21T20:12:11Z] CHECKPOINT T2 read the complete M1 finding and inspected the full model/storage/proposal flows, CLI review path, schema, fixtures, current YAML shapes, construction sites, and existing model/proposal/CLI tests before edits; all 98 curated project files are byte-stable through the current load/dump path
+[2026-08-21T20:12:11Z] CHECKPOINT T2 requirement scenarios enumerated before tests: record-review preserves explicit is_fork false, tags empty list, and next_action empty-string sentinel; absent is_fork stays absent; proposal apply changes only its target key and preserves unrelated unset keys; directly-constructed objects retain canonical default output; all real curated YAML remains byte-stable
+[2026-08-21T20:12:11Z] CHECKPOINT T2 implementation assumption: the queue explicitly requires next_action: "" to round-trip although the documented type is a mapping; preserve only the empty-string sentinel as no action while continuing to reject every non-empty bare string, so compatibility does not weaken the meaningful next-action contract
+[2026-08-21T20:13:43Z] CHECKPOINT T2 causal requirement tests failed in the four expected places before implementation (empty next_action parse plus is_fork/tags/next_action loss on record-review); source-key and original-falsy metadata now preserve explicit values while directly constructed defaults remain canonical, and 62 targeted model/proposal cases pass
+[2026-08-21T20:14:02Z] CHECKPOINT T2 full gate passed: pytest collected and passed 261 cases; registry validate returned 0 errors and 3 suggestions; the 8-test increase from T1c covers three falsy record-review cases, absent-key review/apply behavior, empty next-action compatibility, unchanged new-object defaults, and byte stability across all 98 curated YAML files
+[2026-08-21T20:14:25Z] DONE T2 commits=ea32a59 tests=261 passed
+[2026-08-21T20:14:58Z] START T3 attempt=1 base=dc15fc9427f12804ded630d69d585656db1e9c6d
+[2026-08-21T20:15:30Z] CHECKPOINT T3 re-read the complete M3 finding and inspected the full MCP server/protocol error envelope, complete MCP tests, record_review/proposal flow, CLI parser/handler, and all of SCHEMA/SETUP before edits
+[2026-08-21T20:15:30Z] CHECKPOINT T3 requirement scenarios enumerated before tests: omitted and explicit-false MCP approval each return isError=true, name the pending proposal, say NOTHING applied, leave the project unchanged, and leave a proposal on disk; approved=true applies; CLI record-review still applies without an approval flag
+[2026-08-21T20:15:30Z] CHECKPOINT T3 apply_approved_project_update does not share M3's trap: apply_proposal checks approval before loading or changing the already-existing proposal, and its MCP test already proves false returns isError=true with the project unchanged; no implementation change is needed there
+[2026-08-21T20:16:03Z] CHECKPOINT T3 causal tests first proved both missing and false approval already filed one pending proposal but returned only a generic refusal; record_review now raises with that proposal id and the required NOTHING-applied recovery instruction, and 99 targeted MCP/proposal/CLI cases pass
+[2026-08-21T20:16:03Z] CHECKPOINT T3 SCHEMA and the CLAUDE cheatsheet now state the intentional surface divergence: CLI record-review applies directly, while MCP requires approved=true and otherwise files a named pending proposal with an error result
+[2026-08-21T20:16:15Z] CHECKPOINT T3 full gate passed: pytest collected and passed 263 cases; registry validate returned 0 errors and 3 suggestions; the 2-test increase from T2 separately covers omitted approval, explicit false approval, and approved success instead of combining false/success in one test
+[2026-08-21T20:16:36Z] DONE T3 commits=4a3199a tests=263 passed
+[2026-08-21T20:17:28Z] START T4 attempt=1 base=42898229ae6ec82bcf2922ecde1962c14223bc1b
+[2026-08-21T20:18:33Z] CHECKPOINT T4 read the complete queue requirement, full push-project journal contract, storage paths/helpers, GitHub client, CLI/parser, MCP handlers/catalogue/protocol, docs command lists, shared fixtures, and CLI/MCP/client tests before edits; the real journal has 16 valid lines spanning spec, chunk, and parked
+[2026-08-21T20:18:33Z] CHECKPOINT T4 requirement scenarios enumerated before tests: all six declared outcomes and null parked/empty-focus dimensions; malformed JSON/schema/timestamp counted and reported; since boundary inclusive; duplicate PR URLs deduplicated for PR-state counts but retained as runs; cache miss unknown; open/merged/closed mapping; refresh success/error carry-forward; CLI no-network default; CLI/MCP shared numeric report
+[2026-08-21T20:18:33Z] CHECKPOINT T4 reporting decision: merge_rate uses merged unique PRs over all unique linked PRs, including open and unknown in the denominator, so missing evidence cannot inflate the result; the report exposes numerator and denominator as well as percent
+[2026-08-21T20:21:02Z] CHECKPOINT T4 causal test first failed because the shared push_runs module did not exist; tolerant journal aggregation, cache-only default, explicit GET-only refresh, CLI, MCP, docs, and requirement tests are now implemented, and 117 targeted report/client/sync/CLI/MCP cases pass
+[2026-08-21T20:21:02Z] CHECKPOINT T4 real no-network report succeeded: 16 valid runs, 0 malformed lines, 15 unique linked PRs, and all 15 states unknown because data/github/push_prs.json has never been fetched; the since=2026-08-08 boundary produced 4 runs and 3 unknown PRs
+[2026-08-21T20:21:34Z] CHECKPOINT T4 full gate passed: pytest collected and passed 271 cases; registry validate returned 0 errors and 3 suggestions; the 8-test increase from T3 covers journal outcomes/malformed input/deduplication/since filtering, cache miss and refresh semantics, CLI/MCP parity, and the GET-only PR endpoint
+[2026-08-21T20:21:48Z] DONE T4 commits=7e89d89 tests=271 passed
+[2026-08-21T20:22:28Z] START T5 attempt=1 base=fe96a64edf8380f2aa9b038457d3ad442f544468
+[2026-08-21T20:23:08Z] CHECKPOINT T5 read all 175 lines of the M2 finding and inspected all 95 real brief metadata records, the 98 repo-backed registry entries, snapshot/default-branch representation, sync-status CLI/MCP paths, query provenance, schema observed-data section, fixtures, and existing query/CLI/MCP/snapshot tests before edits
+[2026-08-21T20:23:08Z] CHECKPOINT T5 real coverage is 95 present and 3 missing briefs (push-sandbox-interview-prep, project-registry, ai-engineering-markets); the current narrowed live snapshot knows one default-branch head because T1c intentionally synced only interview-prep
+[2026-08-21T20:23:08Z] CHECKPOINT T5 requirement scenarios enumerated before tests: missing directory and missing per-project file; malformed JSON remains visibly present-but-unusable; analyzed_at age at NOW and future clamp; matching/mismatching revision current/stale; absent or unfetched default head unknown; CLI briefs-status JSON/text; sync-status summary in CLI/MCP; dedicated MCP tool uses the same report
+[2026-08-21T20:24:55Z] CHECKPOINT T5 causal test first failed because the shared briefs module did not exist; brief coverage/revision queries, briefs-status CLI/MCP surfaces, sync-status summary, observed-data ownership docs, and 5 requirement tests are now implemented, with 66 targeted brief/CLI/MCP cases passing
+[2026-08-21T20:24:55Z] CHECKPOINT T5 real status reports 95 present / 3 missing / 1 stale, with 94 present briefs revision-unknown and 0 malformed; interview-prep is the one stale brief (brief e0fee790 versus known default head 7675ab93), while unsynced repositories correctly remain unknown rather than current
+[2026-08-21T20:25:09Z] CHECKPOINT T5 full gate passed: pytest collected and passed 276 cases; registry validate returned 0 errors and 3 suggestions; the 5-test increase from T4 covers missing directories/files, malformed JSON, age and current/stale/unknown revision classification, unfetched evidence, and CLI/MCP/sync-status parity
+[2026-08-21T20:25:21Z] DONE T5 commits=9ebeb1d tests=276 passed
+[2026-08-21T20:26:19Z] START T6 attempt=1 base=5a58fd5f94b09913e031b10c4263d3bf5e0747b4
+[2026-08-21T20:27:04Z] CHECKPOINT T6 read the complete push-project finding and canonical 268-line skill, verified the target passages and file history, then added only the five required wording changes; the skill is now 278 lines (+10, within the +25 limit), its diff is 16 insertions/6 deletions in one file, required terms are present in changed hunks, and git diff --check is clean
+[2026-08-21T20:27:36Z] CHECKPOINT T6 full gate passed as an extra confidence check: pytest collected and passed 276 cases; registry validate returned 0 errors and 3 suggestions; the test count is unchanged because T6 edits only skill instructions
+[2026-08-21T20:27:36Z] DONE T6 commits=254f13e tests=276 passed
+[2026-08-21T20:28:23Z] START T7 attempt=1 base=cceb7d1736392ea79646116287ec497d5fb166ad
+[2026-08-21T20:29:09Z] CHECKPOINT T7 read the complete repo-hygiene finding plus SETUP and pyproject, verified the marker was absent and unignored and the venv is Python 3.11.15, then added the exact identity/interpreter/test/validate fields and documented the convention as a starting point that no code reads yet; the required yaml.safe_load command and an exact-shape assertion both returned 0, and git diff --check is clean
+[2026-08-21T20:29:24Z] CHECKPOINT T7 full gate passed as an extra verification of the declared commands: pytest collected and passed 276 cases; registry validate returned 0 errors and 3 suggestions; the test count is unchanged because T7 adds only metadata and documentation
+[2026-08-21T20:29:24Z] DONE T7 commits=baec83d tests=276 passed
+[2026-08-21T20:30:29Z] START T8 attempt=1 base=a18228c94145b09258fd60ce1ada47482314d8d6
+[2026-08-21T20:31:29Z] CHECKPOINT T8 read all four documentation targets and the complete implementation-plan layout, enumerated all 28 CLI commands and every subcommand help, counted 23 MCP tools, inspected the current source tree and guarded GitHub transports, and identified only factual drift before editing: README's 213-test count; omitted briefs/push/branch modules and tools in the implementation plan; obsolete GET-only and forbidden-push test descriptions
+[2026-08-21T20:32:28Z] CHECKPOINT T8 CLAUDE now names all 28 CLI commands with zero unknown commands or registry flags; README no longer freezes a test count; SETUP and SCHEMA required no changes; the implementation plan now matches the branch/brief/push modules, data paths, MCP tools, and GraphQL guard; git diff --check is clean
+[2026-08-21T20:32:28Z] CHECKPOINT T8 full gate passed: pytest collected 276 cases and the required -q run passed all cases; registry validate returned 0 errors and 3 suggestions; the test count is unchanged because T8 changes documentation only
+[2026-08-21T20:32:40Z] DONE T8 commits=f436251 tests=276 passed
+[2026-08-21T20:33:28Z] START T9 attempt=1 base=2f6f6e90583e61c639534f067bd5ab7f06bfbbd0
+[2026-08-21T20:34:02Z] CHECKPOINT T9 read all 220 USER_STORIES lines and re-checked the complete SCHEMA requirements against all 276 collected test ids and the relevant validation/model/MCP/query/signal/sync/proposal tests; the initial name-level mapping covered all 36 owner acceptance criteria and the MCP capabilities but only 16 of 20 named validation rules
+[2026-08-21T20:34:02Z] CHECKPOINT T9 requirement scenarios enumerated before new tests for the four real gaps: future next-action review date errors while today's boundary passes; each normally-committed lifecycle (now/next/maintained) inactive state suggests without becoming an error; active never-reviewed suggests while inactive missing review does not; duplicate showcase order collides only among public projects, not a private project with the same number
+[2026-08-21T20:34:02Z] CHECKPOINT T9 the four validation-gap tests pass without implementation changes (25 validation tests total); second body-level pass found three weakly evidenced story assertions hidden by plausible test names/fixtures: accomplishment links were supplied but never asserted, MCP list filters exercised lifecycle but not activity/category at the MCP boundary, and the MCP-002 timestamp test omitted two of its four tools
+[2026-08-21T20:34:02Z] CHECKPOINT T9 second-pass scenarios enumerated before edits: accomplishment links of different artifact kinds survive the model round trip; MCP list_projects composes active/category filters and retains the lifecycle case; all four MCP-002 recommendation tools return registry/GitHub source timestamps
+[2026-08-21T20:36:48Z] CHECKPOINT T9 matrix completed with 36 owner-criterion rows (3 for each US-001..012), 23 MCP capability/criterion rows, 20/20 schema validation rules, and 95 distinct cited pytest functions; no criterion remains marked GAP and the conditional future-external-write requirement is explicitly guarded rather than claimed implemented
+[2026-08-21T20:36:48Z] CHECKPOINT T9 two post-fill passes added nothing new: pass 1 proved exact story/rule row counts and zero missing/stale test ids; pass 2 parsed all 95 cited test bodies and found zero without assertions/expected exceptions and zero xfails
+[2026-08-21T20:36:48Z] CHECKPOINT T9 full gate passed: pytest collected and passed 281 cases; registry validate returned 0 errors and 3 suggestions; the 5-test increase from T8 is four direct named-rule tests plus the accomplishment-link round-trip, while MCP surface gaps strengthened existing tests without inflating the count
+[2026-08-21T20:37:03Z] DONE T9 commits=0055222 tests=281 passed
+[2026-08-21T20:37:59Z] START T10 attempt=1 base=e514dab86327b5ee6e0a75c86d512804b55060dc
+[2026-08-21T20:39:48Z] CHECKPOINT T10 hostile review covered every logical T0-T9 commit plus correctness, security, performance, readability, testing, and architecture; static compile and diff checks passed, the read-only verb scan found POST only in github/client.py's guarded graphql transport, and the token-pattern scan found only the intentional validation fixture
+[2026-08-21T20:39:48Z] CHECKPOINT T10 finding CORR-001 fixed: malformed or non-object GraphQL responses escaped as JSONDecodeError/AttributeError and could abort the whole sync instead of becoming a per-repo partial error; graphql now raises GraphQLError for both shapes and 51 targeted client/sync cases pass
+[2026-08-21T20:41:15Z] CHECKPOINT T10 task dispositions: T0 setup/branch boundaries clean; T1 CORR-001 fixed and all other partial/unknown/verb paths matched the spec; T2 falsy presence tracking and curated byte stability remain correct; T3 MCP non-approval is an intentional error while CLI direct apply remains documented; T4 malformed journal/cache/unknown math and GET-only refresh are correct; T5 missing/malformed/unfetched briefs remain unknown; T6 wording-only scope is exact; T7 marker parses and is explicitly non-binding; T8 command/tool/layout docs match code; T9's 36 story criteria, 23 MCP rows, and 20 validation rules cite assertion-bearing tests. No other finding was a defect and nothing was deferred.
+[2026-08-21T20:41:15Z] CHECKPOINT T10 post-fix live smoke completed in 38.480s (20:40:19.261Z to 20:40:57.741Z): 1/1 repo succeeded, 0 failed/partial errors, 1251 branches, branches_fetched=true, branches_partial=false, branches_skipped=0, 1 open-PR head; show reports 5 stale and attention emits exactly one stale_branches item (3 pc/, 1 claude/, 1 feat/; oldest 75d)
+[2026-08-21T20:41:15Z] CHECKPOINT T10 full gate passed: pytest collected and passed 283 cases; registry validate returned 0 errors and 3 suggestions; the 2-test increase from T9 is the parameterized regression proving invalid-JSON and non-object GraphQL responses both fail through GraphQLError
+[2026-08-21T20:41:15Z] DONE T10 commits=2cf682f tests=283 passed
+[2026-08-21T20:41:50Z] START T11 attempt=1 base=b25c409147af2a6a642d5f1dcf0aa2ff91391b61
+[2026-08-21T20:41:50Z] CHECKPOINT T11 T10 status is pushed and PR #4 now shows T0-T10 done, T11 pending, the 283-test gate, and final smoke numbers
+
+## FINAL REPORT
+
+### Status
+
+| Task | Title | Status |
+|---|---|---|
+| T0 | Setup and branch | Done |
+| T1a | Branch capture: client + snapshot model | Done |
+| T1b | Branch capture: sync + signals + CLI + dashboard | Done |
+| T1c | Branch capture: live smoke, threshold, spec notes | Done |
+| T2 | Preserve falsy curated fields | Done |
+| T3 | MCP review approval semantics | Done |
+| T4 | `registry push-report` | Done |
+| T5 | Evidence-brief coverage and staleness | Done |
+| T6 | push-project skill fixes | Done |
+| T7 | Repo-hygiene marker | Done |
+| T8 | Docs drift sweep | Done |
+| T9 | Requirement-driven test-gap sweep | Done |
+| T10 | Adversarial branch review | Done |
+| T11 | Final report and stop | Done |
+
+No task is blocked. No discovered task was added.
+
+### Verification
+
+- Queue baseline: 141 passed. The untouched `origin/main` base actually collected 213 tests at T0, so the queue number was already stale before implementation. Final: 283 tests collected and passed, a measured increase of 70 requirement tests from the real base (and 142 over the written queue baseline).
+- Final `registry validate`: 0 errors, 3 pre-existing suggestions (`dotfiles`, `looker-text-to-sql`, `remote-workstation`).
+- Final live smoke: 2026-08-21T20:40:19.261Z to 20:40:57.741Z (38.480s); 1/1 repository succeeded, 0 failed, 0 partial; 1,251 branches, `branches_fetched=true`, `branches_partial=false`, 0 skipped, 1 open-PR head. `registry show interview-prep` reports 5 stale branches and `registry attention` returns exactly one `stale_branches` item (3 `pc/`, 1 `claude/`, 1 `feat/`; oldest 75d).
+- T10 found and fixed one real defect: invalid-JSON or non-object GraphQL responses now become `GraphQLError`, preserving per-repository partial-failure semantics instead of aborting the sync. The guarded transport contains the only POST; no PATCH/PUT/DELETE path or credential was introduced.
+
+### Decisions taken
+
+- `stale_branch_days=60`: the live histogram had 202 branches at 45–59 days but only 5 at 60+; 90 days would have made a shipped rule falsely look inactive.
+- Stale-branch output keeps group counts rather than branch names. Carried-forward or partial evidence never produces a confident signal; `show` surfaces the branch error instead.
+- Branch pagination has a branch-specific 5,000-node ceiling while REST remains at 10 pages. The GraphQL POST is confined to `graphql()` and guarded by a fail-closed read-operation allowlist and transport tests.
+- A missing `committedDate` is skipped and counted, following the queue's stricter silent-zero regression requirement over Rev 3's earlier unknown-date wording.
+- Push-report merge rate is merged unique PRs divided by all unique linked PRs; open and unknown remain in the denominator, so missing evidence cannot inflate success.
+- Evidence briefs remain out-of-band. This branch adds visibility only, not a generator or ownership decision.
+
+### Owner follow-up
+
+- Review and merge PR #4 when satisfied; this marathon did not merge or change any other PR/issue/label.
+- The repo-tracked `.claude/skills/push-project/SKILL.md` is updated. Per the hard boundary, `~/.claude/` was not touched; copy/install the updated skill there manually only if that separate global copy should match.
+- Live GitHub snapshots and the push-PR cache remain gitignored machine evidence and are not part of the PR.
+
+[2026-08-21T20:42:19Z] CHECKPOINT T11 final report written with all tasks done, queue baseline discrepancy, 283-test final gate, final smoke, decisions, zero blocked items, and owner follow-up
+[2026-08-21T20:42:19Z] DONE T11 commits=none-before-closeout tests=283 passed

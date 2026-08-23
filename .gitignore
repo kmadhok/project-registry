@@ -13,3 +13,7 @@ dist/
 # Proposals and the audit log stay tracked so change history is durable.
 data/github/
 data/portfolio.json
+
+# Codex marathon runner state (docs/codex-marathon/ is tracked; logs are not)
+.codex-marathon/
+.marathon-stop

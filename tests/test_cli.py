@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import json
 
+from project_registry import cli as cli_module
 from project_registry.cli import main
 from project_registry.dashboard import render_dashboard
 from project_registry.github.sync import save_snapshot
 from project_registry.storage import load_registry
 
-from .conftest import NOW, make_issue, make_pr, make_repo_state, make_snapshot
+from .conftest import NOW, make_branch, make_issue, make_pr, make_repo_state, make_snapshot
 
 
 def run(paths, *args, capsys=None):
@@ -53,6 +54,31 @@ def test_show_renders_a_project(paths, write_project, capsys):
     assert code == 0
     assert "Thing" in out
     assert "Decide the format" in out
+
+
+def test_show_renders_branch_summary_and_partial_warning(paths, write_project, capsys):
+    write_project(id="p", name="Thing", purpose="why", repo="owner/repo")
+    save_snapshot(make_snapshot(make_repo_state(
+        "owner/repo",
+        branches=[
+            make_branch("old"),
+            make_branch("reviewed", open_pr_numbers=[3]),
+        ],
+        branches_fetched=True,
+    )), paths)
+    _, out = run(paths, "show", "p", capsys=capsys)
+    assert "2 branches (1 stale, 1 open-PR heads)" in out
+
+    save_snapshot(make_snapshot(make_repo_state(
+        "owner/repo",
+        branches=[make_branch("partial")],
+        branches_fetched=False,
+        branches_partial=True,
+        branches_error="branch list has 1251 entries; truncated after 1000",
+    )), paths)
+    _, out = run(paths, "show", "p", capsys=capsys)
+    assert "(branches: branch list has 1251 entries; truncated after 1000)" in out
+    assert "1 branches" not in out
 
 
 def test_unknown_project_exits_with_an_error(paths, capsys):
@@ -122,6 +148,58 @@ def test_attention_command_explains_each_signal(paths, write_project, capsys):
     assert "url:  https://github.com/" in out
 
 
+def test_attention_json_preserves_repo_scope_without_none_reference(
+    paths, write_project, capsys
+):
+    write_project(id="p", purpose="why", repo="owner/repo")
+    save_snapshot(make_snapshot(make_repo_state(
+        "owner/repo",
+        branches=[make_branch("old")],
+        branches_fetched=True,
+    )), paths)
+    _, out = run(paths, "attention", "--json", capsys=capsys)
+    items = json.loads(out)
+    branch = next(item for item in items if item["rule_id"] == "stale_branches")
+    assert branch["number"] is None
+    assert branch["kind"] == "branch"
+    assert "#None" not in out
+
+
+def test_sync_no_branches_never_calls_the_branch_client(
+    paths, write_project, capsys, monkeypatch
+):
+    write_project(id="p", purpose="why", repo="owner/repo")
+
+    class RecordingClient:
+        instances = []
+
+        def __init__(self):
+            self.branch_calls = 0
+            self.instances.append(self)
+
+        def get_repo(self, full_name):
+            return {
+                "full_name": full_name,
+                "default_branch": "main",
+                "html_url": f"https://github.com/{full_name}",
+            }
+
+        def list_open_pulls(self, full_name):
+            return []
+
+        def list_open_issues(self, full_name):
+            return []
+
+        def list_branch_nodes(self, full_name):
+            self.branch_calls += 1
+            return [], False, 0
+
+    monkeypatch.setattr(cli_module, "GitHubClient", RecordingClient)
+    code, _ = run(paths, "sync", "--no-branches", capsys=capsys)
+    assert code == 0
+    assert RecordingClient.instances[0].branch_calls == 0
+
+
 def test_mismatches_exit_nonzero_on_errors(paths, write_project, capsys):
     write_project(id="p", purpose="why", repo="owner/gone")
     save_snapshot(make_snapshot(make_repo_state("owner/other")), paths)
@@ -135,6 +213,7 @@ def test_rules_command_lists_the_catalogue(paths, capsys):
     code, out = run(paths, "rules", capsys=capsys)
     assert code == 0
     assert "ci_failing" in out
+    assert "stale_branches" in out
     assert "archived_but_github_active" in out
 
 
@@ -248,3 +327,15 @@ def test_dashboard_escapes_pipes_in_titles(paths, write_project):
                   next_action={"description": "Choose a | b", "reviewed": "2026-07-20"})
     text = render_dashboard(load_registry(paths), make_snapshot(), now=NOW)
     assert "Choose a \\| b" in text
+
+
+def test_dashboard_renders_repo_scoped_branch_signal_without_none(paths, write_project):
+    write_project(id="p", purpose="why")
+    snapshot = make_snapshot(make_repo_state(
+        "stranger/repo",
+        branches=[make_branch("old")],
+        branches_fetched=True,
+    ))
+    text = render_dashboard(load_registry(paths), snapshot, now=NOW)
+    assert "[stranger/repo](https://github.com/stranger/repo)" in text
+    assert "#None" not in text

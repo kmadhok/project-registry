@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime as dt
 
 import pytest
+import yaml
 
 from project_registry.proposals import (
     APPLIED,
@@ -309,7 +310,57 @@ def test_record_review_is_audited(paths, write_project):
 def test_record_review_without_approval_is_refused(paths, write_project):
     write_project(id="p", purpose="p", last_reviewed="2026-01-01")
     registry = load_registry(paths)
-    with pytest.raises(ProposalError, match="explicit approval"):
+    with pytest.raises(
+        ProposalError,
+        match=r"pending proposal p-\d+ filed, NOTHING applied; call again with approved=true",
+    ):
         record_review(registry, "p", reviewed_on=dt.date(2026, 7, 25), paths=paths,
                       now=NOW, approved=False)
     assert load_registry(paths).require("p").last_reviewed == dt.date(2026, 1, 1)
+    assert len(list_proposals(paths, status=PENDING)) == 1
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("is_fork", False), ("tags", []), ("next_action", "")],
+)
+def test_record_review_preserves_explicit_falsy_fields(
+    paths, write_project, field, value
+):
+    path = write_project(id="p", purpose="p", **{field: value})
+    registry = load_registry(paths)
+
+    record_review(registry, "p", reviewed_on=dt.date(2026, 7, 25), paths=paths, now=NOW)
+
+    assert yaml.safe_load(path.read_text(encoding="utf-8"))[field] == value
+
+
+def test_record_review_does_not_add_an_unset_fork_flag(paths, write_project):
+    path = write_project(id="p", purpose="p")
+    registry = load_registry(paths)
+
+    record_review(registry, "p", reviewed_on=dt.date(2026, 7, 25), paths=paths, now=NOW)
+
+    assert "is_fork" not in yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def test_proposal_apply_does_not_add_unset_curated_keys(paths, write_project):
+    path = write_project(id="p", purpose="original")
+    registry = load_registry(paths)
+    proposal = propose_update(
+        registry, "p", {"purpose": "updated"}, paths=paths, now=NOW
+    )
+
+    apply_proposal(registry, proposal.id, approved=True, paths=paths, now=NOW)
+
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    assert raw == {
+        "id": "p",
+        "name": "Example",
+        "purpose": "updated",
+        "lifecycle": "incubating",
+        "active": False,
+        "visibility": "private",
+    }
+    assert "is_fork" not in raw
+    assert "tags" not in raw

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from pathlib import Path
 
 import pytest
 
@@ -12,7 +13,7 @@ from project_registry.model import (
     RegistryError,
     RelationKind,
 )
-from project_registry.storage import load_registry, save_project
+from project_registry.storage import Paths, dump_yaml, load_registry, save_project
 
 from .conftest import TODAY
 
@@ -108,6 +109,35 @@ def test_next_action_rejects_a_bare_string():
         Project.parse({"id": "p", "name": "P", "next_action": "do the thing"})
 
 
+def test_explicit_empty_next_action_round_trips_as_empty_string():
+    project = Project.parse({"id": "p", "name": "P", "next_action": ""})
+    assert project.next_action is None
+    assert project.to_dict()["next_action"] == ""
+
+
+def test_new_project_defaults_keep_the_existing_canonical_output():
+    assert Project(id="p", name="P").to_dict() == {
+        "id": "p",
+        "name": "P",
+        "lifecycle": "incubating",
+        "active": False,
+        "visibility": "private",
+    }
+
+
+def test_every_curated_project_yaml_is_byte_stable_on_load_and_dump():
+    root = Path(__file__).resolve().parents[1]
+    registry = load_registry(Paths(root))
+
+    changed = []
+    for project in registry:
+        path = Path(project.source_path or "")
+        if dump_yaml(project.to_dict()) != path.read_text(encoding="utf-8"):
+            changed.append(path.name)
+
+    assert changed == []
+
+
 def test_accomplishments_sort_newest_first(write_project, load):
     """US-003: multiple dated accomplishments, most recent first."""
     write_project(
@@ -120,6 +150,24 @@ def test_accomplishments_sort_newest_first(write_project, load):
     )
     project = load().require("p")
     assert [a.summary for a in project.accomplishments] == ["newer", "middle", "older"]
+
+
+def test_accomplishment_links_round_trip(write_project, load):
+    links = [
+        "https://github.com/owner/repo/commit/abc",
+        "https://github.com/owner/repo/releases/tag/v1",
+        "https://example.com/demo",
+        "https://github.com/owner/repo/pull/7",
+    ]
+    write_project(
+        id="p",
+        purpose="why",
+        accomplishments=[
+            {"date": "2026-05-05", "kind": "demo", "summary": "Shipped", "links": links}
+        ],
+    )
+
+    assert load().require("p").accomplishments[0].links == links
 
 
 def test_accomplishment_requires_a_date():

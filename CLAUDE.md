@@ -6,8 +6,10 @@ do here:
 
 - `registry/projects/*.yaml` — **curated human intent** (purpose, lifecycle,
   active flag, priority, next action). Authoritative. Git-tracked.
-- `data/` — **observed GitHub evidence** (PRs, issues, CI, activity), written
-  only by `registry sync`. A refreshable cache, gitignored, never authoritative.
+- `data/github/` — **observed GitHub evidence** (PRs, issues, CI, activity),
+  written only by `registry sync`. A refreshable cache, gitignored, never authoritative.
+- `data/understanding/` — **out-of-band evidence briefs**, currently produced
+  outside the registry and git-tracked; their long-term owner is not settled.
 
 Sync never writes under `registry/`; generated data must never overwrite
 curated fields. See `docs/PURPOSE.md` for the full operating rules.
@@ -33,24 +35,35 @@ registry validate               # check operating rules; non-zero exit on errors
 registry list                   # whole portfolio (add --lifecycle/--active/... filters)
 registry show <id>              # one project in full, with relationships and GitHub state
 registry search <text>          # free-text search across curated fields
+registry related <id>           # declared and inferred project relationships
 registry work-queue             # ranked work; human priority and GitHub urgency separate
 registry next-actions --missing # active projects lacking a next action
+registry prs [--draft] [--ready] # cached open pull requests
+registry issues [--label <name>] # cached issues carrying watched labels
 registry attention              # GitHub work needing a human, with the rule per signal
 registry mismatches             # registry intent vs GitHub state; exit 1 on errors
+registry rules                  # signal and mismatch rule catalogue
 registry review-queue           # projects due for a deliberate review
 registry sync-status            # when GitHub evidence was last refreshed
+registry briefs-status          # evidence-brief presence, age, and revision staleness
+registry push-report            # push-run totals and cached PR states; add --refresh/--since/--json
+registry portfolio              # public-safe export; add --format json|markdown/-o
+registry proposals              # pending/applied/rejected proposal records
+registry proposal-show <id>     # exact before/after proposal diff
+registry audit                  # recent curated-write audit records
 ```
 
 State-changing (each has guardrails — respect them, don't work around them):
 
 ```bash
-registry sync                                     # refresh GitHub evidence (read-only wrt GitHub; needs GITHUB_TOKEN)
+registry sync [--repo <owner/name>] [--no-details] [--no-branches] # refresh GitHub evidence (needs GITHUB_TOKEN)
 registry import-github --owner kmadhok            # create needs_review stubs; never overwrites
-registry record-review <id> [--set path=value]    # stamp last_reviewed, optionally update fields
+registry record-review <id> [--set path=value]    # CLI applies directly; MCP record_project_review requires approved=true
 registry propose <id> --set path=value --rationale "..."   # propose a curated change (applies nothing)
-registry proposal-show <proposal-id>              # exact before/after diff
 registry proposal-apply <proposal-id> --approve   # land it (re-validated, audited)
+registry proposal-reject <proposal-id>            # reject a pending proposal
 registry dashboard                                # regenerate DASHBOARD.md
+registry mcp                                      # run the stdio MCP server
 ```
 
 ## Rules for agents
@@ -72,8 +85,9 @@ registry dashboard                                # regenerate DASHBOARD.md
 6. **Never write secrets** (tokens, keys, `.env` values) into registry files.
    Validation blocks known patterns; treat that as a boundary, not a filter to
    evade.
-7. **No external GitHub mutations from this codebase.** The GitHub client is
-   GET-only by design; do not add merge/close/archive/delete capabilities.
+7. **No external GitHub mutations from this codebase.** REST is GET-only; the
+   guarded GraphQL POST accepts read queries only. Do not add
+   merge/close/archive/delete capabilities.
 
 ## Answering "what should I work on?"
 

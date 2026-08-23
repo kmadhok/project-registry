@@ -118,7 +118,24 @@ The last one is a hard boundary: the registry stores no credential values, ever.
 
 ## Observed data (not editable here)
 
-`data/github/snapshot.json` holds repository visibility, archival state, pushes, open PRs, issues, review state, and CI state, each stamped with when it was fetched. It is rewritten by `registry sync` and read by everything else. A failed refresh keeps the previous entry and marks it `stale: true` rather than dropping it.
+`data/github/snapshot.json` holds repository visibility, archival state, pushes, open PRs, issues, review state, CI state, and remote branch observations. Repository and branch reads have separate timestamps; branch records include head SHA, commit time, protection, default-branch status, and open in-repo PR numbers. `branches_fetched`, `branches_partial`, `branches_skipped`, and `branches_error` keep missing or incomplete evidence from reading as complete. The snapshot is rewritten by `registry sync` and read by everything else. A failed repository refresh keeps the previous entry and marks it `stale: true`; a branch-only failure keeps the previous branch observation, marks it unfetched, and surfaces a partial error.
+
+The `stale_branches` attention rule emits at most one suggestion per repository. It currently uses a 60-day threshold, excludes the default branch and branches with open in-repo PRs, and never treats an unknown commit date or incomplete branch list as known-stale evidence.
+
+`data/understanding/<project-id>.json` holds an evidence brief when one exists.
+`registry briefs-status` reads `analyzed_at` and `revision`: `analyzed_at`
+provides the brief age, while `revision` is compared with the snapshot's
+latest known default-branch head and reported as `current`, `stale`, or
+`unknown`. Missing, malformed, and revision-unknown briefs stay separate;
+unknown is never treated as current. `registry sync-status` includes the
+present/missing/stale summary, and the MCP exposes the same query through
+`get_briefs_status`.
+
+Briefs are produced out-of-band today, not by `registry sync`, and are
+git-tracked. The registry only reports their coverage and staleness; it does
+not generate, refresh, or delete them. Whether they should become generated
+observed evidence or remain externally owned is still an open ownership
+decision.
 
 ## Editing
 
@@ -130,3 +147,9 @@ registry proposal-apply my-project-20260725120000 --approve
 ```
 
 Note that an applied proposal rewrites the file in canonical field order, so YAML comments in that file are not preserved.
+
+`registry record-review` is a sanctioned CLI shortcut that applies directly.
+The MCP `record_project_review` tool instead requires `approved=true`; without
+it, the tool files a pending proposal, returns an error saying nothing was
+applied, and names the proposal for inspection or separate approval through
+`apply_approved_project_update`.

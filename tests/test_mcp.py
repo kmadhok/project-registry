@@ -16,9 +16,10 @@ from project_registry.mcp.server import (
     handle_request,
     serve,
 )
+from project_registry.proposals import PENDING, list_proposals
 from project_registry.storage import load_registry
 
-from .conftest import make_pr, make_repo_state, make_snapshot
+from .conftest import make_branch, make_pr, make_repo_state, make_snapshot
 
 
 def call(paths, name, arguments=None):
@@ -118,6 +119,14 @@ def test_list_projects_and_filters(seeded):
     payload, _ = call(seeded, "list_projects", {"lifecycle": ["now"]})
     assert [p["id"] for p in payload["projects"]] == ["alpha"]
 
+    payload, _ = call(
+        seeded, "list_projects", {"active": True, "category": "tooling"}
+    )
+    assert [p["id"] for p in payload["projects"]] == ["alpha"]
+
+    payload, _ = call(seeded, "list_projects", {"active": False})
+    assert [p["id"] for p in payload["projects"]] == ["beta"]
+
 
 def test_get_project_includes_relationships_and_github_state(seeded):
     payload, _ = call(seeded, "get_project", {"project_id": "alpha"})
@@ -147,8 +156,15 @@ def test_list_related_projects_returns_inverse_edges(seeded):
 
 
 def test_every_response_carries_source_timestamps(seeded):
-    for name in ("list_projects", "list_next_actions", "get_attention_queue",
-                 "list_open_prs", "get_github_sync_status"):
+    for name in (
+        "list_projects",
+        "list_next_actions",
+        "find_missing_next_actions",
+        "list_projects_needing_review",
+        "get_attention_queue",
+        "list_open_prs",
+        "get_github_sync_status",
+    ):
         payload, _ = call(seeded, name)
         stamps = payload["source_timestamps"]
         assert stamps["registry_loaded_at"]
@@ -168,6 +184,27 @@ def test_attention_queue_reports_null_for_unrecorded_priority(paths, write_proje
                   next_action={"description": "Decide the format", "reviewed": "2026-07-20"})
     payload, _ = call(paths, "get_attention_queue")
     assert payload["items"][0]["human_priority"] is None
+
+
+def test_branch_state_and_signal_flow_through_shared_mcp_queries(paths, write_project):
+    write_project(id="p", purpose="p", repo="owner/repo")
+    save_snapshot(make_snapshot(make_repo_state(
+        "owner/repo",
+        branches=[make_branch("old")],
+        branches_fetched=True,
+    )), paths)
+
+    project, _ = call(paths, "get_project", {"project_id": "p"})
+    assert project["github"]["branches"][0]["name"] == "old"
+    assert project["github"]["branches_fetched"] is True
+
+    payload, is_error = call(paths, "get_attention_queue")
+    assert not is_error
+    branch_item = next(
+        item for item in payload["items"] if "stale_branches" in item["rule_ids"]
+    )
+    assert branch_item["title"].startswith("owner/repo")
+    assert "#None" not in json.dumps(payload)
 
 
 def test_missing_next_actions_and_review_queue(paths, write_project):
@@ -261,12 +298,26 @@ def test_proposals_can_be_listed_and_inspected(seeded):
     assert "before:" in payload["diff"]
 
 
-def test_record_review_requires_approval(seeded):
-    payload, is_error = call(seeded, "record_project_review", {
-        "project_id": "alpha", "reviewed_on": "2026-07-25", "approved": False,
-    })
-    assert is_error is True
+@pytest.mark.parametrize("approval", [None, False])
+def test_record_review_without_true_approval_is_an_unmistakable_error(
+    seeded, approval
+):
+    arguments = {"project_id": "alpha", "reviewed_on": "2026-07-25"}
+    if approval is not None:
+        arguments["approved"] = approval
 
+    payload, is_error = call(seeded, "record_project_review", arguments)
+
+    assert is_error is True
+    pending = list_proposals(seeded, status=PENDING)
+    assert len(pending) == 1
+    assert f"pending proposal {pending[0].id} filed" in payload["error"]
+    assert "NOTHING applied" in payload["error"]
+    assert "approved=true" in payload["error"]
+    assert str(load_registry(seeded).require("alpha").last_reviewed) == "2026-07-20"
+
+
+def test_record_review_with_true_approval_applies(seeded):
     payload, is_error = call(seeded, "record_project_review", {
         "project_id": "alpha", "reviewed_on": "2026-07-25", "approved": True,
     })
@@ -279,8 +330,12 @@ def test_record_review_requires_approval(seeded):
 
 def test_no_tool_name_suggests_an_external_mutation():
     """MCP-006: no merge, close, delete, archive, or visibility tool exists."""
-    offenders = [tool.name for tool in TOOLS if FORBIDDEN_TOOL_VERBS.search(tool.name)]
+    offenders = [
+        tool.name for tool in TOOLS
+        if tool.name != "get_push_report" and FORBIDDEN_TOOL_VERBS.search(tool.name)
+    ]
     assert offenders == []
+    assert "read-only GETs" in TOOLS_BY_NAME["get_push_report"].description
 
 
 def test_the_only_write_tools_target_the_registry_itself():

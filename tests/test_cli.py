@@ -414,6 +414,13 @@ def test_build_lifecycle_commands_start_context_finish(paths, write_project, cap
     )
     assert code == 0
     assert json.loads(out)["state_after"]["last_outcome"] == "completed"
+    assert paths.build_lease_file.exists()
+    code, out = run(
+        paths, "build", "finish", started["run_id"], "--confirm-writeback",
+        "--json", capsys=capsys,
+    )
+    assert code == 0
+    assert json.loads(out)["writeback_confirmed"] is True
     assert not paths.build_lease_file.exists()
 
 

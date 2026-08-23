@@ -28,6 +28,7 @@ from ..build import (
     RUN_OUTCOMES,
     begin_run,
     build_report,
+    confirm_writeback,
     finish_run,
     get_build_context,
     load_state,
@@ -352,6 +353,12 @@ def tool_record_build_event(paths: Paths, args: dict[str, Any]) -> dict[str, Any
 
 
 def tool_finish_build_run(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    if args.get("confirm_writeback"):
+        result = confirm_writeback(paths, args["run_id"])
+        registry, snapshot, now = _context(paths)
+        return _envelope(registry, snapshot, now, result)
+    if "outcome" not in args:
+        raise BuildError("outcome is required unless confirm_writeback is true")
     registry, snapshot, now = _context(paths)
     result = finish_run(
         paths, args["run_id"], outcome=args["outcome"],
@@ -580,7 +587,8 @@ TOOLS: tuple[Tool, ...] = (
              "run_id": {"type": "string"},
              "outcome": {"enum": sorted(RUN_OUTCOMES)},
              "summary": {"type": "string"},
-         }, ["run_id", "outcome"]), tool_finish_build_run, "US-014"),
+             "confirm_writeback": {"type": "boolean"},
+         }, ["run_id"]), tool_finish_build_run, "US-014"),
     Tool("reconcile_build_runs", "Reconcile an expired run; writes only under data/build/.",
          _schema({"done": {"type": "boolean"}}),
          tool_reconcile_build_runs, "US-014"),

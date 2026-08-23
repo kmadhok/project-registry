@@ -364,6 +364,12 @@ def test_build_lifecycle_mcp_begin_context_finish(paths, write_project):
     })
     assert not is_error
     assert finished["state_after"]["last_outcome"] == "completed"
+    assert paths.build_lease_file.exists()
+    confirmed, is_error = call(paths, "finish_build_run", {
+        "run_id": started["run_id"], "confirm_writeback": True,
+    })
+    assert not is_error
+    assert confirmed["writeback_confirmed"] is True
     assert not paths.build_lease_file.exists()
 
     error, is_error = call(
@@ -517,6 +523,12 @@ def test_the_only_write_tools_target_the_registry_itself():
         "reconcile_build_runs",
     }:
         assert "writes only under data/build/" in TOOLS_BY_NAME[name].description
+
+
+def test_finish_build_run_schema_supports_writeback_confirmation():
+    schema = TOOLS_BY_NAME["finish_build_run"].input_schema
+    assert schema["properties"]["confirm_writeback"] == {"type": "boolean"}
+    assert schema["required"] == ["run_id"]
 
 
 def test_apply_and_review_tools_require_approval_in_their_schema():

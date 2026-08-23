@@ -10,6 +10,7 @@ import pytest
 
 
 GUARD = Path(__file__).parents[1] / "scripts" / "build-guard.py"
+SETTINGS = Path(__file__).parents[1] / ".claude" / "settings.json"
 
 
 def write_lease(root: Path, *, prs_open: int = 0, dry_run: bool = False) -> dict:
@@ -92,6 +93,21 @@ def init_repo(path: Path, branch: str = "main") -> None:
 def test_no_lease_is_inert(tmp_path: Path) -> None:
     result = run_guard(tmp_path, "git push origin main")
     assert result.returncode == 0
+    assert run_guard(
+        tmp_path, tool_name="Write",
+        tool_input={"file_path": str(tmp_path / "registry/projects/x.yaml")},
+    ).returncode == 0
+
+
+def test_settings_register_file_write_guard() -> None:
+    settings = json.loads(SETTINGS.read_text(encoding="utf-8"))
+    entries = settings["hooks"]["PreToolUse"]
+    write_entry = next(
+        entry for entry in entries
+        if entry["matcher"] == "Write|Edit|MultiEdit|NotebookEdit"
+    )
+    bash_entry = next(entry for entry in entries if entry["matcher"] == "Bash")
+    assert write_entry["hooks"] == bash_entry["hooks"]
 
 
 def test_no_lease_allows_even_malformed_hook_json(tmp_path: Path) -> None:
@@ -106,6 +122,24 @@ def test_no_lease_allows_even_malformed_hook_json(tmp_path: Path) -> None:
         check=False,
     )
     assert result.returncode == 0
+
+
+def test_file_writes_are_scoped_while_lease_is_active(tmp_path: Path) -> None:
+    lease = write_lease(tmp_path)
+    clone = tmp_path.parent / f"{tmp_path.name}-clone"
+    clone.mkdir()
+    lease["contract_forbidden_paths"] = [".env"]
+    (tmp_path / "data" / "build" / "lease.json").write_text(json.dumps(lease), encoding="utf-8")
+    assert_denied(run_guard(
+        tmp_path, tool_name="Write",
+        tool_input={"file_path": str(tmp_path / "registry/projects/x.yaml")},
+    ), "direct_write_scope")
+    assert_denied(run_guard(
+        tmp_path, tool_name="Edit", tool_input={"file_path": str(clone / ".env")},
+    ), "direct_write_scope")
+    assert run_guard(
+        tmp_path, cwd=clone, tool_name="Write", tool_input={"file_path": "src/x.py"},
+    ).returncode == 0
 
 
 @pytest.mark.parametrize(
@@ -136,6 +170,14 @@ def test_git_dash_c_push_to_main_is_denied(tmp_path: Path) -> None:
     )
 
 
+def test_git_global_config_is_consumed_before_push_rules(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    clone.mkdir()
+    assert_denied(run_guard(tmp_path, "git -c a=b push origin main", cwd=clone), "non_push_branch")
+    assert_denied(run_guard(tmp_path, "git -c a=b", cwd=clone), "git_parse")
+
+
 @pytest.mark.parametrize(
     "command",
     ["git push origin push/R1-1-x", "git push -u origin push/R1-3-z"],
@@ -145,6 +187,20 @@ def test_target_push_branch_is_allowed(tmp_path: Path, command: str) -> None:
     clone = tmp_path / "clone"
     clone.mkdir()
     assert run_guard(tmp_path, command, cwd=clone).returncode == 0
+
+
+def test_push_remote_must_match_leased_repo(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    clone.mkdir()
+    assert_denied(
+        run_guard(tmp_path, "git push attacker push/R1-1-x", cwd=clone),
+        "push_remote",
+    )
+    assert run_guard(
+        tmp_path, "git push https://github.com/KMADHOK/TARGET.git push/R1-1-x", cwd=clone,
+    ).returncode == 0
+    assert_denied(run_guard(tmp_path, "git push attacker main"), "push_remote")
 
 
 @pytest.mark.parametrize(
@@ -249,6 +305,19 @@ def test_pr_create_policy(
     assert result.returncode == expected
     if rule_id:
         assert rule_id in result.stderr
+
+
+@pytest.mark.parametrize(("branch", "expected"), [("main", 2), ("push/R1-1-x", 0)])
+def test_pr_create_without_head_resolves_branch_even_with_repo(
+    tmp_path: Path, branch: str, expected: int,
+) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    init_repo(clone, branch)
+    result = run_guard(tmp_path, "gh pr create --repo kmadhok/target", cwd=clone)
+    assert result.returncode == expected
+    if expected:
+        assert "pr_head_branch" in result.stderr
 
 
 @pytest.mark.parametrize(
@@ -386,6 +455,47 @@ def test_contract_forbidden_path_cannot_be_read_or_staged(tmp_path: Path) -> Non
     (tmp_path / "data" / "build" / "lease.json").write_text(json.dumps(lease), encoding="utf-8")
     assert_denied(run_guard(tmp_path, "cat private/config.json"), "secret_read")
     assert_denied(run_guard(tmp_path, "git add private/config.json"), "forbidden_path_stage")
+
+
+def test_broad_add_checks_changed_forbidden_paths(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    init_repo(clone)
+    lease = json.loads((tmp_path / "data/build/lease.json").read_text(encoding="utf-8"))
+    lease["contract_forbidden_paths"] = ["secrets/**"]
+    (tmp_path / "data/build/lease.json").write_text(json.dumps(lease), encoding="utf-8")
+    assert run_guard(tmp_path, "git add .", cwd=clone).returncode == 0
+    secret = clone / "secrets/token.txt"
+    secret.parent.mkdir()
+    secret.write_text("not-a-real-secret\n", encoding="utf-8")
+    assert_denied(run_guard(tmp_path, "git add .", cwd=clone), "forbidden_path_stage")
+
+
+def test_broad_add_fails_closed_when_status_cannot_run(tmp_path: Path) -> None:
+    lease = write_lease(tmp_path)
+    lease["contract_forbidden_paths"] = ["**/.env"]
+    (tmp_path / "data/build/lease.json").write_text(json.dumps(lease), encoding="utf-8")
+    clone = tmp_path / "not-a-repo"
+    clone.mkdir()
+    assert_denied(run_guard(tmp_path, "git add .", cwd=clone), "forbidden_path_stage")
+
+
+def test_finalize_pending_allows_registry_push_only(tmp_path: Path) -> None:
+    lease = write_lease(tmp_path)
+    lease["status"] = "finalize_pending"
+    (tmp_path / "data/build/lease.json").write_text(json.dumps(lease), encoding="utf-8")
+    clone = tmp_path / "clone"
+    clone.mkdir()
+    assert run_guard(tmp_path, "git push origin main").returncode == 0
+    assert_denied(
+        run_guard(tmp_path, "git push origin push/R1-1-x", cwd=clone), "finalize_only"
+    )
+    assert_denied(
+        run_guard(tmp_path, "gh pr create --head push/R1-1-x", cwd=clone), "finalize_only"
+    )
+    assert_denied(
+        run_guard(tmp_path, "gh pr merge 7 --squash", cwd=clone), "finalize_only"
+    )
 
 
 def test_registry_destroy_is_denied(tmp_path: Path) -> None:

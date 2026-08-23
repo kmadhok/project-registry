@@ -24,6 +24,7 @@ from .build import (
     begin_run,
     build_env,
     build_report,
+    confirm_writeback,
     finish_run,
     get_build_context,
     load_state,
@@ -834,6 +835,12 @@ def cmd_build_start(args, paths, now) -> int:
 
 
 def cmd_build_finish(args, paths, now) -> int:
+    if args.confirm_writeback:
+        result = confirm_writeback(paths, args.run_id, now=now)
+        if emit(result, args):
+            return 0
+        print(f"Confirmed registry write-back for {args.run_id}.")
+        return 0
     registry = load_registry(paths)
     result = finish_run(
         paths, args.run_id, outcome=args.outcome, summary=args.summary,
@@ -1168,7 +1175,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     finish = build_subparsers.add_parser("finish", help="Finalize a build run.")
     finish.add_argument("run_id")
-    finish.add_argument("--outcome", required=True, choices=sorted(RUN_OUTCOMES))
+    finish_mode = finish.add_mutually_exclusive_group(required=True)
+    finish_mode.add_argument("--outcome", choices=sorted(RUN_OUTCOMES))
+    finish_mode.add_argument("--confirm-writeback", action="store_true")
     finish.add_argument("--summary")
     finish.add_argument("--json", action="store_true", help="Emit JSON.")
     finish.set_defaults(handler=cmd_build_finish)

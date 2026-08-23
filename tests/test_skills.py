@@ -62,6 +62,8 @@ def test_push_project_skill_is_portable_and_complete():
     assert "cloud routine" not in text.lower()
     for required in ("build-planner", "build-reviewer", "--squash", "checkpoint/", "STOP"):
         assert required in text
+    assert "--confirm-writeback" in text
+    assert "finalize_pending" in text
 
 
 def test_run_build_dry_run_and_old_launcher_removed():

@@ -19,7 +19,7 @@ The environment decides; never hardcode paths.
 
 1. Run `git -C "$REGISTRY_ROOT" pull --ff-only`.
 2. Run `$REGISTRY_CLI build start --host "$HOST" [--project <id>] [--force-named] --json`. Include only invocation arguments actually supplied.
-3. For `lease_held`, `registry_dirty`, `stopped`, or `no_candidate`, print the registry's reason and stop; the attempt is already journaled.
+3. For `finalize_pending`, redo `$REGISTRY_CLI dashboard`, then `git -C "$REGISTRY_ROOT" add data/build DASHBOARD.md`, commit and push `origin main`, run `$REGISTRY_CLI build finish "<pending-run-id>" --confirm-writeback --json`, and repeat step 2. For `lease_held`, `registry_dirty`, `stopped`, or `no_candidate`, print the registry's reason and stop; the attempt is already journaled.
 4. Only when the output contains reconciliation `actions`: execute each under the guard —
    - `close_pr`: `gh pr close <n> --repo <repo>`.
    - `delete_branch`: from a checkout of `<repo>`, run `git push origin --delete <branch>`.
@@ -130,8 +130,9 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 3. Run `$REGISTRY_CLI dashboard`.
 4. Run `cd "$REGISTRY_ROOT" && git add data/build DASHBOARD.md && git commit -m "build: $RUN_ID $PROJECT <outcome>" && git push origin main`.
 5. On non-fast-forward, run `git pull --rebase` once and push again. If it still fails, leave it for the next run's reconciliation.
-6. Load PushNotification through ToolSearch when available and send `<project> · <outcome> · <merged n> · digest <path>`; otherwise print that line.
-7. Delete only `"$WORKDIR"`.
+6. After the successful `git push origin main`, run `$REGISTRY_CLI build finish "$RUN_ID" --confirm-writeback --json`.
+7. Load PushNotification through ToolSearch when available and send `<project> · <outcome> · <merged n> · digest <path>`; otherwise print that line.
+8. Delete only `"$WORKDIR"`.
 
 ## Invariants
 
@@ -153,7 +154,7 @@ Treat a guard denial as a bug in the plan, never an obstacle to route around. St
 |---|---|
 | Duplicate scheduled run | The start attempt records `lease_held`; print its reason and stop. |
 | Crash mid-chunk | Execute returned reconcile actions, run `build reconcile --done`, and restart; reconciliation records `crashed` and `reconciled`. |
-| Merge succeeded but write-back failed | Let reconciliation rebuild from tags and PR run ids; record `reconciled`. |
+| Merge succeeded but write-back failed | Leave the lease `finalize_pending`; the next start redoes dashboard/add/commit/push, calls `--confirm-writeback`, and repeats start. |
 | Registry push is non-fast-forward | Rebase and retry once; otherwise leave `finalize_pending` for reconciliation. |
 | Branch-name collision | Let start reconciliation sweep the stale `push/*` branch; record `reconciled`. |
 | Codex unavailable or logged out | Retry once; finish `codex_unavailable`. |

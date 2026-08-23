@@ -5,7 +5,8 @@ out-of-contract actions during an autonomous build run. It evaluates Bash and
 project-registry MCP tool calls before they execute. A denial exits with status
 2 and prints a one-line `build-guard: <rule_id>` reason to stderr.
 
-The guard is active only while `data/build/lease.json` exists. Without a lease,
+The guard is active only while `data/build/lease.json` exists, including while
+its status is `finalize_pending`. Without a lease,
 it is inert and allows every tool call. Once a lease exists, malformed hook
 input, malformed lease data, shell tokenization errors, branch-resolution
 failures, and unexpected runtime errors fail closed.
@@ -18,6 +19,10 @@ when deciding whether a command operates in the registry or target clone.
 
 | Rule ID | Enforced boundary |
 |---|---|
+| `direct_write_scope` | File-writing tools cannot write inside the registry or to contract-forbidden paths while a lease exists. |
+| `git_parse` | Git invocations whose global options do not yield a subcommand fail closed. |
+| `push_remote` | Pushes use `origin` (or the leased target repository URL outside the registry). |
+| `finalize_only` | A finalize-pending lease permits registry write-back but no further target push or PR creation/merge. |
 | `force_push` | Blocks force flags and `+` refspecs on `git push`. |
 | `tag_push_scope` | Target-repository tag pushes are limited to one explicit `checkpoint/<run_id>-*` tag; `--tags` and `--follow-tags` are forbidden. |
 | `non_push_branch` | Target-repository branch pushes must use `push/<run_id>-*`. |

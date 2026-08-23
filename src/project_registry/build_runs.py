@@ -25,6 +25,7 @@ __all__ = [
     "append_event", "read_events", "load_state", "save_state", "apply_run_to_state",
     "resume_project", "build_report", "registry_checkout_status", "get_build_context",
     "begin_run", "record_event", "reconcile", "reconcile_done", "finish_run",
+    "confirm_writeback",
     "build_env",
 ]
 
@@ -33,7 +34,8 @@ EVENT_TYPES = frozenset({
     "contract_repaired", "chunk_started", "pr_opened", "verify_passed",
     "verify_failed", "review_verdict", "merged", "merge_conflict", "reverted",
     "chunk_rejected", "chunk_skipped", "guard_denied", "needs_intent",
-    "reconciled", "crashed", "stopped", "resumed", "run_finished",
+    "reconciled", "writeback_confirmed", "crashed", "stopped", "resumed",
+    "run_finished",
 })
 
 RUN_OUTCOMES = frozenset({
@@ -41,7 +43,7 @@ RUN_OUTCOMES = frozenset({
     "blocked_by_policy", "no_candidate", "lease_held", "registry_dirty",
     "preflight_failed", "clone_failed", "contract_broken", "baseline_red",
     "codex_unavailable", "aborted", "stopped", "crashed", "paused",
-    "shadow_completed", "forced_named",
+    "shadow_completed", "forced_named", "finalize_pending",
 })
 
 PAUSED_REASONS = frozenset({
@@ -309,11 +311,15 @@ def apply_run_to_state(
     config: BreakerConfig = BreakerConfig(),
 ) -> ProjectBuildState:
     """Purely fold one run's ordered events into a project's state."""
+    events = list(events_for_run)
+    run_id = next((event.get("run_id") for event in events if event.get("run_id")), None)
+    if run_id is not None and state.last_run_id == run_id:
+        return state
     result = replace(state)
     latest_ts = result.last_run_at
     latest_run_id = result.last_run_id
     last_outcome = result.last_outcome
-    for event in events_for_run:
+    for event in events:
         event_type = event.get("type")
         event_ts = event.get("ts")
         latest_ts = event_ts or latest_ts
@@ -606,6 +612,13 @@ def begin_run(
     if isinstance(ttl_seconds, bool) or not isinstance(ttl_seconds, int) or ttl_seconds < 1:
         raise BuildError("ttl_seconds must be an integer >= 1")
     attempt_id = _run_id(host, current, run_id)
+    existing = _read_lease(paths)
+    if existing is not None and existing.get("status") == "finalize_pending":
+        return {
+            "outcome": "finalize_pending",
+            "actions": [{"action": "confirm_writeback", "run_id": existing["run_id"]}],
+            "lease": existing,
+        }
     checkout = registry_checkout_status(paths.root)
     detail = dict(checkout)
     if not checkout["is_git"]:
@@ -620,9 +633,8 @@ def begin_run(
         _attempt_finished(paths, attempt_id, host, "stopped", current, project_id=project_id)
         return {"outcome": "stopped"}
 
-    existing = _read_lease(paths)
     if existing is not None:
-        if existing.get("status") == "finalize_pending" or _lease_expired(existing, current):
+        if _lease_expired(existing, current):
             result = reconcile(paths, now=current)
             return {"outcome": "reconciling", **result}
         _attempt_finished(
@@ -809,10 +821,10 @@ def reconcile(
     if lease is None:
         return {"actions": [], "note": "nothing to reconcile"}
     if lease.get("status") == "finalize_pending":
-        return finish_run(
-            paths, lease["run_id"], outcome=lease.get("finalize_outcome", "aborted"),
-            summary=lease.get("finalize_summary"), now=current,
-        )
+        return {
+            "actions": [{"action": "confirm_writeback", "run_id": lease["run_id"]}],
+            "lease": lease,
+        }
     if lease.get("status") == "reconciling":
         return {"actions": lease.get("reconcile_actions", []), "lease": lease}
     if not _lease_expired(lease, current):
@@ -934,7 +946,7 @@ def finish_run(
     paths: Paths, run_id: str, *, outcome: str, summary: str | None = None,
     now: dt.datetime | None = None, registry: Any = None, snapshot: Any = None,
 ) -> dict[str, Any]:
-    """Finalize a leased run, persist state/digest, and release the lease."""
+    """Finalize a leased run and retain its lease until registry write-back."""
     from .automation import build_queue
     from .github.sync import load_snapshot
 
@@ -944,32 +956,29 @@ def finish_run(
     if outcome not in RUN_OUTCOMES:
         raise BuildError(f"unknown run outcome: {outcome}")
     current = _now(now)
-    lease.update({
-        "status": "finalize_pending", "finalize_outcome": outcome,
-        "finalize_summary": summary,
-    })
-    write_json(paths.build_lease_file, lease)
-    already_finished = False
     events, _ = read_events(paths)
-    for item in events:
-        if item["run_id"] == run_id and item["type"] == "run_finished":
-            already_finished = True
-            break
-    if not already_finished:
-        append_event(paths, {
+    finished_event = next((
+        item for item in events
+        if item["run_id"] == run_id and item["type"] == "run_finished"
+    ), None)
+    if finished_event is None:
+        finished_event = append_event(paths, {
             "run_id": run_id, "host": lease["host"], "type": "run_finished",
             "project_id": lease.get("project_id"), "outcome": outcome,
             "detail": {"summary": summary} if summary else None,
         }, now=current)
+    else:
+        outcome = finished_event["outcome"]
+        summary = (finished_event.get("detail") or {}).get("summary")
     events, _ = read_events(paths)
     run_events = [item for item in events if item["run_id"] == run_id]
     states = load_state(paths)
     project_id = lease.get("project_id")
-    state_after = apply_run_to_state(
-        states.get(project_id, ProjectBuildState()), run_events
-    )
-    states[project_id] = state_after
-    save_state(paths, states)
+    prior_state = states.get(project_id, ProjectBuildState())
+    state_after = apply_run_to_state(prior_state, run_events)
+    if project_id is not None and state_after != prior_state:
+        states[project_id] = state_after
+        save_state(paths, states)
     lease["paused_reason"] = state_after.paused_reason
     needs_intent: list[str] = []
     if registry is not None:
@@ -980,7 +989,17 @@ def finish_run(
             if item["state"] == "needs_intent"
         ]
     digest = _write_digest(paths, lease, run_events, outcome, summary, needs_intent)
-    paths.build_lease_file.unlink()
+    lease.update({
+        "status": "finalize_pending",
+        "finalize": {
+            "outcome": outcome,
+            "digest_path": str(digest),
+            "finished_at": finished_event["ts"],
+        },
+    })
+    lease.pop("finalize_outcome", None)
+    lease.pop("finalize_summary", None)
+    write_json(paths.build_lease_file, lease)
     return {
         "state_after": state_after.to_dict(),
         "digest_path": str(digest),
@@ -989,6 +1008,28 @@ def finish_run(
             "consecutive_failures": state_after.consecutive_failures,
         },
     }
+
+
+def confirm_writeback(
+    paths: Paths, run_id: str, *, now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Release a finalized lease after its registry commit has been pushed."""
+    lease = _read_lease(paths)
+    if (
+        lease is None
+        or lease.get("run_id") != run_id
+        or lease.get("status") != "finalize_pending"
+    ):
+        raise BuildError("build lease is not finalize_pending for run_id")
+    paths.build_lease_file.unlink()
+    append_event(paths, {
+        "run_id": run_id,
+        "host": lease["host"],
+        "type": "writeback_confirmed",
+        "project_id": lease.get("project_id"),
+        "detail": {"digest_path": (lease.get("finalize") or {}).get("digest_path")},
+    }, now=_now(now))
+    return {"writeback_confirmed": True, "run_id": run_id}
 
 
 def build_env(root: Path) -> dict[str, Any]:

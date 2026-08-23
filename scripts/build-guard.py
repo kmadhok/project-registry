@@ -41,6 +41,11 @@ INDIRECT_TARGETS = (
     "gh secret", "gh variable", "proposal-apply", "record-review",
     "apply_approved_project_update", "record_project_review",
 )
+WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
+GIT_GLOBAL_VALUE_OPTIONS = {
+    "-c", "-C", "--git-dir", "--work-tree", "--namespace", "--exec-path",
+    "--super-prefix",
+}
 
 
 class Denied(Exception):
@@ -125,19 +130,22 @@ def _git_parts(tokens: list[str], git_index: int, command_dir: Path) -> tuple[st
     git_dir = command_dir
     while index < len(tokens):
         token = tokens[index]
-        if token == "-C":
+        if token in GIT_GLOBAL_VALUE_OPTIONS:
             if index + 1 >= len(tokens):
-                raise Denied("guard_parse", "git -C has no directory")
-            git_dir = _resolve(tokens[index + 1], command_dir)
+                raise Denied("git_parse", f"git {token} has no value")
+            if token == "-C":
+                git_dir = _resolve(tokens[index + 1], command_dir)
             index += 2
-        elif token.startswith("-C") and len(token) > 2:
-            git_dir = _resolve(token[2:], command_dir)
+        elif any(
+            token.startswith(option + "=")
+            for option in GIT_GLOBAL_VALUE_OPTIONS if option.startswith("--")
+        ):
             index += 1
         elif token.startswith("-"):
             index += 1
         else:
             return token, tokens[index + 1:], git_dir
-    return None, [], git_dir
+    raise Denied("git_parse", "cannot determine git subcommand")
 
 
 def _current_branch(directory: Path) -> str:
@@ -281,6 +289,80 @@ def _is_forbidden_path(value: str, forbidden: list[str], command_dir: Path) -> b
     return False
 
 
+def _matches_contract_forbidden(value: str | Path, forbidden: list[str], base: Path) -> bool:
+    raw = str(value).strip("'\"")
+    if not raw:
+        return False
+    normalized = raw.replace("\\", "/").lstrip("./")
+    resolved = _resolve(raw, base).as_posix()
+    basename = Path(normalized).name
+    for pattern_value in forbidden:
+        pattern = str(pattern_value).replace("\\", "/").rstrip("/")
+        if not pattern:
+            continue
+        patterns = {pattern}
+        pending = [pattern]
+        while pending:
+            candidate_pattern = pending.pop()
+            offset = candidate_pattern.find("**/")
+            if offset >= 0:
+                without_recursive = candidate_pattern[:offset] + candidate_pattern[offset + 3:]
+                if without_recursive not in patterns:
+                    patterns.add(without_recursive)
+                    pending.append(without_recursive)
+        parts = [part for part in normalized.split("/") if part]
+        suffixes = {"/".join(parts[index:]) for index in range(len(parts))}
+        candidates = {normalized, resolved, basename, *suffixes}
+        if any(
+            fnmatch.fnmatch(candidate, candidate_pattern)
+            for candidate in candidates for candidate_pattern in patterns
+        ):
+            return True
+        if not Path(pattern).is_absolute():
+            relative = Path(resolved).relative_to(base).as_posix() if Path(resolved).is_relative_to(base) else ""
+            if relative and fnmatch.fnmatch(relative, pattern):
+                return True
+    return False
+
+
+def _push_remote(args: list[str]) -> str | None:
+    positional = _positional_args(
+        args, {"--repo", "--receive-pack", "--exec", "--push-option", "-o"},
+    )
+    return positional[0] if positional else None
+
+
+def _remote_matches_repo(remote: str, repo: str) -> bool:
+    normalized = remote.lower().rstrip("/")
+    if normalized.endswith(".git"):
+        normalized = normalized[:-4]
+    expected = re.escape(repo.lower().strip("/"))
+    return re.search(rf"(?:^|[/:]){expected}(?:$|[/?#])", normalized) is not None
+
+
+def _status_paths(git_dir: Path) -> list[str]:
+    completed = subprocess.run(
+        ["git", "-C", str(git_dir), "status", "--porcelain", "-uall"],
+        capture_output=True, text=True, timeout=10, check=False,
+    )
+    if completed.returncode != 0:
+        raise Denied("forbidden_path_stage", "cannot inspect changed paths")
+    paths: list[str] = []
+    for line in completed.stdout.splitlines():
+        value = line[3:] if len(line) >= 4 else line
+        if " -> " in value:
+            value = value.split(" -> ", 1)[1]
+        paths.append(value.strip().strip('"'))
+    return paths
+
+
+def _broad_add(args: list[str], git_dir: Path) -> bool:
+    positionals = _positional_args(args, {"--chmod", "--pathspec-from-file"})
+    if any(token in {".", "-A", "--all", ":/"} for token in args):
+        return True
+    return bool(positionals) and all(_resolve(token, git_dir).is_dir() for token in positionals)
+
+
 def _registry_cli_args(tokens: list[str], command_index: int) -> list[str] | None:
     name = Path(tokens[command_index]).name.lower()
     if name == "registry":
@@ -317,17 +399,30 @@ def _evaluate_git(
     lease: dict[str, Any], segment: str,
 ) -> None:
     subcommand, args, git_dir = _git_parts(tokens, git_index, command_dir)
+    in_registry = git_dir == root
     forbidden = [str(path) for path in lease.get("contract_forbidden_paths", [])]
     if subcommand in {"add", "commit"}:
         commit_all = subcommand == "commit" and any(
             token in {"-a", "--all"} or (token.startswith("-") and not token.startswith("--") and "a" in token[1:])
             for token in args
         )
-        if (subcommand == "add" or commit_all) and any(
+        if subcommand == "add" and forbidden and _broad_add(args, git_dir):
+            if any(_matches_contract_forbidden(path, forbidden, git_dir) for path in _status_paths(git_dir)):
+                raise Denied("forbidden_path_stage")
+        elif (subcommand == "add" or commit_all) and any(
             _is_forbidden_path(token, forbidden, git_dir) for token in args
         ):
             raise Denied("forbidden_path_stage")
     if subcommand == "push":
+        if lease.get("status") == "finalize_pending" and not in_registry:
+            raise Denied("finalize_only")
+        remote = _push_remote(args)
+        if remote is not None:
+            if in_registry:
+                if remote != "origin":
+                    raise Denied("push_remote")
+            elif remote != "origin" and not _remote_matches_repo(remote, str(lease.get("repo", ""))):
+                raise Denied("push_remote")
         if _force_push(args):
             raise Denied("force_push")
         if any(
@@ -346,16 +441,16 @@ def _evaluate_git(
             return
         if is_tag:
             tag = branch.removeprefix("refs/tags/")
-            if git_dir == root or not tag.startswith(f"checkpoint/{lease['run_id']}-"):
+            if in_registry or not tag.startswith(f"checkpoint/{lease['run_id']}-"):
                 raise Denied("tag_push_scope")
             return
         branch = branch.removeprefix("refs/heads/")
-        if git_dir == root:
+        if in_registry:
             if branch != "main":
                 raise Denied("registry_push_branch")
         elif not branch.startswith(prefix):
             raise Denied("non_push_branch")
-    if subcommand == "commit" and git_dir == root:
+    if subcommand == "commit" and in_registry:
         completed = subprocess.run(
             ["git", "-C", str(root), "diff", "--cached", "--name-only"],
             capture_output=True,
@@ -376,6 +471,8 @@ def _evaluate_gh(args: list[str], command_dir: Path, lease: dict[str, Any]) -> N
     group = args[0]
     action = args[1] if len(args) > 1 else ""
     rest = args[2:]
+    if lease.get("status") == "finalize_pending" and group == "pr" and action in {"create", "merge"}:
+        raise Denied("finalize_only")
     if group == "pr" and action == "create":
         if int(lease.get("prs_open", 0)) >= 1:
             raise Denied("one_pr_per_chunk")
@@ -383,7 +480,7 @@ def _evaluate_gh(args: list[str], command_dir: Path, lease: dict[str, Any]) -> N
         if repo is not None and repo != lease.get("repo"):
             raise Denied("wrong_repo")
         head = _option_value(rest, {"--head", "-H"})
-        if head is None and repo is None:
+        if head is None:
             head = _current_branch(command_dir)
         if head is not None and not head.startswith(f"push/{lease['run_id']}-"):
             raise Denied("pr_head_branch")
@@ -578,6 +675,20 @@ def _evaluate_mcp(tool_name: str, tool_input: dict[str, Any]) -> None:
             raise Denied("intent_only_proposal")
 
 
+def _evaluate_write(
+    tool_name: str, tool_input: dict[str, Any], root: Path, cwd: Path,
+    lease: dict[str, Any],
+) -> None:
+    key = "notebook_path" if tool_name == "NotebookEdit" else "file_path"
+    value = tool_input.get(key)
+    if not isinstance(value, str) or not value:
+        raise Denied("direct_write_scope", f"{key} is required")
+    target = _resolve(value, cwd)
+    forbidden = [str(path) for path in lease.get("contract_forbidden_paths", [])]
+    if target == root or root in target.parents or _matches_contract_forbidden(target, forbidden, cwd):
+        raise Denied("direct_write_scope")
+
+
 def _append_denial(root: Path, lease: dict[str, Any], rule_id: str, command: str) -> None:
     path = root / "data" / "build" / "runs.jsonl"
     try:
@@ -635,6 +746,10 @@ def main() -> int:
         elif isinstance(tool_name, str) and tool_name.startswith("mcp__project-registry__"):
             command_detail = json.dumps(tool_input, sort_keys=True)
             _evaluate_mcp(tool_name, tool_input)
+        elif tool_name in WRITE_TOOLS:
+            command_detail = json.dumps(tool_input, sort_keys=True)
+            cwd = _resolve(str(payload.get("cwd") or root), root)
+            _evaluate_write(tool_name, tool_input, root, cwd, lease)
         return 0
     except Denied as error:
         if root is not None and lease is not None:

@@ -13,6 +13,7 @@ from project_registry.build import (
     BuildError,
     begin_run,
     build_env,
+    confirm_writeback,
     finish_run,
     read_events,
     reconcile,
@@ -112,9 +113,39 @@ def test_checkout_preflight_dirty_ignored_paths_and_branch(paths, write_project)
     allowed = start(paths, run_id="allowed")
     assert allowed["run_id"] == "allowed"
     finish_run(paths, "allowed", outcome="completed", now=NOW)
+    confirm_writeback(paths, "allowed", now=NOW)
     subprocess.run(["git", "switch", "-c", "topic"], cwd=paths.root, check=True,
                    capture_output=True)
     assert start(paths, run_id="branch")["outcome"] == "registry_dirty"
+
+
+def test_finalize_pending_blocks_begin_until_writeback_confirmed(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    finish_run(paths, "run", outcome="completed", now=NOW)
+    refused = start(paths, run_id="next")
+    assert refused["outcome"] == "finalize_pending"
+    assert refused["actions"] == [{"action": "confirm_writeback", "run_id": "run"}]
+    assert reconcile(paths)["actions"] == refused["actions"]
+    assert confirm_writeback(paths, "run", now=NOW)["writeback_confirmed"] is True
+    assert not paths.build_lease_file.exists()
+    events, _ = read_events(paths)
+    assert events[-1]["type"] == "writeback_confirmed"
+    assert start(paths, run_id="next")["run_id"] == "next"
+
+
+def test_finish_is_idempotent_for_state_application(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    record_event(paths, "run", {
+        "type": "merged", "chunk_id": "c1", "tag": "checkpoint/run-1",
+    })
+    first = finish_run(paths, "run", outcome="aborted", now=NOW)
+    second = finish_run(paths, "run", outcome="aborted", now=NOW)
+    assert first["state_after"]["chunks_merged_total"] == 1
+    assert second["state_after"]["chunks_merged_total"] == 1
+    assert first["state_after"]["consecutive_failures"] == 1
+    assert second["state_after"]["consecutive_failures"] == 1
 
 
 def test_named_needs_intent_refused_unless_forced(paths, write_project):
@@ -161,7 +192,10 @@ def test_event_counters_and_finish_digest(paths, write_project):
     digest = open(finished["digest_path"], encoding="utf-8").read()
     assert "https://github.com/owner/builder/pull/9" in digest
     assert "git revert abc123" in digest
-    assert not paths.build_lease_file.exists()
+    lease = read_json(paths.build_lease_file)
+    assert lease["status"] == "finalize_pending"
+    assert lease["finalize"]["outcome"] == "completed"
+    assert lease["finalize"]["digest_path"] == finished["digest_path"]
 
 
 def test_reconcile_lists_stale_builder_pr_without_mutation(paths, write_project):

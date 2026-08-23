@@ -184,8 +184,13 @@ YAML. `runs.jsonl`, `state.json`, and `digests/` are tracked; the active
 `project_id`, `repo`, `dry_run`, `started_at`, `ttl_seconds`, `status`,
 `prs_open`, `merges`, per-chunk PR/verification/verdict/merge data, the policy
 `allow` list and `budget`, `contract_forbidden_paths`, and
-`reconcile_targets`. Status is `active`, `reconciling`, or
-`finalize_pending`. A lease expires after `started_at + ttl_seconds`; cleanup
+`reconcile_targets`, and, while write-back remains, a `finalize` object with
+`outcome`, `digest_path`, and `finished_at`. Status is `active`, `reconciling`,
+or `finalize_pending`. A finalize-pending lease does not expire: start and
+reconcile return a `confirm_writeback` action requiring dashboard regeneration,
+commit/push of `data/build` and `DASHBOARD.md`, and
+`registry build finish RUN_ID --confirm-writeback`. Other leases expire after
+`started_at + ttl_seconds`; cleanup
 is planned by `registry build reconcile` and acknowledged with
 `registry build reconcile --done`.
 
@@ -196,7 +201,7 @@ Each line of `runs.jsonl` is an event object with these fields:
 | `ts` | ISO-8601 UTC timestamp | Event time. |
 | `run_id` | string | Required, non-empty run identifier. |
 | `host` | string | Required execution host. |
-| `type` | enum | `run_started`, `candidate_selected`, `contract_bootstrapped`, `contract_repaired`, `chunk_started`, `pr_opened`, `verify_passed`, `verify_failed`, `review_verdict`, `merged`, `merge_conflict`, `reverted`, `chunk_rejected`, `chunk_skipped`, `guard_denied`, `needs_intent`, `reconciled`, `crashed`, `stopped`, `resumed`, or `run_finished`. |
+| `type` | enum | `run_started`, `candidate_selected`, `contract_bootstrapped`, `contract_repaired`, `chunk_started`, `pr_opened`, `verify_passed`, `verify_failed`, `review_verdict`, `merged`, `merge_conflict`, `reverted`, `chunk_rejected`, `chunk_skipped`, `guard_denied`, `needs_intent`, `reconciled`, `writeback_confirmed`, `crashed`, `stopped`, `resumed`, or `run_finished`. |
 | `project_id` | string or null | Registry project, when applicable. |
 | `chunk_id` | string or null | Chunk identifier, when applicable. |
 | `pr_url` | GitHub PR URL or null | Pull request associated with the event. |
@@ -209,7 +214,7 @@ Run outcomes are `completed`, `budget_exhausted`, `roadmap_done`,
 `needs_intent`, `blocked_by_policy`, `no_candidate`, `lease_held`,
 `registry_dirty`, `preflight_failed`, `clone_failed`, `contract_broken`,
 `baseline_red`, `codex_unavailable`, `aborted`, `stopped`, `crashed`, `paused`,
-`shadow_completed`, and `forced_named`. Malformed journal lines are reported by
+`shadow_completed`, `forced_named`, and `finalize_pending`. Malformed journal lines are reported by
 `build-report` and skipped; they do not make the report fail.
 
 Startup outcomes `registry_dirty`, `lease_held`, `no_candidate`, and `stopped`

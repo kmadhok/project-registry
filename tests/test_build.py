@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+from pathlib import Path
 
 import pytest
+import yaml
 
 from project_registry.build import (
     EVENT_TYPES,
@@ -15,14 +17,17 @@ from project_registry.build import (
     apply_run_to_state,
     build_report,
     load_state,
+    parse_verdict,
     read_events,
     resume_project,
     save_state,
+    verdict_allows_merge,
 )
 from project_registry.storage import append_jsonl
 
 
 NOW = dt.datetime(2026, 8, 22, 12, 0, tzinfo=dt.timezone.utc)
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def event(event_type: str, *, ts: str = "2026-08-22T12:00:00+00:00", **values):
@@ -165,3 +170,75 @@ def test_malformed_journal_lines_are_reported_not_fatal(paths):
     assert meta["malformed_count"] == 2
     assert [item["line"] for item in meta["malformed"]] == [2, 3]
     assert build_report(paths)["journal"]["malformed_count"] == 2
+
+
+@pytest.mark.parametrize("text", [
+    'Review complete. {"verdict":"approve","reasons":[],"risk_flags":[],"classes_seen":["none"]}',
+    '```json\n{"verdict":"reject","reasons":["tests failed"],"risk_flags":["red"],"classes_seen":["ci"]}\n```',
+])
+def test_parse_verdict_accepts_embedded_or_fenced_json(text):
+    verdict = parse_verdict(text)
+    assert verdict.verdict in {"approve", "reject"}
+
+
+def test_parse_verdict_uses_last_json_object():
+    text = (
+        '{"verdict":"reject","reasons":["old"],"risk_flags":[],"classes_seen":["none"]}'
+        " revised to "
+        '{"verdict":"approve","reasons":[],"risk_flags":[],"classes_seen":["plan"]}'
+    )
+    assert parse_verdict(text).verdict == "approve"
+
+
+@pytest.mark.parametrize("payload", [
+    {"verdict": "maybe", "reasons": [], "risk_flags": [], "classes_seen": []},
+    {"verdict": "reject", "risk_flags": [], "classes_seen": []},
+    {"verdict": "reject", "reasons": [], "risk_flags": [], "classes_seen": []},
+    {"verdict": "approve", "reasons": [], "risk_flags": [], "classes_seen": ["docs"]},
+    {"verdict": "approve", "reasons": [], "risk_flags": [], "classes_seen": [], "extra": True},
+])
+def test_parse_verdict_rejects_nonconforming_objects(payload):
+    with pytest.raises(BuildError):
+        parse_verdict(json.dumps(payload))
+
+
+def test_parse_verdict_rejects_output_without_json():
+    with pytest.raises(BuildError):
+        parse_verdict("approve")
+
+
+@pytest.mark.parametrize(("name", "allowed"), [
+    ("approve", True),
+    ("request_changes", False),
+    ("reject", False),
+])
+def test_verdict_allows_merge_only_for_approval(name, allowed):
+    reasons = [] if name == "approve" else ["reason"]
+    verdict = parse_verdict(json.dumps({
+        "verdict": name,
+        "reasons": reasons,
+        "risk_flags": [],
+        "classes_seen": ["none"],
+    }))
+    assert verdict_allows_merge(verdict) is allowed
+
+
+def test_builder_agent_frontmatter_and_prompt_contracts():
+    agents = {}
+    for name in ("build-planner", "build-reviewer"):
+        text = (ROOT / ".claude" / "agents" / f"{name}.md").read_text(encoding="utf-8")
+        opening, frontmatter, prompt = text.split("---", 2)
+        assert opening == ""
+        metadata = yaml.safe_load(frontmatter)
+        assert metadata["name"]
+        assert metadata["description"]
+        assert metadata["tools"]
+        agents[name] = (metadata, prompt)
+
+    reviewer_metadata, reviewer_prompt = agents["build-reviewer"]
+    assert not ({"Write", "Edit", "NotebookEdit"} & set(reviewer_metadata["tools"]))
+    for literal in ("forbidden_paths", "personal_data", "request_changes"):
+        assert literal in reviewer_prompt
+    planner_prompt = agents["build-planner"][1]
+    assert "Verified-missing" in planner_prompt
+    assert "needs_intent" in planner_prompt

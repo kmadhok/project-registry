@@ -37,9 +37,92 @@ PAUSED_REASONS = frozenset({
 FAILURE_OUTCOMES = frozenset({"aborted", "codex_unavailable", "crashed"})
 NONE_BUCKET = "(none)"
 
+REVIEW_CLASS_VOCABULARY = frozenset({
+    "dependencies", "ci", "generated_data", "public_api", "migrations",
+    "personal_data", "plan", "contract", "none",
+})
+
+REVIEW_VERDICT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "verdict": {"enum": ["approve", "request_changes", "reject"]},
+        "reasons": {"type": "array", "items": {"type": "string"}},
+        "risk_flags": {"type": "array", "items": {"type": "string"}},
+        "classes_seen": {
+            "type": "array",
+            "items": {"enum": sorted(REVIEW_CLASS_VOCABULARY)},
+        },
+    },
+    "required": ["verdict", "reasons", "risk_flags", "classes_seen"],
+    "additionalProperties": False,
+    "allOf": [{
+        "if": {"properties": {"verdict": {"const": "approve"}}},
+        "else": {"properties": {"reasons": {"minItems": 1}}},
+    }],
+}
+
 
 class BuildError(RuntimeError):
     """A build journal or state record is invalid."""
+
+
+@dataclass(frozen=True)
+class Verdict:
+    verdict: str
+    reasons: list[str]
+    risk_flags: list[str]
+    classes_seen: list[str]
+
+
+def parse_verdict(text: str) -> Verdict:
+    """Extract and validate the last JSON object in reviewer output."""
+    decoder = json.JSONDecoder()
+    candidate: Any = None
+    for position, character in enumerate(text):
+        if character != "{":
+            continue
+        try:
+            value, _end = decoder.raw_decode(text[position:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict):
+            candidate = value
+    if candidate is None:
+        raise BuildError("review verdict contains no JSON object")
+
+    required = {"verdict", "reasons", "risk_flags", "classes_seen"}
+    unknown = set(candidate) - required
+    if unknown:
+        raise BuildError(f"review verdict has unknown keys: {sorted(unknown)}")
+    missing = required - set(candidate)
+    if missing:
+        raise BuildError(f"review verdict is missing keys: {sorted(missing)}")
+
+    verdict = candidate["verdict"]
+    if not isinstance(verdict, str) or verdict not in {
+        "approve", "request_changes", "reject",
+    }:
+        raise BuildError("review verdict is unknown")
+    for field in ("reasons", "risk_flags", "classes_seen"):
+        value = candidate[field]
+        if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+            raise BuildError(f"review verdict {field} must be a list of strings")
+    if verdict != "approve" and not candidate["reasons"]:
+        raise BuildError("review verdict reasons must be non-empty unless approved")
+    unknown_classes = set(candidate["classes_seen"]) - REVIEW_CLASS_VOCABULARY
+    if unknown_classes:
+        raise BuildError(f"review verdict has unknown classes: {sorted(unknown_classes)}")
+    return Verdict(
+        verdict=verdict,
+        reasons=list(candidate["reasons"]),
+        risk_flags=list(candidate["risk_flags"]),
+        classes_seen=list(candidate["classes_seen"]),
+    )
+
+
+def verdict_allows_merge(verdict: Verdict) -> bool:
+    """Return whether an independent review permits merging the chunk."""
+    return verdict.verdict == "approve"
 
 
 @dataclass(frozen=True)

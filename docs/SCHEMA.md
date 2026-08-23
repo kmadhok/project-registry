@@ -127,6 +127,21 @@ relationships:
 
 Three gates must pass before anything is exported: `public: true`, a non-empty `public_safe`, and — for the repository name specifically — GitHub confirming the repo is public. Accomplishments need their own `public: true`.
 
+## Editing curated fields
+
+Hand-edit the YAML for prose. For scripted or agent-driven changes use the proposal path, which records exact before/after values and refuses anything that would introduce a validation error:
+
+```bash
+registry propose my-project --set lifecycle=next --rationale "deferred a quarter"
+registry proposal-apply my-project-20260725120000 --approve
+```
+
+An applied proposal rewrites the file in canonical field order, so YAML comments in that file are not preserved.
+
+The brief proposal paths are `brief.done_criteria`, `brief.non_goals`, `brief.constraints`, `brief.open_decisions`, and `brief.reviewed`. Automation paths are `automation.mode`, `automation.allow`, `automation.budget.chunks_per_run`, `automation.budget.minutes_per_run`, and `automation.paused`.
+
+`registry record-review` is a sanctioned CLI shortcut that applies directly. The MCP `record_project_review` tool instead requires `approved=true`; without it, the tool files a pending proposal, returns an error saying nothing was applied, and names the proposal for inspection or separate approval through `apply_approved_project_update`.
+
 ## Validation rules
 
 `registry validate` reports **errors** (provably inconsistent) and **suggestions** (worth a look). Errors exit non-zero; suggestions never do.
@@ -158,27 +173,6 @@ Three gates must pass before anything is exported: `public: true`, a non-empty `
 | `credential_material` | error | Text matches a token/key pattern |
 
 The last one is a hard boundary: the registry stores no credential values, ever. If it fires, remove the value and rotate it.
-
-## Observed data (not editable here)
-
-`data/github/snapshot.json` holds repository visibility, archival state, pushes, open PRs, issues, review state, CI state, and remote branch observations. Repository and branch reads have separate timestamps; branch records include head SHA, commit time, protection, default-branch status, and open in-repo PR numbers. `branches_fetched`, `branches_partial`, `branches_skipped`, and `branches_error` keep missing or incomplete evidence from reading as complete. The snapshot is rewritten by `registry sync` and read by everything else. A failed repository refresh keeps the previous entry and marks it `stale: true`; a branch-only failure keeps the previous branch observation, marks it unfetched, and surfaces a partial error.
-
-The `stale_branches` attention rule emits at most one suggestion per repository. It currently uses a 60-day threshold, excludes the default branch and branches with open in-repo PRs, and never treats an unknown commit date or incomplete branch list as known-stale evidence.
-
-`data/understanding/<project-id>.json` holds an evidence brief when one exists.
-`registry briefs-status` reads `analyzed_at` and `revision`: `analyzed_at`
-provides the brief age, while `revision` is compared with the snapshot's
-latest known default-branch head and reported as `current`, `stale`, or
-`unknown`. Missing, malformed, and revision-unknown briefs stay separate;
-unknown is never treated as current. `registry sync-status` includes the
-present/missing/stale summary, and the MCP exposes the same query through
-`get_briefs_status`.
-
-Briefs are produced out-of-band today, not by `registry sync`, and are
-git-tracked. The registry only reports their coverage and staleness; it does
-not generate, refresh, or delete them. Whether they should become generated
-observed evidence or remain externally owned is still an open ownership
-decision.
 
 ## Build state (`data/build`)
 
@@ -237,24 +231,34 @@ pause a project. A revert pauses immediately, as do `contract_broken` and
 `baseline_red` outcomes. `registry build resume <id>` clears the pause and
 failure count and records a `resumed` event.
 
-## Editing
+## Target-repository contract
 
-Hand-edit the YAML for prose. For scripted or agent-driven changes use the proposal path, which records exact before/after values and refuses anything that would introduce a validation error:
+Each buildable target repository declares its executable boundary in `.project-meta.yaml`. `registry validate-contract <path> --project-id <id>` validates schema version 1 without changing the target.
 
-```bash
-registry propose my-project --set lifecycle=next --rationale "deferred a quarter"
-registry proposal-apply my-project-20260725120000 --approve
+```yaml
+schema: 1
+registry_id: my-project
+runtime:
+  kind: python                    # python | node | go | rust | other
+  version: "3.11"
+package_manager: pip              # supported manager or other
+setup: [python3 -m venv .venv]
+test: [.venv/bin/python -m pytest -q]
+lint: []
+typecheck: []
+verify: []
+max_test_minutes: 15
+network: {allowed: false}
+secrets_required: []              # names only, never values
+services: []                      # non-empty makes the contract non-runnable
+generated_files: []
+generate: []
+personal_data: []
+forbidden_paths: [.env, "secrets/**"]
+deploy: none                      # the only accepted deployment policy in v1
 ```
 
-Note that an applied proposal rewrites the file in canonical field order, so YAML comments in that file are not preserved.
-
-The brief proposal paths are `brief.done_criteria`, `brief.non_goals`, `brief.constraints`, `brief.open_decisions`, and `brief.reviewed`. Automation paths are `automation.mode`, `automation.allow`, `automation.budget.chunks_per_run`, `automation.budget.minutes_per_run`, and `automation.paused`.
-
-`registry record-review` is a sanctioned CLI shortcut that applies directly.
-The MCP `record_project_review` tool instead requires `approved=true`; without
-it, the tool files a pending proposal, returns an error saying nothing was
-applied, and names the proposal for inspection or separate approval through
-`apply_approved_project_update`.
+`schema`, `registry_id`, `runtime`, and at least one `test` command are required. Unknown fields, a mismatched registry id, value-like secret entries, or any `deploy` value other than `none` are errors. `runtime.kind`, `package_manager`, command lists, path-glob lists, timeout, and `network.allowed` are type-checked. A non-empty `services` list is valid metadata but reports `runnable: false` with reason `services`; the builder must pause instead of guessing how to provision infrastructure. Missing contracts are bootstrapped as a reviewed `contract` chunk, while a broken contract receives one repair attempt before the project pauses.
 
 ## SPEC item format
 
@@ -285,3 +289,13 @@ Readiness problems are `missing_acceptance`, `missing_tests`, `missing_size`,
 unready. `registry validate-spec <project-id> <path>` exits non-zero when the
 structure is broken or no unchecked item is ready; an entirely checked list is
 successful.
+
+## Observed data (not editable here)
+
+`data/github/snapshot.json` holds repository visibility, archival state, pushes, open PRs, issues, review state, CI state, and remote branch observations. Repository and branch reads have separate timestamps; branch records include head SHA, commit time, protection, default-branch status, and open in-repo PR numbers. `branches_fetched`, `branches_partial`, `branches_skipped`, and `branches_error` keep missing or incomplete evidence from reading as complete. The snapshot is rewritten by `registry sync` and read by everything else. A failed repository refresh keeps the previous entry and marks it `stale: true`; a branch-only failure keeps the previous branch observation, marks it unfetched, and surfaces a partial error.
+
+The `stale_branches` attention rule emits at most one suggestion per repository. It currently uses a 60-day threshold, excludes the default branch and branches with open in-repo PRs, and never treats an unknown commit date or incomplete branch list as known-stale evidence.
+
+`data/understanding/<project-id>.json` holds an evidence brief when one exists. `registry briefs-status` reads `analyzed_at` and `revision`: `analyzed_at` provides the brief age, while `revision` is compared with the snapshot's latest known default-branch head and reported as `current`, `stale`, or `unknown`. Missing, malformed, and revision-unknown briefs stay separate; unknown is never treated as current. `registry sync-status` includes the present/missing/stale summary, and the MCP exposes the same query through `get_briefs_status`.
+
+Briefs are produced out-of-band today, not by `registry sync`, and are git-tracked. The registry only reports their coverage and staleness; it does not generate, refresh, or delete them. They are optional evidence hints and are never authoritative inputs to autonomous eligibility, ranking, or execution.

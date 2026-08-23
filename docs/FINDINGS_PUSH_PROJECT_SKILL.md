@@ -1,5 +1,12 @@
 # Findings — the `push-project` skill
 
+> **Status 2026-08-22:** S1–S3 were fixed by the marathon. S4's untested
+> failure paths are now covered by
+> [`tests/test_build_guard.py`](../tests/test_build_guard.py),
+> [`tests/test_build_lifecycle.py`](../tests/test_build_lifecycle.py), and the
+> [`scripts/faults/`](../scripts/faults/) fault-injection harness. The findings
+> below remain unchanged as the historical audit record.
+
 Findings from the behavioral audit that belong to the skill itself
 (`~/.claude/skills/push-project/SKILL.md`) — what its instructions say, what
 they omit, and what the two runs proved about its design.

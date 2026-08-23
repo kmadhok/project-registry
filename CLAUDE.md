@@ -32,6 +32,7 @@ Read-only queries:
 
 ```bash
 registry validate               # check operating rules; non-zero exit on errors
+registry validate-contract <path> [--project-id <id>] # check a target repo's .project-meta.yaml contract
 registry validate-spec <id> <path> # check an agent-owned docs/SPEC.md roadmap
 registry list                   # whole portfolio (add --lifecycle/--active/... filters)
 registry show <id>              # one project in full, with relationships and GitHub state
@@ -55,9 +56,9 @@ registry build-readiness <id>   # explain one project's brief gaps and automatio
 registry build resume <id>      # clear a project's build pause and failure count
 registry build env --json       # resolved host, CLI, workdir, budget, and TTL
 registry build context <id> --json # authoritative context for one candidate
-registry build start --host <host> [--project <id>] [--force-named] [--json]
-registry build event <run> <type> [--chunk-id <id>] [--detail key=value]
-registry build finish <run> --outcome <outcome> [--summary <text>]
+registry build start --host <host> [--project <id>] # preflight, select, and atomically lease a run
+registry build event <run> <type> # append a validated event and update the active lease
+registry build finish <run> --outcome <outcome> # finalize state and digest, then release the lease
 registry build reconcile [--done] [--json] # plan or acknowledge crash cleanup
 registry portfolio              # public-safe export; add --format json|markdown/-o
 registry proposals              # pending/applied/rejected proposal records
@@ -100,12 +101,15 @@ registry mcp                                      # run the stdio MCP server
 7. **No external GitHub mutations from this codebase.** REST is GET-only; the
    guarded GraphQL POST accepts read queries only. Do not add
    merge/close/archive/delete capabilities.
-8. **Honor the autonomous build guard while a lease is active.** The
-   `PreToolUse` rules in `docs/BUILD_GUARD.md` are safety boundaries; do not
-   bypass, disable, or evade them.
-8. **Autonomous builds go through `registry build start/event/finish`; never
-   write curated YAML from a run.** Run output belongs only under
-   `data/build/` (plus the generated dashboard workflow).
+8. **Honor the autonomous build guard and lifecycle while a lease is active.**
+   Do not bypass, disable, or evade the `PreToolUse` boundaries in
+   `docs/BUILD_GUARD.md`; use `registry build start`, `registry build event`,
+   and `registry build finish`, and write run output only under `data/build/`
+   (plus the generated dashboard workflow), never to curated YAML.
+9. **Read the brief via `get_build_context`; never read
+   `data/understanding/*` as authority.** Evidence briefs are optional hints;
+   the build context supplies approved intent and the target clone supplies
+   code truth.
 
 ## Answering "what should I work on?"
 
@@ -118,8 +122,9 @@ explanations rather than re-ranking by your own judgment.
 - Tests: `python3 -m pytest` (no network needed). Keep them green.
 - Autonomous builder launcher: `scripts/run-build.sh` (PC scheduled, Mac interactive).
 - Layout: `src/project_registry/` — `model` → `storage` → `validation` /
-  `queries` / `signals` → `dashboard` / `portfolio` / `proposals` → `cli` /
-  `mcp.server`. CLI and MCP call the same query functions; keep it that way.
+  `queries` / `signals` / `automation` / `build` / `contracts` / `specs` /
+  `intent` → `dashboard` / `portfolio` / `proposals` → `cli` / `mcp.server`.
+  CLI and MCP call the same functions; keep it that way.
 - Docs: `docs/PURPOSE.md` (operating model), `docs/USER_STORIES.md`
   (requirements), `docs/SCHEMA.md` (fields and validation rules),
   `docs/SETUP.md` (data import and MCP registration).

@@ -83,6 +83,35 @@ def test_fairness_never_built_then_oldest_success(paths, write_project):
     ]
 
 
+def test_fairness_falls_back_to_last_run_when_no_run_has_merged(
+    paths, write_project
+):
+    for project_id in ("never", "older-shadow", "newer-shadow"):
+        _complete(
+            write_project,
+            project_id,
+            priority="medium",
+            automation={"mode": "shadow"},
+        )
+    states = {
+        "older-shadow": ProjectBuildState(
+            last_run_at="2026-05-01T12:00:00+00:00"
+        ),
+        "newer-shadow": ProjectBuildState(
+            last_run_at="2026-07-01T12:00:00+00:00"
+        ),
+    }
+
+    queue = build_queue(load_registry(paths), make_snapshot(), states, TODAY)
+
+    assert [item["project_id"] for item in queue["candidates"]] == [
+        "never", "older-shadow", "newer-shadow"
+    ]
+    reasons = {item["project_id"]: item["reasons"] for item in queue["candidates"]}
+    assert reasons["never"][-1] == "never built"
+    assert reasons["older-shadow"][-1] == "last run 85 d ago"
+
+
 def test_blocked_and_open_decision_explain_the_gate(paths, write_project):
     _complete(write_project, "blocked", blocked_by="owner approval")
     _complete(

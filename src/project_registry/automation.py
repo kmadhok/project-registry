@@ -52,21 +52,32 @@ def rank_key(
     """Return the stable builder order without inventing a priority."""
     del today  # Required by the public contract; current rank terms do not use it.
     priority_weight = PRIORITY_WEIGHT.get(project.priority, 0)
-    last_success = build_state.last_success_at if build_state else None
+    # Shadow runs intentionally never record a successful merge. Fall back to the
+    # last attempted run so a shadow rollout rotates through equally prioritized
+    # projects instead of selecting the same "never built" project forever.
+    last_activity = (
+        build_state.last_success_at or build_state.last_run_at
+        if build_state
+        else None
+    )
     lifecycle_order = list(Lifecycle).index(project.lifecycle)
-    return (-priority_weight, last_success or "", lifecycle_order, project.id)
+    return (-priority_weight, last_activity or "", lifecycle_order, project.id)
 
 
 def _history_reason(
     build_state: ProjectBuildState | None, today: dt.date | dt.datetime
 ) -> str:
-    if build_state is None or not build_state.last_success_at:
+    if build_state is None or not (
+        build_state.last_success_at or build_state.last_run_at
+    ):
         return "never built"
-    succeeded = parse_ts(build_state.last_success_at)
-    if succeeded is None:
-        return f"last success {build_state.last_success_at}"
-    days = max(0, (_date(today) - succeeded.date()).days)
-    return f"last success {days} d ago"
+    label = "last success" if build_state.last_success_at else "last run"
+    timestamp = build_state.last_success_at or build_state.last_run_at
+    activity = parse_ts(timestamp)
+    if activity is None:
+        return f"{label} {timestamp}"
+    days = max(0, (_date(today) - activity.date()).days)
+    return f"{label} {days} d ago"
 
 
 def classify(

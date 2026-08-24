@@ -1,8 +1,9 @@
 # Industry practices survey — autonomous work systems (2025–2026)
 
-Research compiled 2026-08-24 from four parallel web-research threads: repo-interface
-standards, commercial agent control planes, governance infrastructure, and community
-loop practice. Each claim cites its source; benchmark figures cite their original
+Research compiled 2026-08-24 from six parallel web-research threads: repo-interface
+standards, commercial agent control planes, governance infrastructure, community
+loop practice, platform engineering / internal developer portals, and operating
+rituals (evals, memory, SRE). The last two are in the "Second pass" section. Each claim cites its source; benchmark figures cite their original
 papers. Companion artifact (same content, rendered):
 https://claude.ai/code/artifact/f2b7e507-8b72-4087-95ad-67acc929c3c2
 
@@ -256,3 +257,212 @@ Community: [Ralph Wiggum](https://ghuntley.com/ralph/) ·
 [mini-swe-agent](https://github.com/SWE-agent/mini-swe-agent) ·
 [SpecBench](https://arxiv.org/html/2605.21384v1) ·
 [Razbakov's executive team](https://dev.to/razbakov/i-built-an-executive-team-of-6-ai-agents-to-manage-my-15-side-projects-4k0i)
+
+---
+
+# Second pass — platform engineering and operating rituals
+
+Two areas the first pass did not cover. The headline: the registry is a
+personal-scale internal developer portal, and that discipline has a decade of
+practice to borrow; and the durable asset of an agent system is its eval suite
+and operating rituals, not its prompts.
+
+## 5. Platform engineering / internal developer portals
+
+The registry's architecture — a repo-side self-describing contract aggregated
+by a central catalog — is exactly the industry-converged pattern (Backstage
+`catalog-info.yaml`, OpsLevel `opslevel.yml`).
+
+- **Backstage catalog model.** Per-repo `catalog-info.yaml`; Component entities
+  require exactly `type`, `lifecycle`, `owner`. The lifecycle vocabulary is
+  deliberately tiny (`experimental` / `production` / `deprecated`); nuance goes
+  into orthogonal fields (tier = business criticality, computed maturity score
+  = quality, tags = the rest). Relations are a small closed vocabulary of
+  typed, directional pairs (`dependsOn`/`dependencyOf`, `partOf`/`hasPart`,
+  `ownedBy`/`ownerOf`) — declared on one side, the inverse materialized at
+  ingestion, validated for dangling references.
+- **Scale lessons.** The classic failure is the empty-catalog chicken-and-egg.
+  What worked: Dexcom drove completeness 60%→95% with automated checks on the
+  metadata itself; Contentful hit 90% coverage by making the scaffolder the
+  default creation path so projects are born cataloged. Ungoverned catalogs rot
+  within a year.
+- **Scorecards and maturity.** OpsLevel's rubric is a grid — categories
+  (reliability, security, quality…) × levels (Bronze/Silver/Gold) with boolean
+  checks in cells, held conservatively: a service keeps a level only when every
+  check at that level passes. Cortex's 2025 doctrine: continuous, automated
+  production-readiness instead of point-in-time review meetings (descended from
+  Google SRE's Production Readiness Review). Both vendors turn scorecards into
+  time-boxed **campaigns** with deadlines and auto-clearing reminders.
+  Spotify's Soundcheck adds the key UX rule: a failed check returns the reason
+  *plus how to pass* — the check is also the remediation doc.
+- **Golden paths.** Spotify coined the problem "rumor-driven development"; the
+  fix is an opinionated, supported, *recommended-not-mandated* template that
+  produces a working, registered project — not a skeleton.
+- **Archival hygiene.** The US Dept. of Veterans Affairs GitHub policy is the
+  cleanest codified loop: no activity for 365 days → flagged for automatic
+  archival → owner notified ≥30 days before → default-archive. Industry
+  guidance everywhere: archive rather than delete; deprecation notice in the
+  README; name the successor.
+- **Portals meeting agents (2025–26).** Backstage's MCP Actions backend tags
+  every exposed action `readOnly` / `destructive` / `idempotent` and supports
+  multiple named MCP servers with include/exclude filters (a read-only catalog
+  server vs. a guarded mutation server). Backstage 1.43 added scoped,
+  short-lived credentials that agents request from the portal — the portal as
+  credential broker.
+
+## 6. Operating rituals — evals, memory, SRE
+
+### Evals for the harness itself
+
+- **Eval-driven development** is the consensus frame: the eval suite, not the
+  prompt, is the durable asset. Anthropic's guidance: start with 20–50 tasks
+  drawn from real failures; prefer outcome/state checks over transcript vibes;
+  combine deterministic graders, rubric-driven LLM judges, and periodic human
+  calibration; distinguish pass@k from pass^k (ever succeeds vs. reliably
+  succeeds).
+- **Private SWE-bench-style suites from your own repos** beat public
+  benchmarks: audits found ~33% of SWE-bench "successes" involved solution
+  leakage and ~31% passed on weak tests. The recipe: mine your own git history
+  for real fixed issues; a task = pre-fix snapshot + issue text + fail-to-pass
+  tests + pass-to-pass tests. Personal repos are contamination-resistant by
+  construction and distribution-matched to what the builder actually faces.
+- **Error analysis before metrics** (Hamel Husain school): hand-read 30–50 real
+  failure traces, write free-form notes, cluster into a taxonomy, count, and
+  only then build graders for the top failure modes. The registry's typed event
+  log is this trace corpus, ready-made.
+- **Golden traces and staged rollout.** Snapshot known-good runs (tool sequence
+  + outcomes); on any harness change, replay and diff (passed / tools changed /
+  output changed / regression). Prompt changes are the #1 source of production
+  LLM regressions — treat them as deployments: offline eval → shadow run →
+  canary → ramp. Solo-scale tooling: promptfoo or DeepEval in CI.
+
+### Memory and context engineering
+
+- **Context is RAM, not storage.** Most production "agent failures" are
+  memory-architecture failures. Chroma's context-rot study: all 18 frontier
+  models degrade well before window limits (~50K tokens on a 200K model) —
+  budget context like memory pressure.
+- Anthropic's three long-horizon techniques: compaction (maximize recall, then
+  prune), structured note-taking outside the window, sub-agent context
+  isolation. Manus adds: stable prompt prefixes for cache hits, recitation
+  (rewrite the todo/plan at the end of context each step), keep errors in
+  context (visible failures reduce repeats), filesystem as unbounded memory.
+- Claude Code's own memory model is the best personal-scale reference: a short
+  always-loaded index plus on-demand topic files; record only what is *not
+  derivable from the code*; memory is context, not enforcement — hard rules
+  belong in hooks (matches BUILD_GUARD's philosophy exactly).
+- Anti-pattern to ban explicitly: log flooding — raw tool/build output belongs
+  in files with only summaries and paths in context.
+
+### SRE rituals
+
+- **Error budgets gate autonomy.** Define SLIs over agent outcomes (chunk
+  success rate, revert rate, guard-violation rate), set an SLO, derive a
+  budget. Budget healthy → autonomous; burning → autonomy degrades (self-merge
+  off, propose-only); exhausted → stop, mandatory postmortem before resume.
+  Make budget state an input to preflight, not just a report.
+- **Blameless, trace-first postmortems** with an Agent Pre-Action State section
+  (prompt/skill versions, budget state, active guards, context). The 5-Whys
+  terminates at a missing guardrail, never at "the model misbehaved." The
+  canonical case is the July 2025 Replit incident (agent deleted a production
+  DB during a code freeze that lived only in the prompt): instructions are
+  requests; only enforced gates are controls.
+- **Runbooks as skills**: structured, stepwise, machine-executable procedures
+  with explicit approval gates on destructive steps.
+- **Toil selection**: hand agents high-frequency, well-understood, reversible
+  work first (frequency × reversibility × test-suite strength × brief
+  completeness); irreversible or weakly-tested work stays human-gated.
+- **Protect the review queue**: cap open unreviewed agent output; the builder
+  pauses when the cap is hit; triage by risk, not recency. Otherwise the agent
+  outruns the reviewer and "reviewed" becomes fiction.
+- **Quality SLOs** for agent work: chunk/PR acceptance rate, review-rework %,
+  revert % (informal alert threshold ~5%), trended per harness version so
+  regressions attribute to specific prompt/skill changes.
+
+## Second-pass ranked shortlist
+
+### Registry as portal
+
+15. **Restructure readiness as a rubric grid.** Categories × levels
+    (Bronze: purpose + reviewed brief + next_action; Silver: valid contract +
+    CI green; Gold: done_criteria + tuned automation budget), held
+    conservatively; one computed maturity level per project, and a principled
+    builder gate ("only Silver+ is build-eligible").
+16. **Evidence-triggered archival with a notice period** (VA policy shape): no
+    pushes and no review for N days → `archival-candidate` flag in the
+    attention queue → owner-approved proposal → archive the repo read-only with
+    a README notice naming the successor. Converts mismatch machinery into a
+    lifecycle pump.
+17. **Typed, paired, materialized relations** with a closed vocabulary
+    (`supersededBy`/`supersedes`, `partOf`/`hasPart`, `dependsOn`/
+    `dependencyOf`); declare one side, auto-emit the inverse, validate dangling
+    references; enforce "a superseded project must name its successor" as a
+    graph rule.
+18. **Split the lifecycle axis.** The 8-value vocabulary conflates maturity
+    (incubating/maintained), queue position (now/next), and disposition
+    (showcase/reference/superseded/archived). Industry keeps lifecycle coarse
+    and moves the rest to orthogonal fields — even validation-level axes would
+    simplify mismatch and eligibility rules.
+19. **Campaigns with deadlines + remediation-carrying checks.** A rule, a
+    target set, a due date, progress on the dashboard, auto-clear on pass; and
+    every validate/readiness failure prints the exact command or proposal that
+    fixes it (Soundcheck's rule).
+20. **Golden-path scaffold** (`registry new`): repo + contract + AGENTS.md + CI
+    born-cataloged, so completeness comes from the default path, not backfill.
+    Track catalog completeness as a dashboard metric.
+21. **Backstage-style MCP hygiene**: tag every registry MCP tool
+    `readOnly`/`destructive`/`idempotent`; split read-only catalog serving from
+    guarded mutations.
+
+### Operating rituals
+
+22. **Private eval suite (20–50 tasks) mined from your own repos' history**
+    (fail-to-pass + pass-to-pass per task); run on every change to push-project,
+    guard rules, or model. Highest-leverage single artifact of the pass.
+23. **Explicit error budget gating autonomy**: declared SLO (e.g. ≥90% chunk
+    success, ≤5% revert) per rolling window; budget state injected into build
+    preflight; autonomy degrades as it burns; postmortem required before
+    `build resume` after exhaustion.
+24. **Golden-trace smoke gate in CI** (5–10 known-good runs, replayed and
+    diffed on any harness change) plus shadow-running skill changes against a
+    designated low-stakes canary project before promotion.
+25. **Monthly error analysis on the event log** (open/axial coding); the top
+    failure cluster drives the next eval task, guard rule, or schema field.
+26. **Agent-adapted postmortem template** for every breaker trip or reverted
+    chunk: trace link, Agent Pre-Action State, 5-Whys ending at a missing
+    guardrail; stored in the registry; "was a guardrail added?" is the review
+    criterion.
+27. **Handoff digest + recitation**: `build finish` writes a structured
+    done/in-flight/blocked/decisions digest the next run's context assembly
+    explicitly loads; the builder keeps a live plan file it rewrites each
+    chunk; raw output stays in `data/build/` files, never in context.
+28. **Review-queue cap and quality SLO dashboard**: cap open unreviewed
+    chunks/PRs per project (builder pauses at the cap); add acceptance rate,
+    rework %, and revert % to `build-report`, trended per harness version.
+
+## Second-pass sources
+
+Platform engineering: [Backstage descriptor format](https://github.com/backstage/backstage/blob/master/docs/features/software-catalog/descriptor-format.md) ·
+[well-known relations](https://github.com/backstage/backstage/blob/master/docs/features/software-catalog/well-known-relations.md) ·
+[system model](https://github.com/backstage/backstage/blob/master/docs/features/software-catalog/system-model.md) ·
+[OpsLevel rubric](https://www.opslevel.com/resources/how-to-set-up-your-service-maturity-rubric) ·
+[Cortex production readiness 2025](https://www.cortex.io/post/automating-production-readiness-guide-2025) ·
+[Soundcheck](https://backstage.spotify.com/discover/blog/how-soundcheck-improves-tech-health-and-developer-productivity-at-spotify) ·
+[Spotify golden paths](https://engineering.atspotify.com/2020/08/how-we-use-golden-paths-to-solve-fragmentation-in-our-software-ecosystem) ·
+[VA archival policy](https://department-of-veterans-affairs.github.io/github-handbook/archival-policy) ·
+[GitHub sunsetting guidance](https://github.blog/open-source/maintainers/dos-and-donts-when-sunsetting-open-source-projects/) ·
+[Backstage MCP actions](https://github.com/backstage/backstage/blob/master/docs/ai/mcp-actions.md) ·
+[Roadie catalog completeness](https://roadie.io/blog/3-strategies-for-a-complete-software-catalog/)
+
+Operating rituals: [Anthropic: demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) ·
+[Anthropic: effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) ·
+[Hamel Husain evals FAQ](https://hamel.dev/blog/posts/evals-faq/) ·
+[SWE-rebench](https://arxiv.org/pdf/2505.20411) ·
+[SWE-Bench++ pipeline](https://arxiv.org/html/2512.17419v1) ·
+[EvalView golden traces](https://github.com/hidai25/eval-view/blob/main/docs/GOLDEN_TRACES.md) ·
+[Manus context engineering](https://manus.im/blog/Context-Engineering-for-AI-Agents-Lessons-from-Building-Manus) ·
+[Chroma context rot](https://www.trychroma.com/research/context-rot) ·
+[Claude Code memory model](https://code.claude.com/docs/en/memory) ·
+[Microsoft: applying SRE to autonomous AI agents](https://techcommunity.microsoft.com/blog/linuxandopensourceblog/applying-site-reliability-engineering-to-autonomous-ai-agents/4521357) ·
+[Google SRE launch checklist](https://sre.google/sre-book/launch-checklist/) ·
+[HITL escalation design 2026](https://www.digitalapplied.com/blog/human-in-the-loop-escalation-design-ai-agents-2026)

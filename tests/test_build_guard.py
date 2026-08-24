@@ -439,6 +439,57 @@ def test_indirect_invocation_policy(
         assert rule_id in result.stderr
 
 
+def test_plain_file_heredoc_is_allowed(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    command = (
+        "cat > /tmp/task-spec.md << 'EOF'\n"
+        "# Task\n"
+        "- run tests\n"
+        "- mentions git push and gh pr merge in prose\n"
+        "EOF"
+    )
+    assert run_guard(tmp_path, command).returncode == 0
+
+
+def test_interpreter_heredoc_body_is_scanned(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    command = (
+        "python3 - << 'EOF'\n"
+        "# Task\n"
+        "- run tests\n"
+        "- mentions git push and gh pr merge in prose\n"
+        "EOF"
+    )
+    assert_denied(run_guard(tmp_path, command), "indirect_invocation")
+
+
+def test_tee_heredoc_body_is_data(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    command = "tee /tmp/x.md << EOF\nmentions gh pr merge in prose\nEOF"
+    assert run_guard(tmp_path, command).returncode == 0
+
+
+def test_heredoc_body_is_not_tokenized_and_following_segments_are_checked(
+    tmp_path: Path,
+) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    clone.mkdir()
+    command = (
+        "cat > x << EOF\n"
+        "it's data && still data | with an unmatched ' quote\n"
+        "EOF\n"
+        "git push origin main"
+    )
+    assert_denied(run_guard(tmp_path, command, cwd=clone), "non_push_branch")
+
+
+def test_unterminated_heredoc_body_is_data_to_end_of_input(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    command = "cat > x << EOF\nit's data && gh pr merge 7 | still data"
+    assert run_guard(tmp_path, command).returncode == 0
+
+
 def test_cd_prefix_controls_branch_policy(tmp_path: Path) -> None:
     write_lease(tmp_path)
     clone = tmp_path / "clone"

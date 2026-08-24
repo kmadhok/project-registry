@@ -14,6 +14,11 @@ failures, and unexpected runtime errors fail closed.
 Compound shell commands are split on `&&`, `||`, `;`, `|`, and newlines, and
 every segment is checked. A preceding `cd` and git's `-C` option are honored
 when deciding whether a command operates in the registry or target clone.
+Heredoc bodies are removed before this splitting and tokenization, so content
+written through tools such as `cat`, `tee`, or `dd` is treated as data. Bodies
+fed to an interpreter or shell (`python`, `node`, `bash`, `eval`, and their
+supported variants) are still scanned for indirect GitHub or registry write
+commands.
 
 ## Rules
 

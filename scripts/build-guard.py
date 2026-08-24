@@ -41,6 +41,8 @@ INDIRECT_TARGETS = (
     "gh secret", "gh variable", "proposal-apply", "record-review",
     "apply_approved_project_update", "record_project_review",
 )
+HEREDOC_PATTERN = re.compile(r"<<-?[ \t]*(['\"]?)(\w+)\1")
+HEREDOC_RECEIVERS = INDIRECT_INTERPRETERS | INDIRECT_SHELLS | {"eval", "exec"}
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 GIT_GLOBAL_VALUE_OPTIONS = {
     "-c", "-C", "--git-dir", "--work-tree", "--namespace", "--exec-path",
@@ -101,6 +103,35 @@ def _split_shell(command: str) -> list[str]:
 
 def _tokens(segment: str) -> list[str]:
     return shlex.split(segment, posix=True)
+
+
+def _extract_heredocs(command: str) -> tuple[str, list[tuple[str, str]]]:
+    """Remove heredoc bodies and return their command prefixes and contents."""
+    lines = command.splitlines(keepends=True)
+    command_lines: list[str] = []
+    heredocs: list[tuple[str, str]] = []
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        matches = list(HEREDOC_PATTERN.finditer(line))
+        command_lines.append(line)
+        index += 1
+        for match in matches:
+            delimiter = match.group(2)
+            strip_tabs = match.group(0).startswith("<<-")
+            body_lines: list[str] = []
+            while index < len(lines):
+                candidate = lines[index]
+                terminator = candidate.rstrip("\r\n")
+                if strip_tabs:
+                    terminator = terminator.lstrip("\t")
+                if terminator == delimiter:
+                    index += 1
+                    break
+                body_lines.append(candidate)
+                index += 1
+            heredocs.append((line[:match.start()], "".join(body_lines)))
+    return "".join(command_lines), heredocs
 
 
 def _resolve(path: str | Path, base: Path) -> Path:
@@ -616,11 +647,28 @@ def _has_inline_option(args: list[str], options: set[str]) -> bool:
     return False
 
 
+def _contains_indirect_target(value: str) -> bool:
+    normalized = re.sub(r"[^A-Za-z0-9_-]+", " ", value).lower()
+    return any(target in normalized for target in INDIRECT_TARGETS)
+
+
+def _heredoc_receiver(prefix: str) -> str | None:
+    pieces = [piece for piece in _split_shell(prefix) if piece not in SHELL_OPERATORS]
+    if not pieces:
+        return None
+    invocation = _indirect_executable(_tokens(pieces[-1]))
+    return invocation[0] if invocation is not None else None
+
+
 def _evaluate_bash(command: str, cwd: Path, root: Path, lease: dict[str, Any]) -> None:
-    normalized = re.sub(r"[^A-Za-z0-9_-]+", " ", command).lower()
-    if any(target in normalized for target in INDIRECT_TARGETS):
+    command_text, heredocs = _extract_heredocs(command)
+    for prefix, body in heredocs:
+        receiver = _heredoc_receiver(prefix)
+        if receiver in HEREDOC_RECEIVERS and _contains_indirect_target(body):
+            raise Denied("indirect_invocation")
+    if _contains_indirect_target(command_text):
         indirect = False
-        for piece in _split_shell(command):
+        for piece in _split_shell(command_text):
             if piece in SHELL_OPERATORS:
                 continue
             try:
@@ -638,28 +686,16 @@ def _evaluate_bash(command: str, cwd: Path, root: Path, lease: dict[str, Any]) -
                 indirect = True
             elif name in INDIRECT_WRAPPERS:
                 indirect = True
-        if not indirect:
-            for line in command.splitlines():
-                if "<<" not in line:
-                    continue
-                prefix = line.split("<<", 1)[0]
-                try:
-                    invocation = _indirect_executable(_tokens(prefix))
-                except ValueError:
-                    continue
-                if invocation is not None and invocation[0] in INDIRECT_INTERPRETERS | INDIRECT_SHELLS:
-                    indirect = True
-                    break
         if indirect:
             raise Denied("indirect_invocation")
     if re.search(
         r"(?:^|[;&|\n])\s*(?:printenv|env|set)\b[^|]*\|\s*grep\b[^\n;&]*(?:KEY|TOKEN|SECRET|PASSWORD)",
-        command,
+        command_text,
         re.IGNORECASE,
     ):
         raise Denied("secret_env")
     current_dir = cwd
-    for piece in _split_shell(command):
+    for piece in _split_shell(command_text):
         if piece in SHELL_OPERATORS:
             continue
         current_dir = _evaluate_segment(piece, current_dir, root, lease)

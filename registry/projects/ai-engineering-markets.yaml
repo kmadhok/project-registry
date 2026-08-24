@@ -3,6 +3,34 @@ name: ai_engineering_markets
 purpose: A due-diligence research spike testing whether a retail-scale systematic edge exists
   on Kalshi prediction markets, combining literature synthesis with stdlib-only Python scripts
   that census live markets and study orderbook depth.
+desired_outcome: A reproducible Kalshi instrumentation layer - DuckDB ingest, decision log,
+  markout gate, and calibration reporting - that can evaluate the section-4.7 gate (>=50 logged
+  decisions, positive fee-adjusted expectancy) from logged data instead of ad hoc scripts.
+brief:
+  done_criteria:
+  - a scheduled-safe ingest snapshots candidate markets to a DuckDB store with point-in-time
+    published_at fields, and its tests pass from a clean checkout
+  - every manual bet/pass decision is recordable with stated probability, reference class,
+    and stake; records lacking these are rejected
+  - the 30-day maker markout gate (fill markouts at +1h/+24h/settlement with both kill thresholds)
+    is computable as a query over logged data
+  - the FLAG-and-SPLIT resolution classifier is a re-runnable pipeline step with the 110-event
+    sample as a regression fixture
+  - a calibration report computes Brier score vs market-implied probability once decisions
+    exist
+  non_goals:
+  - no automated order placement or live capital deployment until the section-4.7 gate is
+    met
+  - no Project 2 (quant equity/ETF) or Project 3 (LLM feature-extraction) work
+  - no Polymarket ingest until Kalshi maker flow is proven
+  - no LLM-generated probabilities or forecasts feeding bet sizing
+  - no Telegram/email digest delivery
+  constraints:
+  - 'stdlib-plus-DuckDB bias: pin every new dependency in a manifest'
+  - chunk 1 of the current spec is oversized (owner note 2026-08-10) - split it before implementing
+  - reuse the proven filter/category logic from the research scripts rather than rewriting
+    it
+  reviewed: '2026-08-23'
 lifecycle: next
 active: true
 category: research

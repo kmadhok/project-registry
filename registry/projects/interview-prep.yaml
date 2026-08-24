@@ -2,6 +2,31 @@ id: interview-prep
 name: interview-prep
 purpose: A file-backed, agent-assisted job-search workspace that tracks applications, generates
   tailored resume and apply packets, and stages human-reviewed recruiter outreach.
+desired_outcome: 'The workspace optimizes sent outreach, not prepared outreach: pipeline health
+  is visible from one command, draft backlogs drain instead of growing, and automation documentation
+  matches runtime - with all sending human-gated.'
+brief:
+  done_criteria:
+  - a pipeline_health reporter prints counts by stage, drafts awaiting send, and every threshold
+    breach without reading commit messages
+  - when staging is paused by the >=4 draft threshold, a ranked deduplicated send-or-discard
+    worklist is emitted
+  - automation docs state enabled/disabled and the owning machine per scheduled task, and
+    name the single Gmail drafter
+  - CI (drip_runner suite, ci suite, JSON state validator) stays green from a clean checkout
+  non_goals:
+  - no automated sending - Gmail drafts and LinkedIn messages stay human-gated
+  - no new intake sources
+  - no migration off files and markdown
+  - no changes to resume or outreach voice or content
+  constraints:
+  - Roles/**, Pipeline.md, and _Archived/** contain personal data - the personal_data change
+    class is required to touch them
+  - 'the repo receives daily drip-runner commits: always work from a fresh clone and expect
+    main to move'
+  - 'draft PR #7 (job-agent steal list) is an owner decision, not builder work - never resolve
+    or close it'
+  reviewed: '2026-08-23'
 lifecycle: next
 active: true
 category: career-automation

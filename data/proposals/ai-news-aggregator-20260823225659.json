@@ -2,10 +2,10 @@
   "id": "ai-news-aggregator-20260823225659",
   "project_id": "ai-news-aggregator",
   "created_at": "2026-08-23T22:56:59.356290+00:00",
-  "status": "pending",
+  "status": "applied",
   "rationale": "intent-refresh 2026-08-23: drafted from docs/SPEC.md (merged PR #13, chunk PR #14 merged 2026-08-10; 24-of-44 index gap is the central spec gap), CLAUDE.md project vision, and repo state at 2026-08-11 (root manifests present, tests/ has 2 files, no CI). X-pipeline question kept as a constraint rather than an open decision so it gates only the doc-consolidation chunk, not the project.",
   "source": "intent-refresh",
-  "applied_at": null,
+  "applied_at": "2026-08-24T15:57:18.064898+00:00",
   "changes": {
     "desired_outcome": {
       "before": null,

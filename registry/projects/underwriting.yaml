@@ -2,6 +2,12 @@ id: underwriting
 name: underwriting-
 purpose: A recently initialized placeholder for an underwriting project that currently contains
   only a title README and no implementation or specification.
+brief:
+  open_decisions:
+  - question: Which underwriting domain does this repo target (credit / insurance / mortgage
+      / other), and should it be built, kept as a placeholder, or archived?
+    status: open
+  reviewed: '2026-08-23'
 lifecycle: next
 active: true
 category: project-placeholder

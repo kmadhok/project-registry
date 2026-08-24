@@ -29,6 +29,8 @@ brief:
 lifecycle: next
 active: true
 category: knowledge-management
+automation:
+  mode: shadow
 repo: kmadhok/AI-News-Aggregator
 visibility: private
 last_reviewed: '2026-08-11'

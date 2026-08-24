@@ -1,0 +1,15 @@
+{
+  "id": "interview-prep-20260824160037",
+  "project_id": "interview-prep",
+  "created_at": "2026-08-24T16:00:37.665066+00:00",
+  "status": "applied",
+  "rationale": "rollout step 4 (plan E): enter scheduled shadow mode - PRs open with reviewer verdicts, no merges",
+  "source": "propose",
+  "applied_at": "2026-08-24T16:00:38.157265+00:00",
+  "changes": {
+    "automation.mode": {
+      "before": null,
+      "after": "shadow"
+    }
+  }
+}

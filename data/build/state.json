@@ -1,13 +1,13 @@
 {
   "ai-engineering-markets": {
-    "last_run_at": "2026-08-24T16:29:59.471699+00:00",
+    "last_run_at": "2026-08-24T17:06:35.434066+00:00",
     "last_success_at": null,
-    "consecutive_failures": 2,
-    "paused_reason": null,
-    "paused_at": null,
+    "consecutive_failures": 3,
+    "paused_reason": "consecutive_failures",
+    "paused_at": "2026-08-24T17:06:35.434066+00:00",
     "chunks_merged_total": 0,
     "needs_intent_proposal_id": null,
-    "last_run_id": "20260824T160857Z-pc-3ce2",
-    "last_outcome": "codex_unavailable"
+    "last_run_id": "20260824T163648Z-pc-f90f",
+    "last_outcome": "crashed"
   }
 }

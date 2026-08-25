@@ -415,6 +415,55 @@ def test_compound_command_evaluates_every_segment(tmp_path: Path) -> None:
     )
 
 
+def test_push_redirections_are_removed_before_evaluation(tmp_path: Path) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    init_repo(clone, branch="push/R1-1-x")
+
+    allowed = [
+        'git push -u origin "push/R1-1-x" 2>&1',
+        'git push origin "push/R1-1-x" > /tmp/out.log 2>&1',
+    ]
+    for command in allowed:
+        assert run_guard(
+            tmp_path, f"cd {shlex_quote(clone)} && {command}"
+        ).returncode == 0
+
+    assert_denied(
+        run_guard(tmp_path, "git push origin main 2>&1", cwd=clone),
+        "non_push_branch",
+    )
+    assert_denied(
+        run_guard(
+            tmp_path,
+            'git push --force origin "push/R1-1-x" 2>/dev/null',
+            cwd=clone,
+        ),
+        "force_push",
+    )
+
+
+def test_pr_body_command_substitution_heredocs_follow_receiver_policy(
+    tmp_path: Path,
+) -> None:
+    write_lease(tmp_path)
+    clone = tmp_path / "clone"
+    init_repo(clone, branch="push/R1-1-x")
+    prefix = (
+        f"cd {shlex_quote(clone)} && gh pr create "
+        '--head "push/R1-1-x" --title "t" --body '
+    )
+
+    cat_body = "$(cat <<'EOF'\nbody line\ngit push origin main\nEOF\n)"
+    assert run_guard(tmp_path, prefix + f'"{cat_body}"').returncode == 0
+
+    python_body = "$(python3 <<'EOF'\ngh pr merge 1 --squash\nEOF\n)"
+    assert_denied(
+        run_guard(tmp_path, prefix + f'"{python_body}"'),
+        "indirect_invocation",
+    )
+
+
 @pytest.mark.parametrize(
     ("command", "expected", "rule_id"),
     [

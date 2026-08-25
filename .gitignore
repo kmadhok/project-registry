@@ -6,7 +6,7 @@ __pycache__/
 .mypy_cache/
 .DS_Store
 *.egg-info/
-build/
+/build/
 dist/
 
 # Observed GitHub state is a refreshable cache, not a source of truth.

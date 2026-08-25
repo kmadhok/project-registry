@@ -6,7 +6,7 @@ set -u
 case "$(uname -s)" in
   Darwin) HOST=mac ;;
   Linux)
-    HOST=pc
+    HOST="${BUILD_HOST_LABEL:-$(hostname -s | tr 'A-Z' 'a-z')}"
     export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
     ;;
   *)

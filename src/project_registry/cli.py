@@ -32,6 +32,7 @@ from .build import (
     reconcile_done,
     record_event,
     resume_project,
+    shadow_gate,
 )
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
@@ -617,6 +618,15 @@ def cmd_build_queue(args, paths, now) -> int:
 def cmd_build_readiness(args, paths, now) -> int:
     registry = load_registry(paths)
     project = registry.require(args.project_id)
+    if args.shadow_gate:
+        result = shadow_gate(paths, project.id, min_runs=args.min_runs)
+        if emit(result, args):
+            return 0 if result["pass"] else 1
+        for check in result["checks"]:
+            status = "PASS" if check["pass"] else "FAIL"
+            print(f"{status} {check['id']} {check['detail']}")
+        print(f"shadow gate: {'PASS' if result['pass'] else 'FAIL'}")
+        return 0 if result["pass"] else 1
     snapshot = load_snapshot(paths)
     states = load_state(paths)
     result = readiness(
@@ -1157,6 +1167,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = add("build-readiness", cmd_build_readiness, "Explain one project's build readiness.")
     sub.add_argument("project_id")
+    sub.add_argument("--shadow-gate", action="store_true",
+                     help="Evaluate accumulated shadow-run evidence.")
+    sub.add_argument("--min-runs", type=int, default=5,
+                     help="Minimum clean shadow runs required (default: 5).")
 
     build = subparsers.add_parser("build", help="Manage autonomous build state.")
     build_subparsers = build.add_subparsers(dest="build_command", required=True)

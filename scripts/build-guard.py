@@ -42,6 +42,12 @@ INDIRECT_TARGETS = (
     "apply_approved_project_update", "record_project_review",
 )
 HEREDOC_PATTERN = re.compile(r"<<-?[ \t]*(['\"]?)(\w+)\1")
+COMMAND_SUB_HEREDOC_PATTERN = re.compile(
+    r"\$\([ \t]*(?P<prefix>[^\r\n]*?)<<-?[ \t]*"
+    r"(?P<quote>['\"]?)(?P<tag>\w+)(?P=quote)[^\r\n]*\r?\n"
+    r"(?P<body>.*?)(?:^|\r?\n)[\t]*(?P=tag)[ \t]*(?:\r?\n[ \t]*)?\)",
+    re.DOTALL | re.MULTILINE,
+)
 HEREDOC_RECEIVERS = INDIRECT_INTERPRETERS | INDIRECT_SHELLS | {"eval", "exec"}
 WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 GIT_GLOBAL_VALUE_OPTIONS = {
@@ -102,14 +108,35 @@ def _split_shell(command: str) -> list[str]:
 
 
 def _tokens(segment: str) -> list[str]:
-    return shlex.split(segment, posix=True)
+    tokens = shlex.split(segment, posix=True)
+    result: list[str] = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if re.fullmatch(r"(?:\d*(?:>>?|<)|&>>?)", token):
+            if index + 1 >= len(tokens):
+                raise ValueError("shell redirection has no target")
+            index += 2
+            continue
+        if re.fullmatch(r"(?:\d*(?:>>?|<)|&>>?)(?:&\d+|[^&].*)", token):
+            index += 1
+            continue
+        result.append(token)
+        index += 1
+    return result
 
 
 def _extract_heredocs(command: str) -> tuple[str, list[tuple[str, str]]]:
     """Remove heredoc bodies and return their command prefixes and contents."""
+    heredocs: list[tuple[str, str]] = []
+
+    def replace_command_substitution(match: re.Match[str]) -> str:
+        heredocs.append((match.group("prefix"), match.group("body")))
+        return "'__heredoc__'"
+
+    command = COMMAND_SUB_HEREDOC_PATTERN.sub(replace_command_substitution, command)
     lines = command.splitlines(keepends=True)
     command_lines: list[str] = []
-    heredocs: list[tuple[str, str]] = []
     index = 0
     while index < len(lines):
         line = lines[index]

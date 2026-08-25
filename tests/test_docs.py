@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 from pathlib import Path
 
 from project_registry.cli import build_parser
@@ -12,6 +13,21 @@ from project_registry.mcp.server import TOOLS
 
 ROOT = Path(__file__).parents[1]
 DOC_ENTRYPOINTS = (ROOT / "CLAUDE.md", ROOT / "README.md")
+
+
+def test_build_digests_are_trackable_but_root_build_is_ignored():
+    digest = subprocess.run(
+        ["git", "check-ignore", "-q", "data/build/digests/example.md"],
+        cwd=ROOT,
+        check=False,
+    )
+    root_build = subprocess.run(
+        ["git", "check-ignore", "-q", "build/anything"],
+        cwd=ROOT,
+        check=False,
+    )
+    assert digest.returncode == 1
+    assert root_build.returncode == 0
 
 
 def _subcommands(parser: argparse.ArgumentParser) -> dict[str, set[str]]:

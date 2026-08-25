@@ -252,7 +252,7 @@ def owner_inbox(
         items.append(_item(
             "blocked_by_policy", project_id,
             f"SPEC work blocked on change classes: {', '.join(sorted(classes))}",
-            f"registry propose {project_id} --set automation.allow='{sorted(classes)}' --rationale ...",
+            f"registry propose {project_id} --set automation.allow={','.join(sorted(classes))} --rationale ...",
         ))
 
     return {"generated_at": now.isoformat(), "count": len(items), "items": items}
@@ -730,7 +730,7 @@ Write `docs/observations/<date>-retro.md` with a table per project (run id, outc
 
 For every judgement that implies a curated change, file exactly one proposal:
 - brief updates: `registry propose <id> --set brief.done_criteria='[...]' --rationale "retro <date>: ..."`
-- policy: `registry propose <id> --set automation.allow='["personal_data"]' --rationale "..."` or `--set automation.budget.chunks_per_run=10`
+- policy: `registry propose <id> --set automation.allow=personal_data --rationale "..."` or `--set automation.budget.chunks_per_run=10`
 - pausing a project that keeps failing on infrastructure: `--set automation.paused=true`
 
 Finish by running `registry owner-inbox` and sending its output with `registry notify --run <latest run>` so the owner sees the retro's proposals in the same channel as run digests.
@@ -773,7 +773,7 @@ registry dashboard && registry validate
 - [ ] **Step 2: `personal_data` for interview-prep — file only, owner decides**
 
 ```bash
-registry propose interview-prep --set automation.allow='["personal_data"]' \
+registry propose interview-prep --set automation.allow=personal_data \
   --rationale "backlog-drain enrichment is blocked_by_policy; allowing personal_data lets the builder touch Roles/** and Pipeline.md under review"
 ```
 Leave it pending; it will appear in `registry owner-inbox`.

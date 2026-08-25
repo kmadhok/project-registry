@@ -47,7 +47,7 @@ Facts only in the table; judgements only in the closing list, each tied to a run
 File exactly one proposal per judgement that implies a curated change; skip anything already pending in `registry owner-inbox`:
 
 - brief: `registry propose <id> --set brief.done_criteria='[...]' --rationale "retro <date>: <one line>"`
-- policy: `registry propose <id> --set automation.allow='["personal_data"]' --rationale "..."`, or `--set automation.budget.chunks_per_run=<n>`
+- policy: `registry propose <id> --set automation.allow=personal_data --rationale "..."`, or `--set automation.budget.chunks_per_run=<n>`
 - repeated infrastructure failure: `registry propose <id> --set automation.paused=true --rationale "..."`
 
 ## Deliver

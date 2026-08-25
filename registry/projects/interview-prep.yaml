@@ -32,6 +32,9 @@ active: true
 category: career-automation
 automation:
   mode: build
+  budget:
+    chunks_per_run: 10
+    minutes_per_run: 100
 repo: kmadhok/interview-prep
 visibility: private
 last_reviewed: '2026-08-11'

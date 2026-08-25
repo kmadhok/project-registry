@@ -26,6 +26,13 @@ Runtime facts that bite:
   the run dies mid-chunk (this happened twice in 2026-08).
 - `data/build/lease.json` TTL is 3 h; an expired lease is reconciled by the
   next `build start`.
+- The Mac venv is an *editable* install pointing at the main checkout's
+  `src/`. `.venv/bin/registry` therefore runs whatever branch that checkout
+  has out — from a worktree, or with the main checkout on an old branch, it
+  can silently lack `build` commands. In a worktree always run
+  `PYTHONPATH=src .venv/bin/python -m project_registry.cli …` and
+  `PYTHONPATH=src bash scripts/faults/run-all.sh`; before an interactive Mac
+  run, `git -C <main checkout> switch main`.
 
 ## Launching
 

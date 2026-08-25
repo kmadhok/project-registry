@@ -6,7 +6,7 @@ __pycache__/
 .mypy_cache/
 .DS_Store
 *.egg-info/
-build/
+/build/
 dist/
 
 # Observed GitHub state is a refreshable cache, not a source of truth.
@@ -18,6 +18,7 @@ data/portfolio.json
 # digests remain tracked.
 data/build/lease.json
 data/build/STOP
+data/build/notify.json
 
 # Codex marathon runner state (docs/codex-marathon/ is tracked; logs are not)
 .codex-marathon/

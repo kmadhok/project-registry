@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
@@ -11,6 +12,7 @@ import pytest
 
 from project_registry.build import (
     BuildError,
+    append_event,
     begin_run,
     build_env,
     confirm_writeback,
@@ -38,6 +40,18 @@ def ready_project(write_project, project_id="builder"):
         brief={"done_criteria": ["Tests pass"]},
         automation={"mode": "build", "allow": ["ci"]},
     )
+
+
+def test_digest_lists_owner_inbox(paths, write_project):
+    ready_project(write_project)
+    write_project(id="vague", name="Vague", purpose="p", repo="o/vague",
+                  automation={"mode": "build"})
+    start(paths, run_id="run")
+    result = finish_run(paths, "run", outcome="completed", now=NOW,
+                        registry=load_registry(paths), snapshot=Snapshot())
+    digest = open(result["digest_path"], encoding="utf-8").read()
+    assert "## Needs the owner" in digest
+    assert "needs_intent" in digest and "vague" in digest
 
 
 def start(paths, *, now=NOW, project_id=None, force_named=False, run_id=None):
@@ -148,6 +162,52 @@ def test_finish_is_idempotent_for_state_application(paths, write_project):
     assert second["state_after"]["consecutive_failures"] == 1
 
 
+def add_guard_denial(paths, run_id="run"):
+    append_event(paths, {
+        "run_id": run_id,
+        "host": "mac",
+        "type": "guard_denied",
+        "project_id": "builder",
+        "reason": "non_push_branch",
+        "detail": {"command": "git push origin main"},
+    }, now=NOW)
+
+
+def test_guard_denial_prevents_completed_finish(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    add_guard_denial(paths)
+
+    with pytest.raises(
+        BuildError,
+        match="run run has 1 guard denial\\(s\\); finish with --outcome aborted",
+    ):
+        finish_run(paths, "run", outcome="completed", now=NOW)
+
+
+def test_guard_denial_can_finish_aborted_with_digest(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    add_guard_denial(paths)
+
+    result = finish_run(paths, "run", outcome="aborted", now=NOW)
+
+    lease = read_json(paths.build_lease_file)
+    assert lease["status"] == "finalize_pending"
+    digest = open(result["digest_path"], encoding="utf-8").read()
+    assert "## Guard denials" in digest
+    assert "- non_push_branch" in digest
+
+
+def test_run_without_guard_denials_can_finish_completed(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+
+    finish_run(paths, "run", outcome="completed", now=NOW)
+
+    assert read_json(paths.build_lease_file)["finalize"]["outcome"] == "completed"
+
+
 def test_named_needs_intent_refused_unless_forced(paths, write_project):
     write_project(
         id="vague", name="Vague", repo="owner/vague",
@@ -225,11 +285,34 @@ def test_build_env_detects_overridden_hosts(paths, tmp_path, monkeypatch):
     pc = tmp_path / "pc"
     monkeypatch.setenv("BUILD_ENV_MAC_ROOT", str(mac))
     monkeypatch.setenv("BUILD_ENV_PC_ROOT", str(pc))
-    assert build_env(paths.root)["host"] == "unknown"
+    assert build_env(paths.root)["host_kind"] == "unknown"
     pc.mkdir()
-    assert build_env(paths.root)["host"] == "pc"
+    assert build_env(paths.root)["host_kind"] == "pc"
     mac.mkdir()
-    assert build_env(paths.root)["host"] == "mac"
+    assert build_env(paths.root)["host_kind"] == "mac"
+
+    monkeypatch.setenv("BUILD_HOST_LABEL", "buildbox")
+    assert build_env(paths.root)["host"] == "buildbox"
+
+    monkeypatch.delenv("BUILD_HOST_LABEL")
+    monkeypatch.setattr("project_registry.build_runs.platform.system", lambda: "Linux")
+    monkeypatch.setattr(
+        "project_registry.build_runs.socket.gethostname",
+        lambda: "Instance-20250830.local",
+    )
+    assert build_env(paths.root)["host"] == "instance-20250830"
+
+
+def test_generated_run_id_sanitizes_host(paths, write_project):
+    ready_project(write_project)
+    result = begin_run(
+        paths,
+        host="Build_Box.example!",
+        now=NOW,
+        registry=load_registry(paths),
+        snapshot=Snapshot(),
+    )
+    assert re.fullmatch(r"[A-Za-z0-9-]+", result["run_id"])
 
 
 def test_atomic_begin_race_issues_exactly_one_lease(paths, write_project):

@@ -253,7 +253,7 @@ lint: []
 typecheck: []
 verify: []
 max_test_minutes: 15
-network: {allowed: false}
+network: {allowed: false}         # declarative: may setup/test reach the network? not enforced
 secrets_required: []              # names only, never values
 services: []                      # non-empty makes the contract non-runnable
 generated_files: []
@@ -263,7 +263,7 @@ forbidden_paths: [.env, "secrets/**"]
 deploy: none                      # the only accepted deployment policy in v1
 ```
 
-`schema`, `registry_id`, `runtime`, and at least one `test` command are required. Unknown fields, a mismatched registry id, value-like secret entries, or any `deploy` value other than `none` are errors. `runtime.kind`, `package_manager`, command lists, path-glob lists, timeout, and `network.allowed` are type-checked. A non-empty `services` list is valid metadata but reports `runnable: false` with reason `services`; the builder must pause instead of guessing how to provision infrastructure. Missing contracts are bootstrapped as a reviewed `contract` chunk, while a broken contract receives one repair attempt before the project pauses.
+`schema`, `registry_id`, `runtime`, and at least one `test` command are required. Unknown fields, a mismatched registry id, value-like secret entries, or any `deploy` value other than `none` are errors. `runtime.kind`, `package_manager`, command lists, path-glob lists, timeout, and `network.allowed` are type-checked. `network.allowed` has exactly one meaning everywhere: it declares whether the `setup`, `test`, `lint`, `typecheck`, or `verify` commands need network access (installing packages from an index counts). It is a declaration for the owner and reviewer — nothing sandboxes network access at run time, and the guard does not enforce it — so a contract whose `setup` runs `pip install` must say `allowed: true`. A non-empty `services` list is valid metadata but reports `runnable: false` with reason `services`; the builder must pause instead of guessing how to provision infrastructure. Missing contracts are bootstrapped as a reviewed `contract` chunk, while a broken contract receives one repair attempt before the project pauses.
 
 ## SPEC item format
 

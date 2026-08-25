@@ -32,6 +32,7 @@ from .build import (
     reconcile_done,
     record_event,
     resume_project,
+    shadow_gate,
 )
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
@@ -617,6 +618,15 @@ def cmd_build_queue(args, paths, now) -> int:
 def cmd_build_readiness(args, paths, now) -> int:
     registry = load_registry(paths)
     project = registry.require(args.project_id)
+    if args.shadow_gate:
+        result = shadow_gate(paths, project.id, min_runs=args.min_runs)
+        if emit(result, args):
+            return 0 if result["pass"] else 1
+        for check in result["checks"]:
+            status = "PASS" if check["pass"] else "FAIL"
+            print(f"{status} {check['id']} {check['detail']}")
+        print(f"shadow gate: {'PASS' if result['pass'] else 'FAIL'}")
+        return 0 if result["pass"] else 1
     snapshot = load_snapshot(paths)
     states = load_state(paths)
     result = readiness(
@@ -801,6 +811,41 @@ def cmd_build_report(args, paths, now) -> int:
         print(f"malformed       {report['journal']['malformed_count']} journal line(s)")
         for item in report["journal"]["malformed"]:
             print(f"  line {item['line']}: {item['error']}")
+    return 0
+
+
+def cmd_owner_inbox(args, paths, now) -> int:
+    from .inbox import owner_inbox
+    registry = load_registry(paths)
+    result = owner_inbox(paths, registry, now=now)
+    if emit(result, args):
+        return 0
+    if not result["items"]:
+        print("Nothing needs you.")
+        return 0
+    for item in result["items"]:
+        print(f"[{item['kind']}] {item['project_id'] or '-'}: {item['summary']}")
+        print(f"    -> {item['action']}")
+    return 0
+
+
+def cmd_notify(args, paths, now) -> int:
+    from .inbox import owner_inbox
+    from .notify import notify_config, render_notification, send_ntfy
+    digest_path = paths.build_digests_dir / f"{args.run}.md"
+    if not digest_path.exists():
+        print(f"no digest for run {args.run}", file=sys.stderr)
+        return 1
+    digest = digest_path.read_text(encoding="utf-8")
+    inbox = owner_inbox(paths, load_registry(paths), now=now)
+    message = render_notification(digest, inbox)
+    config = notify_config(paths)
+    result = {"run_id": args.run, "message": message, "sent": False, "configured": config is not None}
+    if config is not None and not args.dry_run:
+        result.update(send_ntfy(config["topic"], message, server=config["server"], title=message.splitlines()[0]))
+    if not emit(result, args):
+        print(message)
+        print(f"[notify] configured={result['configured']} sent={result['sent']}")
     return 0
 
 
@@ -1152,11 +1197,23 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("--since", metavar="YYYY-MM-DD",
                      help="Include events on or after this UTC date.")
 
+    add("owner-inbox", cmd_owner_inbox,
+        "List everything that needs the owner, with the command that clears it.")
+
+    sub = add("notify", cmd_notify,
+              "Push the run digest and owner inbox to the configured ntfy topic.")
+    sub.add_argument("--run", required=True)
+    sub.add_argument("--dry-run", action="store_true")
+
     sub = add("build-queue", cmd_build_queue, "Show autonomous build eligibility and rank.")
     sub.add_argument("--state", choices=ELIGIBILITY_STATES)
 
     sub = add("build-readiness", cmd_build_readiness, "Explain one project's build readiness.")
     sub.add_argument("project_id")
+    sub.add_argument("--shadow-gate", action="store_true",
+                     help="Evaluate accumulated shadow-run evidence.")
+    sub.add_argument("--min-runs", type=int, default=5,
+                     help="Minimum clean shadow runs required (default: 5).")
 
     build = subparsers.add_parser("build", help="Manage autonomous build state.")
     build_subparsers = build.add_subparsers(dest="build_command", required=True)

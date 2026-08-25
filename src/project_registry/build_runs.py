@@ -5,6 +5,9 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
+import platform
+import re
+import socket
 import statistics
 import subprocess
 from collections import Counter
@@ -25,7 +28,7 @@ __all__ = [
     "append_event", "read_events", "load_state", "save_state", "apply_run_to_state",
     "resume_project", "build_report", "registry_checkout_status", "get_build_context",
     "begin_run", "record_event", "reconcile", "reconcile_done", "finish_run",
-    "confirm_writeback",
+    "confirm_writeback", "shadow_gate",
     "build_env",
 ]
 
@@ -496,8 +499,15 @@ def _now(value: dt.datetime | None) -> dt.datetime:
     return value.astimezone(dt.timezone.utc)
 
 
+def _host_label(value: str) -> str:
+    normalized = re.sub(r"[^a-z0-9-]+", "-", value.lower())
+    return normalized.strip("-")[:20] or "unknown"
+
+
 def _run_id(host: str, now: dt.datetime, supplied: str | None = None) -> str:
-    return supplied or f"{now.strftime('%Y%m%dT%H%M%SZ')}-{host}-{os.urandom(2).hex()}"
+    return supplied or (
+        f"{now.strftime('%Y%m%dT%H%M%SZ')}-{_host_label(host)}-{os.urandom(2).hex()}"
+    )
 
 
 def _read_lease(paths: Paths) -> dict[str, Any] | None:
@@ -892,7 +902,7 @@ def reconcile_done(paths: Paths, *, now: dt.datetime | None = None) -> dict[str,
 
 def _write_digest(
     paths: Paths, lease: dict[str, Any], events: list[dict[str, Any]], outcome: str,
-    summary: str | None, needs_intent: list[str],
+    summary: str | None, needs_intent: list[str], inbox: dict[str, Any] | None = None,
 ) -> Path:
     lines = [
         f"# Build run {lease['run_id']}", "",
@@ -936,6 +946,12 @@ def _write_digest(
         lines.extend(["## Projects needing intent", ""])
         lines.extend(f"- {project_id}" for project_id in needs_intent)
         lines.append("")
+    if inbox and inbox.get("items"):
+        lines.extend(["## Needs the owner", ""])
+        for item in inbox["items"]:
+            lines.append(f"- [{item['kind']}] {item['project_id'] or '-'}: {item['summary']}")
+            lines.append(f"  - `{item['action']}`")
+        lines.append("")
     target = paths.build_digests_dir / f"{lease['run_id']}.md"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
@@ -962,6 +978,15 @@ def finish_run(
         if item["run_id"] == run_id and item["type"] == "run_finished"
     ), None)
     if finished_event is None:
+        denial_count = sum(
+            item["run_id"] == run_id and item["type"] == "guard_denied"
+            for item in events
+        )
+        if denial_count and outcome not in {"aborted", "crashed"}:
+            raise BuildError(
+                f"run {run_id} has {denial_count} guard denial(s); "
+                "finish with --outcome aborted"
+            )
         finished_event = append_event(paths, {
             "run_id": run_id, "host": lease["host"], "type": "run_finished",
             "project_id": lease.get("project_id"), "outcome": outcome,
@@ -988,7 +1013,13 @@ def finish_run(
             item["project_id"] for item in queue["candidates"]
             if item["state"] == "needs_intent"
         ]
-    digest = _write_digest(paths, lease, run_events, outcome, summary, needs_intent)
+    inbox = None
+    if registry is not None:
+        from .inbox import owner_inbox
+        inbox = owner_inbox(paths, registry, now=current, snapshot=snapshot)
+    digest = _write_digest(
+        paths, lease, run_events, outcome, summary, needs_intent, inbox=inbox
+    )
     lease.update({
         "status": "finalize_pending",
         "finalize": {
@@ -1042,11 +1073,18 @@ def build_env(root: Path) -> dict[str, Any]:
         "BUILD_ENV_PC_ROOT", "/home/learnmsds/Github/project-registry"
     ))
     if mac_root.exists():
-        host, registry_root = "mac", mac_root.resolve()
+        host_kind, registry_root = "mac", mac_root.resolve()
     elif pc_root.exists():
-        host, registry_root = "pc", pc_root.resolve()
+        host_kind, registry_root = "pc", pc_root.resolve()
     else:
-        host, registry_root = "unknown", root
+        host_kind, registry_root = "unknown", root
+    configured_label = os.environ.get("BUILD_HOST_LABEL")
+    if configured_label:
+        host = _host_label(configured_label)
+    elif platform.system() == "Darwin":
+        host = "mac"
+    else:
+        host = _host_label(socket.gethostname().split(".")[0])
     registry_cli = (
         ".venv/bin/registry" if (registry_root / ".venv/bin/registry").exists()
         else f"PYTHONPATH=src python3 -m project_registry.cli --root {registry_root}"
@@ -1054,16 +1092,112 @@ def build_env(root: Path) -> dict[str, Any]:
     mac_codex = Path("~/.claude/model-adapters/codex.sh").expanduser()
     pc_codex = Path("~/bin/codex").expanduser()
     codex_bin = None
-    if host == "mac" and mac_codex.exists():
+    if host_kind == "mac" and mac_codex.exists():
         codex_bin = "~/.claude/model-adapters/codex.sh"
-    elif host == "pc" and pc_codex.exists():
+    elif host_kind == "pc" and pc_codex.exists():
         codex_bin = "~/bin/codex"
     return {
         "host": host,
+        "host_kind": host_kind,
         "registry_root": str(registry_root),
         "registry_cli": registry_cli,
         "codex_bin": codex_bin,
         "workdir_base": str(registry_root.parent / "build-work"),
         "budget_defaults": {"chunks_per_run": 6, "minutes_per_run": 120},
         "ttl_seconds": 10800,
+    }
+
+
+def shadow_gate(paths: Paths, project_id: str, *, min_runs: int = 5) -> dict[str, Any]:
+    """Evaluate whether a project's shadow-build evidence is clean enough."""
+    events, _ = read_events(paths)
+    run_ids = {
+        event["run_id"] for event in events
+        if event.get("project_id") == project_id
+    }
+    project_events = [event for event in events if event["run_id"] in run_ids]
+
+    shadow_runs: list[str] = []
+    for event in project_events:
+        if (
+            event["type"] == "run_finished"
+            and event.get("outcome") == "shadow_completed"
+            and event["run_id"] not in shadow_runs
+        ):
+            shadow_runs.append(event["run_id"])
+
+    denials = [event for event in project_events if event["type"] == "guard_denied"]
+    opened = {
+        (event["run_id"], event.get("chunk_id"))
+        for event in project_events if event["type"] == "pr_opened"
+    }
+    verdicts = {
+        (event["run_id"], event.get("chunk_id"))
+        for event in project_events if event["type"] == "review_verdict"
+    }
+    missing_verdicts = sorted(opened - verdicts)
+    failure_outcomes = {
+        "crashed", "registry_dirty", "aborted", "baseline_red",
+        "contract_broken", "codex_unavailable",
+    }
+    failures = [
+        event for event in project_events
+        if event["type"] == "run_finished"
+        and event.get("outcome") in failure_outcomes
+    ]
+    missing_digests = [
+        run_id for run_id in shadow_runs
+        if not (paths.build_digests_dir / f"{run_id}.md").exists()
+    ]
+    paused_reason = load_state(paths).get(project_id, ProjectBuildState()).paused_reason
+
+    checks = [
+        {
+            "id": "shadow_runs",
+            "pass": len(shadow_runs) >= min_runs,
+            "detail": f"{len(shadow_runs)} shadow run(s); minimum {min_runs}",
+        },
+        {
+            "id": "guard_denials",
+            "pass": not denials,
+            "detail": f"{len(denials)} guard denial(s)",
+        },
+        {
+            "id": "verdict_on_every_pr",
+            "pass": not missing_verdicts,
+            "detail": (
+                "every PR chunk has a review verdict"
+                if not missing_verdicts
+                else f"missing verdicts for {len(missing_verdicts)} PR chunk(s)"
+            ),
+        },
+        {
+            "id": "no_failure_outcomes",
+            "pass": not failures,
+            "detail": f"{len(failures)} failure outcome(s)",
+        },
+        {
+            "id": "digest_present",
+            "pass": not missing_digests,
+            "detail": (
+                "every shadow run has a digest"
+                if not missing_digests
+                else f"missing {len(missing_digests)} digest(s)"
+            ),
+        },
+        {
+            "id": "not_paused",
+            "pass": paused_reason is None,
+            "detail": (
+                "project is not paused"
+                if paused_reason is None else f"paused: {paused_reason}"
+            ),
+        },
+    ]
+    return {
+        "project_id": project_id,
+        "pass": all(check["pass"] for check in checks),
+        "min_runs": min_runs,
+        "runs_considered": shadow_runs,
+        "checks": checks,
     }

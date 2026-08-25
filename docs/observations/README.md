@@ -5,6 +5,11 @@
 - [`build-observe`](../../.claude/skills/build-observe/SKILL.md) runs:
   `<date>-build-sandbox-<name>.md`
 - Legacy `push-project-observe` runs: `<date>-<sandbox>.md`
+- Weekly build retros: `<date>-retro.md` (from the `build-retro` skill —
+  facts in the table, judgements tied to run ids, proposals filed not applied)
+- Audits of real autonomous runs: `<date>-shadow-run-<short-run-id>-audit.md`
+  (facts from the journal, GitHub, and independent re-execution; conclusions
+  go to ADRs and `docs/RUNBOOK.md`)
 
 **Facts only.** Session ids, PR URLs, commit SHAs, which registry path ran.
 No analysis — the transcripts named in each file hold the full record, and a

@@ -47,6 +47,8 @@ registry attention                       # work needing a human, with the rule b
 registry mismatches                      # where registry intent and GitHub disagree
 registry push-report                     # push-run totals and cached linked-PR states
 registry build-report                    # autonomous build-run and chunk metrics
+registry owner-inbox                     # everything that needs the owner, with the clearing command; add --json
+registry notify --run <run> [--dry-run]  # push digest + inbox to ntfy
 registry build-queue [--state ready]     # explain eligibility and rank every project
 registry build-readiness <id>            # explain one project's brief and automation policy
 registry brief-status [--incomplete] [--stale] # brief completeness and owner-review age
@@ -116,7 +118,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 | 3. GitHub sync — read-only collection of repos, PRs, issues, activity, CI | done |
 | 4. Decision support — active work, stale work, missing next actions | done |
 | 5. MCP server — query and maintain the registry with explicit write controls | done |
-| 6. Autonomous builder — eligibility, leasing, guard, agents, skills | done (rollout per [E. Test and rollout](docs/superpowers/specs/2026-08-22-autonomous-builder-E-test-and-rollout.md)) |
+| 6. Autonomous builder — eligibility, leasing, guard, agents, skills | done; in shadow mode per project until `registry build-readiness <id> --shadow-gate` passes (see [RUNBOOK](docs/RUNBOOK.md)) |
 
 What remains is data, not code: follow [docs/SETUP.md](docs/SETUP.md) to import your repositories, then curate a purpose, lifecycle, and next action for each imported stub.
 

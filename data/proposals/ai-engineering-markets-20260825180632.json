@@ -1,0 +1,19 @@
+{
+  "id": "ai-engineering-markets-20260825180632",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-08-25T18:06:32.061922+00:00",
+  "status": "applied",
+  "rationale": "2026-08-25: run d8fa did 6 chunks in 52 min; 10 chunks in 100 min keeps a run under the session quota that crashed run f90f",
+  "source": "propose",
+  "applied_at": "2026-08-25T18:06:32.180962+00:00",
+  "changes": {
+    "automation.budget.chunks_per_run": {
+      "before": null,
+      "after": 10
+    },
+    "automation.budget.minutes_per_run": {
+      "before": null,
+      "after": 100
+    }
+  }
+}

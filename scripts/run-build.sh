@@ -6,7 +6,7 @@ set -u
 case "$(uname -s)" in
   Darwin) HOST=mac ;;
   Linux)
-    HOST=pc
+    HOST="${BUILD_HOST_LABEL:-$(hostname -s | tr 'A-Z' 'a-z')}"
     export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
     ;;
   *)
@@ -15,6 +15,7 @@ case "$(uname -s)" in
     ;;
 esac
 export HOST
+export REGISTRY_NTFY_TOPIC="${REGISTRY_NTFY_TOPIC:-}"
 export BASH_MAX_TIMEOUT_MS=2400000 BASH_DEFAULT_TIMEOUT_MS=1200000
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

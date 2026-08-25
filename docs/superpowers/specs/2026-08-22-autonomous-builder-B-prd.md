@@ -1,5 +1,7 @@
 # Autonomous builder — B. Product requirements
 
+> **Status (2026-08-25): historical design input.** Superseded by `CLAUDE.md` (intent) and `docs/ADRs/ADR-006-autonomous-builder.md` (enforcement). Where this document differs from those or from the code, it is wrong. Retained for the record.
+
 **Date:** 2026-08-22 · **Owner:** Kanu Madhok · **Status:** Draft for owner review (interview-confirmed intent)
 
 ## Problem

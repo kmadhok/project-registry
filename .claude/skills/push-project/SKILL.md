@@ -46,7 +46,7 @@ The environment decides; never hardcode paths.
    - Record `$REGISTRY_CLI build event "$RUN_ID" contract_bootstrapped --chunk-id bootstrap_contract`.
 2. When the contract is invalid, or its baseline `test` command has a collection or command error, allow one `repair_contract` chunk through the same path and run `$REGISTRY_CLI build event "$RUN_ID" contract_repaired --chunk-id repair_contract`.
 3. On a second contract failure, run `$REGISTRY_CLI build finish "$RUN_ID" --outcome contract_broken --summary "<reason>" --json` and proceed to Phase 5 finalization.
-4. If `services` is non-empty, or `network.allowed` is false while tests require network, finish `contract_broken` with the reason.
+4. If `services` is non-empty, finish `contract_broken` with the reason. Declare `network.allowed: true` whenever `setup`, `test`, or `verify` reaches the network (installing packages from an index counts); the field is declarative — nothing enforces it — so a false `false` is a contract defect the reviewer must flag.
 
 ## Phase 3 — baseline
 
@@ -75,8 +75,9 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 
 1. Select the item at `next_ready_index` and set `CHUNK_ID` to its index.
 2. Set `SLUG` to a kebab-case form of its title, at most 40 characters.
-3. Set `BRANCH="push/$RUN_ID-$CHUNK_ID-$SLUG"` and run `git checkout -b "$BRANCH"`.
-4. Run `$REGISTRY_CLI build event "$RUN_ID" chunk_started --chunk-id "$CHUNK_ID" --detail branch="$BRANCH"`.
+3. Run `git checkout main && git pull --ff-only`; every chunk starts from current `main`, never from a previous chunk's branch. On conflict, re-clone.
+4. Set `BRANCH="push/$RUN_ID-$CHUNK_ID-$SLUG"` and run `git checkout -b "$BRANCH"`.
+5. Run `$REGISTRY_CLI build event "$RUN_ID" chunk_started --chunk-id "$CHUNK_ID" --detail branch="$BRANCH"`.
 
 ### c. Implement
 
@@ -103,20 +104,21 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 ### e. Open PR
 
 1. Commit the diff and run `git push -u origin "$BRANCH"`.
-2. Run `gh pr create --head "$BRANCH" --title "<item title>" --body "<item text, acceptance, before/after tests, red-baseline flag if any, run $RUN_ID, chunk $CHUNK_ID>"`; save its URL and number.
+2. Write the PR body (item text, acceptance, before/after tests, red-baseline flag if any, `Run $RUN_ID, chunk $CHUNK_ID`) to `$WORKDIR/../pr-body-$RUN_ID-$CHUNK_ID.md` with the Write tool, then run `gh pr create --head "$BRANCH" --title "<item title>" --body-file "$WORKDIR/../pr-body-$RUN_ID-$CHUNK_ID.md"`; save its URL and number. Never build a body inline with a heredoc inside `$( )`.
 3. Run `$REGISTRY_CLI build event "$RUN_ID" pr_opened --chunk-id "$CHUNK_ID" --pr-url "$PR_URL" --detail branch="$BRANCH" --detail pr_number="$PR_NUMBER"`.
 
 ### f. Review
 
 1. Invoke the `build-reviewer` subagent in fresh, read-only context. Supply the brief, exact SPEC item, `git diff main...$BRANCH`, before/after test output, and `.project-meta.yaml`.
-2. Save only its JSON as `$WORKDIR/../review-$RUN_ID-$CHUNK_ID.json`.
-3. Run `$REGISTRY_CLI build event "$RUN_ID" review_verdict --chunk-id "$CHUNK_ID" --detail-json "$(cat "$WORKDIR/../review-$RUN_ID-$CHUNK_ID.json")"`.
-4. On `request_changes`, address the findings once, repeat d, push, and invoke a fresh review.
-5. On `reject` or a second non-approve, run `gh pr close "$PR_NUMBER" --repo "$REPO"`, then `git push origin --delete "$BRANCH"`, run `$REGISTRY_CLI build event "$RUN_ID" chunk_rejected --chunk-id "$CHUNK_ID" --reason review`, and continue.
+2. Save only its JSON as `$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json` (`round` = 1, 2).
+3. Before acting on any verdict, journal it: `$REGISTRY_CLI build event "$RUN_ID" review_verdict --chunk-id "$CHUNK_ID" --detail-json "$(cat "$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json")"`. Every round is journaled, including a `request_changes` that is then addressed.
+4. Post the same JSON to the PR so the verdict is visible without the registry: `gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file "$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json"`.
+5. On `request_changes`, address the findings once, repeat d (which records a second `verify_passed`), push, and invoke a fresh review (repeat 1–4 with the next round).
+6. On `reject` or a second non-approve, run `gh pr close "$PR_NUMBER" --repo "$REPO"`, then `git push origin --delete "$BRANCH"`, run `$REGISTRY_CLI build event "$RUN_ID" chunk_rejected --chunk-id "$CHUNK_ID" --reason review`, and continue.
 
 ### g. Merge
 
-1. If `DRY_RUN` is true, leave the PR open, record `$REGISTRY_CLI build event "$RUN_ID" chunk_skipped --chunk-id "$CHUNK_ID" --reason shadow`, and continue.
+1. If `DRY_RUN` is true, leave the PR open, record `$REGISTRY_CLI build event "$RUN_ID" chunk_skipped --chunk-id "$CHUNK_ID" --reason shadow`, run `git checkout main && git pull --ff-only`, and continue. Shadow PRs must be independent of each other; the owner merges or closes them by hand.
 2. Otherwise run `gh pr merge "$PR_NUMBER" --squash --delete-branch`.
 3. Run `SHA=$(gh pr view "$PR_NUMBER" --json mergeCommit -q .mergeCommit.oid)`.
 4. Run `git fetch origin main && git tag "checkpoint/$RUN_ID-$CHUNK_ID" "$SHA" && git push origin "checkpoint/$RUN_ID-$CHUNK_ID"`.
@@ -130,9 +132,10 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 3. Run `$REGISTRY_CLI dashboard`.
 4. Run `cd "$REGISTRY_ROOT" && git add data/build DASHBOARD.md && git commit -m "build: $RUN_ID $PROJECT <outcome>" && git push origin main`.
 5. On non-fast-forward, run `git pull --rebase` once and push again. If it still fails, leave it for the next run's reconciliation.
-6. After the successful `git push origin main`, run `$REGISTRY_CLI build finish "$RUN_ID" --confirm-writeback --json`.
-7. Load PushNotification through ToolSearch when available and send `<project> · <outcome> · <merged n> · digest <path>`; otherwise print that line.
-8. Delete only `"$WORKDIR"`.
+6. After the successful `git push origin main`, run `$REGISTRY_CLI build finish "$RUN_ID" --confirm-writeback --json`. This deletes the lease and appends `writeback_confirmed` to the journal.
+7. Commit that line too: `cd "$REGISTRY_ROOT" && git add data/build && git commit -m "build: confirm writeback $RUN_ID" && git push origin main`. If this push fails, leave it — preflight ignores `data/build/` dirtiness and the next run's writeback carries it.
+8. Load PushNotification through ToolSearch when available and send `<project> · <outcome> · <merged n> · digest <path>`; otherwise print that line.
+9. Delete only `"$WORKDIR"`.
 
 ## Invariants
 
@@ -145,14 +148,18 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 - Never read or quote secrets. enforced by: guard.
 - Never deploy, send outbound messages, pay, or mutate external systems. enforced by: never-classes in validate-spec + guard (gh/api mutations).
 - Never close or edit issues or PRs the builder did not open. enforced by: guard.
+- Start every chunk from current `main`; shadow PRs never stack. enforced by: skill + reviewer (branch ancestry in the supplied diff).
+- Journal every verdict before acting on it. enforced by: skill; audited by: `build-readiness --shadow-gate`.
+- A guard denial ends the run. enforced by: registry — `build finish` refuses every outcome except `aborted` once a `guard_denied` event exists.
 
-Treat a guard denial as a bug in the plan, never an obstacle to route around. Stop and finish `aborted` with the denial reason.
+A guard denial is a bug in the plan, never an obstacle to route around. It is already journaled; do not retry the command in another form. Stop and finish `aborted` with the denial reason. If the guard was wrong, the fix is a regression test and a change to `scripts/build-guard.py`, made by the owner outside a run.
 
 ## Failure handling
 
 | Case | Record and action |
 |---|---|
 | Duplicate scheduled run | The start attempt records `lease_held`; print its reason and stop. |
+| Guard denial | Already journaled as `guard_denied`. Finish `aborted --summary "<rule_id>: <command>"`; `build finish` refuses any other outcome. |
 | Crash mid-chunk | Execute returned reconcile actions, run `build reconcile --done`, and restart; reconciliation records `crashed` and `reconciled`. |
 | Merge succeeded but write-back failed | Leave the lease `finalize_pending`; the next start redoes dashboard/add/commit/push, calls `--confirm-writeback`, and repeats start. |
 | Registry push is non-fast-forward | Rebase and retry once; otherwise leave `finalize_pending` for reconciliation. |

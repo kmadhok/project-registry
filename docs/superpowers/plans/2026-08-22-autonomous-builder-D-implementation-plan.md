@@ -1,5 +1,7 @@
 # Autonomous builder — D. Implementation plan
 
+> **Status (2026-08-25): historical design input.** Superseded by `CLAUDE.md` (intent) and `docs/ADRs/ADR-006-autonomous-builder.md` (enforcement). Where this document differs from those or from the code, it is wrong. Retained for the record.
+
 **Status 2026-08-22:** T1–T12, T14 implemented on branch `codex/autonomous-builder`; T13 (rollout) is owner-operated — see [E. Test and rollout](../specs/2026-08-22-autonomous-builder-E-test-and-rollout.md).
 
 **Date:** 2026-08-22 · Implements [C. Technical design](../specs/2026-08-22-autonomous-builder-C-technical-design.md) · Each task = one reviewable PR, ordered by dependency. Codex implements from these specs; Fable verifies. Tests are requirement-driven (scenarios listed per task).

@@ -1,5 +1,7 @@
 # Autonomous builder — C. Technical design
 
+> **Status (2026-08-25): historical design input.** Superseded by `CLAUDE.md` (intent) and `docs/ADRs/ADR-006-autonomous-builder.md` (enforcement). The event vocabulary, finish sequence, and per-chunk clone described below are not current; see `build_runs.EVENT_TYPES` and ADR-006 AD-3/AD-10. Retained for the record.
+
 **Date:** 2026-08-22 · Implements [B. PRD](2026-08-22-autonomous-builder-B-prd.md) · Layout follows the existing `model → storage → validation/queries/signals → cli/mcp` stack.
 
 ## 0. Shape in one picture

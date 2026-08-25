@@ -1,5 +1,7 @@
 # Autonomous builder — E. Test and rollout plan
 
+> **Status (2026-08-25): historical design input.** The shadow exit criteria in §5 are now evaluated by `registry build-readiness <id> --shadow-gate` and documented in `docs/RUNBOOK.md`; `CLAUDE.md` and `docs/ADRs/ADR-006-autonomous-builder.md` are canonical. Retained for the record.
+
 **Date:** 2026-08-22 · Companion to [D. Implementation plan](../plans/2026-08-22-autonomous-builder-D-implementation-plan.md)
 
 ## 1. Test layers

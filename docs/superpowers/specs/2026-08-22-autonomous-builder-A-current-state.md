@@ -1,5 +1,7 @@
 # Autonomous builder — A. Current-state assessment
 
+> **Status (2026-08-25): historical design input.** Superseded by `CLAUDE.md` (intent) and `docs/ADRs/ADR-006-autonomous-builder.md` (enforcement). Where this document differs from those or from the code, it is wrong. Retained for the record.
+
 **Date:** 2026-08-22 · **Branch inspected:** `codex/marathon-2026-08-21` (PR #4 open) · **Tests:** 283 passed (`.venv/bin/python -m pytest`) · **`registry validate`:** 0 errors, 3 suggestions
 
 Companion documents: [B. PRD](2026-08-22-autonomous-builder-B-prd.md) · [C. Technical design](2026-08-22-autonomous-builder-C-technical-design.md) · [D. Implementation plan](../plans/2026-08-22-autonomous-builder-D-implementation-plan.md) · [E. Test & rollout](2026-08-22-autonomous-builder-E-test-and-rollout.md)

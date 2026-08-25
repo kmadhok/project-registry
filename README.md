@@ -116,7 +116,7 @@ registry mcp                  # JSON-RPC 2.0 over stdio
 | 3. GitHub sync — read-only collection of repos, PRs, issues, activity, CI | done |
 | 4. Decision support — active work, stale work, missing next actions | done |
 | 5. MCP server — query and maintain the registry with explicit write controls | done |
-| 6. Autonomous builder — eligibility, leasing, guard, agents, skills | done (rollout per [E. Test and rollout](docs/superpowers/specs/2026-08-22-autonomous-builder-E-test-and-rollout.md)) |
+| 6. Autonomous builder — eligibility, leasing, guard, agents, skills | done; in shadow mode per project until `registry build-readiness <id> --shadow-gate` passes (see [RUNBOOK](docs/RUNBOOK.md)) |
 
 What remains is data, not code: follow [docs/SETUP.md](docs/SETUP.md) to import your repositories, then curate a purpose, lifecycle, and next action for each imported stub.
 

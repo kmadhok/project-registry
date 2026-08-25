@@ -1,0 +1,15 @@
+{
+  "id": "ai-engineering-markets-20260825174854",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-08-25T17:48:54.821194+00:00",
+  "status": "applied",
+  "rationale": "Owner decision 2026-08-25: leave shadow, self-merge per chunk with checkpoint tags; safety is squash-merge + tag revert, not owner review of every PR.",
+  "source": "propose",
+  "applied_at": "2026-08-25T17:48:54.970193+00:00",
+  "changes": {
+    "automation.mode": {
+      "before": "shadow",
+      "after": "build"
+    }
+  }
+}

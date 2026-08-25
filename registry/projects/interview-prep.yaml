@@ -31,7 +31,7 @@ lifecycle: next
 active: true
 category: career-automation
 automation:
-  mode: shadow
+  mode: build
 repo: kmadhok/interview-prep
 visibility: private
 last_reviewed: '2026-08-11'

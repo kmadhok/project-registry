@@ -1,0 +1,15 @@
+{
+  "id": "interview-prep-20260825174854",
+  "project_id": "interview-prep",
+  "created_at": "2026-08-25T17:48:54.220608+00:00",
+  "status": "applied",
+  "rationale": "Owner decision 2026-08-25: leave shadow, self-merge per chunk with checkpoint tags; safety is squash-merge + tag revert, not owner review of every PR.",
+  "source": "propose",
+  "applied_at": "2026-08-25T17:48:54.362005+00:00",
+  "changes": {
+    "automation.mode": {
+      "before": "shadow",
+      "after": "build"
+    }
+  }
+}

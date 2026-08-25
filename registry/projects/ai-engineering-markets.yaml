@@ -35,7 +35,7 @@ lifecycle: next
 active: true
 category: research
 automation:
-  mode: shadow
+  mode: build
 repo: kmadhok/ai_engineering_markets
 visibility: private
 last_reviewed: '2026-08-11'

@@ -59,9 +59,13 @@ which the run commits as well. Every step is an event in
 `data/build/runs.jsonl`; `build_runs.EVENT_TYPES` is the vocabulary.
 
 Modes: `shadow` = everything except merge, PRs left open for the owner;
-`build` = self-merging. **Current state: every project is `shadow` or unset.**
-`build` is granted per project only after `registry build-readiness <id>
---shadow-gate` passes (criteria in `docs/RUNBOOK.md`).
+`build` = self-merging. **Current state (2026-08-25): the three focus
+projects — `interview-prep`, `ai-news-aggregator`, `ai-engineering-markets` —
+are `build`; everything else is `off` or unset.** Kanu chose progress over a
+proving period: safety is the branch-per-chunk + squash + `checkpoint/` tag
+(one `git revert` undoes a chunk), not owner review of every PR.
+`registry build-readiness <id> --shadow-gate` remains the evidence check for
+any *new* project before it gets `build`.
 
 ## What is enforced vs. what is convention
 

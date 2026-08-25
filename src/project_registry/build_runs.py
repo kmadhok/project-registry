@@ -902,7 +902,7 @@ def reconcile_done(paths: Paths, *, now: dt.datetime | None = None) -> dict[str,
 
 def _write_digest(
     paths: Paths, lease: dict[str, Any], events: list[dict[str, Any]], outcome: str,
-    summary: str | None, needs_intent: list[str],
+    summary: str | None, needs_intent: list[str], inbox: dict[str, Any] | None = None,
 ) -> Path:
     lines = [
         f"# Build run {lease['run_id']}", "",
@@ -945,6 +945,12 @@ def _write_digest(
     if needs_intent:
         lines.extend(["## Projects needing intent", ""])
         lines.extend(f"- {project_id}" for project_id in needs_intent)
+        lines.append("")
+    if inbox and inbox.get("items"):
+        lines.extend(["## Needs the owner", ""])
+        for item in inbox["items"]:
+            lines.append(f"- [{item['kind']}] {item['project_id'] or '-'}: {item['summary']}")
+            lines.append(f"  - `{item['action']}`")
         lines.append("")
     target = paths.build_digests_dir / f"{lease['run_id']}.md"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -1007,7 +1013,13 @@ def finish_run(
             item["project_id"] for item in queue["candidates"]
             if item["state"] == "needs_intent"
         ]
-    digest = _write_digest(paths, lease, run_events, outcome, summary, needs_intent)
+    inbox = None
+    if registry is not None:
+        from .inbox import owner_inbox
+        inbox = owner_inbox(paths, registry, now=current, snapshot=snapshot)
+    digest = _write_digest(
+        paths, lease, run_events, outcome, summary, needs_intent, inbox=inbox
+    )
     lease.update({
         "status": "finalize_pending",
         "finalize": {

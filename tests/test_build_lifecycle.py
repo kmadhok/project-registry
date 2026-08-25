@@ -42,6 +42,18 @@ def ready_project(write_project, project_id="builder"):
     )
 
 
+def test_digest_lists_owner_inbox(paths, write_project):
+    ready_project(write_project)
+    write_project(id="vague", name="Vague", purpose="p", repo="o/vague",
+                  automation={"mode": "build"})
+    start(paths, run_id="run")
+    result = finish_run(paths, "run", outcome="completed", now=NOW,
+                        registry=load_registry(paths), snapshot=Snapshot())
+    digest = open(result["digest_path"], encoding="utf-8").read()
+    assert "## Needs the owner" in digest
+    assert "needs_intent" in digest and "vague" in digest
+
+
 def start(paths, *, now=NOW, project_id=None, force_named=False, run_id=None):
     return begin_run(
         paths,

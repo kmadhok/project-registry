@@ -814,6 +814,41 @@ def cmd_build_report(args, paths, now) -> int:
     return 0
 
 
+def cmd_owner_inbox(args, paths, now) -> int:
+    from .inbox import owner_inbox
+    registry = load_registry(paths)
+    result = owner_inbox(paths, registry, now=now)
+    if emit(result, args):
+        return 0
+    if not result["items"]:
+        print("Nothing needs you.")
+        return 0
+    for item in result["items"]:
+        print(f"[{item['kind']}] {item['project_id'] or '-'}: {item['summary']}")
+        print(f"    -> {item['action']}")
+    return 0
+
+
+def cmd_notify(args, paths, now) -> int:
+    from .inbox import owner_inbox
+    from .notify import notify_config, render_notification, send_ntfy
+    digest_path = paths.build_digests_dir / f"{args.run}.md"
+    if not digest_path.exists():
+        print(f"no digest for run {args.run}", file=sys.stderr)
+        return 1
+    digest = digest_path.read_text(encoding="utf-8")
+    inbox = owner_inbox(paths, load_registry(paths), now=now)
+    message = render_notification(digest, inbox)
+    config = notify_config(paths)
+    result = {"run_id": args.run, "message": message, "sent": False, "configured": config is not None}
+    if config is not None and not args.dry_run:
+        result.update(send_ntfy(config["topic"], message, server=config["server"], title=message.splitlines()[0]))
+    if not emit(result, args):
+        print(message)
+        print(f"[notify] configured={result['configured']} sent={result['sent']}")
+    return 0
+
+
 def cmd_build_resume(args, paths, now) -> int:
     state = resume_project(paths, args.project_id, now=now)
     payload = {"project_id": args.project_id, **state.to_dict()}
@@ -1161,6 +1196,14 @@ def build_parser() -> argparse.ArgumentParser:
     sub = add("build-report", cmd_build_report, "Summarize autonomous build runs.")
     sub.add_argument("--since", metavar="YYYY-MM-DD",
                      help="Include events on or after this UTC date.")
+
+    add("owner-inbox", cmd_owner_inbox,
+        "List everything that needs the owner, with the command that clears it.")
+
+    sub = add("notify", cmd_notify,
+              "Push the run digest and owner inbox to the configured ntfy topic.")
+    sub.add_argument("--run", required=True)
+    sub.add_argument("--dry-run", action="store_true")
 
     sub = add("build-queue", cmd_build_queue, "Show autonomous build eligibility and rank.")
     sub.add_argument("--state", choices=ELIGIBILITY_STATES)

@@ -15,6 +15,7 @@ case "$(uname -s)" in
     ;;
 esac
 export HOST
+export REGISTRY_NTFY_TOPIC="${REGISTRY_NTFY_TOPIC:-}"
 export BASH_MAX_TIMEOUT_MS=2400000 BASH_DEFAULT_TIMEOUT_MS=1200000
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

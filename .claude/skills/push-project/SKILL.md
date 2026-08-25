@@ -134,7 +134,7 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 5. On non-fast-forward, run `git pull --rebase` once and push again. If it still fails, leave it for the next run's reconciliation.
 6. After the successful `git push origin main`, run `$REGISTRY_CLI build finish "$RUN_ID" --confirm-writeback --json`. This deletes the lease and appends `writeback_confirmed` to the journal.
 7. Commit that line too: `cd "$REGISTRY_ROOT" && git add data/build && git commit -m "build: confirm writeback $RUN_ID" && git push origin main`. If this push fails, leave it — preflight ignores `data/build/` dirtiness and the next run's writeback carries it.
-8. Load PushNotification through ToolSearch when available and send `<project> · <outcome> · <merged n> · digest <path>`; otherwise print that line.
+8. Run `$REGISTRY_CLI notify --run "$RUN_ID" --json`. It renders the digest and owner inbox and pushes them to the configured ntfy topic; when nothing is configured it prints the message. Never retry or debug delivery inside a run.
 9. Delete only `"$WORKDIR"`.
 
 ## Invariants

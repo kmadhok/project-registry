@@ -67,6 +67,17 @@ closes them by hand; the builder never touches them again. Runs before
 2026-08-25 stacked chunks on each other (later PRs contain earlier ones) —
 merge those bottom-up or squash the top one.
 
+## Notifications
+
+Every run ends with `registry notify --run <run-id>`: the first line is
+`<project> · <outcome> · merged <n>`, then up to five merged PR links, any
+rejections/denials, and the owner inbox (`registry owner-inbox`). Delivery is
+an ntfy topic — install the ntfy app on the phone/Mac, subscribe to a private
+topic name, and put it in the build host's environment as
+`REGISTRY_NTFY_TOPIC` (or in `data/build/notify.json`, gitignored). Test with
+`registry notify --run <any past run> --dry-run`. The topic name is a shared
+secret: never commit it.
+
 ## Shadow gate — when a project may switch to `build`
 
 `registry build-readiness <id> --shadow-gate [--min-runs 5]` evaluates the
@@ -117,6 +128,14 @@ Other situations:
   missing): the next `build start` reconciles; if it does not, record what
   you found in `docs/observations/` and fix by hand — never edit
   `runs.jsonl` by hand.
+
+## Weekly retro
+
+Run `/build-retro` on the Mac every Monday after the first scheduled run of
+the week (`.claude/skills/build-retro/SKILL.md`). It reads the window's runs,
+writes `docs/observations/<date>-retro.md`, files proposals for brief and
+policy changes, and sends them through `registry notify`. Approve or reject
+each proposal from `registry owner-inbox`; that is the whole owner loop.
 
 ## Observations
 

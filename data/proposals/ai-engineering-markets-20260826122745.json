@@ -1,0 +1,26 @@
+{
+  "id": "ai-engineering-markets-20260826122745",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-08-26T12:27:45.466401+00:00",
+  "status": "pending",
+  "rationale": "Roadmap exhausted: 5 of 7 remaining SPEC items (chunk 1b DuckDB persistence, decision log, markout instrumentation, calibration reporting, fee-coverage) are fully scoped and brief-consistent but blocked_by_policy because automation.allow has no dependencies entry; the 6th (live fee-schedule refresh) needs a manual PDF-sourcing decision. No further stdlib-only split exists (verified via build-planner: 1b/decision-log/markout/calibration form one duckdb-rooted chain, fee-coverage needs a PDF-extraction library -- unlike chunk 1/FLAG-and-SPLIT, which had genuine separable stdlib pieces).",
+  "source": "propose",
+  "applied_at": null,
+  "changes": {
+    "brief.open_decisions": {
+      "before": null,
+      "after": [
+        {
+          "question": "Allow-list the `dependencies` change class in automation.allow for ai-engineering-markets (currently empty under mode: build)? This unblocks 5 of 7 remaining SPEC items: chunk 1b (DuckDB persistence), the decision log, markout instrumentation, and calibration reporting (all chained on one pinned duckdb version), plus the fee-coverage field (one pinned PDF-extraction library) \u2014 all already satisfy the brief's own 'stdlib-plus-DuckDB bias: pin every new dependency in a manifest' constraint, so this is activating already-planned work, not expanding scope. Without it, no further item in docs/SPEC.md can ever validate ready. Chunk 2b (LLM-backed classification) would still additionally need network.allowed:true and an API key, so allow-listing dependencies alone does not open that item.",
+          "status": "open",
+          "answer": null
+        },
+        {
+          "question": "How should the current (post-Feb-2026) Kalshi fee-schedule PDF be sourced? The live PDF has 429-blocked automated fetch twice with no Wayback capture since Feb 2026, and this contract sets network.allowed:false so no command available to the builder can fetch it. Options include a manual residential-browser download filed under research/data/ with a capture-date filename, or explicitly accepting the Feb 2026 snapshot as the interim fee_coverage source and deferring refresh.",
+          "status": "open",
+          "answer": null
+        }
+      ]
+    }
+  }
+}

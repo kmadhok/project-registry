@@ -481,7 +481,13 @@ def registry_checkout_status(root: Path) -> dict[str, Any]:
         if " -> " in value:
             value = value.split(" -> ", 1)[1]
         value = value.strip().strip('"')
-        if value == "DASHBOARD.md" or value.startswith("data/build/"):
+        # Machine-written run output and builder-filed proposals are swept into
+        # the next write-back; they never block a run.
+        if (
+            value == "DASHBOARD.md"
+            or value.startswith("data/build/")
+            or value.startswith("data/proposals/")
+        ):
             continue
         dirty.append(value)
     return {

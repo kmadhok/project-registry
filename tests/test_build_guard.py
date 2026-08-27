@@ -288,6 +288,23 @@ def test_registry_commit_scope(
         assert rule_id in result.stderr
 
 
+def test_registry_commit_allows_builder_filed_proposals(tmp_path: Path) -> None:
+    # A needs_intent run files data/proposals/<id>.json via `registry propose`;
+    # the write-back must be able to commit it or it never reaches the owner.
+    init_repo(tmp_path)
+    write_lease(tmp_path)
+    proposal = tmp_path / "data" / "proposals" / "builder-20260826122745.json"
+    proposal.parent.mkdir(parents=True, exist_ok=True)
+    proposal.write_text("{}\n", encoding="utf-8")
+    subprocess.run(["git", "add", "data/proposals"], cwd=tmp_path, check=True)
+    assert run_guard(tmp_path, "git commit -m guarded").returncode == 0
+    curated = tmp_path / "registry" / "projects" / "builder.yaml"
+    curated.parent.mkdir(parents=True, exist_ok=True)
+    curated.write_text("id: builder\n", encoding="utf-8")
+    subprocess.run(["git", "add", "registry"], cwd=tmp_path, check=True)
+    assert_denied(run_guard(tmp_path, "git commit -m guarded"), "registry_commit_scope")
+
+
 @pytest.mark.parametrize(
     ("command", "prs_open", "expected", "rule_id"),
     [

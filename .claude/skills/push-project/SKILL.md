@@ -19,7 +19,7 @@ The environment decides; never hardcode paths.
 
 1. Run `git -C "$REGISTRY_ROOT" pull --ff-only`.
 2. Run `$REGISTRY_CLI build start --host "$HOST" [--project <id>] [--force-named] --json`. Include only invocation arguments actually supplied.
-3. For `finalize_pending`, redo `$REGISTRY_CLI dashboard`, then `git -C "$REGISTRY_ROOT" add data/build DASHBOARD.md`, commit and push `origin main`, run `$REGISTRY_CLI build finish "<pending-run-id>" --confirm-writeback --json`, and repeat step 2. For `lease_held`, `registry_dirty`, `stopped`, or `no_candidate`, print the registry's reason and stop; the attempt is already journaled.
+3. For `finalize_pending`, redo `$REGISTRY_CLI dashboard`, then `git -C "$REGISTRY_ROOT" add data/build data/proposals DASHBOARD.md`, commit and push `origin main`, run `$REGISTRY_CLI build finish "<pending-run-id>" --confirm-writeback --json`, and repeat step 2. For `lease_held`, `registry_dirty`, `stopped`, or `no_candidate`, print the registry's reason and stop; the attempt is already journaled.
 4. Only when the output contains reconciliation `actions`: execute each under the guard —
    - `close_pr`: `gh pr close <n> --repo <repo>`.
    - `delete_branch`: from a checkout of `<repo>`, run `git push origin --delete <branch>`.
@@ -130,7 +130,7 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 1. Choose the registry-defined outcome: `completed`, `budget_exhausted`, `roadmap_done`, `needs_intent`, `blocked_by_policy`, `shadow_completed`, `aborted`, or the applicable earlier stop outcome.
 2. Unless already finished, run `$REGISTRY_CLI build finish "$RUN_ID" --outcome <outcome> --summary "<one line>" --json`; save the digest path.
 3. Run `$REGISTRY_CLI dashboard`.
-4. Run `cd "$REGISTRY_ROOT" && git add data/build DASHBOARD.md && git commit -m "build: $RUN_ID $PROJECT <outcome>" && git push origin main`.
+4. Run `cd "$REGISTRY_ROOT" && git add data/build data/proposals DASHBOARD.md && git commit -m "build: $RUN_ID $PROJECT <outcome>" && git push origin main`.
 5. On non-fast-forward, run `git pull --rebase` once and push again. If it still fails, leave it for the next run's reconciliation.
 6. After the successful `git push origin main`, run `$REGISTRY_CLI build finish "$RUN_ID" --confirm-writeback --json`. This deletes the lease and appends `writeback_confirmed` to the journal.
 7. Commit that line too: `cd "$REGISTRY_ROOT" && git add data/build && git commit -m "build: confirm writeback $RUN_ID" && git push origin main`. If this push fails, leave it — preflight ignores `data/build/` dirtiness and the next run's writeback carries it.

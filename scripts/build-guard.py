@@ -519,7 +519,12 @@ def _evaluate_git(
         if completed.returncode != 0:
             raise Denied("registry_commit_scope", "cannot inspect staged paths")
         staged = [line for line in completed.stdout.splitlines() if line]
-        if any(path != "DASHBOARD.md" and not path.startswith("data/build/") for path in staged):
+        if any(
+            path != "DASHBOARD.md"
+            and not path.startswith("data/build/")
+            and not path.startswith("data/proposals/")
+            for path in staged
+        ):
             raise Denied("registry_commit_scope")
 
 

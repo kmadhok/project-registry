@@ -34,7 +34,7 @@ indirect GitHub or registry write commands.
 | `non_push_branch` | Target-repository branch pushes must use `push/<run_id>-*`. |
 | `registry_push_branch` | Registry-repository pushes may target only `main`. |
 | `branch_delete` | Branch deletion is limited to run branches and reconciliation targets. |
-| `registry_commit_scope` | Registry commits may stage only `data/build/**` and `DASHBOARD.md`. |
+| `registry_commit_scope` | Registry commits may stage only `data/build/**`, `data/proposals/**` (builder-filed `needs_intent` proposals), and `DASHBOARD.md`. |
 | `one_pr_per_chunk` | A PR cannot be created while the lease records another open PR. |
 | `wrong_repo` | Explicit GitHub repository arguments must name the leased repository. |
 | `pr_head_branch` | New PR heads must use `push/<run_id>-*`. |

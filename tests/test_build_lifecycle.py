@@ -133,6 +133,25 @@ def test_checkout_preflight_dirty_ignored_paths_and_branch(paths, write_project)
     assert start(paths, run_id="branch")["outcome"] == "registry_dirty"
 
 
+def test_checkout_preflight_ignores_builder_filed_proposals(paths, write_project):
+    # Run e7eb4af7 (2026-08-26) filed a needs_intent proposal that was left
+    # uncommitted on the build host; the next start must not park on it.
+    ready_project(write_project)
+    subprocess.run(["git", "init", "-b", "main"], cwd=paths.root, check=True,
+                   capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=paths.root)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=paths.root)
+    subprocess.run(["git", "add", "."], cwd=paths.root, check=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=paths.root, check=True,
+                   capture_output=True)
+    proposals = paths.root / "data" / "proposals"
+    proposals.mkdir(parents=True, exist_ok=True)
+    (proposals / "builder-20260826122745.json").write_text("{}\n", encoding="utf-8")
+    status = registry_checkout_status(paths.root)
+    assert status["clean"] is True and status["dirty_paths"] == []
+    assert start(paths, run_id="proposal-ok")["run_id"] == "proposal-ok"
+
+
 def test_finalize_pending_blocks_begin_until_writeback_confirmed(paths, write_project):
     ready_project(write_project)
     start(paths, run_id="run")

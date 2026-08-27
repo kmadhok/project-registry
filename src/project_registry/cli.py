@@ -831,18 +831,22 @@ def cmd_owner_inbox(args, paths, now) -> int:
 
 def cmd_notify(args, paths, now) -> int:
     from .inbox import owner_inbox
-    from .notify import notify_config, render_notification, send_ntfy
+    from .notify import build_notification, notify_config, send_ntfy
     digest_path = paths.build_digests_dir / f"{args.run}.md"
     if not digest_path.exists():
         print(f"no digest for run {args.run}", file=sys.stderr)
         return 1
     digest = digest_path.read_text(encoding="utf-8")
     inbox = owner_inbox(paths, load_registry(paths), now=now)
-    message = render_notification(digest, inbox)
+    notification = build_notification(digest, inbox)
+    message = notification["title"] + "\n" + notification["body"]
     config = notify_config(paths)
-    result = {"run_id": args.run, "message": message, "sent": False, "configured": config is not None}
+    result = {
+        "run_id": args.run, "message": message, "notification": notification,
+        "sent": False, "configured": config is not None,
+    }
     if config is not None and not args.dry_run:
-        result.update(send_ntfy(config["topic"], message, server=config["server"], title=message.splitlines()[0]))
+        result.update(send_ntfy(config["topic"], notification, server=config["server"]))
     if not emit(result, args):
         print(message)
         print(f"[notify] configured={result['configured']} sent={result['sent']}")

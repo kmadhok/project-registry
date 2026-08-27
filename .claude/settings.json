@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/scripts/build-guard.py",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/data/build/lease.json\" ] || [ -f \"$CLAUDE_PROJECT_DIR/scripts/build-guard.py\" ]; then python3 \"$CLAUDE_PROJECT_DIR\"/scripts/build-guard.py; fi",
             "timeout": 20
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/scripts/build-guard.py",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/data/build/lease.json\" ] || [ -f \"$CLAUDE_PROJECT_DIR/scripts/build-guard.py\" ]; then python3 \"$CLAUDE_PROJECT_DIR\"/scripts/build-guard.py; fi",
             "timeout": 20
           }
         ]
@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/scripts/build-guard.py",
+            "command": "if [ -f \"$CLAUDE_PROJECT_DIR/data/build/lease.json\" ] || [ -f \"$CLAUDE_PROJECT_DIR/scripts/build-guard.py\" ]; then python3 \"$CLAUDE_PROJECT_DIR\"/scripts/build-guard.py; fi",
             "timeout": 20
           }
         ]

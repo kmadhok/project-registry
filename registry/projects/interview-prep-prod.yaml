@@ -1,0 +1,58 @@
+id: interview-prep-prod
+name: interview-prep-prod
+purpose: 'The productionalized, template/instance-split version of the interview-prep job-search
+  workspace: deterministic tool layer, behavior-contract evals, traced skill runs, and conversational
+  onboarding, with all personal data isolated under workspace/.'
+desired_outcome: A friend can clone the repo, self-onboard through the interview skill, run
+  jd-to-ready on a real JD, and debug any output by following the trace from output to skill
+  to prompt to source file - every skill has a behavior contract verified by deterministic
+  evaluators, so prompts and tools can be loop-engineered against evals.
+brief:
+  done_criteria:
+  - every orchestrator and primitive skill run emits a structured trace (JSONL plus rendered
+    run report) tying each action to a reason and the prompt or file that produced it
+  - every pipeline skill the friend test exercises (intake classify tailor-resume apply-packet
+    find-contacts enrich-contacts verify-emails write-outreach) has evals/<skill>/contract.md
+    and a deterministic verifier runnable with python3 evals/run_eval.py <skill> in an isolated
+    clone
+  - mechanical steps (parsing dedupe file placement naming state markers verification) are
+    deterministic scripts under scripts/ rather than LLM reasoning
+  - the three scheduled systems (Mac launchd linkedin-mcp cloud drip-runner routine PC runner)
+    are declared under infra/ with setup docs and a documented manual-invocation equivalent
+  - /onboard builds a new user canonical files from templates/ and profile.yaml with no hardcoded
+    Kanu paths and python3 scripts/verify_setup.py passes
+  - python3 -m pytest scripts/ is green from a clean checkout
+  non_goals:
+  - no token or internal-reasoning capture
+  - no non-Claude harness support beyond architecture discipline
+  - no public GitHub release or history rewrite - that is a later clean-history export
+  - no changes to the live interview-prep instance on its main branch
+  - no automated sending - every outward action keeps a human gate
+  - no state database - state is read from files that already exist
+  - no new runtime dependencies without owner approval (reportlab is the existing exception)
+  constraints:
+  - workspace/** holds all personal and instance data and requires the personal_data change
+    class
+  - Python 3.11+ stdlib-first
+  - LinkedIn MCP setup is required at onboarding and must be guided and verifiable
+  - evals run only in throwaway clones - the real workspace is never touched and git status
+    must show changes only under the clone
+  - determinism-first - justify any step implemented as LLM reasoning instead of a tool
+  - the repo has been frozen since 2026-08-02 - re-verify the spec five workstreams against
+    the tree before planning
+  reviewed: '2026-08-27'
+lifecycle: next
+active: true
+needs_review: false
+category: career-automation
+automation:
+  mode: build
+  budget:
+    chunks_per_run: 10
+    minutes_per_run: 100
+repo: kmadhok/interview-prep-prod
+visibility: private
+next_action:
+  description: Read the first build-run digest for interview-prep-prod and decide the first
+    proposals it files
+  reviewed: '2026-08-27'

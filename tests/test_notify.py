@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import urllib.error
 
 from project_registry.cli import main
-from project_registry.notify import notify_config, render_notification, send_ntfy
+from project_registry.notify import (
+    build_notification, notify_config, render_notification, send_ntfy,
+)
 from project_registry.storage import write_json
 
 DIGEST = """# Build run r1
@@ -15,6 +18,7 @@ DIGEST = """# Build run r1
 ## Merged chunks
 
 - 1: https://github.com/owner/builder/pull/1 — tag checkpoint/r1-1
+  - Revert: `git revert abc`
 - 2: https://github.com/owner/builder/pull/2 — tag checkpoint/r1-2
 
 ## Rejections and skips
@@ -22,29 +26,109 @@ DIGEST = """# Build run r1
 - 3: review
 """
 
-INBOX = {"count": 1, "items": [
+NEEDS_INTENT_DIGEST = """# Build run r2
+
+- Project: builder
+- Outcome: needs_intent
+- Merges: 3
+
+## Summary
+
+2 chunks merged, 1 plan chunk merged. Roadmap now exhausted: remaining items blocked_by_policy; filed proposal builder-1.
+
+## Merged chunks
+
+- 1: https://github.com/owner/builder/pull/6 — tag t
+- plan2: https://github.com/owner/builder/pull/7 — tag t
+- 5: https://github.com/owner/builder/pull/8 — tag t
+- 6: https://github.com/owner/builder/pull/9 — tag t
+"""
+
+CRASHED_DIGEST = """# Build run r3
+
+- Project: builder
+- Outcome: crashed
+- Merges: 0
+
+## Summary
+
+Claude session quota was exhausted.
+
+## Guard denials
+
+- guard_error
+"""
+
+EMPTY_INBOX = {"count": 0, "items": []}
+INBOX = {"count": 2, "items": [
+    {"kind": "proposal_pending", "project_id": "builder", "summary": "proposal builder-1: allow deps",
+     "action": "registry proposal-apply builder-1 --approve  (or proposal-reject)"},
     {"kind": "paused", "project_id": "other", "summary": "paused: revert", "action": "registry build resume other"},
 ]}
 
 
-def test_render_is_short_and_leads_with_outcome():
-    text = render_notification(DIGEST, INBOX)
-    lines = text.splitlines()
-    assert lines[0] == "builder · completed · merged 2"
-    assert "https://github.com/owner/builder/pull/1" in text
-    assert "rejected/skipped: 3 (review)" in text
-    assert "Needs you (1): paused other — registry build resume other" in text
-    assert len(lines) <= 12
+def test_clean_run_title_says_nothing_needed_and_lists_prs():
+    n = build_notification(DIGEST, EMPTY_INBOX)
+    assert n["title"] == "builder: merged 2 — nothing needed"
+    assert n["body"].splitlines()[0] == "Merged 2 · rejected/skipped 1 · guard denials 0"
+    assert "  chunk 1 → PR #1" in n["body"] and "  chunk 2 → PR #2" in n["body"]
+    assert n["body"].splitlines()[-1] == "Nothing needs you."
+    assert n["priority"] == 3 and n["tags"] == ["white_check_mark"]
+    assert n["click"] == "https://github.com/owner/builder/pull/1"
+    assert n["actions"] == [
+        "view, PR #1, https://github.com/owner/builder/pull/1",
+        "view, PR #2, https://github.com/owner/builder/pull/2",
+    ]
 
 
-def test_render_without_inbox_says_nothing_needed():
-    text = render_notification(DIGEST, {"count": 0, "items": []})
-    assert "Needs you: nothing" in text
+def test_needs_you_run_is_high_priority_with_numbered_actions():
+    n = build_notification(NEEDS_INTENT_DIGEST, INBOX)
+    assert n["title"] == "builder: merged 4 — needs you (2)"
+    assert n["priority"] == 4 and n["tags"] == ["raised_hand", "inbox_tray"]
+    body = n["body"]
+    assert "  +1 more" in body                      # four merged, three shown
+    assert body.count("Stopped: needs_intent — ") == 1
+    assert "NEEDS YOU (2)" in body
+    assert "1. proposal_pending · builder" in body
+    assert "   registry proposal-apply builder-1 --approve" in body
+    assert "2. paused · other" in body
+    assert len(n["actions"]) == 3                   # ntfy maximum
+
+
+def test_human_stop_with_empty_inbox_names_the_stop_reason():
+    n = build_notification(NEEDS_INTENT_DIGEST, EMPTY_INBOX)
+    assert n["title"] == "builder: merged 4 — stopped: needs_intent"
+    assert n["priority"] == 4 and n["tags"] == ["raised_hand"]
+    assert n["body"].splitlines()[-1] == "Nothing needs you."
+
+
+def test_failed_run_is_urgent():
+    n = build_notification(CRASHED_DIGEST, EMPTY_INBOX)
+    assert n["title"] == "builder: crashed — needs you"
+    assert n["priority"] == 5 and n["tags"] == ["rotating_light"]
+    assert "guard denials 1" in n["body"]
+    assert "Stopped: crashed — Claude session quota was exhausted." in n["body"]
+    assert n["click"] is None and n["actions"] == []
+
+
+def test_summary_is_truncated_to_lock_screen_length():
+    long = NEEDS_INTENT_DIGEST.replace("filed proposal builder-1.", "x" * 300)
+    n = build_notification(long, EMPTY_INBOX)
+    stopped = next(line for line in n["body"].splitlines() if line.startswith("Stopped:"))
+    assert len(stopped) <= len("Stopped: needs_intent — ") + 140
+    assert stopped.endswith("...")
+
+
+def test_render_is_title_then_body():
+    text = render_notification(DIGEST, EMPTY_INBOX)
+    assert text.splitlines()[0] == "builder: merged 2 — nothing needed"
+    assert len(text.splitlines()) <= 12
 
 
 def test_config_env_wins_over_file(paths, monkeypatch):
     paths.build_dir.mkdir(parents=True, exist_ok=True)
     write_json(paths.build_dir / "notify.json", {"topic": "file-topic", "server": "https://x"})
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
     assert notify_config(paths)["topic"] == "file-topic"
     monkeypatch.setenv("REGISTRY_NTFY_TOPIC", "env-topic")
     assert notify_config(paths) == {"topic": "env-topic", "server": "https://x"}
@@ -55,32 +139,70 @@ def test_config_absent_is_none(paths, monkeypatch):
     assert notify_config(paths) is None
 
 
-def test_send_posts_to_topic(monkeypatch):
+def test_send_publishes_utf8_json_body(monkeypatch):
     calls = []
 
     def fake_urlopen(request, timeout):
+        # Mirror http.client: headers must be latin-1 encodable.
+        for name, value in request.header_items():
+            value.encode("latin-1")
         calls.append((request.full_url, request.data, dict(request.header_items()), timeout))
+
         class R:
             status = 200
-            def read(self): return b"{}"
-            def __enter__(self): return self
-            def __exit__(self, *a): return False
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
         return R()
 
     monkeypatch.setattr("project_registry.notify.urllib.request.urlopen", fake_urlopen)
-    result = send_ntfy("t0pic", "hello", server="https://ntfy.sh", title="builder · completed")
-    assert result == {"sent": True, "status": 200}
+    n = build_notification(NEEDS_INTENT_DIGEST, INBOX)
+    assert "—" in n["title"]                          # non-latin-1, must not go in a header
+    assert send_ntfy("t0pic", n, server="https://ntfy.sh") == {"sent": True, "status": 200}
     url, data, headers, timeout = calls[0]
-    assert url == "https://ntfy.sh/t0pic" and data == b"hello"
-    assert headers.get("Title") == "builder · completed" and timeout == 10
+    assert url == "https://ntfy.sh" and timeout == 10
+    assert headers["Content-type"].startswith("application/json")
+    payload = json.loads(data.decode("utf-8"))
+    assert payload["topic"] == "t0pic"
+    assert payload["title"] == n["title"] and payload["message"] == n["body"]
+    assert payload["priority"] == 4
+    assert payload["tags"] == ["raised_hand", "inbox_tray"]
+    assert payload["click"] == "https://github.com/owner/builder/pull/6"
+    assert payload["actions"][0] == {
+        "action": "view", "label": "PR #6", "url": "https://github.com/owner/builder/pull/6",
+    }
+    assert len(payload["actions"]) == 3
+
+
+def test_send_accepts_plain_text(monkeypatch):
+    seen = {}
+
+    def fake_urlopen(request, timeout):
+        seen["payload"] = json.loads(request.data.decode("utf-8"))
+
+        class R:
+            status = 200
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+        return R()
+
+    monkeypatch.setattr("project_registry.notify.urllib.request.urlopen", fake_urlopen)
+    assert send_ntfy("t", "hello\nworld", server="https://ntfy.sh")["sent"] is True
+    assert seen["payload"] == {"topic": "t", "title": "hello", "message": "hello\nworld"}
 
 
 def test_send_reports_failure_without_raising(monkeypatch):
-    import urllib.error
     def boom(request, timeout):
         raise urllib.error.URLError("down")
     monkeypatch.setattr("project_registry.notify.urllib.request.urlopen", boom)
-    assert send_ntfy("t", "m", server="https://ntfy.sh", title="x") == {"sent": False, "error": "<urlopen error down>"}
+    assert send_ntfy("t", "m", server="https://ntfy.sh") == {"sent": False, "error": "<urlopen error down>"}
 
 
 def test_notify_cli_dry_run_prints_message(paths, write_project, capsys, monkeypatch):
@@ -91,4 +213,5 @@ def test_notify_cli_dry_run_prints_message(paths, write_project, capsys, monkeyp
     code = main(["--root", str(paths.root), "notify", "--run", "r1", "--dry-run", "--json"])
     payload = json.loads(capsys.readouterr().out)
     assert code == 0 and payload["sent"] is False and payload["configured"] is True
-    assert payload["message"].startswith("builder · completed · merged 2")
+    assert payload["message"].startswith("builder: merged 2 — nothing needed")
+    assert payload["notification"]["priority"] == 3

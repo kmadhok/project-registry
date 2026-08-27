@@ -1,0 +1,9 @@
+id: interview-prep-template
+name: interview-prep-template
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/interview-prep-template
+visibility: private
+descriptions:
+  private: Human-gated job-search and interview-prep system for Claude Code (template)

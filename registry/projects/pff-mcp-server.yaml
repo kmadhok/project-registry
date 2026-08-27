@@ -1,0 +1,10 @@
+id: pff-mcp-server
+name: pff-mcp-server
+lifecycle: incubating
+active: false
+needs_review: true
+repo: kmadhok/pff-mcp-server
+visibility: public
+descriptions:
+  private: MCP server for PFF (Pro Football Focus) premium stats — Playwright session + first-party
+    JSON API tools

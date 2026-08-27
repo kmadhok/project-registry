@@ -36,6 +36,8 @@ active: true
 category: research
 automation:
   mode: build
+  allow:
+  - dependencies
   budget:
     chunks_per_run: 10
     minutes_per_run: 100

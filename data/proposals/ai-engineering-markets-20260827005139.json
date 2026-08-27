@@ -2,10 +2,10 @@
   "id": "ai-engineering-markets-20260827005139",
   "project_id": "ai-engineering-markets",
   "created_at": "2026-08-27T00:51:39.787731+00:00",
-  "status": "pending",
+  "status": "applied",
   "rationale": "Run e7eb4af7 (2026-08-26) exhausted the roadmap: 5 of 7 remaining SPEC items are blocked_by_policy because automation.allow is empty and the items need the dependencies class (DuckDB persistence etc.). The brief's own constraint already anticipates pinned dependencies. Owner decision: left pending.",
   "source": "propose",
-  "applied_at": null,
+  "applied_at": "2026-08-27T01:03:14.982381+00:00",
   "changes": {
     "automation.allow": {
       "before": null,

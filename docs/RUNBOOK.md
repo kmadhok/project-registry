@@ -129,6 +129,20 @@ Other situations:
   you found in `docs/observations/` and fix by hand — never edit
   `runs.jsonl` by hand.
 
+## Owner loop
+
+The phone notification says whether anything needs you. When it does, run
+`/inbox` on the Mac (`.claude/skills/inbox/SKILL.md`): it walks
+`registry owner-inbox` one item at a time — shows the proposal diff or the
+failure digest, asks approve / reject / resume / skip, runs the registry
+command, commits, pushes. Nothing else is required of the owner day to day.
+Phone-side approve/reject buttons are the next step: `docs/ideas/owner-loop.md`.
+
+The `PreToolUse` hook in `.claude/settings.json` runs the guard only when a
+lease or the guard script exists at `$CLAUDE_PROJECT_DIR`; a checkout on a
+branch without `scripts/build-guard.py` (or a nested worktree whose hook
+points at such a checkout) would otherwise fail closed on every tool call.
+
 ## Weekly retro
 
 Run `/build-retro` on the Mac every Monday after the first scheduled run of

@@ -30,7 +30,25 @@ brief:
   - chunk 1 of the current spec is oversized (owner note 2026-08-10) - split it before implementing
   - reuse the proven filter/category logic from the research scripts rather than rewriting
     it
-  reviewed: '2026-08-23'
+  open_decisions:
+  - question: Allow-list the `dependencies` change class in automation.allow for ai-engineering-markets?
+      This unblocks 5 of 7 remaining SPEC items (chunk 1b DuckDB persistence, decision log,
+      markout instrumentation, calibration reporting, fee-coverage), all within the brief's
+      'stdlib-plus-DuckDB, pin every new dependency' constraint. Chunk 2b (LLM-backed classification)
+      additionally needs network.allowed:true and an API key.
+    status: answered
+    answer: Yes. automation.allow=[dependencies] applied 2026-08-27 (proposal ai-engineering-markets-20260827005139).
+      Pin every new dependency in the manifest. Chunk 2b stays blocked until network/API-key
+      access is decided separately.
+  - question: How should the current (post-Feb-2026) Kalshi fee-schedule PDF be sourced? Automated
+      fetch is 429-blocked and the contract sets network.allowed:false.
+    status: answered
+    answer: 'Owner fetched it 2026-08-28 through a residential browser session: https://kalshi.com/docs/kalshi-fee-schedule.pdf,
+      ''Fee Schedule for July 2026 - 7.7.26 Update'', 12 pages. Filed as research/data/kalshi-fee-schedule-2026-08-28-live.pdf
+      next to the 2026-02-05 Wayback copy. Use it as the [A] fee_coverage source; do not attempt
+      live fetches from the builder. If a future refresh is needed and the live fetch fails
+      again, fall back to the newest file in research/data/.'
+  reviewed: '2026-08-28'
 lifecycle: next
 active: true
 category: research

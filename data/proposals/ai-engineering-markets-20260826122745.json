@@ -2,7 +2,7 @@
   "id": "ai-engineering-markets-20260826122745",
   "project_id": "ai-engineering-markets",
   "created_at": "2026-08-26T12:27:45.466401+00:00",
-  "status": "pending",
+  "status": "rejected",
   "rationale": "Roadmap exhausted: 5 of 7 remaining SPEC items (chunk 1b DuckDB persistence, decision log, markout instrumentation, calibration reporting, fee-coverage) are fully scoped and brief-consistent but blocked_by_policy because automation.allow has no dependencies entry; the 6th (live fee-schedule refresh) needs a manual PDF-sourcing decision. No further stdlib-only split exists (verified via build-planner: 1b/decision-log/markout/calibration form one duckdb-rooted chain, fee-coverage needs a PDF-extraction library -- unlike chunk 1/FLAG-and-SPLIT, which had genuine separable stdlib pieces).",
   "source": "propose",
   "applied_at": null,

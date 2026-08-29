@@ -1,0 +1,30 @@
+{
+  "id": "ai-engineering-markets-20260828134508",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-08-28T13:45:08.448637+00:00",
+  "status": "applied",
+  "rationale": "owner answered via /inbox 2026-08-28: dependencies already allowed 2026-08-27; current Kalshi fee-schedule PDF (7.7.26 update) fetched by owner via browser and filed in research/data/",
+  "source": "propose",
+  "applied_at": "2026-08-28T13:45:15.181459+00:00",
+  "changes": {
+    "brief.open_decisions": {
+      "before": null,
+      "after": [
+        {
+          "question": "Allow-list the `dependencies` change class in automation.allow for ai-engineering-markets? This unblocks 5 of 7 remaining SPEC items (chunk 1b DuckDB persistence, decision log, markout instrumentation, calibration reporting, fee-coverage), all within the brief's 'stdlib-plus-DuckDB, pin every new dependency' constraint. Chunk 2b (LLM-backed classification) additionally needs network.allowed:true and an API key.",
+          "status": "answered",
+          "answer": "Yes. automation.allow=[dependencies] applied 2026-08-27 (proposal ai-engineering-markets-20260827005139). Pin every new dependency in the manifest. Chunk 2b stays blocked until network/API-key access is decided separately."
+        },
+        {
+          "question": "How should the current (post-Feb-2026) Kalshi fee-schedule PDF be sourced? Automated fetch is 429-blocked and the contract sets network.allowed:false.",
+          "status": "answered",
+          "answer": "Owner fetched it 2026-08-28 through a residential browser session: https://kalshi.com/docs/kalshi-fee-schedule.pdf, 'Fee Schedule for July 2026 - 7.7.26 Update', 12 pages. Filed as research/data/kalshi-fee-schedule-2026-08-28-live.pdf next to the 2026-02-05 Wayback copy. Use it as the [A] fee_coverage source; do not attempt live fetches from the builder. If a future refresh is needed and the live fetch fails again, fall back to the newest file in research/data/."
+        }
+      ]
+    },
+    "brief.reviewed": {
+      "before": "2026-08-23",
+      "after": "2026-08-28"
+    }
+  }
+}

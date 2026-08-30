@@ -64,12 +64,15 @@ def test_validate_spec_exit_codes(paths, write_project, tmp_path, capsys):
         "      Tests: tests/test_one.py\n"
         "      Size: S\n"
         "      Classes: none\n"
-        "      Verified-missing: the test file is absent\n",
+        "      Verified-missing: the test file is absent\n"
+        "      Criteria: 1\n",
         encoding="utf-8",
     )
     code, out = run(paths, "validate-spec", "target", str(ready), "--json", capsys=capsys)
     assert code == 0
-    assert json.loads(out)["next_ready_index"] == 1
+    payload = json.loads(out)
+    assert payload["next_ready_index"] == 1
+    assert payload["items"][0]["criteria"] == [1]
 
     blocked = tmp_path / "blocked.md"
     blocked.write_text("## Remaining work\n- [ ] Legacy item\n", encoding="utf-8")

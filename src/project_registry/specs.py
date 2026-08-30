@@ -33,7 +33,7 @@ _CHECKBOX = re.compile(r"^\s*-\s*\[([ xX])\]\s*(.*)$")
 _CHECKBOX_LIKE = re.compile(r"^\s*-\s*\[")
 _BULLET = re.compile(r"^\s*[-*+]\s+(.*)$")
 _METADATA = re.compile(
-    r"(?i)(?:^|\s)(Acceptance|Tests|Size|Classes|Verified-missing)\s*:\s*"
+    r"(?i)(?:^|\s)(Acceptance|Tests|Size|Classes|Verified-missing|Criteria)\s*:\s*"
 )
 _SIGNIFICANT_TOKEN = re.compile(r"[a-z0-9]+")
 _INTENT_PHRASE = re.compile(
@@ -62,6 +62,8 @@ class SpecItem:
     size: str | None = None
     classes: list[str] = field(default_factory=list)
     verified_missing: str | None = None
+    criteria: list[int] = field(default_factory=list)
+    criteria_raw: str | None = None
 
 
 @dataclass
@@ -101,6 +103,7 @@ class SpecItemReport:
     classes: list[str]
     size: str | None
     needs_intent: bool
+    criteria: list[int]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -111,6 +114,7 @@ class SpecItemReport:
             "classes": list(self.classes),
             "size": self.size,
             "needs_intent": self.needs_intent,
+            "criteria": list(self.criteria),
         }
 
 
@@ -183,6 +187,8 @@ def parse_spec(text: str) -> Spec:
                     if value.strip()
                 ]
             )
+            criteria_raw = metadata.get("criteria") if "criteria" in metadata else None
+            criteria = _parse_criteria(criteria_raw)
             items.append(
                 SpecItem(
                     index=index,
@@ -194,6 +200,8 @@ def parse_spec(text: str) -> Spec:
                     size=metadata.get("size"),
                     classes=classes,
                     verified_missing=metadata.get("verified-missing"),
+                    criteria=criteria,
+                    criteria_raw=criteria_raw,
                 )
             )
         if not items:
@@ -223,6 +231,44 @@ def validate_spec(text: str, *, project: Project) -> SpecReport:
         for decision in project.brief.open_decisions
         if decision.status is OpenDecisionStatus.OPEN
     ]
+
+    covered_criteria: set[int] = set()
+    has_criteria_lines = False
+    criterion_count = len(project.brief.done_criteria)
+    for item in spec.items:
+        if item.criteria_raw is None:
+            continue
+        has_criteria_lines = True
+        covered_criteria.update(item.criteria)
+        bad_tokens = _bad_criteria_tokens(item.criteria_raw, criterion_count)
+        if bad_tokens:
+            findings.append(
+                SpecFinding(
+                    "unknown_criterion",
+                    SUGGESTION,
+                    f"item {item.index} has unknown criterion tokens: "
+                    + ", ".join(bad_tokens),
+                    item.index,
+                )
+            )
+
+    if project.brief.done_criteria and has_criteria_lines:
+        uncovered = [
+            (index, criterion)
+            for index, criterion in enumerate(project.brief.done_criteria, start=1)
+            if index not in covered_criteria
+        ]
+        if uncovered:
+            details = "; ".join(
+                f"{index}: {criterion[:80]}" for index, criterion in uncovered
+            )
+            findings.append(
+                SpecFinding(
+                    "uncovered_criteria",
+                    SUGGESTION,
+                    f"done criteria not covered by any SPEC item: {details}",
+                )
+            )
 
     for item in spec.items:
         if item.checked:
@@ -291,6 +337,7 @@ def validate_spec(text: str, *, project: Project) -> SpecReport:
                 classes=list(item.classes),
                 size=item.size,
                 needs_intent=needs_intent,
+                criteria=list(item.criteria),
             )
         )
 
@@ -333,6 +380,27 @@ def _extract_metadata(body: str) -> dict[str, str]:
         value = body[match.end():end].strip()
         result[match.group(1).lower()] = " ".join(value.split())
     return result
+
+
+def _criteria_tokens(raw: str) -> list[str]:
+    return [token for token in re.split(r"[\s,]+", raw.strip()) if token]
+
+
+def _parse_criteria(raw: str | None) -> list[int]:
+    if raw is None or raw.lower() == "none":
+        return []
+    return [int(token) for token in _criteria_tokens(raw) if token.isdigit() and int(token) > 0]
+
+
+def _bad_criteria_tokens(raw: str, criterion_count: int) -> list[str]:
+    if raw.lower() == "none":
+        return []
+    bad: list[str] = []
+    for token in _criteria_tokens(raw):
+        if not token.isdigit() or int(token) <= 0 or int(token) > criterion_count:
+            if token not in bad:
+                bad.append(token)
+    return bad
 
 
 def _tokens(text: str) -> set[str]:

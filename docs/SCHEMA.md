@@ -279,19 +279,26 @@ metadata lines (multiple metadata fields may share a line):
       Size: S
       Classes: none
       Verified-missing: evidence that the capability does not already exist
+      Criteria: 1, 3
 ```
 
 `Size` is `S` or `M`. `Classes` is `none` or a comma-separated subset of
 `dependencies`, `ci`, `generated_data`, `public_api`, `migrations`,
 `personal_data`, `plan`, and `contract`. The first six must also appear in the
 project's `automation.allow`; `plan` and `contract` are always allowed.
+`Criteria` is optional and is either `none` or a comma- or space-separated list
+of 1-based indexes into the brief's `done_criteria` that the item advances.
 
 Readiness problems are `missing_acceptance`, `missing_tests`, `missing_size`,
 `size_too_large`, `missing_verified_missing`, `unknown_class`,
 `blocked_by_policy`, `never_class`, and `needs_intent`. Structural problems are
 `missing_remaining_work`, `no_items`, and `malformed_checkbox`.
-`contradicts_non_goal` is a suggestion-level warning and does not make an item
-unready. `registry validate-spec <project-id> <path>` exits non-zero when the
+`contradicts_non_goal`, `unknown_criterion`, and `uncovered_criteria` are
+suggestion-level warnings and do not make an item unready. `unknown_criterion`
+identifies invalid or out-of-range criterion tokens on an item;
+`uncovered_criteria` identifies brief done criteria referenced by no checked or
+unchecked item, but is emitted only after a SPEC adopts at least one `Criteria`
+line. `registry validate-spec <project-id> <path>` exits non-zero when the
 structure is broken or no unchecked item is ready; an entirely checked list is
 successful.
 

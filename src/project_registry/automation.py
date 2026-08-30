@@ -18,6 +18,7 @@ from .storage import Registry
 
 ELIGIBILITY_STATES = (
     "ready",
+    "waiting_owner",
     "spec_only",
     "paused",
     "needs_intent",
@@ -35,6 +36,7 @@ class Eligibility:
     rank_key: tuple[Any, ...] | None
     brief_gaps: list[str]
     paused_reason: str | None
+    waiting_on: dict | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -80,11 +82,31 @@ def _history_reason(
     return f"{label} {days} d ago"
 
 
+def waiting_resolved(
+    waiting_on: dict, project: Project, owner_action_at: str | None
+) -> bool:
+    """Return whether an owner wait has been cleared by policy or owner action."""
+    if owner_action_at is not None and owner_action_at > waiting_on["since"]:
+        return True
+    kind = waiting_on.get("kind")
+    if kind == "blocked_by_policy":
+        classes = waiting_on.get("classes") or []
+        allowed = {item.value for item in project.automation.allow}
+        return bool(classes) and all(item in allowed for item in classes)
+    if kind == "needs_intent" and project.brief.reviewed is not None:
+        reviewed = project.brief.reviewed
+        reviewed_date = reviewed.isoformat() if isinstance(reviewed, dt.date) else str(reviewed)
+        return reviewed_date >= waiting_on["since"][:10]
+    return False
+
+
 def classify(
     project: Project,
     build_state: ProjectBuildState | None,
     snapshot_state: RepoState | None,
     today: dt.date | dt.datetime,
+    *,
+    owner_action_at: str | None = None,
 ) -> Eligibility:
     """Classify one project, stopping at the first matching eligibility rule."""
     gaps = project.brief_gaps()
@@ -121,6 +143,19 @@ def classify(
         AutomationMode.SPEC_ONLY,
     } and gaps:
         state, reasons = "needs_intent", list(gaps)
+    elif (
+        build_state is not None
+        and build_state.waiting_on
+        and not waiting_resolved(build_state.waiting_on, project, owner_action_at)
+    ):
+        waiting_on = build_state.waiting_on
+        kind = waiting_on["kind"]
+        classes = waiting_on["classes"]
+        reason = f"waiting on owner since {waiting_on['since'][:10]}: {kind}"
+        if classes:
+            reason += f" classes={','.join(classes)}"
+        reason += f" (run {waiting_on['run_id']})"
+        state, reasons = "waiting_owner", [reason]
     elif project.automation.mode is AutomationMode.SPEC_ONLY:
         state, reasons = "spec_only", ["automation.mode=spec_only", "brief complete"]
     else:
@@ -140,6 +175,7 @@ def classify(
         rank_key=key,
         brief_gaps=gaps,
         paused_reason=paused_reason,
+        waiting_on=build_state.waiting_on if build_state else None,
     )
 
 
@@ -148,6 +184,7 @@ def build_queue(
     snapshot: Snapshot | None,
     build_state_map: dict[str, ProjectBuildState],
     today: dt.date | dt.datetime,
+    owner_actions: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Classify every project and return a deterministic, grouped queue."""
     snapshot = snapshot or Snapshot()
@@ -157,6 +194,7 @@ def build_queue(
             build_state_map.get(project.id),
             snapshot.get(project.repo),
             today,
+            owner_action_at=(owner_actions or {}).get(project.id),
         )
         for project in registry.projects.values()
     ]
@@ -186,9 +224,14 @@ def readiness(
     build_state: ProjectBuildState | None,
     snapshot_state: RepoState | None,
     today: dt.date | dt.datetime,
+    *,
+    owner_action_at: str | None = None,
 ) -> dict[str, Any]:
     """Return the shared CLI/MCP readiness view for one project."""
-    result = classify(project, build_state, snapshot_state, today).to_dict()
+    result = classify(
+        project, build_state, snapshot_state, today,
+        owner_action_at=owner_action_at,
+    ).to_dict()
     result["brief"] = {
         "complete": not result["brief_gaps"],
         "missing": list(result["brief_gaps"]),

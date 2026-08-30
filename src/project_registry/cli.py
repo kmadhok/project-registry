@@ -45,6 +45,7 @@ from .proposals import (
     ProposalError,
     apply_proposal,
     list_proposals,
+    last_owner_action,
     load_proposal,
     propose_update,
     record_review,
@@ -586,7 +587,10 @@ def cmd_dashboard(args, paths, now) -> int:
 def cmd_build_queue(args, paths, now) -> int:
     registry = load_registry(paths)
     snapshot = load_snapshot(paths)
-    queue = build_queue(registry, snapshot, load_state(paths), now.date())
+    queue = build_queue(
+        registry, snapshot, load_state(paths), now.date(),
+        owner_actions=last_owner_action(paths),
+    )
     candidates = queue["candidates"]
     if args.state:
         candidates = [item for item in candidates if item["state"] == args.state]
@@ -630,7 +634,8 @@ def cmd_build_readiness(args, paths, now) -> int:
     snapshot = load_snapshot(paths)
     states = load_state(paths)
     result = readiness(
-        project, states.get(project.id), snapshot.get(project.repo), now.date()
+        project, states.get(project.id), snapshot.get(project.repo), now.date(),
+        owner_action_at=last_owner_action(paths).get(project.id),
     )
     if emit(result, args):
         return 0
@@ -638,6 +643,13 @@ def cmd_build_readiness(args, paths, now) -> int:
     print(f"{project.id}: {result['state']}")
     print(f"  dry run      {'yes' if result['dry_run'] else 'no'}")
     print(f"  reasons      {'; '.join(result['reasons'])}")
+    if result["waiting_on"]:
+        waiting = result["waiting_on"]
+        classes = ",".join(waiting["classes"]) or "none"
+        print(
+            f"  waiting on   {waiting['kind']} classes={classes} "
+            f"since {waiting['since'][:10]} (run {waiting['run_id']})"
+        )
     print(f"  brief gaps   {', '.join(result['brief_gaps']) or 'none'}")
     print(f"  mode         {result['policy']['mode']}")
     print(

@@ -44,6 +44,7 @@ from ..proposals import (
     ProposalError,
     apply_proposal,
     list_proposals,
+    last_owner_action,
     load_proposal,
     propose_update,
     record_review,
@@ -295,7 +296,10 @@ def tool_get_build_report(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
 
 def tool_get_build_queue(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     registry, snapshot, now = _context(paths)
-    queue = build_queue(registry, snapshot, load_state(paths), now.date())
+    queue = build_queue(
+        registry, snapshot, load_state(paths), now.date(),
+        owner_actions=last_owner_action(paths),
+    )
     candidates = queue["candidates"]
     if args.get("state"):
         candidates = [item for item in candidates if item["state"] == args["state"]]
@@ -313,7 +317,8 @@ def tool_validate_project_readiness(
         raise ToolError(f"unknown project id: {args['project_id']}")
     states = load_state(paths)
     result = readiness(
-        project, states.get(project.id), snapshot.get(project.repo), now.date()
+        project, states.get(project.id), snapshot.get(project.repo), now.date(),
+        owner_action_at=last_owner_action(paths).get(project.id),
     )
     return _envelope(registry, snapshot, now, result)
 

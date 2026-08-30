@@ -159,6 +159,7 @@ class ProjectBuildState:
     needs_intent_proposal_id: str | None = None
     last_run_id: str | None = None
     last_outcome: str | None = None
+    waiting_on: dict | None = None
 
     @classmethod
     def from_dict(cls, raw: Any) -> "ProjectBuildState":
@@ -177,6 +178,27 @@ class ProjectBuildState:
             raise BuildError("chunks_merged_total must be an integer")
         if values["paused_reason"] not in PAUSED_REASONS | {None}:
             raise BuildError("paused_reason is unknown")
+        waiting_on = values["waiting_on"]
+        if waiting_on is not None:
+            if not isinstance(waiting_on, dict):
+                raise BuildError("waiting_on must be an object or null")
+            required = {"kind", "classes", "since", "run_id"}
+            if set(waiting_on) != required:
+                raise BuildError(
+                    "waiting_on must contain exactly kind, classes, since, and run_id"
+                )
+            if waiting_on["kind"] not in {"blocked_by_policy", "needs_intent"}:
+                raise BuildError("waiting_on kind must be blocked_by_policy or needs_intent")
+            classes = waiting_on["classes"]
+            if not isinstance(classes, list) or any(
+                not isinstance(item, str) for item in classes
+            ):
+                raise BuildError("waiting_on classes must be a list of strings")
+            if classes != sorted(set(classes)):
+                raise BuildError("waiting_on classes must be sorted and unique")
+            for field in ("since", "run_id"):
+                if not isinstance(waiting_on[field], str) or not waiting_on[field].strip():
+                    raise BuildError(f"waiting_on {field} must be a non-empty string")
         return cls(**values)
 
     def to_dict(self) -> dict[str, Any]:
@@ -322,6 +344,7 @@ def apply_run_to_state(
     latest_ts = result.last_run_at
     latest_run_id = result.last_run_id
     last_outcome = result.last_outcome
+    blocked_classes: set[str] = set()
     for event in events:
         event_type = event.get("type")
         event_ts = event.get("ts")
@@ -338,8 +361,28 @@ def apply_run_to_state(
             )
         elif event_type == "reverted":
             result = replace(result, paused_reason="revert", paused_at=event_ts)
+        elif event_type == "chunk_skipped" and event.get("reason") == "blocked_by_policy":
+            classes = (event.get("detail") or {}).get("classes")
+            if isinstance(classes, str):
+                blocked_classes.update(
+                    item.strip() for item in classes.split(",") if item.strip()
+                )
+            elif isinstance(classes, list):
+                blocked_classes.update(
+                    item.strip() for item in classes
+                    if isinstance(item, str) and item.strip()
+                )
         elif event_type == "run_finished":
             last_outcome = event.get("outcome")
+            waiting_on = None
+            if last_outcome in {"blocked_by_policy", "needs_intent"}:
+                waiting_on = {
+                    "kind": last_outcome,
+                    "classes": sorted(blocked_classes),
+                    "since": event_ts,
+                    "run_id": event.get("run_id"),
+                }
+            result = replace(result, waiting_on=waiting_on)
             if last_outcome in FAILURE_OUTCOMES:
                 result = replace(
                     result, consecutive_failures=result.consecutive_failures + 1
@@ -564,13 +607,15 @@ def get_build_context(
     """Assemble the authoritative context supplied to a build run."""
     from .automation import classify
     from .contracts import contract_expectations
+    from .proposals import last_owner_action
 
     project = registry.get(project_id)
     if project is None:
         raise BuildError(f"unknown project id: {project_id}")
     states = load_state(paths)
     eligibility = classify(
-        project, states.get(project_id), snapshot.get(project.repo), now
+        project, states.get(project_id), snapshot.get(project.repo), now,
+        owner_action_at=last_owner_action(paths).get(project_id),
     ).to_dict()
     events, _ = read_events(paths)
     summaries: list[dict[str, Any]] = []
@@ -622,6 +667,7 @@ def begin_run(
     """Preflight, select a candidate, and atomically acquire the build lease."""
     from .automation import build_queue, classify
     from .github.sync import load_snapshot
+    from .proposals import last_owner_action
     from .storage import load_registry
 
     current = _now(now)
@@ -662,13 +708,15 @@ def begin_run(
     registry = registry or load_registry(paths)
     snapshot = snapshot or load_snapshot(paths)
     states = load_state(paths)
+    owner_actions = last_owner_action(paths)
     forced = False
     if project_id is not None:
         project = registry.get(project_id)
         if project is None:
             raise BuildError(f"unknown project id: {project_id}")
         eligibility = classify(
-            project, states.get(project.id), snapshot.get(project.repo), current.date()
+            project, states.get(project.id), snapshot.get(project.repo), current.date(),
+            owner_action_at=owner_actions.get(project.id),
         ).to_dict()
         if eligibility["state"] != "ready":
             if not force_named:
@@ -682,7 +730,9 @@ def begin_run(
                 return {"outcome": "no_candidate", "reason": reason}
             forced = True
     else:
-        queue = build_queue(registry, snapshot, states, current.date())
+        queue = build_queue(
+            registry, snapshot, states, current.date(), owner_actions=owner_actions
+        )
         selected = next(
             (item for item in queue["candidates"] if item["state"] == "ready"), None
         )
@@ -1013,8 +1063,12 @@ def finish_run(
     lease["paused_reason"] = state_after.paused_reason
     needs_intent: list[str] = []
     if registry is not None:
+        from .proposals import last_owner_action
         snapshot = snapshot or load_snapshot(paths)
-        queue = build_queue(registry, snapshot, states, current.date())
+        queue = build_queue(
+            registry, snapshot, states, current.date(),
+            owner_actions=last_owner_action(paths),
+        )
         needs_intent = [
             item["project_id"] for item in queue["candidates"]
             if item["state"] == "needs_intent"

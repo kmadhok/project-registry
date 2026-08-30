@@ -12,16 +12,20 @@ import pytest
 
 from project_registry.build import (
     BuildError,
+    ProjectBuildState,
     append_event,
+    apply_run_to_state,
     begin_run,
     build_env,
     confirm_writeback,
     finish_run,
+    load_state,
     read_events,
     reconcile,
     reconcile_done,
     record_event,
     registry_checkout_status,
+    save_state,
 )
 from project_registry.github.snapshot import Snapshot
 from project_registry.storage import load_registry, read_json, write_json
@@ -65,6 +69,99 @@ def start(paths, *, now=NOW, project_id=None, force_named=False, run_id=None):
         registry=load_registry(paths),
         snapshot=Snapshot(),
     )
+
+
+def lifecycle_event(event_type, *, run_id="run-1", ts=NOW.isoformat(), **values):
+    return {"type": event_type, "run_id": run_id, "ts": ts, **values}
+
+
+@pytest.mark.parametrize("classes", [
+    ["generated_data", "dependencies"],
+    "generated_data, dependencies",
+])
+def test_blocked_policy_finish_records_waiting_on(classes):
+    finish_ts = "2026-08-22T12:05:00+00:00"
+    state = apply_run_to_state(ProjectBuildState(), [
+        lifecycle_event(
+            "chunk_skipped", reason="blocked_by_policy",
+            detail={"classes": classes},
+        ),
+        lifecycle_event("run_finished", outcome="blocked_by_policy", ts=finish_ts),
+    ])
+
+    assert state.waiting_on == {
+        "kind": "blocked_by_policy",
+        "classes": ["dependencies", "generated_data"],
+        "since": finish_ts,
+        "run_id": "run-1",
+    }
+
+
+def test_needs_intent_finish_records_waiting_on_without_classes():
+    state = apply_run_to_state(ProjectBuildState(), [
+        lifecycle_event("run_finished", outcome="needs_intent"),
+    ])
+
+    assert state.waiting_on == {
+        "kind": "needs_intent",
+        "classes": [],
+        "since": NOW.isoformat(),
+        "run_id": "run-1",
+    }
+
+
+def test_later_completed_run_clears_waiting_on():
+    waiting = ProjectBuildState(waiting_on={
+        "kind": "needs_intent", "classes": [], "since": NOW.isoformat(),
+        "run_id": "run-1",
+    })
+    state = apply_run_to_state(waiting, [
+        lifecycle_event("run_finished", run_id="run-2", outcome="completed"),
+    ])
+
+    assert state.waiting_on is None
+
+
+def test_waiting_on_state_validation_and_round_trip(paths):
+    assert ProjectBuildState.from_dict({}).waiting_on is None
+    with pytest.raises(BuildError, match="waiting_on kind"):
+        ProjectBuildState.from_dict({
+            "waiting_on": {
+                "kind": "bogus", "classes": [], "since": NOW.isoformat(),
+                "run_id": "run-1",
+            },
+        })
+
+    waiting = ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy", "classes": ["dependencies"],
+        "since": NOW.isoformat(), "run_id": "run-1",
+    })
+    save_state(paths, {"builder": waiting})
+    assert load_state(paths)["builder"] == waiting
+
+
+def test_begin_run_excludes_waiting_owner_unless_named_and_forced(
+    paths, write_project
+):
+    ready_project(write_project)
+    waiting = ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy", "classes": ["generated_data"],
+        "since": NOW.isoformat(), "run_id": "blocked-run",
+    })
+    save_state(paths, {"builder": waiting})
+
+    bare = start(paths, run_id="bare")
+    assert bare["outcome"] == "no_candidate"
+    assert bare["by_state"]["waiting_owner"] == 1
+
+    named = start(paths, project_id="builder", run_id="named")
+    assert named["outcome"] == "no_candidate"
+    assert "waiting on owner" in named["reason"]
+
+    forced = start(
+        paths, project_id="builder", force_named=True, run_id="forced"
+    )
+    assert forced["lease"]["project_id"] == "builder"
 
 
 def test_second_begin_reports_lease_held_without_changing_lease(paths, write_project):

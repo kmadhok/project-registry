@@ -26,6 +26,7 @@ from .storage import (
     Registry,
     append_jsonl,
     read_json,
+    read_jsonl,
     save_project,
     write_json,
 )
@@ -34,6 +35,20 @@ from .validation import ValidationConfig, ValidationReport, validate
 PENDING = "pending"
 APPLIED = "applied"
 REJECTED = "rejected"
+
+
+def last_owner_action(paths: Paths) -> dict[str, str]:
+    """Return the latest proposal/review action timestamp for each project."""
+    latest: dict[str, str] = {}
+    owner_actions = {"apply_proposal", "reject_proposal", "record_review"}
+    for record in read_jsonl(paths.audit_log):
+        project_id = record.get("project_id")
+        timestamp = record.get("ts")
+        if record.get("action") not in owner_actions or not project_id or not timestamp:
+            continue
+        if timestamp > latest.get(project_id, ""):
+            latest[project_id] = timestamp
+    return latest
 
 #: Curated paths a proposal may change. Everything else -- ids, accomplishments,
 #: relationships -- is deliberately hand-edited, and observed GitHub fields are

@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from project_registry import cli as cli_module
-from project_registry.build import append_event
+from project_registry.build import ProjectBuildState, append_event, save_state
 from project_registry.cli import main
 from project_registry.dashboard import render_dashboard
 from project_registry.github.sync import save_snapshot
@@ -385,6 +385,34 @@ def test_build_queue_and_readiness_commands(paths, write_project, capsys):
     result = json.loads(out)
     assert result["brief"] == {"complete": True, "missing": []}
     assert result["policy"]["mode"] == "shadow"
+
+
+def test_build_commands_show_waiting_owner(paths, write_project, capsys):
+    write_project(
+        id="waiting", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/waiting", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    write_project(
+        id="ready", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/ready", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    save_state(paths, {"waiting": ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy", "classes": ["generated_data"],
+        "since": "2026-08-20T12:00:00+00:00", "run_id": "blocked-run",
+    })})
+
+    code, out = run(paths, "build-readiness", "waiting", capsys=capsys)
+    assert code == 0
+    assert "waiting on" in out
+
+    code, out = run(
+        paths, "build-queue", "--state", "waiting_owner", capsys=capsys
+    )
+    assert code == 0
+    assert "waiting" in out
+    assert "\nready " not in out
 
 
 def test_build_lifecycle_commands_start_context_finish(paths, write_project, capsys):

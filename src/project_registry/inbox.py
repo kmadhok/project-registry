@@ -8,7 +8,7 @@ from typing import Any
 from .automation import build_queue
 from .build_runs import load_state, read_events, _read_lease
 from .github.sync import load_snapshot
-from .proposals import list_proposals
+from .proposals import last_owner_action, list_proposals
 from .storage import Paths, Registry
 
 FAILURE_OUTCOMES = {
@@ -43,7 +43,10 @@ def owner_inbox(
 
     states = load_state(paths)
     snapshot = snapshot or load_snapshot(paths)
-    queue = build_queue(registry, snapshot, states, now.date())
+    queue = build_queue(
+        registry, snapshot, states, now.date(),
+        owner_actions=last_owner_action(paths),
+    )
     for candidate in queue["candidates"]:
         if candidate["state"] == "needs_intent":
             gaps = ", ".join(candidate["brief_gaps"]) or "brief"

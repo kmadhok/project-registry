@@ -110,12 +110,13 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 
 ### f. Review
 
-1. Invoke the `build-reviewer` subagent in fresh, read-only context. Supply the brief, exact SPEC item, `git diff main...$BRANCH`, before/after test output, and `.project-meta.yaml`.
-2. Save only its JSON as `$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json` (`round` = 1, 2).
-3. Before acting on any verdict, journal it: `$REGISTRY_CLI build event "$RUN_ID" review_verdict --chunk-id "$CHUNK_ID" --detail-json "$(cat "$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json")"`. Every round is journaled, including a `request_changes` that is then addressed.
+0. Second opinion (skip for `plan` and `contract` chunks). In `$WORKDIR`, run `"$CODEX_BIN" review --base main` in the foreground with the Bash timeout at maximum, stdout to `$WORKDIR/../codex-review-$RUN_ID-$CHUNK_ID.md` (a scope flag and a custom prompt are mutually exclusive — pass only the scope flag). If it exits non-zero, or `CODEX_BIN` is null, write the single line `unavailable: <exit code or null>` to that file instead. Journal it: `$REGISTRY_CLI build event "$RUN_ID" second_opinion --chunk-id "$CHUNK_ID" --detail source=codex --detail status=<ok|unavailable> --detail findings=<number of distinct findings, 0 when unavailable>`. A second opinion never blocks the run.
+1. Invoke the `build-reviewer` subagent in fresh, read-only context. Supply the brief, exact SPEC item, `git diff main...$BRANCH`, the clone path `$WORKDIR`, before/after test output, `.project-meta.yaml`, and the contents of the second-opinion file as `SECOND_OPINION`.
+2. Save only its JSON as `$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json` (`round` = 1, 2). It has six keys: `verdict`, `reasons`, `risk_flags`, `classes_seen`, `probes`, `second_opinion`.
+3. Before acting on any verdict, journal it: `$REGISTRY_CLI build event "$RUN_ID" review_verdict --chunk-id "$CHUNK_ID" --detail-json "$(cat "$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json")"`. Every round is journaled, including a `request_changes` that is then addressed. Read the response: when `verdict_accepted` is false (malformed JSON, or an `approve` with an empty `probes` array) the lease records the verdict as `invalid` and the guard will refuse the merge — treat the round as `request_changes` whose finding is the returned `rejection_reason`, and never merge on it.
 4. Post the same JSON to the PR so the verdict is visible without the registry: `gh pr comment "$PR_NUMBER" --repo "$REPO" --body-file "$WORKDIR/../review-$RUN_ID-$CHUNK_ID-<round>.json"`.
-5. On `request_changes`, address the findings once, repeat d (which records a second `verify_passed`), push, and invoke a fresh review (repeat 1–4 with the next round).
-6. On `reject` or a second non-approve, run `gh pr close "$PR_NUMBER" --repo "$REPO"`, then `git push origin --delete "$BRANCH"`, run `$REGISTRY_CLI build event "$RUN_ID" chunk_rejected --chunk-id "$CHUNK_ID" --reason review`, and continue.
+5. On `request_changes` (including an unaccepted verdict), address the findings once, repeat d (which records a second `verify_passed`), push, and invoke a fresh review (repeat 1–4 with the next round; reuse the round-1 second opinion).
+6. On `reject`, or a second round that is not an accepted `approve`, run `gh pr close "$PR_NUMBER" --repo "$REPO"`, then `git push origin --delete "$BRANCH"`, run `$REGISTRY_CLI build event "$RUN_ID" chunk_rejected --chunk-id "$CHUNK_ID" --reason review`, and continue.
 
 ### g. Merge
 
@@ -153,6 +154,7 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 - Journal every verdict before acting on it. enforced by: skill; audited by: `build-readiness --shadow-gate`.
 - A guard denial ends the run. enforced by: registry — `build finish` refuses every outcome except `aborted` once a `guard_denied` event exists.
 - A stop on policy names what blocked it. enforced by: registry — `build finish --outcome blocked_by_policy` refuses without `chunk_skipped(blocked_by_policy)` events carrying `classes`; the project is then `waiting_owner`, never `ready`, until the owner acts.
+- An approval carries evidence. enforced by: registry + guard — `build event review_verdict` records an `approve` with no `probes` (or malformed JSON) as `invalid`, and the guard refuses to merge a chunk whose verdict is not `approve`.
 
 A guard denial is a bug in the plan, never an obstacle to route around. It is already journaled; do not retry the command in another form. Stop and finish `aborted` with the denial reason. If the guard was wrong, the fix is a regression test and a change to `scripts/build-guard.py`, made by the owner outside a run.
 
@@ -169,5 +171,7 @@ A guard denial is a bug in the plan, never an obstacle to route around. It is al
 | Codex unavailable or logged out | Retry once; finish `codex_unavailable`. |
 | Baseline red | Record `verify_failed`; repair collection/command errors, continue genuine failures with no-new-failures, or finish `baseline_red`. |
 | Reviewer rejects twice | Record `chunk_rejected --reason review` and continue. |
+| Reviewer JSON malformed, or `approve` with no `probes` | `build event` answers `verdict_accepted: false`; treat as `request_changes` with its `rejection_reason`, re-invoke the reviewer once; a second unaccepted verdict is a rejection. |
+| Second opinion (`codex review`) fails or Codex is null | Write `unavailable: <code>` to the second-opinion file, journal `second_opinion` with `status=unavailable`, and continue; never retry inside the run. |
 | Breaker threshold reached or revert detected | Finish `paused`; only the owner resumes it. |
 | STOP file or automation pause | Finish the current verification/review, record `stopped`, and finish `stopped` before another chunk. |

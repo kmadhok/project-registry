@@ -111,8 +111,12 @@ def test_needs_intent_wait_resolves_by_review_and_gaps_win(paths, write_project)
     state = ProjectBuildState(waiting_on=_waiting(kind="needs_intent"))
     _complete(write_project, "unreviewed")
     _complete(
-        write_project, "reviewed",
+        write_project, "reviewed-same-day",
         brief={"done_criteria": ["Tests pass"], "reviewed": "2026-08-20"},
+    )
+    _complete(
+        write_project, "reviewed-next-day",
+        brief={"done_criteria": ["Tests pass"], "reviewed": "2026-08-21"},
     )
     _complete(
         write_project, "gap",
@@ -123,7 +127,12 @@ def test_needs_intent_wait_resolves_by_review_and_gaps_win(paths, write_project)
     assert classify(registry.require("unreviewed"), state, None, TODAY).state == (
         "waiting_owner"
     )
-    assert classify(registry.require("reviewed"), state, None, TODAY).state == "ready"
+    assert classify(
+        registry.require("reviewed-same-day"), state, None, TODAY
+    ).state == "waiting_owner"
+    assert classify(
+        registry.require("reviewed-next-day"), state, None, TODAY
+    ).state == "ready"
     assert classify(registry.require("gap"), state, None, TODAY).state == "needs_intent"
 
 

@@ -24,6 +24,11 @@ Runtime facts that bite:
   the binary or every file edit fails.
 - Codex must run in the foreground. A backgrounded Codex ends the turn and
   the run dies mid-chunk (this happened twice in 2026-08).
+- The reviewer's second opinion is `codex review --base main` (codex-cli
+  0.150 on the Mac has it; confirm `codex review --help` on a new Linux host).
+  When it fails the skill journals `second_opinion status=unavailable` and
+  continues with the single reviewer — a missing second opinion never stops a
+  run, but a week of `unavailable` is a retro finding.
 - `data/build/lease.json` TTL is 3 h; an expired lease is reconciled by the
   next `build start`.
 - The Mac venv is an *editable* install pointing at the main checkout's

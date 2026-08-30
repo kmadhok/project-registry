@@ -85,7 +85,7 @@ def _history_reason(
 def waiting_resolved(
     waiting_on: dict, project: Project, owner_action_at: str | None
 ) -> bool:
-    """Return whether an owner wait has been cleared by policy or owner action."""
+    """Return whether policy or an owner action after the wait clears it."""
     if owner_action_at is not None:
         action_ts = parse_ts(owner_action_at)
         waiting_since = parse_ts(waiting_on["since"])
@@ -103,7 +103,7 @@ def waiting_resolved(
     if kind == "needs_intent" and project.brief.reviewed is not None:
         reviewed = project.brief.reviewed
         reviewed_date = reviewed.isoformat() if isinstance(reviewed, dt.date) else str(reviewed)
-        return reviewed_date >= waiting_on["since"][:10]
+        return reviewed_date > waiting_on["since"][:10]
     return False
 
 

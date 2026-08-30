@@ -414,6 +414,21 @@ def test_build_commands_show_waiting_owner(paths, write_project, capsys):
     assert "waiting" in out
     assert "\nready " not in out
 
+    write_project(
+        id="waiting", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/waiting", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build", "allow": ["generated_data"]},
+    )
+    code, out = run(paths, "build-readiness", "waiting", capsys=capsys)
+    assert code == 0
+    assert "waiting: ready" in out
+    assert "waiting on" not in out
+    code, out = run(
+        paths, "build-readiness", "waiting", "--json", capsys=capsys
+    )
+    assert code == 0
+    assert json.loads(out)["waiting_on"]["kind"] == "blocked_by_policy"
+
 
 def test_build_lifecycle_commands_start_context_finish(paths, write_project, capsys):
     write_project(

@@ -21,6 +21,7 @@ from project_registry.build import (
     read_events,
     resume_project,
     save_state,
+    verdict_accepted,
     verdict_allows_merge,
 )
 from project_registry.storage import append_jsonl
@@ -179,6 +180,31 @@ def test_malformed_journal_lines_are_reported_not_fatal(paths):
 def test_parse_verdict_accepts_embedded_or_fenced_json(text):
     verdict = parse_verdict(text)
     assert verdict.verdict in {"approve", "reject"}
+    assert verdict.probes == []
+    assert verdict.second_opinion == []
+
+
+def test_parse_verdict_returns_probes_and_second_opinion():
+    probes = [{
+        "criterion": "tests pass",
+        "probe": "pytest -q",
+        "observed": "all passed",
+    }]
+    second_opinion = [{
+        "finding": "possible regression",
+        "disposition": "refuted",
+        "evidence": "regression test passed",
+    }]
+    verdict = parse_verdict(json.dumps({
+        "verdict": "approve",
+        "reasons": [],
+        "risk_flags": [],
+        "classes_seen": ["none"],
+        "probes": probes,
+        "second_opinion": second_opinion,
+    }))
+    assert verdict.probes == probes
+    assert verdict.second_opinion == second_opinion
 
 
 def test_parse_verdict_uses_last_json_object():
@@ -207,6 +233,44 @@ def test_parse_verdict_rejects_output_without_json():
         parse_verdict("approve")
 
 
+@pytest.mark.parametrize(("field", "value"), [
+    ("probes", [{"criterion": "tests", "probe": "pytest"}]),
+    ("second_opinion", [{
+        "finding": "risk", "disposition": "maybe", "evidence": "inspection",
+    }]),
+    ("probes", "not a list"),
+])
+def test_parse_verdict_rejects_malformed_review_evidence(field, value):
+    payload = {
+        "verdict": "approve",
+        "reasons": [],
+        "risk_flags": [],
+        "classes_seen": ["none"],
+        field: value,
+    }
+    with pytest.raises(BuildError, match=field):
+        parse_verdict(json.dumps(payload))
+
+
+def test_verdict_accepted_requires_probes_only_for_approval():
+    def parsed(name, probes):
+        return parse_verdict(json.dumps({
+            "verdict": name,
+            "reasons": [] if name == "approve" else ["changes needed"],
+            "risk_flags": [],
+            "classes_seen": ["none"],
+            "probes": probes,
+        }))
+
+    probe = [{"criterion": "tests", "probe": "pytest", "observed": "passed"}]
+    assert verdict_accepted(parsed("approve", [])) == (
+        False, "approve without probes"
+    )
+    assert verdict_accepted(parsed("approve", probe)) == (True, None)
+    assert verdict_accepted(parsed("request_changes", [])) == (True, None)
+    assert verdict_allows_merge(parsed("approve", [])) is False
+
+
 @pytest.mark.parametrize(("name", "allowed"), [
     ("approve", True),
     ("request_changes", False),
@@ -219,6 +283,9 @@ def test_verdict_allows_merge_only_for_approval(name, allowed):
         "reasons": reasons,
         "risk_flags": [],
         "classes_seen": ["none"],
+        "probes": [{
+            "criterion": "tests", "probe": "pytest", "observed": "passed",
+        }],
     }))
     assert verdict_allows_merge(verdict) is allowed
 

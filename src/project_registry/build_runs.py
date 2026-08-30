@@ -11,7 +11,7 @@ import socket
 import statistics
 import subprocess
 from collections import Counter
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import urlparse
@@ -24,7 +24,8 @@ from .storage import Paths, append_jsonl, read_json, write_json
 __all__ = [
     "EVENT_TYPES", "RUN_OUTCOMES", "PAUSED_REASONS", "FAILURE_OUTCOMES",
     "REVIEW_CLASS_VOCABULARY", "REVIEW_VERDICT_SCHEMA", "BuildError", "Verdict",
-    "parse_verdict", "verdict_allows_merge", "BreakerConfig", "ProjectBuildState",
+    "parse_verdict", "verdict_accepted", "verdict_allows_merge", "BreakerConfig",
+    "ProjectBuildState",
     "append_event", "read_events", "load_state", "save_state", "apply_run_to_state",
     "resume_project", "build_report", "registry_checkout_status", "get_build_context",
     "begin_run", "record_event", "reconcile", "reconcile_done", "finish_run",
@@ -70,6 +71,35 @@ REVIEW_VERDICT_SCHEMA: dict[str, Any] = {
             "type": "array",
             "items": {"enum": sorted(REVIEW_CLASS_VOCABULARY)},
         },
+        "probes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "criterion": {"type": "string", "minLength": 1},
+                    "probe": {"type": "string", "minLength": 1},
+                    "observed": {"type": "string", "minLength": 1},
+                },
+                "required": ["criterion", "probe", "observed"],
+                "additionalProperties": False,
+            },
+        },
+        "second_opinion": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "finding": {"type": "string", "minLength": 1},
+                    "disposition": {
+                        "type": "string",
+                        "enum": ["confirmed", "refuted", "out_of_scope"],
+                    },
+                    "evidence": {"type": "string", "minLength": 1},
+                },
+                "required": ["finding", "disposition", "evidence"],
+                "additionalProperties": False,
+            },
+        },
     },
     "required": ["verdict", "reasons", "risk_flags", "classes_seen"],
     "additionalProperties": False,
@@ -90,26 +120,33 @@ class Verdict:
     reasons: list[str]
     risk_flags: list[str]
     classes_seen: list[str]
+    probes: list[dict] = field(default_factory=list)
+    second_opinion: list[dict] = field(default_factory=list)
 
 
 def parse_verdict(text: str) -> Verdict:
     """Extract and validate the last JSON object in reviewer output."""
     decoder = json.JSONDecoder()
     candidate: Any = None
-    for position, character in enumerate(text):
-        if character != "{":
+    position = 0
+    while position < len(text):
+        if text[position] != "{":
+            position += 1
             continue
         try:
-            value, _end = decoder.raw_decode(text[position:])
+            value, end = decoder.raw_decode(text[position:])
         except json.JSONDecodeError:
+            position += 1
             continue
         if isinstance(value, dict):
             candidate = value
+        position += end
     if candidate is None:
         raise BuildError("review verdict contains no JSON object")
 
     required = {"verdict", "reasons", "risk_flags", "classes_seen"}
-    unknown = set(candidate) - required
+    optional = {"probes", "second_opinion"}
+    unknown = set(candidate) - required - optional
     if unknown:
         raise BuildError(f"review verdict has unknown keys: {sorted(unknown)}")
     missing = required - set(candidate)
@@ -130,17 +167,60 @@ def parse_verdict(text: str) -> Verdict:
     unknown_classes = set(candidate["classes_seen"]) - REVIEW_CLASS_VOCABULARY
     if unknown_classes:
         raise BuildError(f"review verdict has unknown classes: {sorted(unknown_classes)}")
+
+    probes = candidate.get("probes", [])
+    if not isinstance(probes, list):
+        raise BuildError("review verdict probes must be a list of objects")
+    probe_keys = {"criterion", "probe", "observed"}
+    for probe in probes:
+        if not isinstance(probe, dict) or set(probe) != probe_keys or any(
+            not isinstance(probe[key], str) or not probe[key]
+            for key in probe_keys
+        ):
+            raise BuildError(
+                "review verdict probes entries must contain exactly non-empty "
+                "string criterion, probe, and observed fields"
+            )
+
+    second_opinion = candidate.get("second_opinion", [])
+    if not isinstance(second_opinion, list):
+        raise BuildError("review verdict second_opinion must be a list of objects")
+    second_opinion_keys = {"finding", "disposition", "evidence"}
+    dispositions = {"confirmed", "refuted", "out_of_scope"}
+    for finding in second_opinion:
+        if not isinstance(finding, dict) or set(finding) != second_opinion_keys:
+            raise BuildError(
+                "review verdict second_opinion entries must contain exactly "
+                "finding, disposition, and evidence fields"
+            )
+        if any(
+            not isinstance(finding[key], str) or not finding[key]
+            for key in second_opinion_keys
+        ) or finding["disposition"] not in dispositions:
+            raise BuildError(
+                "review verdict second_opinion fields must be non-empty strings "
+                "and disposition must be confirmed, refuted, or out_of_scope"
+            )
     return Verdict(
         verdict=verdict,
         reasons=list(candidate["reasons"]),
         risk_flags=list(candidate["risk_flags"]),
         classes_seen=list(candidate["classes_seen"]),
+        probes=[dict(probe) for probe in probes],
+        second_opinion=[dict(finding) for finding in second_opinion],
     )
+
+
+def verdict_accepted(verdict: Verdict) -> tuple[bool, str | None]:
+    """Return whether a parsed verdict satisfies review acceptance policy."""
+    if verdict.verdict == "approve" and not verdict.probes:
+        return False, "approve without probes"
+    return True, None
 
 
 def verdict_allows_merge(verdict: Verdict) -> bool:
     """Return whether an independent review permits merging the chunk."""
-    return verdict.verdict == "approve"
+    return verdict.verdict == "approve" and verdict_accepted(verdict)[0]
 
 
 @dataclass(frozen=True)
@@ -845,10 +925,22 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
     elif event_type in {"verify_passed", "verify_failed"}:
         chunk["verify"] = "passed" if event_type == "verify_passed" else "failed"
     elif event_type == "review_verdict":
-        verdict = detail.get("verdict")
-        if verdict not in {"approve", "request_changes", "reject"}:
-            raise BuildError("review_verdict detail.verdict is invalid")
-        chunk["verdict"] = verdict
+        submitted_detail = detail
+        try:
+            verdict = parse_verdict(json.dumps(submitted_detail))
+        except BuildError as exc:
+            accepted, rejection_reason = False, str(exc)
+            parsed_verdict = None
+        else:
+            accepted, rejection_reason = verdict_accepted(verdict)
+            parsed_verdict = verdict.verdict
+        if not isinstance(detail, dict):
+            detail = {"submitted": submitted_detail}
+        detail["accepted"] = accepted
+        if not accepted:
+            detail["rejection_reason"] = rejection_reason
+        payload["detail"] = detail
+        chunk["verdict"] = parsed_verdict if accepted else "invalid"
     elif event_type == "merged":
         was_open = (
             bool(chunk.get("pr_number")) and bool(chunk.get("branch"))
@@ -866,7 +958,7 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
     written = append_event(paths, payload)
     write_json(paths.build_lease_file, lease)
     events, _ = read_events(paths)
-    return {
+    result = {
         "recorded": True,
         "seq": len(events),
         "lease_summary": {
@@ -875,6 +967,12 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
         },
         "event": written,
     }
+    if event_type == "review_verdict":
+        result.update({
+            "verdict_accepted": accepted,
+            "rejection_reason": rejection_reason,
+        })
+    return result
 
 
 def reconcile(

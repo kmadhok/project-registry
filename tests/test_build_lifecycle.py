@@ -378,7 +378,14 @@ def test_event_counters_and_finish_digest(paths, write_project):
     record_event(paths, "run", {"type": "verify_passed", "chunk_id": "c1"})
     record_event(paths, "run", {
         "type": "review_verdict", "chunk_id": "c1",
-        "detail": {"verdict": "approve"},
+        "detail": {
+            "verdict": "approve", "reasons": [], "risk_flags": [],
+            "classes_seen": ["none"],
+            "probes": [{
+                "criterion": "tests pass", "probe": "pytest",
+                "observed": "passed",
+            }],
+        },
     })
     recorded = record_event(paths, "run", {
         "type": "merged", "chunk_id": "c1", "tag": "checkpoint/run-1",
@@ -398,6 +405,60 @@ def test_event_counters_and_finish_digest(paths, write_project):
     assert lease["status"] == "finalize_pending"
     assert lease["finalize"]["outcome"] == "completed"
     assert lease["finalize"]["digest_path"] == finished["digest_path"]
+
+
+def test_review_verdict_with_probes_is_accepted_and_journaled(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = record_event(paths, "run", {
+        "type": "review_verdict", "chunk_id": "c1",
+        "detail": {
+            "verdict": "approve", "reasons": [], "risk_flags": [],
+            "classes_seen": ["none"],
+            "probes": [{
+                "criterion": "tests pass", "probe": "pytest",
+                "observed": "passed",
+            }],
+        },
+    })
+
+    assert result["verdict_accepted"] is True
+    assert result["rejection_reason"] is None
+    assert result["event"]["detail"]["accepted"] is True
+    assert read_json(paths.build_lease_file)["chunks"]["c1"]["verdict"] == "approve"
+
+
+def test_unprobed_approval_is_invalid_and_journaled(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = record_event(paths, "run", {
+        "type": "review_verdict", "chunk_id": "c1",
+        "detail": {
+            "verdict": "approve", "reasons": [], "risk_flags": [],
+            "classes_seen": ["none"],
+        },
+    })
+
+    assert result["verdict_accepted"] is False
+    assert result["rejection_reason"] == "approve without probes"
+    assert result["event"]["detail"]["accepted"] is False
+    assert result["event"]["detail"]["rejection_reason"] == "approve without probes"
+    assert read_json(paths.build_lease_file)["chunks"]["c1"]["verdict"] == "invalid"
+
+
+def test_malformed_review_verdict_is_downgraded_and_journaled(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = record_event(paths, "run", {
+        "type": "review_verdict", "chunk_id": "c1",
+        "detail": {"verdict": "yes"},
+    })
+
+    assert result["verdict_accepted"] is False
+    assert result["rejection_reason"]
+    assert result["event"]["detail"]["accepted"] is False
+    assert result["event"]["detail"]["rejection_reason"] == result["rejection_reason"]
+    assert read_json(paths.build_lease_file)["chunks"]["c1"]["verdict"] == "invalid"
 
 
 def test_reconcile_lists_stale_builder_pr_without_mutation(paths, write_project):

@@ -643,7 +643,7 @@ def cmd_build_readiness(args, paths, now) -> int:
     print(f"{project.id}: {result['state']}")
     print(f"  dry run      {'yes' if result['dry_run'] else 'no'}")
     print(f"  reasons      {'; '.join(result['reasons'])}")
-    if result["waiting_on"]:
+    if result["state"] == "waiting_owner" and result["waiting_on"]:
         waiting = result["waiting_on"]
         classes = ",".join(waiting["classes"]) or "none"
         print(

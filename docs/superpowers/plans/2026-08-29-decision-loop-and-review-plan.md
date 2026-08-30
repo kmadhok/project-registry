@@ -6,9 +6,10 @@ the 2026-08-25 shadow-run audit, and `docs/ideas/owner-loop.md`.
 
 ## Progress (2026-08-30, branch `worktree-decision-loop`)
 
-Phases 1–5 landed (Tasks 1–15) with the full suite and the fault harness
-green; Phase 6 (Tasks 16–17) in flight — the listener script and RUNBOOK unit
-exist, `registry request-run` is being wired. Deviations: verbs are CLI-only
+All six phases landed (Tasks 1–17) with the full suite (614 tests) and the
+fault harness green. Owner-side steps remain: install the listener unit and
+retro cron on the build host, set `GITHUB_TOKEN` and a `command_topic`, and
+run the sandbox observe from the main checkout. Deviations: verbs are CLI-only
 (no MCP twins); a `build push` verb was added for round-2 fix pushes;
 `reject` discards a dirty attempt before returning to `main`; the sandbox
 observe checkpoint is deferred until the branch is on `main` (from a worktree

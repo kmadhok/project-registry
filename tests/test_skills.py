@@ -45,10 +45,15 @@ def test_push_project_skill_metadata_and_size():
 def test_push_project_skill_references_real_registry_subcommands():
     _, text = _push_skill()
     commands = _subcommands(build_parser())
-    references = re.findall(
-        r"(?:registry|\$REGISTRY_CLI)\s+(?:(build)\s+)?([a-z][a-z-]*)",
-        text,
-    )
+    references = []
+    for snippet in re.findall(r"`([^`]+)`", text):
+        match = re.match(
+            r"^(?:registry|\$REGISTRY_CLI)\s+"
+            r"(?:(build)\s+)?([a-z][a-z-]*)",
+            snippet.strip(),
+        )
+        if match:
+            references.append(match.groups())
     assert references
     for build_prefix, command in references:
         namespace = "build" if build_prefix else "registry"
@@ -62,7 +67,7 @@ def test_push_project_skill_is_portable_and_complete():
     assert "cloud routine" not in text.lower()
     for required in ("build-planner", "build-reviewer", "--squash", "checkpoint/", "STOP"):
         assert required in text
-    assert "--confirm-writeback" in text
+    assert "build writeback" in text
     assert "finalize_pending" in text
 
 

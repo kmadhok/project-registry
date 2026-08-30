@@ -8,8 +8,16 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from .build_runs import BuildError, _read_lease, read_events, record_event
-from .storage import Paths
+from .build_runs import (
+    BuildError,
+    _read_lease,
+    confirm_writeback,
+    read_events,
+    record_event,
+)
+from .dashboard import render_dashboard
+from .github.sync import load_snapshot
+from .storage import Paths, load_registry
 
 
 def slugify(title: str) -> str:
@@ -47,6 +55,24 @@ def _git(workdir: Path, *args: str) -> str:
     if completed.returncode != 0:
         raise BuildError(f"git {args[0]} failed: {completed.stderr.strip()}")
     return completed.stdout
+
+
+def _registry_git(paths: Paths, *args: str) -> str:
+    """Run git in the registry checkout."""
+    return _git(paths.root, *args)
+
+
+def _push_registry_main(paths: Paths) -> subprocess.CompletedProcess[str]:
+    """Push registry main without raising so writeback can preserve its lease."""
+    return subprocess.run(
+        ["git", "-C", str(paths.root), "push", "origin", "main"],
+        capture_output=True,
+        text=True,
+    )
+
+
+def _push_error(completed: subprocess.CompletedProcess[str]) -> str:
+    return completed.stderr.strip() or completed.stdout.strip()
 
 
 def _resolve(path: str | Path, base: Path) -> Path:
@@ -213,6 +239,127 @@ def open_pr(
     }
 
 
+def push_fix(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    message: str,
+) -> dict[str, Any]:
+    """Commit and push a requested fix to its existing chunk branch."""
+    lease = _active_lease(paths, run_id)
+    branch = _git(workdir, "rev-parse", "--abbrev-ref", "HEAD").strip()
+    namespace = f"push/{run_id}-{chunk_id}-"
+    if not branch.startswith(namespace):
+        raise BuildError(f"current branch is outside the run namespace: {branch}")
+
+    changed = _changed_paths(
+        _git(workdir, "status", "--porcelain", "--untracked-files=all")
+    )
+    forbidden = _forbidden_matches(
+        changed, lease.get("contract_forbidden_paths", []), workdir
+    )
+    if forbidden:
+        raise BuildError(f"contract-forbidden paths changed: {', '.join(forbidden)}")
+    if not changed:
+        raise BuildError("nothing to commit")
+
+    _git(workdir, "add", "-A")
+    _git(workdir, "commit", "-m", message)
+    _git(workdir, *push_args(branch))
+    return {"branch": branch, "commit": _git(workdir, "rev-parse", "HEAD").strip()}
+
+
+def writeback(paths: Paths, run_id: str) -> dict[str, Any]:
+    """Commit, push, and confirm a finalized registry run."""
+    lease = _read_lease(paths)
+    if lease is None:
+        raise BuildError("build lease is missing (actual status: missing)")
+    if lease.get("run_id") != run_id:
+        raise BuildError("build lease does not match run_id")
+    status = lease.get("status")
+    if status != "finalize_pending":
+        raise BuildError(f"build lease status is {status}; expected finalize_pending")
+    branch = _registry_git(paths, "rev-parse", "--abbrev-ref", "HEAD").strip()
+    if branch != "main":
+        raise BuildError(f"registry checkout must be on main (actual branch: {branch})")
+
+    project = lease["project_id"]
+    outcome = lease["finalize"]["outcome"]
+    paths.dashboard_file.write_text(
+        render_dashboard(load_registry(paths), load_snapshot(paths)),
+        encoding="utf-8",
+    )
+
+    stage_paths = ["data/build"]
+    if paths.proposals_dir.exists():
+        stage_paths.append("data/proposals")
+    if paths.dashboard_file.exists():
+        stage_paths.append("DASHBOARD.md")
+    _registry_git(paths, "add", "-A", "--", *stage_paths)
+    staged = [
+        value for value in
+        _registry_git(paths, "diff", "--cached", "--name-only").splitlines()
+        if value
+    ]
+    tracked_changes = [
+        value for value in
+        _registry_git(paths, "diff", "--name-only").splitlines()
+        if value
+    ]
+    outside_scope = [
+        value for value in [*staged, *tracked_changes]
+        if value != "DASHBOARD.md"
+        and not value.startswith("data/build/")
+        and not value.startswith("data/proposals/")
+    ]
+    outside_scope = list(dict.fromkeys(outside_scope))
+    if outside_scope:
+        _registry_git(paths, "reset", "-q")
+        raise BuildError(f"registry_commit_scope: {', '.join(outside_scope)}")
+
+    commits: list[str] = []
+    committed = bool(staged)
+    if committed:
+        _registry_git(paths, "commit", "-m", f"build: {run_id} {project} {outcome}")
+        commits.append(_registry_git(paths, "rev-parse", "HEAD").strip())
+
+    pushed = _push_registry_main(paths)
+    if pushed.returncode != 0:
+        try:
+            _registry_git(paths, "pull", "--rebase", "origin", "main")
+        except BuildError as exc:
+            return {
+                "run_id": run_id, "project_id": project, "outcome": outcome,
+                "committed": committed, "pushed": False, "confirmed": False,
+                "pending_commit": False, "commits": commits, "error": str(exc),
+            }
+        pushed = _push_registry_main(paths)
+    if pushed.returncode != 0:
+        return {
+            "run_id": run_id, "project_id": project, "outcome": outcome,
+            "committed": committed, "pushed": False, "confirmed": False,
+            "pending_commit": False, "commits": commits, "error": _push_error(pushed),
+        }
+
+    confirm_writeback(paths, run_id)
+    _registry_git(paths, "add", "-A", "--", "data/build")
+    _registry_git(paths, "commit", "-m", f"build: confirm writeback {run_id}")
+    commits.append(_registry_git(paths, "rev-parse", "HEAD").strip())
+    confirmed_push = _push_registry_main(paths)
+    pending_commit = confirmed_push.returncode != 0
+    return {
+        "run_id": run_id,
+        "project_id": project,
+        "outcome": outcome,
+        "committed": committed,
+        "pushed": True,
+        "confirmed": True,
+        "pending_commit": pending_commit,
+        "commits": commits,
+    }
+
+
 def _gh(*args: str) -> str:
     completed = subprocess.run(
         ["gh", *args],
@@ -332,6 +479,8 @@ def reject_chunk(
 
     if pr_number is not None:
         _gh("pr", "close", str(pr_number), "--repo", lease["repo"])
+    _git(workdir, "reset", "--hard")
+    _git(workdir, "clean", "-fd")
     _git(workdir, "checkout", "main")
     if pr_number is not None:
         _git(workdir, "push", "origin", "--delete", branch)

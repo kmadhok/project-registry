@@ -38,8 +38,10 @@ from .build_ops import (
     create_branch,
     merge_chunk,
     open_pr,
+    push_fix,
     reject_chunk,
     skip_chunk,
+    writeback,
 )
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
@@ -947,6 +949,16 @@ def cmd_build_pr(args, paths, now) -> int:
     return 0
 
 
+def cmd_build_push(args, paths, now) -> int:
+    result = push_fix(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.message
+    )
+    if emit(result, args):
+        return 0
+    print(f"pushed {result['branch']} {result['commit']}")
+    return 0
+
+
 def cmd_build_merge(args, paths, now) -> int:
     result = merge_chunk(
         paths, args.run_id, Path(args.workdir), args.chunk_id, args.pr
@@ -993,6 +1005,17 @@ def cmd_build_finish(args, paths, now) -> int:
         return 0
     print(f"Finished {args.run_id}: {args.outcome}")
     print(f"Digest: {result['digest_path']}")
+    return 0
+
+
+def cmd_build_writeback(args, paths, now) -> int:
+    result = writeback(paths, args.run_id)
+    if emit(result, args):
+        return 0
+    fields = ("committed", "pushed", "confirmed", "pending_commit")
+    print(" · ".join(
+        f"{field} {'yes' if result[field] else 'no'}" for field in fields
+    ))
     return 0
 
 
@@ -1349,6 +1372,16 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--json", action="store_true", help="Emit JSON.")
     pr.set_defaults(handler=cmd_build_pr)
 
+    push = build_subparsers.add_parser(
+        "push", help="Commit and push fixes to a leased chunk branch."
+    )
+    push.add_argument("run_id")
+    push.add_argument("--chunk-id", required=True)
+    push.add_argument("--message", required=True)
+    push.add_argument("--workdir", required=True)
+    push.add_argument("--json", action="store_true", help="Emit JSON.")
+    push.set_defaults(handler=cmd_build_push)
+
     merge = build_subparsers.add_parser(
         "merge", help="Merge a verified chunk PR and checkpoint it."
     )
@@ -1387,6 +1420,13 @@ def build_parser() -> argparse.ArgumentParser:
     finish.add_argument("--summary")
     finish.add_argument("--json", action="store_true", help="Emit JSON.")
     finish.set_defaults(handler=cmd_build_finish)
+
+    writeback_parser = build_subparsers.add_parser(
+        "writeback", help="Commit, push, and confirm a finalized build run."
+    )
+    writeback_parser.add_argument("run_id")
+    writeback_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    writeback_parser.set_defaults(handler=cmd_build_writeback)
 
     event = build_subparsers.add_parser("event", help="Record a leased-run event.")
     event.add_argument("run_id")

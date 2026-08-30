@@ -14,6 +14,7 @@ from project_registry.build_ops import (
     create_branch,
     merge_chunk,
     open_pr,
+    push_fix,
     push_args,
     reject_chunk,
     skip_chunk,
@@ -246,6 +247,45 @@ def test_open_pr_happy_path(
     assert updated["chunks"]["1"]["branch"] == branch
 
 
+def test_push_fix_refuses_wrong_branch_and_forbidden_path(
+    paths, workdir: Path, lease: dict
+) -> None:
+    with pytest.raises(BuildError, match="outside the run namespace"):
+        push_fix(paths, "R1", workdir, "1", "fix review")
+
+    create_branch(paths, "R1", workdir, "1", "Add x")
+    secret = workdir / "secrets" / "token.txt"
+    secret.parent.mkdir()
+    secret.write_text("nope\n", encoding="utf-8")
+    with pytest.raises(BuildError, match="contract-forbidden paths"):
+        push_fix(paths, "R1", workdir, "1", "fix review")
+    assert "?? secrets/token.txt" in git(
+        workdir, "status", "--porcelain", "--untracked-files=all"
+    )
+
+
+def test_push_fix_happy_path_and_cli(
+    paths, workdir: Path, origin: Path, lease: dict, capsys
+) -> None:
+    branch = create_branch(paths, "R1", workdir, "1", "Add x")["branch"]
+    (workdir / "change.txt").write_text("first\n", encoding="utf-8")
+    first = push_fix(paths, "R1", workdir, "1", "first fix")
+    (workdir / "change.txt").write_text("second\n", encoding="utf-8")
+    code = main([
+        "--root", str(paths.root), "build", "push", "R1",
+        "--chunk-id", "1", "--message", "second fix",
+        "--workdir", str(workdir), "--json",
+    ])
+    result = json.loads(capsys.readouterr().out)
+
+    assert code == 0
+    assert first["branch"] == result["branch"] == branch
+    assert result["commit"] == git(workdir, "rev-parse", "HEAD").strip()
+    assert git(origin, "log", "-2", "--format=%s", branch).splitlines() == [
+        "second fix", "first fix",
+    ]
+
+
 def test_build_ops_cli_json_and_failure(
     paths, workdir: Path, fake_gh: Path, lease: dict, capsys
 ) -> None:
@@ -443,6 +483,21 @@ def test_reject_chunk_without_pr_deletes_local_branch_only(
     events, _ = read_events(paths)
     assert events[-1]["type"] == "chunk_rejected"
     assert events[-1]["reason"] == "verify"
+
+
+def test_reject_chunk_discards_dirty_attempt(
+    paths, workdir: Path, lease: dict
+) -> None:
+    create_branch(paths, "R1", workdir, "1", "Add x")
+    (workdir / "README.md").write_text("modified\n", encoding="utf-8")
+    untracked = workdir / "scratch.txt"
+    untracked.write_text("temporary\n", encoding="utf-8")
+
+    reject_chunk(paths, "R1", workdir, "1", "verify")
+
+    assert git(workdir, "branch", "--show-current").strip() == "main"
+    assert (workdir / "README.md").read_text(encoding="utf-8") == "seed\n"
+    assert not untracked.exists()
 
 
 def test_skip_chunk_requires_shadow_and_returns_to_main(

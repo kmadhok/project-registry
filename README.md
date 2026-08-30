@@ -91,7 +91,7 @@ registry audit
 registry mcp                  # JSON-RPC 2.0 over stdio
 ```
 
-34 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, a GitHub refresh, and the propose/apply pair. The builder tools are `get_brief_status`, `get_build_report`, `get_build_queue`, `validate_project_readiness`, `get_build_context`, `begin_build_run`, `record_build_event`, `finish_build_run`, `reconcile_build_runs`, `validate_contract`, and `validate_spec`. Every response carries `source_timestamps` so a client can tell live data from cached data. Build lifecycle writes are confined to `data/build/`; no tool mutates GitHub.
+35 tools: project queries, next actions and review recommendations, portfolio-wide PR and issue views, a GitHub refresh, and the propose/apply pair. The builder tools are `get_brief_status`, `get_build_report`, `get_build_queue`, `validate_project_readiness`, `get_build_context`, `begin_build_run`, `record_build_event`, `finish_build_run`, `reconcile_build_runs`, `validate_contract`, `validate_spec`, and `get_outcome_status`. Every response carries `source_timestamps` so a client can tell live data from cached data. Build lifecycle writes are confined to `data/build/`; no tool mutates GitHub.
 
 **Claude Code discovers the server automatically** via [`.mcp.json`](.mcp.json) when this repo is open. Claude Desktop and global registration are covered in [docs/SETUP.md](docs/SETUP.md). Sessions without MCP still work: [`CLAUDE.md`](CLAUDE.md) gives any LLM session the CLI commands and the rules.
 

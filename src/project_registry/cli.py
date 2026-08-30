@@ -81,7 +81,7 @@ from .signals import (
     describe_rules,
     find_mismatches,
 )
-from .specs import validate_spec
+from .specs import outcome_line, outcome_status, validate_spec
 from .storage import Paths, load_registry, read_jsonl
 from .validation import ERROR, validate
 
@@ -239,6 +239,31 @@ def cmd_validate_spec(args, paths, now) -> int:
     else:
         print("\nNo unchecked SPEC item is ready.")
     return 0 if success else 1
+
+
+def cmd_outcome_status(args, paths, now) -> int:
+    registry = load_registry(paths)
+    project = registry.require(args.project_id)
+    try:
+        text = Path(args.spec_path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RegistryError(f"cannot read spec {args.spec_path!r}: {exc}") from exc
+    status = outcome_status(project, text)
+    if emit(status, args):
+        return 0
+
+    print(f"{'#':>3}  {'STATUS':13}  {'ITEMS':10}  CRITERION")
+    for criterion in status["criteria"]:
+        items = ",".join(str(index) for index in criterion["items"]) or "-"
+        text = criterion["text"]
+        if len(text) > 70:
+            text = text[:67] + "..."
+        print(
+            f"{criterion['index']:>3}  {criterion['status'].upper():13}  "
+            f"{items:10}  {text}"
+        )
+    print(outcome_line(status))
+    return 0
 
 
 def cmd_list(args, paths, now) -> int:
@@ -996,10 +1021,16 @@ def cmd_build_finish(args, paths, now) -> int:
             return 0
         print(f"Confirmed registry write-back for {args.run_id}.")
         return 0
+    spec_text = None
+    if args.spec:
+        try:
+            spec_text = Path(args.spec).read_text(encoding="utf-8")
+        except OSError as exc:
+            raise RegistryError(f"cannot read spec {args.spec!r}: {exc}") from exc
     registry = load_registry(paths)
     result = finish_run(
         paths, args.run_id, outcome=args.outcome, summary=args.summary,
-        now=now, registry=registry, snapshot=load_snapshot(paths),
+        now=now, registry=registry, snapshot=load_snapshot(paths), spec_text=spec_text,
     )
     if emit(result, args):
         return 0
@@ -1250,6 +1281,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("project_id")
     sub.add_argument("path")
 
+    sub = add("outcome-status", cmd_outcome_status, "Show progress toward a project's outcome.")
+    sub.add_argument("project_id")
+    sub.add_argument("spec_path")
+
     sub = add("list", cmd_list, "List projects.")
     add_project_filters(sub)
 
@@ -1418,6 +1453,7 @@ def build_parser() -> argparse.ArgumentParser:
     finish_mode.add_argument("--outcome", choices=sorted(RUN_OUTCOMES))
     finish_mode.add_argument("--confirm-writeback", action="store_true")
     finish.add_argument("--summary")
+    finish.add_argument("--spec", help="SPEC path used to record outcome progress.")
     finish.add_argument("--json", action="store_true", help="Emit JSON.")
     finish.set_defaults(handler=cmd_build_finish)
 

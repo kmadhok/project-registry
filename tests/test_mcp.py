@@ -401,6 +401,20 @@ def test_validate_spec_tool_matches_validator_and_rejects_unknown_id(paths, writ
     assert payload["error"] == "unknown project id: missing"
 
 
+def test_get_outcome_status_tool_returns_summary(paths, write_project, tmp_path):
+    write_project(id="target", brief={"done_criteria": ["Done"]})
+    spec = tmp_path / "SPEC.md"
+    spec.write_text("## Remaining work\n- [x] Done\n      Criteria: 1\n", encoding="utf-8")
+    payload, is_error = call(paths, "get_outcome_status", {
+        "project_id": "target", "spec_path": str(spec),
+    })
+    assert not is_error
+    assert payload["summary"] == {
+        "total": 1, "met": 1, "in_progress": 0, "blocked": 0,
+        "needs_intent": 0, "unplanned": 0,
+    }
+
+
 # -- MCP-005: proposals ---------------------------------------------------
 
 

@@ -86,6 +86,23 @@ def test_validate_spec_exit_codes(paths, write_project, tmp_path, capsys):
     assert code == 0
 
 
+def test_outcome_status_text_json_and_unknown_project(paths, write_project, tmp_path, capsys):
+    write_project(id="target", brief={"done_criteria": ["Ship the result"]})
+    spec = tmp_path / "SPEC.md"
+    spec.write_text("## Remaining work\n- [x] Shipped\n      Criteria: 1\n", encoding="utf-8")
+
+    code, out = run(paths, "outcome-status", "target", str(spec), capsys=capsys)
+    assert code == 0
+    assert "STATUS" in out and "ITEMS" in out and "CRITERION" in out
+    assert "criteria: 1/1 met" in out
+
+    code, out = run(paths, "outcome-status", "target", str(spec), "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["summary"]["met"] == 1
+    code, _ = run(paths, "outcome-status", "missing", str(spec), capsys=capsys)
+    assert code != 0
+
+
 def test_json_output_is_machine_readable(paths, write_project, capsys):
     write_project(id="p", purpose="why", lifecycle="maintained")
     code, out = run(paths, "list", "--json", capsys=capsys)

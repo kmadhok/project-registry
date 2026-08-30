@@ -353,6 +353,81 @@ def validate_spec(text: str, *, project: Project) -> SpecReport:
     )
 
 
+def outcome_status(project: Project, spec_text: str) -> dict[str, Any]:
+    """Summarize how the SPEC checklist covers the owner's done criteria."""
+    spec = parse_spec(spec_text)
+    report = validate_spec(spec_text, project=project)
+    reports = {item.index: item for item in report.items}
+    allowed = {item.value for item in project.automation.allow}
+    criteria: list[dict[str, Any]] = []
+
+    for index, text in enumerate(project.brief.done_criteria, start=1):
+        items = [item for item in spec.items if index in item.criteria]
+        unchecked = [item for item in items if not item.checked]
+        blocked_classes: list[str] = []
+        if not items:
+            status = "unplanned"
+        elif not unchecked:
+            status = "met"
+        elif any("needs_intent" in reports[item.index].problems for item in unchecked):
+            status = "needs_intent"
+        elif all("blocked_by_policy" in reports[item.index].problems for item in unchecked):
+            status = "blocked"
+            blocked_classes = sorted({
+                change_class
+                for item in unchecked
+                for change_class in item.classes
+                if change_class not in allowed
+            })
+        else:
+            status = "in_progress"
+        criteria.append({
+            "index": index,
+            "text": text,
+            "status": status,
+            "items": [item.index for item in items],
+            "classes": blocked_classes,
+        })
+
+    summary = {name: 0 for name in (
+        "total", "met", "in_progress", "blocked", "needs_intent", "unplanned"
+    )}
+    summary["total"] = len(criteria)
+    for criterion in criteria:
+        summary[criterion["status"]] += 1
+    return {
+        "project_id": project.id,
+        "criteria": criteria,
+        "summary": summary,
+        "blocked_classes": sorted({
+            change_class
+            for criterion in criteria
+            if criterion["status"] == "blocked"
+            for change_class in criterion["classes"]
+        }),
+    }
+
+
+def outcome_line(status: dict[str, Any]) -> str:
+    """Render a compact, human-readable outcome progress line."""
+    summary = status["summary"]
+    segments = [f"{summary['met']}/{summary['total']} met"]
+    for key, label in (
+        ("in_progress", "in progress"),
+        ("blocked", "blocked"),
+        ("needs_intent", "need intent"),
+        ("unplanned", "unplanned"),
+    ):
+        count = summary[key]
+        if not count:
+            continue
+        segment = f"{count} {label}"
+        if key == "blocked" and status.get("blocked_classes"):
+            segment += f" ({', '.join(status['blocked_classes'])})"
+        segments.append(segment)
+    return "criteria: " + " · ".join(segments)
+
+
 def _section_name(heading: str) -> str:
     return re.sub(r"\s+", " ", heading.strip().lower())
 

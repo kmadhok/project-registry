@@ -58,6 +58,33 @@ def test_digest_lists_owner_inbox(paths, write_project):
     assert "needs_intent" in digest and "vague" in digest
 
 
+def test_finish_records_outcome_status_and_writes_digest_section(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    spec = "## Remaining work\n- [x] Tests pass\n      Criteria: 1\n"
+    result = finish_run(
+        paths, "run", outcome="completed", summary="Finished.", now=NOW,
+        registry=load_registry(paths), snapshot=Snapshot(), spec_text=spec,
+    )
+    events, _ = read_events(paths)
+    criteria = next(event for event in events if event["type"] == "run_finished")["detail"]["criteria"]
+    assert criteria["summary"]["met"] == 1
+    assert criteria["blocked_classes"] == []
+    assert criteria["line"] == "criteria: 1/1 met"
+    digest = open(result["digest_path"], encoding="utf-8").read()
+    assert "## Summary\n\nFinished.\n\n## Outcome\n\ncriteria: 1/1 met" in digest
+
+
+def test_finish_without_spec_omits_outcome_status(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = finish_run(paths, "run", outcome="completed", summary="Finished.", now=NOW)
+    events, _ = read_events(paths)
+    detail = next(event for event in events if event["type"] == "run_finished")["detail"]
+    assert "criteria" not in detail
+    assert "## Outcome" not in open(result["digest_path"], encoding="utf-8").read()
+
+
 def start(paths, *, now=NOW, project_id=None, force_named=False, run_id=None):
     return begin_run(
         paths,

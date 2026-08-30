@@ -1121,6 +1121,10 @@ def _write_digest(
         lines.insert(4, f"- Paused reason: {lease['paused_reason']}")
     if summary:
         lines.extend(["## Summary", "", summary, ""])
+    finished = next((item for item in events if item["type"] == "run_finished"), None)
+    criteria = ((finished or {}).get("detail") or {}).get("criteria")
+    if criteria:
+        lines.extend(["## Outcome", "", criteria["line"], ""])
     merged = [item for item in events if item["type"] == "merged"]
     if merged:
         lines.extend(["## Merged chunks", ""])
@@ -1169,6 +1173,7 @@ def _write_digest(
 def finish_run(
     paths: Paths, run_id: str, *, outcome: str, summary: str | None = None,
     now: dt.datetime | None = None, registry: Any = None, snapshot: Any = None,
+    spec_text: str | None = None,
 ) -> dict[str, Any]:
     """Finalize a leased run and retain its lease until registry write-back."""
     from .automation import build_queue
@@ -1225,10 +1230,21 @@ def finish_run(
                     "--reason blocked_by_policy --detail "
                     "classes=<class,class>"
                 )
+        detail: dict[str, Any] = {}
+        if summary:
+            detail["summary"] = summary
+        if spec_text is not None and registry is not None:
+            from .specs import outcome_line, outcome_status
+            status = outcome_status(registry.require(lease["project_id"]), spec_text)
+            detail["criteria"] = {
+                "summary": status["summary"],
+                "blocked_classes": status["blocked_classes"],
+                "line": outcome_line(status),
+            }
         finished_event = append_event(paths, {
             "run_id": run_id, "host": lease["host"], "type": "run_finished",
             "project_id": lease.get("project_id"), "outcome": outcome,
-            "detail": {"summary": summary} if summary else None,
+            "detail": detail or None,
         }, now=current)
     else:
         outcome = finished_event["outcome"]

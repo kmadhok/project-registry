@@ -66,7 +66,11 @@ Before scheduling on a new host: `git pull --ff-only`, `registry validate`
 - `registry build-report [--since <date>]` — totals: runs by outcome/host,
   chunks started/merged/skipped, guard denials, reverts.
 - `data/build/digests/<run-id>.md` — one page per run: outcome, merged chunks
-  with revert commands, rejections/skips, guard denials, projects needing intent.
+  with revert commands, rejections/skips, guard denials, projects needing intent,
+  and — when the run finished with `--spec` — an `## Outcome` line scoring the
+  brief's done criteria (`criteria: 2/5 met · 2 blocked (generated_data) …`).
+  `registry outcome-status <id> <clone>/docs/SPEC.md` prints the same table
+  for any clone.
 - `data/build/runs.jsonl` — the journal; `grep <run-id>` gives the full
   sequence. Expected per chunk: `chunk_started → verify_passed → pr_opened →
   review_verdict → (merged | chunk_skipped | chunk_rejected)`. A

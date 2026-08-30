@@ -56,6 +56,19 @@ def _summary(digest: str) -> str:
     return text if len(text) <= 140 else text[:137].rstrip() + "..."
 
 
+def _outcome_progress(digest: str) -> str | None:
+    section = re.search(
+        r"^## Outcome\s*\n(.*?)(?:\n## |\Z)",
+        digest,
+        re.DOTALL | re.MULTILINE,
+    )
+    if not section:
+        return None
+    first = next((line.strip() for line in section.group(1).splitlines() if line.strip()), "")
+    match = re.match(r"(?:-\s*)?criteria:\s*(\d+)/(\d+) met\b", first)
+    return f"{match.group(1)}/{match.group(2)}" if match else None
+
+
 def _merged(digest: str) -> list[tuple[str, str]]:
     """Return (chunk id, PR url) pairs from the digest's merged section."""
     pairs = []
@@ -99,6 +112,9 @@ def build_notification(digest: str, inbox: dict[str, Any]) -> dict[str, Any]:
     else:
         headline = f"merged {len(merged)} — nothing needed"
     title = f"{project}: {headline}"
+    progress = _outcome_progress(digest)
+    if progress:
+        title += f" · criteria {progress}"
 
     body: list[str] = []
     stats = f"Merged {len(merged)} · rejected/skipped {len(skips)} · guard denials {len(denials)}"

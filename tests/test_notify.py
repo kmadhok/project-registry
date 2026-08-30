@@ -118,6 +118,18 @@ def test_clean_run_title_says_nothing_needed_and_lists_prs():
     ]
 
 
+def test_outcome_progress_is_appended_to_title_only_when_present():
+    with_outcome = DIGEST.replace(
+        "## Merged chunks", "## Outcome\n\ncriteria: 2/5 met · 1 blocked\n\n## Merged chunks"
+    )
+    assert build_notification(with_outcome, EMPTY_INBOX)["title"].endswith(
+        "· criteria 2/5"
+    )
+    assert build_notification(DIGEST, EMPTY_INBOX)["title"] == (
+        "builder: merged 2 — nothing needed"
+    )
+
+
 def test_needs_you_run_is_high_priority_with_numbered_actions():
     n = build_notification(NEEDS_INTENT_DIGEST, INBOX)
     assert n["title"] == "builder: merged 4 — needs you (2)"

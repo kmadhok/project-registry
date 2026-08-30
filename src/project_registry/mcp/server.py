@@ -17,6 +17,7 @@ import json
 import re
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable, Iterable, TextIO
 
 from ..briefs import build_briefs_status, build_sync_status
@@ -64,7 +65,7 @@ from ..queries import (
     source_timestamps,
 )
 from ..signals import build_attention_queue, describe_rules, find_mismatches
-from ..specs import validate_spec
+from ..specs import outcome_status, validate_spec
 from ..storage import Paths, load_registry
 from ..validation import validate
 
@@ -412,6 +413,18 @@ def tool_validate_spec(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
     return _envelope(registry, snapshot, now, report.to_dict())
 
 
+def tool_get_outcome_status(paths: Paths, args: dict[str, Any]) -> dict[str, Any]:
+    registry, snapshot, now = _context(paths)
+    project = registry.get(args["project_id"])
+    if project is None:
+        raise ToolError(f"unknown project id: {args['project_id']}")
+    try:
+        spec_text = Path(args["spec_path"]).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ToolError(f"cannot read spec {args['spec_path']!r}: {exc}") from exc
+    return _envelope(registry, snapshot, now, outcome_status(project, spec_text))
+
+
 # -- MCP-004: refresh -----------------------------------------------------
 
 
@@ -611,6 +624,11 @@ TOOLS: tuple[Tool, ...] = (
              "project_id": {"type": "string"},
              "spec_text": {"type": "string"},
          }, ["project_id", "spec_text"]), tool_validate_spec, "MCP-003"),
+    Tool("get_outcome_status", "Show progress toward a project's outcome without changing it.",
+         _schema({
+             "project_id": {"type": "string"},
+             "spec_path": {"type": "string"},
+         }, ["project_id", "spec_path"]), tool_get_outcome_status, "MCP-003"),
 
     Tool("refresh_github", "Re-read GitHub into the local snapshot. Read-only with respect to GitHub.",
          _schema({

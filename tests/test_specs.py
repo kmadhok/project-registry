@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from project_registry.model import Automation, Brief, ChangeClass, OpenDecision, Project
-from project_registry.specs import parse_spec, validate_spec
+from project_registry.specs import outcome_line, outcome_status, parse_spec, validate_spec
 
 
 FIXTURES = Path(__file__).parent / "fixtures" / "specs"
@@ -53,6 +53,55 @@ def test_parser_extracts_criteria_metadata():
     assert items[2].criteria_raw is None
     assert items[3].criteria == [2]
     assert "x" in items[3].criteria_raw
+
+
+def test_outcome_status_matrix_and_line():
+    text = """## Remaining work
+- [x] Finished
+      Criteria: 2 6
+- [ ] Ready
+      Acceptance: ready behavior works
+      Tests: tests/test_ready.py
+      Size: S
+      Classes: none
+      Verified-missing: ready behavior is absent
+      Criteria: 3 6
+- [ ] Policy blocked
+      Acceptance: generated output exists
+      Tests: tests/test_output.py
+      Size: S
+      Classes: generated_data
+      Verified-missing: generated output is absent
+      Criteria: 4
+- [ ] Owner choice
+      Acceptance: works once the owner decides the format
+      Tests: tests/test_choice.py
+      Size: S
+      Classes: none
+      Verified-missing: the choice is absent
+      Criteria: 5
+"""
+    status = outcome_status(
+        project(done_criteria=tuple(f"criterion {index}" for index in range(1, 7))),
+        text,
+    )
+    assert [item["status"] for item in status["criteria"]] == [
+        "unplanned", "met", "in_progress", "blocked", "needs_intent", "in_progress"
+    ]
+    assert status["criteria"][3]["classes"] == ["generated_data"]
+    assert status["blocked_classes"] == ["generated_data"]
+    assert sum(status["summary"][key] for key in (
+        "met", "in_progress", "blocked", "needs_intent", "unplanned"
+    )) == status["summary"]["total"]
+    assert outcome_line(status) == (
+        "criteria: 1/6 met · 2 in progress · 1 blocked (generated_data) "
+        "· 1 need intent · 1 unplanned"
+    )
+    assert outcome_line({
+        "summary": {"total": 1, "met": 1, "in_progress": 0, "blocked": 0,
+                    "needs_intent": 0, "unplanned": 0},
+        "blocked_classes": [],
+    }) == "criteria: 1/1 met"
 
 
 def test_legacy_items_are_unready_and_never_actions_are_detected():

@@ -121,7 +121,7 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 ## Phase 5 — finish
 
 1. Choose the registry-defined outcome: `completed`, `budget_exhausted`, `roadmap_done`, `needs_intent`, `blocked_by_policy`, `shadow_completed`, `aborted`, or the applicable earlier stop outcome.
-2. Unless already finished, run `$REGISTRY_CLI build finish "$RUN_ID" --outcome <outcome> --summary "<one line>" --json`; save the digest path.
+2. Unless already finished, run `$REGISTRY_CLI build finish "$RUN_ID" --outcome <outcome> --summary "<one line>" --spec "$WORKDIR/docs/SPEC.md" --json` (omit `--spec` when the clone has no `docs/SPEC.md`); save the digest path. The `--spec` file lets the digest score the brief's done criteria (`## Outcome`), which is what the owner reads first.
 3. Run `$REGISTRY_CLI build writeback "$RUN_ID" --json`. It regenerates the dashboard, commits `data/build` + `data/proposals` + `DASHBOARD.md` as `build: $RUN_ID $PROJECT <outcome>`, pushes `origin main` (rebasing once on non-fast-forward), confirms the write-back (lease deleted, `writeback_confirmed` journaled), and commits and pushes that line. Read its output: `pushed: false` means the lease is still `finalize_pending` and the next run's preflight retries it; `pending_commit: true` means only the confirm line is still local, which the next write-back carries. Never retry by hand.
 4. Run `$REGISTRY_CLI notify --run "$RUN_ID" --json`. It renders the digest and owner inbox and pushes them to the configured ntfy topic; when nothing is configured it prints the message. Never retry or debug delivery inside a run.
 5. Delete only `"$WORKDIR"`.

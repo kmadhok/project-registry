@@ -145,6 +145,7 @@ Read-only queries:
 registry validate               # check operating rules; non-zero exit on errors
 registry validate-contract <path> [--project-id <id>] # check a target repo's .project-meta.yaml contract
 registry validate-spec <id> <path> # check an agent-owned docs/SPEC.md roadmap
+registry outcome-status <id> <path> # score the brief's done criteria against the SPEC: met / in progress / blocked / needs intent / unplanned
 registry list                   # whole portfolio (add --lifecycle/--active/... filters)
 registry show <id>              # one project in full, with relationships and GitHub state
 registry search <text>          # free-text search across curated fields
@@ -179,7 +180,7 @@ registry build reject <run> --chunk-id <n> --reason review|verify [--pr <pr>] --
 registry build skip <run> --chunk-id <n> --workdir <clone> # shadow only: journal chunk_skipped and return to main
 registry build push <run> --chunk-id <n> --message <m> --workdir <clone> # commit + push a fix to the same run branch (no PR, no event)
 registry build writeback <run>  # dashboard, registry commit, push main (rebase once), confirm-writeback, confirm commit — idempotent
-registry build finish <run> --outcome <outcome> # finalize state and digest, then park the lease
+registry build finish <run> --outcome <outcome> [--spec <clone>/docs/SPEC.md] # finalize state and digest (with the criteria score), then park the lease
 registry build finish <run> --confirm-writeback # release the lease after the registry push succeeded
 registry build reconcile [--done] [--json] # plan or acknowledge crash cleanup
 registry portfolio              # public-safe export; add --format json|markdown/-o

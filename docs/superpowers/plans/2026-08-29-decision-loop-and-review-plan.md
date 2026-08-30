@@ -275,8 +275,10 @@ or any changed path matches `lease.contract_forbidden_paths`; `git add -A`,
 commit, `git push -u origin <branch>` (never `--force`), `gh pr create --head
 <branch> --title --body-file`, parse URL and number, journal `pr_opened`.
 CLI: `registry build branch <run> --chunk-id --title --workdir`, `registry
-build pr <run> --chunk-id --title --body-file --workdir`. MCP twins
-`create_build_branch`, `open_build_pr`; README tool count updated.
+build pr <run> --chunk-id --title --body-file --workdir`. **CLI-only, no
+MCP twins** (decided 2026-08-30 during execution): the MCP server forbids
+mutating tool names (`FORBIDDEN_TOOL_VERBS`) and README promises no tool
+mutates GitHub; the verbs are usable only under a lease from the CLI.
 
 **Acceptance criteria:**
 - [ ] Branch name derivation and slug truncation are deterministic; no lease or wrong run id → error before any git call.
@@ -299,7 +301,7 @@ tag `checkpoint/<run_id>-<chunk_id>` at the merge SHA; push the tag; journal
 reason)`: `gh pr close`, delete only a namespaced branch, journal
 `chunk_rejected`. `skip_chunk(...)` for shadow: journal `chunk_skipped
 --reason shadow`, return to `main`. CLI `registry build merge|reject|skip`;
-MCP twins.
+CLI-only, no MCP twins (see Task 9).
 
 **Acceptance criteria:**
 - [ ] Missing `verify_passed`, non-`approve` verdict, `finalize_pending`, or shadow each refuse before any `gh` call, with the rule named.

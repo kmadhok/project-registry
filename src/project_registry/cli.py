@@ -34,6 +34,7 @@ from .build import (
     resume_project,
     shadow_gate,
 )
+from .build_ops import create_branch, open_pr
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -915,6 +916,31 @@ def cmd_build_start(args, paths, now) -> int:
     return 0 if "run_id" in result else 3
 
 
+def cmd_build_branch(args, paths, now) -> int:
+    result = create_branch(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.title
+    )
+    if emit(result, args):
+        return 0
+    print(f"branch {result['branch']}")
+    return 0
+
+
+def cmd_build_pr(args, paths, now) -> int:
+    result = open_pr(
+        paths,
+        args.run_id,
+        Path(args.workdir),
+        args.chunk_id,
+        args.title,
+        Path(args.body_file),
+    )
+    if emit(result, args):
+        return 0
+    print(f"pr #{result['pr_number']} {result['pr_url']}")
+    return 0
+
+
 def cmd_build_finish(args, paths, now) -> int:
     if args.confirm_writeback:
         result = confirm_writeback(paths, args.run_id, now=now)
@@ -1267,6 +1293,25 @@ def build_parser() -> argparse.ArgumentParser:
     start.add_argument("--ttl", type=int, default=10800)
     start.add_argument("--json", action="store_true", help="Emit JSON.")
     start.set_defaults(handler=cmd_build_start)
+
+    branch = build_subparsers.add_parser(
+        "branch", help="Create a leased chunk branch."
+    )
+    branch.add_argument("run_id")
+    branch.add_argument("--chunk-id", required=True)
+    branch.add_argument("--title", required=True)
+    branch.add_argument("--workdir", required=True)
+    branch.add_argument("--json", action="store_true", help="Emit JSON.")
+    branch.set_defaults(handler=cmd_build_branch)
+
+    pr = build_subparsers.add_parser("pr", help="Commit and open a leased chunk PR.")
+    pr.add_argument("run_id")
+    pr.add_argument("--chunk-id", required=True)
+    pr.add_argument("--title", required=True)
+    pr.add_argument("--body-file", required=True)
+    pr.add_argument("--workdir", required=True)
+    pr.add_argument("--json", action="store_true", help="Emit JSON.")
+    pr.set_defaults(handler=cmd_build_pr)
 
     finish = build_subparsers.add_parser("finish", help="Finalize a build run.")
     finish.add_argument("run_id")

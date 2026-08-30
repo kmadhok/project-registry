@@ -166,6 +166,8 @@ registry build env --json       # resolved host, CLI, workdir, budget, and TTL
 registry build context <id> --json # authoritative context for one candidate
 registry build start --host <host> [--project <id>] # preflight, select, and atomically lease a run
 registry build event <run> <type> # append a validated event and update the active lease
+registry build branch <run> --chunk-id <n> --title <t> --workdir <clone> # checkout main, create push/<run>-<n>-<slug>, journal chunk_started
+registry build pr <run> --chunk-id <n> --title <t> --body-file <f> --workdir <clone> # commit (refusing forbidden paths), push, gh pr create, journal pr_opened
 registry build finish <run> --outcome <outcome> # finalize state and digest, then park the lease
 registry build finish <run> --confirm-writeback # release the lease after the registry push succeeded
 registry build reconcile [--done] [--json] # plan or acknowledge crash cleanup

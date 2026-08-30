@@ -21,6 +21,20 @@ export BASH_MAX_TIMEOUT_MS=2400000 BASH_DEFAULT_TIMEOUT_MS=1200000
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGISTRY_ROOT="$(dirname "$SCRIPT_DIR")"
 LOG_DIR="$REGISTRY_ROOT/../build-work/logs"
+REGISTRY_PY="$REGISTRY_ROOT/.venv/bin/python"
+[[ -x "$REGISTRY_PY" ]] || REGISTRY_PY=python3
+
+# Refresh GitHub evidence before the run. Never blocks the build: a missing
+# token or a failed sync only means the dashboard and retro see stale data.
+refresh_evidence() {
+  if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+    echo "registry sync skipped: GITHUB_TOKEN unset"
+    return 0
+  fi
+  PYTHONPATH="$REGISTRY_ROOT/src" "$REGISTRY_PY" -m project_registry.cli sync \
+    || echo "registry sync failed; continuing without fresh evidence"
+  return 0
+}
 
 if [[ "${1-}" == "--dry-run" ]]; then
   shift
@@ -37,6 +51,7 @@ LOG="$LOG_DIR/$(date -u +%Y%m%d-%H%M%S)-$HOST.log"
 {
   cd "$REGISTRY_ROOT" || exit 1
   git pull --ff-only && \
+    refresh_evidence && \
     claude -p "$PROMPT" --dangerously-skip-permissions --mcp-config .mcp.json
 } 2>&1 | tee "$LOG"
 exit "${PIPESTATUS[0]}"

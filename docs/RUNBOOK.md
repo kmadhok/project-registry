@@ -45,6 +45,13 @@ scripts/run-build.sh --dry-run       # print the command without running
 Logs land in `../build-work/logs/<utc>-<host>.log`. Target clones live in
 `../build-work/<run-id>/` and are deleted at the end of a clean run.
 
+The launcher refreshes GitHub evidence (`registry sync`) after `git pull` and
+before the run, but only when `GITHUB_TOKEN` is in the scheduler's
+environment; a missing token or a failed sync is logged and never blocks the
+build. Put the token in the scheduler entry's environment (a `GITHUB_TOKEN=…`
+line above the crontab entry, or `Environment=` in a systemd unit) — never in
+the repository. `registry sync-status` shows whether it worked.
+
 Before scheduling on a new host: `git pull --ff-only`, `registry validate`
 (0 errors), `registry build env --json` (check `codex_bin` is not null),
 `registry build-queue` (see what a bare run would pick).

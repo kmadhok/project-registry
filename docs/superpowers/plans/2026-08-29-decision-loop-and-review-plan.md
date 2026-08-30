@@ -4,6 +4,16 @@ Date: 2026-08-29. Input: the run record as of run `20260828T120017Z-vps-e7eb4af7
 (7 build runs, 8 merges, 0 reverts, 7 guard denials, 20/22 reviewer approvals),
 the 2026-08-25 shadow-run audit, and `docs/ideas/owner-loop.md`.
 
+## Progress (2026-08-30, branch `worktree-decision-loop`)
+
+Tasks 1–9 and 7–8 landed with tests and the fault harness green; Tasks 10–12
+in flight; Phases 5–6 not started. Deviations: verbs are CLI-only (no MCP
+twins); a `build push` verb was added for round-2 fix pushes; the sandbox
+observe checkpoint is deferred until the branch is on `main` (from a worktree
+the hook and skill paths point at the main checkout). Codex's review of
+Phase 1 found two defects (same-day `brief.reviewed` re-arming a wait; a stale
+`waiting on` line after release) — both fixed in Task 5's commit.
+
 ## Overview
 
 The builder merges a chunk in ~6 minutes and has never used more than half its

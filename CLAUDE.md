@@ -56,7 +56,13 @@ digest and parks the lease as `finalize_pending`; the run commits
 `data/build` + `DASHBOARD.md` to `main`, then `build finish
 --confirm-writeback` releases the lease and journals `writeback_confirmed`,
 which the run commits as well. Every step is an event in
-`data/build/runs.jsonl`; `build_runs.EVENT_TYPES` is the vocabulary.
+`data/build/runs.jsonl`; `build_runs.EVENT_TYPES` is the vocabulary. The
+skill drives git and GitHub through `registry build branch | pr | push |
+merge | reject | skip | writeback` (`build_ops.py`), which derive every name
+from the lease and journal their own events; raw `git`/`gh` stays guarded and
+is used only for reads, the reviewer's PR comment, and crash reconciliation.
+A stop on `needs_intent` or `blocked_by_policy` parks the project as
+`waiting_owner` until the owner acts; the inbox carries the releasing command.
 
 Modes: `shadow` = everything except merge, PRs left open for the owner;
 `build` = self-merging. **Current state (2026-08-27): the three focus
@@ -168,6 +174,11 @@ registry build start --host <host> [--project <id>] # preflight, select, and ato
 registry build event <run> <type> # append a validated event and update the active lease
 registry build branch <run> --chunk-id <n> --title <t> --workdir <clone> # checkout main, create push/<run>-<n>-<slug>, journal chunk_started
 registry build pr <run> --chunk-id <n> --title <t> --body-file <f> --workdir <clone> # commit (refusing forbidden paths), push, gh pr create, journal pr_opened
+registry build merge <run> --chunk-id <n> --pr <pr> --workdir <clone> # re-check verify_passed + accepted approve, squash-merge, tag checkpoint/<run>-<n>, journal merged
+registry build reject <run> --chunk-id <n> --reason review|verify [--pr <pr>] --workdir <clone> # close the PR (policy-checked), delete the run branch, journal chunk_rejected
+registry build skip <run> --chunk-id <n> --workdir <clone> # shadow only: journal chunk_skipped and return to main
+registry build push <run> --chunk-id <n> --message <m> --workdir <clone> # commit + push a fix to the same run branch (no PR, no event)
+registry build writeback <run>  # dashboard, registry commit, push main (rebase once), confirm-writeback, confirm commit — idempotent
 registry build finish <run> --outcome <outcome> # finalize state and digest, then park the lease
 registry build finish <run> --confirm-writeback # release the lease after the registry push succeeded
 registry build reconcile [--done] [--json] # plan or acknowledge crash cleanup

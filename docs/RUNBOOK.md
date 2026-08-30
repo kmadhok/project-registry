@@ -122,7 +122,7 @@ or any guard bypass. `touch data/build/STOP` halts the next run;
 
 | `build start` says | Cause | Do |
 |---|---|---|
-| `finalize_pending` | previous run committed nothing or the push failed after `build finish` | `registry dashboard`; `git add data/build data/proposals DASHBOARD.md`; commit `build: <run-id> <project> <outcome>`; push `main`; `registry build finish <run-id> --confirm-writeback`; commit and push the resulting `writeback_confirmed` line; start again |
+| `finalize_pending` | previous run committed nothing or the push failed after `build finish` | `registry build writeback <run-id>` (dashboard, registry commit, push, confirm, confirm commit — idempotent; `pushed: false` means the remote is still unreachable), then start again |
 | `registry_dirty` | uncommitted changes outside `data/build/`, `data/proposals/`, `DASHBOARD.md`, or not on `main` | commit or stash by hand; never let a run clean it |
 | `lease_held` | another run is active (or died < 3 h ago) | wait, or if the process is gone: wait for TTL, then start again → `reconciling` |
 | `reconciling` + `actions` | expired lease from a crashed run | execute the listed `close_pr` / `delete_branch` actions, `registry build reconcile --done`, start again |

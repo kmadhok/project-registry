@@ -83,6 +83,14 @@ Enforced by code (a violation is a denial, not a warning):
   `STOP`; it never invents intent — an incomplete brief is `needs_intent`.
 - `registry build finish` refuses any outcome other than `aborted` (or
   `crashed`) once the run has a `guard_denied` event. A denial ends the run.
+- `registry build finish --outcome blocked_by_policy` refuses unless the run
+  journaled the blocked items (`chunk_skipped --reason blocked_by_policy
+  --detail classes=…`). A stop on `blocked_by_policy` or `needs_intent` is
+  folded into `waiting_on` in `data/build/state.json`, and
+  `registry build-queue` reports the project as `waiting_owner` — never
+  `ready` — until the classes are allowed or the owner acts on the project
+  after that run (a proposal applied or rejected, or `record-review`). The
+  owner inbox carries the one-line command that releases it.
 - `registry validate-spec` / `validate-contract`: an item whose change class
   is not in `automation.allow` is `blocked_by_policy`; `plan` and `contract`
   are always allowed; `personal_data` globs and `forbidden_paths` come from the

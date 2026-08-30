@@ -68,8 +68,9 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 3. Handle the planner response:
    - `needs_intent`: run `$REGISTRY_CLI propose "$PROJECT" --set brief.open_decisions='<json>' --rationale "<reason>"`, then `$REGISTRY_CLI build event "$RUN_ID" needs_intent --reason "<reason>"`, finish `needs_intent`, and stop the loop. Permit only `brief.*` proposal paths.
    - `roadmap_done`: finish `roadmap_done` and stop the loop.
-   - Full SPEC text: write `docs/SPEC.md` and rerun validation. If no item is ready, make one more fresh planner attempt; if still none is ready, finish `aborted` with summary `planner_no_ready_item`.
-4. Treat a planner rewrite as a `plan` chunk: create its branch/event as in b, implement directly, and ship through d–g. Skip tests and checkbox ticking for this plan-only diff; still invoke the reviewer. Then continue the loop.
+   - Full SPEC text: write `docs/SPEC.md` and rerun validation. If no item is ready, make one more fresh planner attempt. If still none is ready and every remaining unchecked item's only problem is `blocked_by_policy` (or `needs_intent`), stop on policy as in step 4; otherwise finish `aborted` with summary `planner_no_ready_item`.
+4. Stopping on policy: for every unchecked item the validation report marks `blocked_by_policy`, journal it **before** finishing — `$REGISTRY_CLI build event "$RUN_ID" chunk_skipped --chunk-id "<item index>" --reason blocked_by_policy --detail classes=<comma-separated Classes values that are not in ALLOW>` — then finish `blocked_by_policy`. `build finish` refuses that outcome without these events; they are folded into `waiting_owner` state, and the owner inbox turns them into the exact `automation.allow` command. The project is not selected again until the owner acts.
+5. Treat a planner rewrite as a `plan` chunk: create its branch/event as in b, implement directly, and ship through d–g. Skip tests and checkbox ticking for this plan-only diff; still invoke the reviewer. Then continue the loop.
 
 ### b. Select
 
@@ -151,6 +152,7 @@ Before each new chunk, stop when `BUDGET.chunks_per_run` is reached, elapsed min
 - Start every chunk from current `main`; shadow PRs never stack. enforced by: skill + reviewer (branch ancestry in the supplied diff).
 - Journal every verdict before acting on it. enforced by: skill; audited by: `build-readiness --shadow-gate`.
 - A guard denial ends the run. enforced by: registry — `build finish` refuses every outcome except `aborted` once a `guard_denied` event exists.
+- A stop on policy names what blocked it. enforced by: registry — `build finish --outcome blocked_by_policy` refuses without `chunk_skipped(blocked_by_policy)` events carrying `classes`; the project is then `waiting_owner`, never `ready`, until the owner acts.
 
 A guard denial is a bug in the plan, never an obstacle to route around. It is already journaled; do not retry the command in another form. Stop and finish `aborted` with the denial reason. If the guard was wrong, the fix is a regression test and a change to `scripts/build-guard.py`, made by the owner outside a run.
 

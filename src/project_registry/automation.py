@@ -86,8 +86,15 @@ def waiting_resolved(
     waiting_on: dict, project: Project, owner_action_at: str | None
 ) -> bool:
     """Return whether an owner wait has been cleared by policy or owner action."""
-    if owner_action_at is not None and owner_action_at > waiting_on["since"]:
-        return True
+    if owner_action_at is not None:
+        action_ts = parse_ts(owner_action_at)
+        waiting_since = parse_ts(waiting_on["since"])
+        if (
+            action_ts > waiting_since
+            if action_ts is not None and waiting_since is not None
+            else owner_action_at > waiting_on["since"]
+        ):
+            return True
     kind = waiting_on.get("kind")
     if kind == "blocked_by_policy":
         classes = waiting_on.get("classes") or []

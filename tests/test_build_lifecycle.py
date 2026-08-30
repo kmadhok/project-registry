@@ -315,6 +315,32 @@ def test_guard_denial_can_finish_aborted_with_digest(paths, write_project):
     assert "- non_push_branch" in digest
 
 
+def test_blocked_policy_finish_requires_recorded_blocked_items(
+    paths, write_project
+):
+    ready_project(write_project)
+    start(paths, run_id="run")
+
+    with pytest.raises(BuildError) as exc_info:
+        finish_run(paths, "run", outcome="blocked_by_policy", now=NOW)
+
+    assert "run run" in str(exc_info.value)
+    assert "chunk_skipped --chunk-id" in str(exc_info.value)
+
+    append_event(paths, {
+        "run_id": "run",
+        "host": "mac",
+        "type": "chunk_skipped",
+        "project_id": "builder",
+        "chunk_id": "4",
+        "reason": "blocked_by_policy",
+        "detail": {"classes": "generated_data"},
+    }, now=NOW)
+    result = finish_run(paths, "run", outcome="blocked_by_policy", now=NOW)
+
+    assert result["state_after"]["waiting_on"]["classes"] == ["generated_data"]
+
+
 def test_run_without_guard_denials_can_finish_completed(paths, write_project):
     ready_project(write_project)
     start(paths, run_id="run")

@@ -1043,6 +1043,36 @@ def finish_run(
                 f"run {run_id} has {denial_count} guard denial(s); "
                 "finish with --outcome aborted"
             )
+        if outcome == "blocked_by_policy":
+            recorded_blocked_items = False
+            for item in events:
+                if not (
+                    item["run_id"] == run_id
+                    and item["type"] == "chunk_skipped"
+                    and item.get("reason") == "blocked_by_policy"
+                ):
+                    continue
+                classes = (item.get("detail") or {}).get("classes")
+                if isinstance(classes, str):
+                    recorded_blocked_items = bool([
+                        value.strip() for value in classes.split(",") if value.strip()
+                    ])
+                elif isinstance(classes, list) and all(
+                    isinstance(value, str) for value in classes
+                ):
+                    recorded_blocked_items = bool([
+                        value.strip() for value in classes if value.strip()
+                    ])
+                if recorded_blocked_items:
+                    break
+            if not recorded_blocked_items:
+                raise BuildError(
+                    f"run {run_id} finished blocked_by_policy without recording the "
+                    "blocked items; first run: registry build event "
+                    f"{run_id} chunk_skipped --chunk-id <spec-item-index> "
+                    "--reason blocked_by_policy --detail "
+                    "classes=<class,class>"
+                )
         finished_event = append_event(paths, {
             "run_id": run_id, "host": lease["host"], "type": "run_finished",
             "project_id": lease.get("project_id"), "outcome": outcome,

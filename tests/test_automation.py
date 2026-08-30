@@ -87,6 +87,26 @@ def test_blocked_policy_wait_requires_allow_or_later_owner_action(
     ).state == "waiting_owner"
 
 
+def test_waiting_owner_action_compares_normalized_timestamps(paths, write_project):
+    _complete(write_project, "blocked")
+    project = load_registry(paths).require("blocked")
+    state = ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy",
+        "classes": ["generated_data"],
+        "since": "2026-08-26T12:00:00+00:00",
+        "run_id": "run-waiting",
+    })
+
+    assert classify(
+        project, state, None, TODAY,
+        owner_action_at="2026-08-26T12:00:00Z",
+    ).state == "waiting_owner"
+    assert classify(
+        project, state, None, TODAY,
+        owner_action_at="2026-08-26T12:00:01Z",
+    ).state == "ready"
+
+
 def test_needs_intent_wait_resolves_by_review_and_gaps_win(paths, write_project):
     state = ProjectBuildState(waiting_on=_waiting(kind="needs_intent"))
     _complete(write_project, "unreviewed")

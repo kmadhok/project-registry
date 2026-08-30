@@ -33,7 +33,7 @@ _CHECKBOX = re.compile(r"^\s*-\s*\[([ xX])\]\s*(.*)$")
 _CHECKBOX_LIKE = re.compile(r"^\s*-\s*\[")
 _BULLET = re.compile(r"^\s*[-*+]\s+(.*)$")
 _METADATA = re.compile(
-    r"(?i)(?:^|\s)(Acceptance|Tests|Size|Classes|Verified-missing)\s*:\s*"
+    r"(?i)(?:^|\s)(Acceptance|Tests|Size|Classes|Verified-missing|Criteria)\s*:\s*"
 )
 _SIGNIFICANT_TOKEN = re.compile(r"[a-z0-9]+")
 _INTENT_PHRASE = re.compile(
@@ -62,6 +62,8 @@ class SpecItem:
     size: str | None = None
     classes: list[str] = field(default_factory=list)
     verified_missing: str | None = None
+    criteria: list[int] = field(default_factory=list)
+    criteria_raw: str | None = None
 
 
 @dataclass
@@ -101,6 +103,7 @@ class SpecItemReport:
     classes: list[str]
     size: str | None
     needs_intent: bool
+    criteria: list[int]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -111,6 +114,7 @@ class SpecItemReport:
             "classes": list(self.classes),
             "size": self.size,
             "needs_intent": self.needs_intent,
+            "criteria": list(self.criteria),
         }
 
 
@@ -183,6 +187,8 @@ def parse_spec(text: str) -> Spec:
                     if value.strip()
                 ]
             )
+            criteria_raw = metadata.get("criteria") if "criteria" in metadata else None
+            criteria = _parse_criteria(criteria_raw)
             items.append(
                 SpecItem(
                     index=index,
@@ -194,6 +200,8 @@ def parse_spec(text: str) -> Spec:
                     size=metadata.get("size"),
                     classes=classes,
                     verified_missing=metadata.get("verified-missing"),
+                    criteria=criteria,
+                    criteria_raw=criteria_raw,
                 )
             )
         if not items:
@@ -223,6 +231,44 @@ def validate_spec(text: str, *, project: Project) -> SpecReport:
         for decision in project.brief.open_decisions
         if decision.status is OpenDecisionStatus.OPEN
     ]
+
+    covered_criteria: set[int] = set()
+    has_criteria_lines = False
+    criterion_count = len(project.brief.done_criteria)
+    for item in spec.items:
+        if item.criteria_raw is None:
+            continue
+        has_criteria_lines = True
+        covered_criteria.update(item.criteria)
+        bad_tokens = _bad_criteria_tokens(item.criteria_raw, criterion_count)
+        if bad_tokens:
+            findings.append(
+                SpecFinding(
+                    "unknown_criterion",
+                    SUGGESTION,
+                    f"item {item.index} has unknown criterion tokens: "
+                    + ", ".join(bad_tokens),
+                    item.index,
+                )
+            )
+
+    if project.brief.done_criteria and has_criteria_lines:
+        uncovered = [
+            (index, criterion)
+            for index, criterion in enumerate(project.brief.done_criteria, start=1)
+            if index not in covered_criteria
+        ]
+        if uncovered:
+            details = "; ".join(
+                f"{index}: {criterion[:80]}" for index, criterion in uncovered
+            )
+            findings.append(
+                SpecFinding(
+                    "uncovered_criteria",
+                    SUGGESTION,
+                    f"done criteria not covered by any SPEC item: {details}",
+                )
+            )
 
     for item in spec.items:
         if item.checked:
@@ -291,6 +337,7 @@ def validate_spec(text: str, *, project: Project) -> SpecReport:
                 classes=list(item.classes),
                 size=item.size,
                 needs_intent=needs_intent,
+                criteria=list(item.criteria),
             )
         )
 
@@ -304,6 +351,81 @@ def validate_spec(text: str, *, project: Project) -> SpecReport:
         unchecked_count=len(reports),
         checked_count=sum(item.checked for item in spec.items),
     )
+
+
+def outcome_status(project: Project, spec_text: str) -> dict[str, Any]:
+    """Summarize how the SPEC checklist covers the owner's done criteria."""
+    spec = parse_spec(spec_text)
+    report = validate_spec(spec_text, project=project)
+    reports = {item.index: item for item in report.items}
+    allowed = {item.value for item in project.automation.allow}
+    criteria: list[dict[str, Any]] = []
+
+    for index, text in enumerate(project.brief.done_criteria, start=1):
+        items = [item for item in spec.items if index in item.criteria]
+        unchecked = [item for item in items if not item.checked]
+        blocked_classes: list[str] = []
+        if not items:
+            status = "unplanned"
+        elif not unchecked:
+            status = "met"
+        elif any("needs_intent" in reports[item.index].problems for item in unchecked):
+            status = "needs_intent"
+        elif all("blocked_by_policy" in reports[item.index].problems for item in unchecked):
+            status = "blocked"
+            blocked_classes = sorted({
+                change_class
+                for item in unchecked
+                for change_class in item.classes
+                if change_class not in allowed
+            })
+        else:
+            status = "in_progress"
+        criteria.append({
+            "index": index,
+            "text": text,
+            "status": status,
+            "items": [item.index for item in items],
+            "classes": blocked_classes,
+        })
+
+    summary = {name: 0 for name in (
+        "total", "met", "in_progress", "blocked", "needs_intent", "unplanned"
+    )}
+    summary["total"] = len(criteria)
+    for criterion in criteria:
+        summary[criterion["status"]] += 1
+    return {
+        "project_id": project.id,
+        "criteria": criteria,
+        "summary": summary,
+        "blocked_classes": sorted({
+            change_class
+            for criterion in criteria
+            if criterion["status"] == "blocked"
+            for change_class in criterion["classes"]
+        }),
+    }
+
+
+def outcome_line(status: dict[str, Any]) -> str:
+    """Render a compact, human-readable outcome progress line."""
+    summary = status["summary"]
+    segments = [f"{summary['met']}/{summary['total']} met"]
+    for key, label in (
+        ("in_progress", "in progress"),
+        ("blocked", "blocked"),
+        ("needs_intent", "need intent"),
+        ("unplanned", "unplanned"),
+    ):
+        count = summary[key]
+        if not count:
+            continue
+        segment = f"{count} {label}"
+        if key == "blocked" and status.get("blocked_classes"):
+            segment += f" ({', '.join(status['blocked_classes'])})"
+        segments.append(segment)
+    return "criteria: " + " · ".join(segments)
 
 
 def _section_name(heading: str) -> str:
@@ -333,6 +455,27 @@ def _extract_metadata(body: str) -> dict[str, str]:
         value = body[match.end():end].strip()
         result[match.group(1).lower()] = " ".join(value.split())
     return result
+
+
+def _criteria_tokens(raw: str) -> list[str]:
+    return [token for token in re.split(r"[\s,]+", raw.strip()) if token]
+
+
+def _parse_criteria(raw: str | None) -> list[int]:
+    if raw is None or raw.lower() == "none":
+        return []
+    return [int(token) for token in _criteria_tokens(raw) if token.isdigit() and int(token) > 0]
+
+
+def _bad_criteria_tokens(raw: str, criterion_count: int) -> list[str]:
+    if raw.lower() == "none":
+        return []
+    bad: list[str] = []
+    for token in _criteria_tokens(raw):
+        if not token.isdigit() or int(token) <= 0 or int(token) > criterion_count:
+            if token not in bad:
+                bad.append(token)
+    return bad
 
 
 def _tokens(text: str) -> set[str]:

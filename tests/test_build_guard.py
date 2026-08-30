@@ -389,6 +389,23 @@ def test_pr_close_policy(
         assert rule_id in result.stderr
 
 
+def test_invalid_review_can_close_but_cannot_merge(tmp_path: Path) -> None:
+    lease = write_lease(tmp_path)
+    lease["chunks"]["c1"]["verdict"] = "invalid"
+    (tmp_path / "data" / "build" / "lease.json").write_text(
+        json.dumps(lease), encoding="utf-8"
+    )
+
+    closed = run_guard(
+        tmp_path, "gh pr close 7 --repo kmadhok/target"
+    )
+    assert closed.returncode == 0
+    merged = run_guard(
+        tmp_path, "gh pr merge 7 --squash --repo kmadhok/target"
+    )
+    assert_denied(merged, "unverified_merge")
+
+
 @pytest.mark.parametrize(
     ("command", "expected", "rule_id"),
     [

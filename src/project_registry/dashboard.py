@@ -165,10 +165,20 @@ def _build_section(
     registry: Registry, snapshot: Snapshot, now: dt.datetime
 ) -> list[str]:
     states = load_state(registry.paths) if registry.paths is not None else {}
-    queue = build_queue(registry, snapshot, states, now.date())
+    if registry.paths is not None:
+        from .proposals import last_owner_action
+        owner_actions = last_owner_action(registry.paths)
+    else:
+        owner_actions = None
+    queue = build_queue(
+        registry, snapshot, states, now.date(), owner_actions=owner_actions
+    )
     lines = _heading("Build", queue["ready_count"])
 
     ready = [item for item in queue["candidates"] if item["state"] == "ready"]
+    waiting_owner = [
+        item for item in queue["candidates"] if item["state"] == "waiting_owner"
+    ]
     spec_only = [
         item for item in queue["candidates"] if item["state"] == "spec_only"
     ]
@@ -179,6 +189,10 @@ def _build_section(
     for rank, item in enumerate(ready, 1):
         marker = " (dry run)" if item["dry_run"] else ""
         lines.append(f"- **#{rank} ready** `{item['project_id']}`{marker}")
+    for item in waiting_owner:
+        lines.append(
+            f"- **Waiting on owner** `{item['project_id']}` — {item['reasons'][0]}"
+        )
     for item in needs_intent:
         gaps = "; ".join(item["brief_gaps"])
         lines.append(f"- **needs intent** `{item['project_id']}` — {gaps}")
@@ -187,7 +201,7 @@ def _build_section(
         lines.append(f"- **paused** `{item['project_id']}` — {reason}")
     for item in spec_only:
         lines.append(f"- **spec only** `{item['project_id']}`")
-    if not (ready or spec_only or needs_intent or paused):
+    if not (ready or waiting_owner or spec_only or needs_intent or paused):
         lines.append("_No automated builds queued._")
 
     hidden = queue["by_state"]

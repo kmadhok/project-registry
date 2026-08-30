@@ -11,7 +11,7 @@ import socket
 import statistics
 import subprocess
 from collections import Counter
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import urlparse
@@ -24,7 +24,8 @@ from .storage import Paths, append_jsonl, read_json, write_json
 __all__ = [
     "EVENT_TYPES", "RUN_OUTCOMES", "PAUSED_REASONS", "FAILURE_OUTCOMES",
     "REVIEW_CLASS_VOCABULARY", "REVIEW_VERDICT_SCHEMA", "BuildError", "Verdict",
-    "parse_verdict", "verdict_allows_merge", "BreakerConfig", "ProjectBuildState",
+    "parse_verdict", "verdict_accepted", "verdict_allows_merge", "BreakerConfig",
+    "ProjectBuildState",
     "append_event", "read_events", "load_state", "save_state", "apply_run_to_state",
     "resume_project", "build_report", "registry_checkout_status", "get_build_context",
     "begin_run", "record_event", "reconcile", "reconcile_done", "finish_run",
@@ -35,7 +36,8 @@ __all__ = [
 EVENT_TYPES = frozenset({
     "run_started", "candidate_selected", "contract_bootstrapped",
     "contract_repaired", "chunk_started", "pr_opened", "verify_passed",
-    "verify_failed", "review_verdict", "merged", "merge_conflict", "reverted",
+    "verify_failed", "review_verdict", "second_opinion", "merged",
+    "merge_conflict", "reverted",
     "chunk_rejected", "chunk_skipped", "guard_denied", "needs_intent",
     "reconciled", "writeback_confirmed", "crashed", "stopped", "resumed",
     "run_finished",
@@ -70,6 +72,35 @@ REVIEW_VERDICT_SCHEMA: dict[str, Any] = {
             "type": "array",
             "items": {"enum": sorted(REVIEW_CLASS_VOCABULARY)},
         },
+        "probes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "criterion": {"type": "string", "minLength": 1},
+                    "probe": {"type": "string", "minLength": 1},
+                    "observed": {"type": "string", "minLength": 1},
+                },
+                "required": ["criterion", "probe", "observed"],
+                "additionalProperties": False,
+            },
+        },
+        "second_opinion": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "finding": {"type": "string", "minLength": 1},
+                    "disposition": {
+                        "type": "string",
+                        "enum": ["confirmed", "refuted", "out_of_scope"],
+                    },
+                    "evidence": {"type": "string", "minLength": 1},
+                },
+                "required": ["finding", "disposition", "evidence"],
+                "additionalProperties": False,
+            },
+        },
     },
     "required": ["verdict", "reasons", "risk_flags", "classes_seen"],
     "additionalProperties": False,
@@ -90,26 +121,33 @@ class Verdict:
     reasons: list[str]
     risk_flags: list[str]
     classes_seen: list[str]
+    probes: list[dict] = field(default_factory=list)
+    second_opinion: list[dict] = field(default_factory=list)
 
 
 def parse_verdict(text: str) -> Verdict:
     """Extract and validate the last JSON object in reviewer output."""
     decoder = json.JSONDecoder()
     candidate: Any = None
-    for position, character in enumerate(text):
-        if character != "{":
+    position = 0
+    while position < len(text):
+        if text[position] != "{":
+            position += 1
             continue
         try:
-            value, _end = decoder.raw_decode(text[position:])
+            value, end = decoder.raw_decode(text[position:])
         except json.JSONDecodeError:
+            position += 1
             continue
         if isinstance(value, dict):
             candidate = value
+        position += end
     if candidate is None:
         raise BuildError("review verdict contains no JSON object")
 
     required = {"verdict", "reasons", "risk_flags", "classes_seen"}
-    unknown = set(candidate) - required
+    optional = {"probes", "second_opinion"}
+    unknown = set(candidate) - required - optional
     if unknown:
         raise BuildError(f"review verdict has unknown keys: {sorted(unknown)}")
     missing = required - set(candidate)
@@ -130,17 +168,60 @@ def parse_verdict(text: str) -> Verdict:
     unknown_classes = set(candidate["classes_seen"]) - REVIEW_CLASS_VOCABULARY
     if unknown_classes:
         raise BuildError(f"review verdict has unknown classes: {sorted(unknown_classes)}")
+
+    probes = candidate.get("probes", [])
+    if not isinstance(probes, list):
+        raise BuildError("review verdict probes must be a list of objects")
+    probe_keys = {"criterion", "probe", "observed"}
+    for probe in probes:
+        if not isinstance(probe, dict) or set(probe) != probe_keys or any(
+            not isinstance(probe[key], str) or not probe[key]
+            for key in probe_keys
+        ):
+            raise BuildError(
+                "review verdict probes entries must contain exactly non-empty "
+                "string criterion, probe, and observed fields"
+            )
+
+    second_opinion = candidate.get("second_opinion", [])
+    if not isinstance(second_opinion, list):
+        raise BuildError("review verdict second_opinion must be a list of objects")
+    second_opinion_keys = {"finding", "disposition", "evidence"}
+    dispositions = {"confirmed", "refuted", "out_of_scope"}
+    for finding in second_opinion:
+        if not isinstance(finding, dict) or set(finding) != second_opinion_keys:
+            raise BuildError(
+                "review verdict second_opinion entries must contain exactly "
+                "finding, disposition, and evidence fields"
+            )
+        if any(
+            not isinstance(finding[key], str) or not finding[key]
+            for key in second_opinion_keys
+        ) or finding["disposition"] not in dispositions:
+            raise BuildError(
+                "review verdict second_opinion fields must be non-empty strings "
+                "and disposition must be confirmed, refuted, or out_of_scope"
+            )
     return Verdict(
         verdict=verdict,
         reasons=list(candidate["reasons"]),
         risk_flags=list(candidate["risk_flags"]),
         classes_seen=list(candidate["classes_seen"]),
+        probes=[dict(probe) for probe in probes],
+        second_opinion=[dict(finding) for finding in second_opinion],
     )
+
+
+def verdict_accepted(verdict: Verdict) -> tuple[bool, str | None]:
+    """Return whether a parsed verdict satisfies review acceptance policy."""
+    if verdict.verdict == "approve" and not verdict.probes:
+        return False, "approve without probes"
+    return True, None
 
 
 def verdict_allows_merge(verdict: Verdict) -> bool:
     """Return whether an independent review permits merging the chunk."""
-    return verdict.verdict == "approve"
+    return verdict.verdict == "approve" and verdict_accepted(verdict)[0]
 
 
 @dataclass(frozen=True)
@@ -159,6 +240,7 @@ class ProjectBuildState:
     needs_intent_proposal_id: str | None = None
     last_run_id: str | None = None
     last_outcome: str | None = None
+    waiting_on: dict | None = None
 
     @classmethod
     def from_dict(cls, raw: Any) -> "ProjectBuildState":
@@ -177,6 +259,27 @@ class ProjectBuildState:
             raise BuildError("chunks_merged_total must be an integer")
         if values["paused_reason"] not in PAUSED_REASONS | {None}:
             raise BuildError("paused_reason is unknown")
+        waiting_on = values["waiting_on"]
+        if waiting_on is not None:
+            if not isinstance(waiting_on, dict):
+                raise BuildError("waiting_on must be an object or null")
+            required = {"kind", "classes", "since", "run_id"}
+            if set(waiting_on) != required:
+                raise BuildError(
+                    "waiting_on must contain exactly kind, classes, since, and run_id"
+                )
+            if waiting_on["kind"] not in {"blocked_by_policy", "needs_intent"}:
+                raise BuildError("waiting_on kind must be blocked_by_policy or needs_intent")
+            classes = waiting_on["classes"]
+            if not isinstance(classes, list) or any(
+                not isinstance(item, str) for item in classes
+            ):
+                raise BuildError("waiting_on classes must be a list of strings")
+            if classes != sorted(set(classes)):
+                raise BuildError("waiting_on classes must be sorted and unique")
+            for field in ("since", "run_id"):
+                if not isinstance(waiting_on[field], str) or not waiting_on[field].strip():
+                    raise BuildError(f"waiting_on {field} must be a non-empty string")
         return cls(**values)
 
     def to_dict(self) -> dict[str, Any]:
@@ -322,6 +425,7 @@ def apply_run_to_state(
     latest_ts = result.last_run_at
     latest_run_id = result.last_run_id
     last_outcome = result.last_outcome
+    blocked_classes: set[str] = set()
     for event in events:
         event_type = event.get("type")
         event_ts = event.get("ts")
@@ -338,8 +442,28 @@ def apply_run_to_state(
             )
         elif event_type == "reverted":
             result = replace(result, paused_reason="revert", paused_at=event_ts)
+        elif event_type == "chunk_skipped" and event.get("reason") == "blocked_by_policy":
+            classes = (event.get("detail") or {}).get("classes")
+            if isinstance(classes, str):
+                blocked_classes.update(
+                    item.strip() for item in classes.split(",") if item.strip()
+                )
+            elif isinstance(classes, list):
+                blocked_classes.update(
+                    item.strip() for item in classes
+                    if isinstance(item, str) and item.strip()
+                )
         elif event_type == "run_finished":
             last_outcome = event.get("outcome")
+            waiting_on = None
+            if last_outcome in {"blocked_by_policy", "needs_intent"}:
+                waiting_on = {
+                    "kind": last_outcome,
+                    "classes": sorted(blocked_classes),
+                    "since": event_ts,
+                    "run_id": event.get("run_id"),
+                }
+            result = replace(result, waiting_on=waiting_on)
             if last_outcome in FAILURE_OUTCOMES:
                 result = replace(
                     result, consecutive_failures=result.consecutive_failures + 1
@@ -407,6 +531,51 @@ def build_report(
     merged = [event for event in events if event["type"] == "merged"]
     rejected = [event for event in events if event["type"] == "chunk_rejected"]
     skipped = [event for event in events if event["type"] == "chunk_skipped"]
+    verdicts = [event for event in events if event["type"] == "review_verdict"]
+    second_opinions = [event for event in events if event["type"] == "second_opinion"]
+
+    review = {
+        "verdicts": len(verdicts),
+        "accepted_approvals": 0,
+        "unaccepted": 0,
+        "probed": 0,
+    }
+    dispositions = Counter()
+    for event in verdicts:
+        detail = event.get("detail") or {}
+        if not isinstance(detail, dict):
+            continue
+        if (
+            detail.get("verdict") == "approve"
+            and detail.get("accepted", True) is True
+        ):
+            review["accepted_approvals"] += 1
+        if detail.get("accepted") is False:
+            review["unaccepted"] += 1
+        probes = detail.get("probes") or []
+        if isinstance(probes, list) and len(probes) > 0:
+            review["probed"] += 1
+        findings = detail.get("second_opinion") or []
+        if isinstance(findings, list):
+            for finding in findings:
+                if isinstance(finding, dict):
+                    disposition = finding.get("disposition")
+                    if disposition in {"confirmed", "refuted", "out_of_scope"}:
+                        dispositions[disposition] += 1
+
+    second_opinion_counts = {"ok": 0, "unavailable": 0, "findings": 0}
+    for event in second_opinions:
+        detail = event.get("detail") or {}
+        if not isinstance(detail, dict):
+            continue
+        status = detail.get("status")
+        if status in {"ok", "unavailable"}:
+            second_opinion_counts[status] += 1
+        if status == "ok":
+            try:
+                second_opinion_counts["findings"] += int(detail.get("findings", 0))
+            except (TypeError, ValueError):
+                pass
 
     starts = {
         (event["run_id"], event.get("chunk_id")): parse_ts(event["ts"])
@@ -439,6 +608,13 @@ def build_report(
             "merged": len(merged),
             "rejected_by_reason": _counts(rejected, "reason"),
             "skipped_by_reason": _counts(skipped, "reason"),
+        },
+        "review": review,
+        "second_opinions": {
+            **second_opinion_counts,
+            "confirmed": dispositions["confirmed"],
+            "refuted": dispositions["refuted"],
+            "out_of_scope": dispositions["out_of_scope"],
         },
         "reverts": sum(event["type"] == "reverted" for event in events),
         "guard_denials": sum(event["type"] == "guard_denied" for event in events),
@@ -564,13 +740,15 @@ def get_build_context(
     """Assemble the authoritative context supplied to a build run."""
     from .automation import classify
     from .contracts import contract_expectations
+    from .proposals import last_owner_action
 
     project = registry.get(project_id)
     if project is None:
         raise BuildError(f"unknown project id: {project_id}")
     states = load_state(paths)
     eligibility = classify(
-        project, states.get(project_id), snapshot.get(project.repo), now
+        project, states.get(project_id), snapshot.get(project.repo), now,
+        owner_action_at=last_owner_action(paths).get(project_id),
     ).to_dict()
     events, _ = read_events(paths)
     summaries: list[dict[str, Any]] = []
@@ -622,6 +800,7 @@ def begin_run(
     """Preflight, select a candidate, and atomically acquire the build lease."""
     from .automation import build_queue, classify
     from .github.sync import load_snapshot
+    from .proposals import last_owner_action
     from .storage import load_registry
 
     current = _now(now)
@@ -662,13 +841,15 @@ def begin_run(
     registry = registry or load_registry(paths)
     snapshot = snapshot or load_snapshot(paths)
     states = load_state(paths)
+    owner_actions = last_owner_action(paths)
     forced = False
     if project_id is not None:
         project = registry.get(project_id)
         if project is None:
             raise BuildError(f"unknown project id: {project_id}")
         eligibility = classify(
-            project, states.get(project.id), snapshot.get(project.repo), current.date()
+            project, states.get(project.id), snapshot.get(project.repo), current.date(),
+            owner_action_at=owner_actions.get(project.id),
         ).to_dict()
         if eligibility["state"] != "ready":
             if not force_named:
@@ -682,7 +863,9 @@ def begin_run(
                 return {"outcome": "no_candidate", "reason": reason}
             forced = True
     else:
-        queue = build_queue(registry, snapshot, states, current.date())
+        queue = build_queue(
+            registry, snapshot, states, current.date(), owner_actions=owner_actions
+        )
         selected = next(
             (item for item in queue["candidates"] if item["state"] == "ready"), None
         )
@@ -769,6 +952,7 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
     chunk_id = payload.get("chunk_id")
     if event_type in {
         "pr_opened", "verify_passed", "verify_failed", "review_verdict",
+        "second_opinion",
         "merged", "chunk_rejected", "chunk_skipped",
     } and not chunk_id:
         raise BuildError(f"{event_type} requires chunk_id")
@@ -795,10 +979,22 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
     elif event_type in {"verify_passed", "verify_failed"}:
         chunk["verify"] = "passed" if event_type == "verify_passed" else "failed"
     elif event_type == "review_verdict":
-        verdict = detail.get("verdict")
-        if verdict not in {"approve", "request_changes", "reject"}:
-            raise BuildError("review_verdict detail.verdict is invalid")
-        chunk["verdict"] = verdict
+        submitted_detail = detail
+        try:
+            verdict = parse_verdict(json.dumps(submitted_detail))
+        except BuildError as exc:
+            accepted, rejection_reason = False, str(exc)
+            parsed_verdict = None
+        else:
+            accepted, rejection_reason = verdict_accepted(verdict)
+            parsed_verdict = verdict.verdict
+        if not isinstance(detail, dict):
+            detail = {"submitted": submitted_detail}
+        detail["accepted"] = accepted
+        if not accepted:
+            detail["rejection_reason"] = rejection_reason
+        payload["detail"] = detail
+        chunk["verdict"] = parsed_verdict if accepted else "invalid"
     elif event_type == "merged":
         was_open = (
             bool(chunk.get("pr_number")) and bool(chunk.get("branch"))
@@ -816,7 +1012,7 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
     written = append_event(paths, payload)
     write_json(paths.build_lease_file, lease)
     events, _ = read_events(paths)
-    return {
+    result = {
         "recorded": True,
         "seq": len(events),
         "lease_summary": {
@@ -825,6 +1021,12 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
         },
         "event": written,
     }
+    if event_type == "review_verdict":
+        result.update({
+            "verdict_accepted": accepted,
+            "rejection_reason": rejection_reason,
+        })
+    return result
 
 
 def reconcile(
@@ -919,6 +1121,10 @@ def _write_digest(
         lines.insert(4, f"- Paused reason: {lease['paused_reason']}")
     if summary:
         lines.extend(["## Summary", "", summary, ""])
+    finished = next((item for item in events if item["type"] == "run_finished"), None)
+    criteria = ((finished or {}).get("detail") or {}).get("criteria")
+    if criteria:
+        lines.extend(["## Outcome", "", criteria["line"], ""])
     merged = [item for item in events if item["type"] == "merged"]
     if merged:
         lines.extend(["## Merged chunks", ""])
@@ -967,6 +1173,7 @@ def _write_digest(
 def finish_run(
     paths: Paths, run_id: str, *, outcome: str, summary: str | None = None,
     now: dt.datetime | None = None, registry: Any = None, snapshot: Any = None,
+    spec_text: str | None = None,
 ) -> dict[str, Any]:
     """Finalize a leased run and retain its lease until registry write-back."""
     from .automation import build_queue
@@ -993,10 +1200,51 @@ def finish_run(
                 f"run {run_id} has {denial_count} guard denial(s); "
                 "finish with --outcome aborted"
             )
+        if outcome == "blocked_by_policy":
+            recorded_blocked_items = False
+            for item in events:
+                if not (
+                    item["run_id"] == run_id
+                    and item["type"] == "chunk_skipped"
+                    and item.get("reason") == "blocked_by_policy"
+                ):
+                    continue
+                classes = (item.get("detail") or {}).get("classes")
+                if isinstance(classes, str):
+                    recorded_blocked_items = bool([
+                        value.strip() for value in classes.split(",") if value.strip()
+                    ])
+                elif isinstance(classes, list) and all(
+                    isinstance(value, str) for value in classes
+                ):
+                    recorded_blocked_items = bool([
+                        value.strip() for value in classes if value.strip()
+                    ])
+                if recorded_blocked_items:
+                    break
+            if not recorded_blocked_items:
+                raise BuildError(
+                    f"run {run_id} finished blocked_by_policy without recording the "
+                    "blocked items; first run: registry build event "
+                    f"{run_id} chunk_skipped --chunk-id <spec-item-index> "
+                    "--reason blocked_by_policy --detail "
+                    "classes=<class,class>"
+                )
+        detail: dict[str, Any] = {}
+        if summary:
+            detail["summary"] = summary
+        if spec_text is not None and registry is not None:
+            from .specs import outcome_line, outcome_status
+            status = outcome_status(registry.require(lease["project_id"]), spec_text)
+            detail["criteria"] = {
+                "summary": status["summary"],
+                "blocked_classes": status["blocked_classes"],
+                "line": outcome_line(status),
+            }
         finished_event = append_event(paths, {
             "run_id": run_id, "host": lease["host"], "type": "run_finished",
             "project_id": lease.get("project_id"), "outcome": outcome,
-            "detail": {"summary": summary} if summary else None,
+            "detail": detail or None,
         }, now=current)
     else:
         outcome = finished_event["outcome"]
@@ -1013,8 +1261,12 @@ def finish_run(
     lease["paused_reason"] = state_after.paused_reason
     needs_intent: list[str] = []
     if registry is not None:
+        from .proposals import last_owner_action
         snapshot = snapshot or load_snapshot(paths)
-        queue = build_queue(registry, snapshot, states, current.date())
+        queue = build_queue(
+            registry, snapshot, states, current.date(),
+            owner_actions=last_owner_action(paths),
+        )
         needs_intent = [
             item["project_id"] for item in queue["candidates"]
             if item["state"] == "needs_intent"

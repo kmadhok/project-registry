@@ -12,16 +12,20 @@ import pytest
 
 from project_registry.build import (
     BuildError,
+    ProjectBuildState,
     append_event,
+    apply_run_to_state,
     begin_run,
     build_env,
     confirm_writeback,
     finish_run,
+    load_state,
     read_events,
     reconcile,
     reconcile_done,
     record_event,
     registry_checkout_status,
+    save_state,
 )
 from project_registry.github.snapshot import Snapshot
 from project_registry.storage import load_registry, read_json, write_json
@@ -54,6 +58,33 @@ def test_digest_lists_owner_inbox(paths, write_project):
     assert "needs_intent" in digest and "vague" in digest
 
 
+def test_finish_records_outcome_status_and_writes_digest_section(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    spec = "## Remaining work\n- [x] Tests pass\n      Criteria: 1\n"
+    result = finish_run(
+        paths, "run", outcome="completed", summary="Finished.", now=NOW,
+        registry=load_registry(paths), snapshot=Snapshot(), spec_text=spec,
+    )
+    events, _ = read_events(paths)
+    criteria = next(event for event in events if event["type"] == "run_finished")["detail"]["criteria"]
+    assert criteria["summary"]["met"] == 1
+    assert criteria["blocked_classes"] == []
+    assert criteria["line"] == "criteria: 1/1 met"
+    digest = open(result["digest_path"], encoding="utf-8").read()
+    assert "## Summary\n\nFinished.\n\n## Outcome\n\ncriteria: 1/1 met" in digest
+
+
+def test_finish_without_spec_omits_outcome_status(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = finish_run(paths, "run", outcome="completed", summary="Finished.", now=NOW)
+    events, _ = read_events(paths)
+    detail = next(event for event in events if event["type"] == "run_finished")["detail"]
+    assert "criteria" not in detail
+    assert "## Outcome" not in open(result["digest_path"], encoding="utf-8").read()
+
+
 def start(paths, *, now=NOW, project_id=None, force_named=False, run_id=None):
     return begin_run(
         paths,
@@ -65,6 +96,99 @@ def start(paths, *, now=NOW, project_id=None, force_named=False, run_id=None):
         registry=load_registry(paths),
         snapshot=Snapshot(),
     )
+
+
+def lifecycle_event(event_type, *, run_id="run-1", ts=NOW.isoformat(), **values):
+    return {"type": event_type, "run_id": run_id, "ts": ts, **values}
+
+
+@pytest.mark.parametrize("classes", [
+    ["generated_data", "dependencies"],
+    "generated_data, dependencies",
+])
+def test_blocked_policy_finish_records_waiting_on(classes):
+    finish_ts = "2026-08-22T12:05:00+00:00"
+    state = apply_run_to_state(ProjectBuildState(), [
+        lifecycle_event(
+            "chunk_skipped", reason="blocked_by_policy",
+            detail={"classes": classes},
+        ),
+        lifecycle_event("run_finished", outcome="blocked_by_policy", ts=finish_ts),
+    ])
+
+    assert state.waiting_on == {
+        "kind": "blocked_by_policy",
+        "classes": ["dependencies", "generated_data"],
+        "since": finish_ts,
+        "run_id": "run-1",
+    }
+
+
+def test_needs_intent_finish_records_waiting_on_without_classes():
+    state = apply_run_to_state(ProjectBuildState(), [
+        lifecycle_event("run_finished", outcome="needs_intent"),
+    ])
+
+    assert state.waiting_on == {
+        "kind": "needs_intent",
+        "classes": [],
+        "since": NOW.isoformat(),
+        "run_id": "run-1",
+    }
+
+
+def test_later_completed_run_clears_waiting_on():
+    waiting = ProjectBuildState(waiting_on={
+        "kind": "needs_intent", "classes": [], "since": NOW.isoformat(),
+        "run_id": "run-1",
+    })
+    state = apply_run_to_state(waiting, [
+        lifecycle_event("run_finished", run_id="run-2", outcome="completed"),
+    ])
+
+    assert state.waiting_on is None
+
+
+def test_waiting_on_state_validation_and_round_trip(paths):
+    assert ProjectBuildState.from_dict({}).waiting_on is None
+    with pytest.raises(BuildError, match="waiting_on kind"):
+        ProjectBuildState.from_dict({
+            "waiting_on": {
+                "kind": "bogus", "classes": [], "since": NOW.isoformat(),
+                "run_id": "run-1",
+            },
+        })
+
+    waiting = ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy", "classes": ["dependencies"],
+        "since": NOW.isoformat(), "run_id": "run-1",
+    })
+    save_state(paths, {"builder": waiting})
+    assert load_state(paths)["builder"] == waiting
+
+
+def test_begin_run_excludes_waiting_owner_unless_named_and_forced(
+    paths, write_project
+):
+    ready_project(write_project)
+    waiting = ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy", "classes": ["generated_data"],
+        "since": NOW.isoformat(), "run_id": "blocked-run",
+    })
+    save_state(paths, {"builder": waiting})
+
+    bare = start(paths, run_id="bare")
+    assert bare["outcome"] == "no_candidate"
+    assert bare["by_state"]["waiting_owner"] == 1
+
+    named = start(paths, project_id="builder", run_id="named")
+    assert named["outcome"] == "no_candidate"
+    assert "waiting on owner" in named["reason"]
+
+    forced = start(
+        paths, project_id="builder", force_named=True, run_id="forced"
+    )
+    assert forced["lease"]["project_id"] == "builder"
 
 
 def test_second_begin_reports_lease_held_without_changing_lease(paths, write_project):
@@ -218,6 +342,32 @@ def test_guard_denial_can_finish_aborted_with_digest(paths, write_project):
     assert "- non_push_branch" in digest
 
 
+def test_blocked_policy_finish_requires_recorded_blocked_items(
+    paths, write_project
+):
+    ready_project(write_project)
+    start(paths, run_id="run")
+
+    with pytest.raises(BuildError) as exc_info:
+        finish_run(paths, "run", outcome="blocked_by_policy", now=NOW)
+
+    assert "run run" in str(exc_info.value)
+    assert "chunk_skipped --chunk-id" in str(exc_info.value)
+
+    append_event(paths, {
+        "run_id": "run",
+        "host": "mac",
+        "type": "chunk_skipped",
+        "project_id": "builder",
+        "chunk_id": "4",
+        "reason": "blocked_by_policy",
+        "detail": {"classes": "generated_data"},
+    }, now=NOW)
+    result = finish_run(paths, "run", outcome="blocked_by_policy", now=NOW)
+
+    assert result["state_after"]["waiting_on"]["classes"] == ["generated_data"]
+
+
 def test_run_without_guard_denials_can_finish_completed(paths, write_project):
     ready_project(write_project)
     start(paths, run_id="run")
@@ -253,9 +403,27 @@ def test_event_counters_and_finish_digest(paths, write_project):
         "detail": {"pr_number": 9, "branch": "push/run-1-work"},
     })
     record_event(paths, "run", {"type": "verify_passed", "chunk_id": "c1"})
+    before_opinion = read_json(paths.build_lease_file)
+    with pytest.raises(BuildError, match="second_opinion requires chunk_id"):
+        record_event(paths, "run", {"type": "second_opinion"})
+    opinion = record_event(paths, "run", {
+        "type": "second_opinion", "chunk_id": "c1",
+        "detail": {"source": "codex", "status": "ok", "findings": "3"},
+    })
+    after_opinion = read_json(paths.build_lease_file)
+    assert opinion["event"]["detail"]["findings"] == "3"
+    assert after_opinion["prs_open"] == before_opinion["prs_open"]
+    assert after_opinion["merges"] == before_opinion["merges"]
     record_event(paths, "run", {
         "type": "review_verdict", "chunk_id": "c1",
-        "detail": {"verdict": "approve"},
+        "detail": {
+            "verdict": "approve", "reasons": [], "risk_flags": [],
+            "classes_seen": ["none"],
+            "probes": [{
+                "criterion": "tests pass", "probe": "pytest",
+                "observed": "passed",
+            }],
+        },
     })
     recorded = record_event(paths, "run", {
         "type": "merged", "chunk_id": "c1", "tag": "checkpoint/run-1",
@@ -275,6 +443,60 @@ def test_event_counters_and_finish_digest(paths, write_project):
     assert lease["status"] == "finalize_pending"
     assert lease["finalize"]["outcome"] == "completed"
     assert lease["finalize"]["digest_path"] == finished["digest_path"]
+
+
+def test_review_verdict_with_probes_is_accepted_and_journaled(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = record_event(paths, "run", {
+        "type": "review_verdict", "chunk_id": "c1",
+        "detail": {
+            "verdict": "approve", "reasons": [], "risk_flags": [],
+            "classes_seen": ["none"],
+            "probes": [{
+                "criterion": "tests pass", "probe": "pytest",
+                "observed": "passed",
+            }],
+        },
+    })
+
+    assert result["verdict_accepted"] is True
+    assert result["rejection_reason"] is None
+    assert result["event"]["detail"]["accepted"] is True
+    assert read_json(paths.build_lease_file)["chunks"]["c1"]["verdict"] == "approve"
+
+
+def test_unprobed_approval_is_invalid_and_journaled(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = record_event(paths, "run", {
+        "type": "review_verdict", "chunk_id": "c1",
+        "detail": {
+            "verdict": "approve", "reasons": [], "risk_flags": [],
+            "classes_seen": ["none"],
+        },
+    })
+
+    assert result["verdict_accepted"] is False
+    assert result["rejection_reason"] == "approve without probes"
+    assert result["event"]["detail"]["accepted"] is False
+    assert result["event"]["detail"]["rejection_reason"] == "approve without probes"
+    assert read_json(paths.build_lease_file)["chunks"]["c1"]["verdict"] == "invalid"
+
+
+def test_malformed_review_verdict_is_downgraded_and_journaled(paths, write_project):
+    ready_project(write_project)
+    start(paths, run_id="run")
+    result = record_event(paths, "run", {
+        "type": "review_verdict", "chunk_id": "c1",
+        "detail": {"verdict": "yes"},
+    })
+
+    assert result["verdict_accepted"] is False
+    assert result["rejection_reason"]
+    assert result["event"]["detail"]["accepted"] is False
+    assert result["event"]["detail"]["rejection_reason"] == result["rejection_reason"]
+    assert read_json(paths.build_lease_file)["chunks"]["c1"]["verdict"] == "invalid"
 
 
 def test_reconcile_lists_stale_builder_pr_without_mutation(paths, write_project):

@@ -34,6 +34,15 @@ from .build import (
     resume_project,
     shadow_gate,
 )
+from .build_ops import (
+    create_branch,
+    merge_chunk,
+    open_pr,
+    push_fix,
+    reject_chunk,
+    skip_chunk,
+    writeback,
+)
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -45,6 +54,7 @@ from .proposals import (
     ProposalError,
     apply_proposal,
     list_proposals,
+    last_owner_action,
     load_proposal,
     propose_update,
     record_review,
@@ -71,7 +81,7 @@ from .signals import (
     describe_rules,
     find_mismatches,
 )
-from .specs import validate_spec
+from .specs import outcome_line, outcome_status, validate_spec
 from .storage import Paths, load_registry, read_jsonl
 from .validation import ERROR, validate
 
@@ -229,6 +239,31 @@ def cmd_validate_spec(args, paths, now) -> int:
     else:
         print("\nNo unchecked SPEC item is ready.")
     return 0 if success else 1
+
+
+def cmd_outcome_status(args, paths, now) -> int:
+    registry = load_registry(paths)
+    project = registry.require(args.project_id)
+    try:
+        text = Path(args.spec_path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise RegistryError(f"cannot read spec {args.spec_path!r}: {exc}") from exc
+    status = outcome_status(project, text)
+    if emit(status, args):
+        return 0
+
+    print(f"{'#':>3}  {'STATUS':13}  {'ITEMS':10}  CRITERION")
+    for criterion in status["criteria"]:
+        items = ",".join(str(index) for index in criterion["items"]) or "-"
+        text = criterion["text"]
+        if len(text) > 70:
+            text = text[:67] + "..."
+        print(
+            f"{criterion['index']:>3}  {criterion['status'].upper():13}  "
+            f"{items:10}  {text}"
+        )
+    print(outcome_line(status))
+    return 0
 
 
 def cmd_list(args, paths, now) -> int:
@@ -586,7 +621,10 @@ def cmd_dashboard(args, paths, now) -> int:
 def cmd_build_queue(args, paths, now) -> int:
     registry = load_registry(paths)
     snapshot = load_snapshot(paths)
-    queue = build_queue(registry, snapshot, load_state(paths), now.date())
+    queue = build_queue(
+        registry, snapshot, load_state(paths), now.date(),
+        owner_actions=last_owner_action(paths),
+    )
     candidates = queue["candidates"]
     if args.state:
         candidates = [item for item in candidates if item["state"] == args.state]
@@ -630,7 +668,8 @@ def cmd_build_readiness(args, paths, now) -> int:
     snapshot = load_snapshot(paths)
     states = load_state(paths)
     result = readiness(
-        project, states.get(project.id), snapshot.get(project.repo), now.date()
+        project, states.get(project.id), snapshot.get(project.repo), now.date(),
+        owner_action_at=last_owner_action(paths).get(project.id),
     )
     if emit(result, args):
         return 0
@@ -638,6 +677,13 @@ def cmd_build_readiness(args, paths, now) -> int:
     print(f"{project.id}: {result['state']}")
     print(f"  dry run      {'yes' if result['dry_run'] else 'no'}")
     print(f"  reasons      {'; '.join(result['reasons'])}")
+    if result["state"] == "waiting_owner" and result["waiting_on"]:
+        waiting = result["waiting_on"]
+        classes = ",".join(waiting["classes"]) or "none"
+        print(
+            f"  waiting on   {waiting['kind']} classes={classes} "
+            f"since {waiting['since'][:10]} (run {waiting['run_id']})"
+        )
     print(f"  brief gaps   {', '.join(result['brief_gaps']) or 'none'}")
     print(f"  mode         {result['policy']['mode']}")
     print(
@@ -785,6 +831,8 @@ def cmd_build_report(args, paths, now) -> int:
 
     runs = report["runs"]
     chunks = report["chunks"]
+    review = report["review"]
+    second_opinions = report["second_opinions"]
     timing = report["minutes_per_merged_chunk"]
     timing_text = (
         "—" if timing["count"] == 0
@@ -797,6 +845,19 @@ def cmd_build_report(args, paths, now) -> int:
         ["reverts", str(report["reverts"])],
         ["guard denials", str(report["guard_denials"])],
         ["needs intent", str(report["needs_intent_events"])],
+        [
+            "review verdicts",
+            f"{review['verdicts']} ({review['accepted_approvals']} accepted approvals, "
+            f"{review['unaccepted']} unaccepted, {review['probed']} probed)",
+        ],
+        [
+            "second opinions",
+            f"ok {second_opinions['ok']} / unavailable {second_opinions['unavailable']}; "
+            f"findings {second_opinions['findings']}: "
+            f"{second_opinions['confirmed']} confirmed, "
+            f"{second_opinions['refuted']} refuted, "
+            f"{second_opinions['out_of_scope']} out_of_scope",
+        ],
         ["minutes/merge", timing_text],
     ]
     print(_table(rows, ["METRIC", "VALUE"]))
@@ -831,14 +892,19 @@ def cmd_owner_inbox(args, paths, now) -> int:
 
 def cmd_notify(args, paths, now) -> int:
     from .inbox import owner_inbox
-    from .notify import build_notification, notify_config, send_ntfy
-    digest_path = paths.build_digests_dir / f"{args.run}.md"
-    if not digest_path.exists():
-        print(f"no digest for run {args.run}", file=sys.stderr)
-        return 1
-    digest = digest_path.read_text(encoding="utf-8")
+    from .notify import (
+        build_inbox_notification, build_notification, notify_config, send_ntfy,
+    )
     inbox = owner_inbox(paths, load_registry(paths), now=now)
-    notification = build_notification(digest, inbox)
+    if args.inbox:
+        notification = build_inbox_notification(inbox)
+    else:
+        digest_path = paths.build_digests_dir / f"{args.run}.md"
+        if not digest_path.exists():
+            print(f"no digest for run {args.run}", file=sys.stderr)
+            return 1
+        digest = digest_path.read_text(encoding="utf-8")
+        notification = build_notification(digest, inbox)
     message = notification["title"] + "\n" + notification["body"]
     config = notify_config(paths)
     result = {
@@ -851,6 +917,18 @@ def cmd_notify(args, paths, now) -> int:
         print(message)
         print(f"[notify] configured={result['configured']} sent={result['sent']}")
     return 0
+
+
+def cmd_request_run(args, paths, now) -> int:
+    from .notify import request_run
+
+    result = request_run(paths, args.project_id, reason=args.reason, now=now)
+    if not emit(result, args):
+        print(result["message"])
+        print(
+            f"[request-run] configured={result['configured']} sent={result['sent']}"
+        )
+    return 1 if result["configured"] and not result["sent"] else 0
 
 
 def cmd_build_resume(args, paths, now) -> int:
@@ -883,6 +961,71 @@ def cmd_build_start(args, paths, now) -> int:
     return 0 if "run_id" in result else 3
 
 
+def cmd_build_branch(args, paths, now) -> int:
+    result = create_branch(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.title
+    )
+    if emit(result, args):
+        return 0
+    print(f"branch {result['branch']}")
+    return 0
+
+
+def cmd_build_pr(args, paths, now) -> int:
+    result = open_pr(
+        paths,
+        args.run_id,
+        Path(args.workdir),
+        args.chunk_id,
+        args.title,
+        Path(args.body_file),
+    )
+    if emit(result, args):
+        return 0
+    print(f"pr #{result['pr_number']} {result['pr_url']}")
+    return 0
+
+
+def cmd_build_push(args, paths, now) -> int:
+    result = push_fix(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.message
+    )
+    if emit(result, args):
+        return 0
+    print(f"pushed {result['branch']} {result['commit']}")
+    return 0
+
+
+def cmd_build_merge(args, paths, now) -> int:
+    result = merge_chunk(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.pr
+    )
+    if emit(result, args):
+        return 0
+    print(f"merged #{result['pr_number']} {result['merge_sha']} {result['tag']}")
+    return 0
+
+
+def cmd_build_reject(args, paths, now) -> int:
+    result = reject_chunk(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.reason, args.pr
+    )
+    if emit(result, args):
+        return 0
+    print(f"rejected {result['chunk_id']} ({result['reason']})")
+    return 0
+
+
+def cmd_build_skip(args, paths, now) -> int:
+    result = skip_chunk(
+        paths, args.run_id, Path(args.workdir), args.chunk_id
+    )
+    if emit(result, args):
+        return 0
+    print(f"skipped {result['chunk_id']} (shadow)")
+    return 0
+
+
 def cmd_build_finish(args, paths, now) -> int:
     if args.confirm_writeback:
         result = confirm_writeback(paths, args.run_id, now=now)
@@ -890,15 +1033,32 @@ def cmd_build_finish(args, paths, now) -> int:
             return 0
         print(f"Confirmed registry write-back for {args.run_id}.")
         return 0
+    spec_text = None
+    if args.spec:
+        try:
+            spec_text = Path(args.spec).read_text(encoding="utf-8")
+        except OSError as exc:
+            raise RegistryError(f"cannot read spec {args.spec!r}: {exc}") from exc
     registry = load_registry(paths)
     result = finish_run(
         paths, args.run_id, outcome=args.outcome, summary=args.summary,
-        now=now, registry=registry, snapshot=load_snapshot(paths),
+        now=now, registry=registry, snapshot=load_snapshot(paths), spec_text=spec_text,
     )
     if emit(result, args):
         return 0
     print(f"Finished {args.run_id}: {args.outcome}")
     print(f"Digest: {result['digest_path']}")
+    return 0
+
+
+def cmd_build_writeback(args, paths, now) -> int:
+    result = writeback(paths, args.run_id)
+    if emit(result, args):
+        return 0
+    fields = ("committed", "pushed", "confirmed", "pending_commit")
+    print(" · ".join(
+        f"{field} {'yes' if result[field] else 'no'}" for field in fields
+    ))
     return 0
 
 
@@ -1133,6 +1293,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("project_id")
     sub.add_argument("path")
 
+    sub = add("outcome-status", cmd_outcome_status, "Show progress toward a project's outcome.")
+    sub.add_argument("project_id")
+    sub.add_argument("spec_path")
+
     sub = add("list", cmd_list, "List projects.")
     add_project_filters(sub)
 
@@ -1206,8 +1370,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = add("notify", cmd_notify,
               "Push the run digest and owner inbox to the configured ntfy topic.")
-    sub.add_argument("--run", required=True)
+    notify_source = sub.add_mutually_exclusive_group(required=True)
+    notify_source.add_argument("--run")
+    notify_source.add_argument("--inbox", action="store_true")
     sub.add_argument("--dry-run", action="store_true")
+
+    sub = add("request-run", cmd_request_run,
+              "Ask the build host to start a run for one project.")
+    sub.add_argument("project_id")
+    sub.add_argument("--reason", default="")
 
     sub = add("build-queue", cmd_build_queue, "Show autonomous build eligibility and rank.")
     sub.add_argument("--state", choices=ELIGIBILITY_STATES)
@@ -1234,14 +1405,81 @@ def build_parser() -> argparse.ArgumentParser:
     start.add_argument("--json", action="store_true", help="Emit JSON.")
     start.set_defaults(handler=cmd_build_start)
 
+    branch = build_subparsers.add_parser(
+        "branch", help="Create a leased chunk branch."
+    )
+    branch.add_argument("run_id")
+    branch.add_argument("--chunk-id", required=True)
+    branch.add_argument("--title", required=True)
+    branch.add_argument("--workdir", required=True)
+    branch.add_argument("--json", action="store_true", help="Emit JSON.")
+    branch.set_defaults(handler=cmd_build_branch)
+
+    pr = build_subparsers.add_parser("pr", help="Commit and open a leased chunk PR.")
+    pr.add_argument("run_id")
+    pr.add_argument("--chunk-id", required=True)
+    pr.add_argument("--title", required=True)
+    pr.add_argument("--body-file", required=True)
+    pr.add_argument("--workdir", required=True)
+    pr.add_argument("--json", action="store_true", help="Emit JSON.")
+    pr.set_defaults(handler=cmd_build_pr)
+
+    push = build_subparsers.add_parser(
+        "push", help="Commit and push fixes to a leased chunk branch."
+    )
+    push.add_argument("run_id")
+    push.add_argument("--chunk-id", required=True)
+    push.add_argument("--message", required=True)
+    push.add_argument("--workdir", required=True)
+    push.add_argument("--json", action="store_true", help="Emit JSON.")
+    push.set_defaults(handler=cmd_build_push)
+
+    merge = build_subparsers.add_parser(
+        "merge", help="Merge a verified chunk PR and checkpoint it."
+    )
+    merge.add_argument("run_id")
+    merge.add_argument("--chunk-id", required=True)
+    merge.add_argument("--pr", required=True, type=int)
+    merge.add_argument("--workdir", required=True)
+    merge.add_argument("--json", action="store_true", help="Emit JSON.")
+    merge.set_defaults(handler=cmd_build_merge)
+
+    reject = build_subparsers.add_parser(
+        "reject", help="Close and remove a rejected chunk."
+    )
+    reject.add_argument("run_id")
+    reject.add_argument("--chunk-id", required=True)
+    reject.add_argument("--reason", required=True, choices=["review", "verify"])
+    reject.add_argument("--pr", type=int)
+    reject.add_argument("--workdir", required=True)
+    reject.add_argument("--json", action="store_true", help="Emit JSON.")
+    reject.set_defaults(handler=cmd_build_reject)
+
+    skip = build_subparsers.add_parser(
+        "skip", help="Skip a chunk in a shadow run."
+    )
+    skip.add_argument("run_id")
+    skip.add_argument("--chunk-id", required=True)
+    skip.add_argument("--workdir", required=True)
+    skip.add_argument("--json", action="store_true", help="Emit JSON.")
+    skip.set_defaults(handler=cmd_build_skip)
+
     finish = build_subparsers.add_parser("finish", help="Finalize a build run.")
     finish.add_argument("run_id")
     finish_mode = finish.add_mutually_exclusive_group(required=True)
     finish_mode.add_argument("--outcome", choices=sorted(RUN_OUTCOMES))
     finish_mode.add_argument("--confirm-writeback", action="store_true")
     finish.add_argument("--summary")
+    finish.add_argument("--spec", help="SPEC path used to record outcome progress.")
     finish.add_argument("--json", action="store_true", help="Emit JSON.")
     finish.set_defaults(handler=cmd_build_finish)
+
+    writeback_parser = build_subparsers.add_parser(
+        "writeback", help="Commit, push, and confirm a finalized build run."
+    )
+    writeback_parser.add_argument("run_id")
+    writeback_parser.add_argument("--json", action="store_true", help="Emit JSON.")
+    writeback_parser.set_defaults(handler=cmd_build_writeback)
 
     event = build_subparsers.add_parser("event", help="Record a leased-run event.")
     event.add_argument("run_id")

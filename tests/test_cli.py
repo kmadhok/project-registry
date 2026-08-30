@@ -5,8 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from project_registry import cli as cli_module
-from project_registry.build import append_event
+from project_registry.build import ProjectBuildState, append_event, save_state
 from project_registry.cli import main
 from project_registry.dashboard import render_dashboard
 from project_registry.github.sync import save_snapshot
@@ -62,12 +64,15 @@ def test_validate_spec_exit_codes(paths, write_project, tmp_path, capsys):
         "      Tests: tests/test_one.py\n"
         "      Size: S\n"
         "      Classes: none\n"
-        "      Verified-missing: the test file is absent\n",
+        "      Verified-missing: the test file is absent\n"
+        "      Criteria: 1\n",
         encoding="utf-8",
     )
     code, out = run(paths, "validate-spec", "target", str(ready), "--json", capsys=capsys)
     assert code == 0
-    assert json.loads(out)["next_ready_index"] == 1
+    payload = json.loads(out)
+    assert payload["next_ready_index"] == 1
+    assert payload["items"][0]["criteria"] == [1]
 
     blocked = tmp_path / "blocked.md"
     blocked.write_text("## Remaining work\n- [ ] Legacy item\n", encoding="utf-8")
@@ -79,6 +84,23 @@ def test_validate_spec_exit_codes(paths, write_project, tmp_path, capsys):
     done.write_text("## Remaining work\n- [x] Finished\n", encoding="utf-8")
     code, _ = run(paths, "validate-spec", "target", str(done), capsys=capsys)
     assert code == 0
+
+
+def test_outcome_status_text_json_and_unknown_project(paths, write_project, tmp_path, capsys):
+    write_project(id="target", brief={"done_criteria": ["Ship the result"]})
+    spec = tmp_path / "SPEC.md"
+    spec.write_text("## Remaining work\n- [x] Shipped\n      Criteria: 1\n", encoding="utf-8")
+
+    code, out = run(paths, "outcome-status", "target", str(spec), capsys=capsys)
+    assert code == 0
+    assert "STATUS" in out and "ITEMS" in out and "CRITERION" in out
+    assert "criteria: 1/1 met" in out
+
+    code, out = run(paths, "outcome-status", "target", str(spec), "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["summary"]["met"] == 1
+    code, _ = run(paths, "outcome-status", "missing", str(spec), capsys=capsys)
+    assert code != 0
 
 
 def test_json_output_is_machine_readable(paths, write_project, capsys):
@@ -368,6 +390,38 @@ def test_build_report_and_resume_commands(paths, capsys):
     assert state["paused_reason"] is None
 
 
+def test_notify_inbox_dry_run_needs_no_digest(paths, capsys):
+    code, out = run(paths, "notify", "--inbox", "--dry-run", capsys=capsys)
+    assert code == 0
+    assert out.splitlines()[0] == "Nothing needed"
+
+
+def test_notify_requires_exactly_one_source(paths):
+    with pytest.raises(SystemExit) as missing:
+        main(["--root", str(paths.root), "notify"])
+    assert missing.value.code != 0
+
+    with pytest.raises(SystemExit) as conflicting:
+        main(["--root", str(paths.root), "notify", "--run", "x", "--inbox"])
+    assert conflicting.value.code != 0
+
+
+def test_request_run_json_unconfigured(paths, write_project, capsys, monkeypatch):
+    write_project(id="builder", purpose="p")
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    code, out = run(paths, "request-run", "builder", "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["configured"] is False
+
+
+def test_request_run_unknown_project_is_clean_error(paths, capsys):
+    code = main(["--root", str(paths.root), "request-run", "ghost"])
+    captured = capsys.readouterr()
+    assert code != 0
+    assert "not found" in captured.err.lower() or "unknown" in captured.err.lower()
+
+
 def test_build_queue_and_readiness_commands(paths, write_project, capsys):
     write_project(
         id="builder", purpose="Ship it", desired_outcome="It ships",
@@ -385,6 +439,49 @@ def test_build_queue_and_readiness_commands(paths, write_project, capsys):
     result = json.loads(out)
     assert result["brief"] == {"complete": True, "missing": []}
     assert result["policy"]["mode"] == "shadow"
+
+
+def test_build_commands_show_waiting_owner(paths, write_project, capsys):
+    write_project(
+        id="waiting", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/waiting", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    write_project(
+        id="ready", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/ready", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build"},
+    )
+    save_state(paths, {"waiting": ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy", "classes": ["generated_data"],
+        "since": "2026-08-20T12:00:00+00:00", "run_id": "blocked-run",
+    })})
+
+    code, out = run(paths, "build-readiness", "waiting", capsys=capsys)
+    assert code == 0
+    assert "waiting on" in out
+
+    code, out = run(
+        paths, "build-queue", "--state", "waiting_owner", capsys=capsys
+    )
+    assert code == 0
+    assert "waiting" in out
+    assert "\nready " not in out
+
+    write_project(
+        id="waiting", purpose="Ship it", desired_outcome="It ships",
+        repo="owner/waiting", brief={"done_criteria": ["Tests pass"]},
+        automation={"mode": "build", "allow": ["generated_data"]},
+    )
+    code, out = run(paths, "build-readiness", "waiting", capsys=capsys)
+    assert code == 0
+    assert "waiting: ready" in out
+    assert "waiting on" not in out
+    code, out = run(
+        paths, "build-readiness", "waiting", "--json", capsys=capsys
+    )
+    assert code == 0
+    assert json.loads(out)["waiting_on"]["kind"] == "blocked_by_policy"
 
 
 def test_build_lifecycle_commands_start_context_finish(paths, write_project, capsys):

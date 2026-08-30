@@ -5,7 +5,8 @@ import urllib.error
 
 from project_registry.cli import main
 from project_registry.notify import (
-    build_notification, notify_config, render_notification, send_ntfy,
+    build_inbox_notification, build_notification, notify_config,
+    render_notification, request_run, send_ntfy,
 )
 from project_registry.storage import write_json
 
@@ -67,6 +68,42 @@ INBOX = {"count": 2, "items": [
 ]}
 
 
+def test_build_empty_inbox_notification():
+    notification = build_inbox_notification(EMPTY_INBOX)
+    assert notification == {
+        "title": "Nothing needed",
+        "body": "Nothing needs you.",
+        "priority": 3,
+        "tags": ["white_check_mark"],
+        "click": None,
+        "actions": [],
+    }
+
+
+def test_build_inbox_notification_lists_items():
+    inbox = {"count": 3, "items": INBOX["items"] + [{
+        "kind": "run_failed", "project_id": None,
+        "summary": "run r3 crashed", "action": "registry build-report",
+    }]}
+    notification = build_inbox_notification(inbox)
+    assert notification["title"] == "Needs you (3)"
+    assert notification["priority"] == 4 and notification["tags"] == ["warning"]
+    assert "[proposal_pending] builder: proposal builder-1: allow deps" in notification["body"]
+    assert "    -> registry build resume other" in notification["body"]
+    assert "[run_failed] -: run r3 crashed" in notification["body"]
+
+
+def test_build_inbox_notification_truncates_after_eight_items():
+    items = [{
+        "kind": "paused", "project_id": f"p{index}",
+        "summary": f"summary {index}", "action": f"action {index}",
+    } for index in range(10)]
+    notification = build_inbox_notification({"count": 10, "items": items})
+    assert "[paused] p7: summary 7" in notification["body"]
+    assert "[paused] p8: summary 8" not in notification["body"]
+    assert notification["body"].splitlines()[-1] == "+2 more — registry owner-inbox"
+
+
 def test_clean_run_title_says_nothing_needed_and_lists_prs():
     n = build_notification(DIGEST, EMPTY_INBOX)
     assert n["title"] == "builder: merged 2 — nothing needed"
@@ -79,6 +116,18 @@ def test_clean_run_title_says_nothing_needed_and_lists_prs():
         "view, PR #1, https://github.com/owner/builder/pull/1",
         "view, PR #2, https://github.com/owner/builder/pull/2",
     ]
+
+
+def test_outcome_progress_is_appended_to_title_only_when_present():
+    with_outcome = DIGEST.replace(
+        "## Merged chunks", "## Outcome\n\ncriteria: 2/5 met · 1 blocked\n\n## Merged chunks"
+    )
+    assert build_notification(with_outcome, EMPTY_INBOX)["title"].endswith(
+        "· criteria 2/5"
+    )
+    assert build_notification(DIGEST, EMPTY_INBOX)["title"] == (
+        "builder: merged 2 — nothing needed"
+    )
 
 
 def test_needs_you_run_is_high_priority_with_numbered_actions():
@@ -129,14 +178,65 @@ def test_config_env_wins_over_file(paths, monkeypatch):
     paths.build_dir.mkdir(parents=True, exist_ok=True)
     write_json(paths.build_dir / "notify.json", {"topic": "file-topic", "server": "https://x"})
     monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
-    assert notify_config(paths)["topic"] == "file-topic"
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    assert notify_config(paths) == {
+        "topic": "file-topic", "server": "https://x", "command_topic": None,
+    }
     monkeypatch.setenv("REGISTRY_NTFY_TOPIC", "env-topic")
-    assert notify_config(paths) == {"topic": "env-topic", "server": "https://x"}
+    assert notify_config(paths) == {
+        "topic": "env-topic", "server": "https://x", "command_topic": None,
+    }
+
+
+def test_config_command_topic_env_wins_over_file(paths, monkeypatch):
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    write_json(paths.build_dir / "notify.json", {
+        "topic": "notifications", "command_topic": "file-commands",
+    })
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    assert notify_config(paths)["command_topic"] == "file-commands"
+    monkeypatch.setenv("REGISTRY_NTFY_COMMAND_TOPIC", "env-commands")
+    assert notify_config(paths)["command_topic"] == "env-commands"
 
 
 def test_config_absent_is_none(paths, monkeypatch):
     monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
     assert notify_config(paths) is None
+
+
+def test_request_run_unconfigured(paths, write_project, monkeypatch):
+    write_project(id="builder", purpose="p")
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    write_json(paths.build_dir / "notify.json", {"topic": "notifications"})
+    result = request_run(paths, "builder")
+    command = json.loads(result["message"])
+    assert result["configured"] is False and result["sent"] is False
+    assert command["action"] == "run" and command["project"] == "builder"
+
+
+def test_request_run_posts_to_command_topic(paths, write_project, monkeypatch):
+    write_project(id="builder", purpose="p")
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    write_json(paths.build_dir / "notify.json", {
+        "topic": "notifications", "command_topic": "commands", "server": "https://x",
+    })
+    seen = {}
+
+    def fake_post(server, payload):
+        seen.update(server=server, payload=payload)
+        return {"sent": True, "status": 200}
+
+    monkeypatch.setattr("project_registry.notify._post_json", fake_post)
+    result = request_run(paths, "builder", reason="owner approved")
+    command = json.loads(seen["payload"]["message"])
+    assert seen["server"] == "https://x"
+    assert seen["payload"]["topic"] == "commands"
+    assert command["action"] == "run" and command["project"] == "builder"
+    assert command["reason"] == "owner approved"
+    assert result["configured"] is True and result["sent"] is True
 
 
 def test_send_publishes_utf8_json_body(monkeypatch):

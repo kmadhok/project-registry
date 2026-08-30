@@ -8,7 +8,7 @@ import subprocess
 ROOT = Path(__file__).parents[1]
 RUN_ALL = ROOT / "scripts" / "faults" / "run-all.sh"
 BUILD_OBSERVE = ROOT / ".claude" / "skills" / "build-observe" / "SKILL.md"
-REAL_FAULTS = ("F1", "F3", "F14", "F15", "F16", "F20", "F21", "F24")
+REAL_FAULTS = ("F1", "F3", "F9", "F14", "F15", "F16", "F20", "F21", "F24")
 
 
 def test_fault_harness_passes_real_faults(tmp_path: Path) -> None:

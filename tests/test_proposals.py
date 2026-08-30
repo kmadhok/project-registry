@@ -14,14 +14,33 @@ from project_registry.proposals import (
     ProposalError,
     apply_proposal,
     list_proposals,
+    last_owner_action,
     load_proposal,
     propose_update,
     record_review,
     reject_proposal,
 )
-from project_registry.storage import load_registry, read_jsonl
+from project_registry.storage import append_jsonl, load_registry, read_jsonl
 
 from .conftest import NOW
+
+
+def test_last_owner_action_returns_latest_per_project_and_ignores_incomplete(paths):
+    assert last_owner_action(paths) == {}
+    records = [
+        {"action": "apply_proposal", "project_id": "a", "ts": "2026-08-20T10:00:00Z"},
+        {"action": "record_review", "project_id": "a", "ts": "2026-08-21T10:00:00Z"},
+        {"action": "reject_proposal", "project_id": "b", "ts": "2026-08-19T10:00:00Z"},
+        {"action": "record_review", "ts": "2026-08-22T10:00:00Z"},
+        {"action": "other", "project_id": "b", "ts": "2026-08-23T10:00:00Z"},
+    ]
+    for record in records:
+        append_jsonl(paths.audit_log, record)
+
+    assert last_owner_action(paths) == {
+        "a": "2026-08-21T10:00:00Z",
+        "b": "2026-08-19T10:00:00Z",
+    }
 
 
 def test_proposing_does_not_modify_the_project(paths, write_project):

@@ -22,26 +22,129 @@ def _complete(write_project, project_id: str, **fields):
     write_project(**values)
 
 
-def test_all_six_states_are_reachable_and_explained(paths, write_project):
+def _waiting(kind="blocked_by_policy", classes=None):
+    return {
+        "kind": kind,
+        "classes": classes or [],
+        "since": "2026-08-20T12:00:00+00:00",
+        "run_id": "run-waiting",
+    }
+
+
+def test_all_seven_states_are_reachable_and_explained(paths, write_project):
     _complete(write_project, "ready")
     _complete(write_project, "spec", automation={"mode": "spec_only"})
     _complete(write_project, "paused", automation={"mode": "build", "paused": True})
     _complete(write_project, "intent", brief={"done_criteria": []})
     _complete(write_project, "manual", automation={"mode": "off"})
+    _complete(write_project, "waiting")
     write_project(id="excluded", purpose="No repository")
 
     registry = load_registry(paths)
-    queue = build_queue(registry, make_snapshot(), {}, TODAY)
+    states = {"waiting": ProjectBuildState(waiting_on=_waiting())}
+    queue = build_queue(registry, make_snapshot(), states, TODAY)
     found = {item["project_id"]: item for item in queue["candidates"]}
 
     assert {item["state"] for item in found.values()} == {
-        "ready", "spec_only", "paused", "needs_intent", "manual_only", "ineligible"
+        "ready", "waiting_owner", "spec_only", "paused", "needs_intent",
+        "manual_only", "ineligible",
     }
     assert all(item["reasons"] for item in found.values())
     assert found["ready"]["reasons"] == [
         "automation.mode=build", "brief complete", "never built"
     ]
     assert queue["by_state"] == {state: 1 for state in queue["by_state"]}
+
+
+def test_blocked_policy_wait_requires_allow_or_later_owner_action(
+    paths, write_project
+):
+    waiting_on = _waiting(classes=["generated_data"])
+    state = ProjectBuildState(waiting_on=waiting_on)
+    _complete(write_project, "blocked")
+    project = load_registry(paths).require("blocked")
+
+    waiting = classify(project, state, None, TODAY)
+    assert waiting.state == "waiting_owner"
+    assert "generated_data" in waiting.reasons[0]
+    assert "run-waiting" in waiting.reasons[0]
+    assert "2026-08-20" in waiting.reasons[0]
+    assert waiting.to_dict()["waiting_on"] == waiting_on
+
+    _complete(
+        write_project, "allowed",
+        automation={"mode": "build", "allow": ["generated_data"]},
+    )
+    allowed = load_registry(paths).require("allowed")
+    assert classify(allowed, state, None, TODAY).state == "ready"
+    assert classify(
+        project, state, None, TODAY,
+        owner_action_at="2026-08-20T12:00:01+00:00",
+    ).state == "ready"
+    assert classify(
+        project, state, None, TODAY,
+        owner_action_at="2026-08-20T11:59:59+00:00",
+    ).state == "waiting_owner"
+
+
+def test_waiting_owner_action_compares_normalized_timestamps(paths, write_project):
+    _complete(write_project, "blocked")
+    project = load_registry(paths).require("blocked")
+    state = ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy",
+        "classes": ["generated_data"],
+        "since": "2026-08-26T12:00:00+00:00",
+        "run_id": "run-waiting",
+    })
+
+    assert classify(
+        project, state, None, TODAY,
+        owner_action_at="2026-08-26T12:00:00Z",
+    ).state == "waiting_owner"
+    assert classify(
+        project, state, None, TODAY,
+        owner_action_at="2026-08-26T12:00:01Z",
+    ).state == "ready"
+
+
+def test_needs_intent_wait_resolves_by_review_and_gaps_win(paths, write_project):
+    state = ProjectBuildState(waiting_on=_waiting(kind="needs_intent"))
+    _complete(write_project, "unreviewed")
+    _complete(
+        write_project, "reviewed-same-day",
+        brief={"done_criteria": ["Tests pass"], "reviewed": "2026-08-20"},
+    )
+    _complete(
+        write_project, "reviewed-next-day",
+        brief={"done_criteria": ["Tests pass"], "reviewed": "2026-08-21"},
+    )
+    _complete(
+        write_project, "gap",
+        brief={"done_criteria": [], "reviewed": "2026-08-21"},
+    )
+    registry = load_registry(paths)
+
+    assert classify(registry.require("unreviewed"), state, None, TODAY).state == (
+        "waiting_owner"
+    )
+    assert classify(
+        registry.require("reviewed-same-day"), state, None, TODAY
+    ).state == "waiting_owner"
+    assert classify(
+        registry.require("reviewed-next-day"), state, None, TODAY
+    ).state == "ready"
+    assert classify(registry.require("gap"), state, None, TODAY).state == "needs_intent"
+
+
+def test_build_queue_unknown_owner_action_keeps_waiting(paths, write_project):
+    _complete(write_project, "blocked")
+    states = {"blocked": ProjectBuildState(waiting_on=_waiting())}
+
+    queue = build_queue(
+        load_registry(paths), make_snapshot(), states, TODAY, owner_actions=None
+    )
+
+    assert queue["candidates"][0]["state"] == "waiting_owner"
 
 
 def test_registry_itself_is_always_ineligible(paths, write_project):

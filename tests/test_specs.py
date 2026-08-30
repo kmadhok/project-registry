@@ -3,17 +3,21 @@
 from pathlib import Path
 
 from project_registry.model import Automation, Brief, ChangeClass, OpenDecision, Project
-from project_registry.specs import parse_spec, validate_spec
+from project_registry.specs import outcome_line, outcome_status, parse_spec, validate_spec
 
 
 FIXTURES = Path(__file__).parent / "fixtures" / "specs"
 
 
-def project(*, allow=(), non_goals=(), decisions=()):
+def project(*, allow=(), non_goals=(), decisions=(), done_criteria=()):
     return Project(
         id="target",
         name="Target",
-        brief=Brief(non_goals=list(non_goals), open_decisions=list(decisions)),
+        brief=Brief(
+            done_criteria=list(done_criteria),
+            non_goals=list(non_goals),
+            open_decisions=list(decisions),
+        ),
         automation=Automation(allow=list(allow)),
     )
 
@@ -30,6 +34,74 @@ def test_parser_extracts_sections_wrapped_items_and_metadata():
     assert spec.items[0].acceptance == "the parser recognizes a wrapped checklist item"
     assert spec.items[1].classes == ["plan", "contract"]
     assert spec.items[-1].checked is True
+
+
+def test_parser_extracts_criteria_metadata():
+    text = """## Remaining work
+- [ ] Comma separated
+      Criteria: 1, 3
+- [x] Explicitly none
+      Criteria: none
+- [ ] Absent
+- [ ] Keeps invalid tokens in raw metadata
+      Criteria: 2 x
+"""
+    items = parse_spec(text).items
+    assert items[0].criteria == [1, 3]
+    assert items[1].criteria == []
+    assert items[2].criteria == []
+    assert items[2].criteria_raw is None
+    assert items[3].criteria == [2]
+    assert "x" in items[3].criteria_raw
+
+
+def test_outcome_status_matrix_and_line():
+    text = """## Remaining work
+- [x] Finished
+      Criteria: 2 6
+- [ ] Ready
+      Acceptance: ready behavior works
+      Tests: tests/test_ready.py
+      Size: S
+      Classes: none
+      Verified-missing: ready behavior is absent
+      Criteria: 3 6
+- [ ] Policy blocked
+      Acceptance: generated output exists
+      Tests: tests/test_output.py
+      Size: S
+      Classes: generated_data
+      Verified-missing: generated output is absent
+      Criteria: 4
+- [ ] Owner choice
+      Acceptance: works once the owner decides the format
+      Tests: tests/test_choice.py
+      Size: S
+      Classes: none
+      Verified-missing: the choice is absent
+      Criteria: 5
+"""
+    status = outcome_status(
+        project(done_criteria=tuple(f"criterion {index}" for index in range(1, 7))),
+        text,
+    )
+    assert [item["status"] for item in status["criteria"]] == [
+        "unplanned", "met", "in_progress", "blocked", "needs_intent", "in_progress"
+    ]
+    assert status["criteria"][3]["classes"] == ["generated_data"]
+    assert status["blocked_classes"] == ["generated_data"]
+    assert sum(status["summary"][key] for key in (
+        "met", "in_progress", "blocked", "needs_intent", "unplanned"
+    )) == status["summary"]["total"]
+    assert outcome_line(status) == (
+        "criteria: 1/6 met · 2 in progress · 1 blocked (generated_data) "
+        "· 1 need intent · 1 unplanned"
+    )
+    assert outcome_line({
+        "summary": {"total": 1, "met": 1, "in_progress": 0, "blocked": 0,
+                    "needs_intent": 0, "unplanned": 0},
+        "blocked_classes": [],
+    }) == "criteria: 1/1 met"
 
 
 def test_legacy_items_are_unready_and_never_actions_are_detected():
@@ -88,3 +160,61 @@ def test_structure_errors_and_non_goal_warning():
     )
     assert report.items[0].ready is True
     assert [warning.rule_id for warning in report.warnings] == ["contradicts_non_goal"]
+
+
+def test_unknown_criterion_is_a_suggestion_and_does_not_affect_readiness():
+    text = """## Remaining work
+- [ ] Add a bounded test
+      Acceptance: the test passes
+      Tests: tests/test_one.py
+      Size: S
+      Classes: none
+      Verified-missing: the test file is absent
+      Criteria: 2 5
+"""
+    report = validate_spec(
+        text, project=project(done_criteria=("one", "two", "three"))
+    )
+    finding = next(f for f in report.findings if f.rule_id == "unknown_criterion")
+    assert finding.severity == "suggestion"
+    assert "5" in finding.message
+    assert report.items[0].ready is True
+    assert report.items[0].criteria == [2, 5]
+
+
+def test_unparsable_criterion_is_a_suggestion():
+    text = """## Remaining work
+- [ ] Legacy item
+      Criteria: 2 x
+"""
+    report = validate_spec(text, project=project(done_criteria=("one", "two")))
+    finding = next(f for f in report.findings if f.rule_id == "unknown_criterion")
+    assert "x" in finding.message
+
+
+def test_coverage_includes_checked_items_and_does_not_affect_ready_item():
+    criteria = tuple(f"criterion {index}" for index in range(1, 6))
+    text = """## Remaining work
+- [x] Finished work
+      Criteria: 1
+- [ ] Ready work
+      Acceptance: the outcome exists
+      Tests: tests/test_one.py
+      Size: S
+      Classes: none
+      Verified-missing: the outcome is absent
+      Criteria: 3
+"""
+    report = validate_spec(text, project=project(done_criteria=criteria))
+    finding = next(f for f in report.findings if f.rule_id == "uncovered_criteria")
+    assert all(f"{index}: criterion {index}" in finding.message for index in (2, 4, 5))
+    assert "1: criterion 1" not in finding.message
+    assert "3: criterion 3" not in finding.message
+    assert report.items[0].ready is True
+
+
+def test_specs_without_criteria_lines_do_not_report_uncovered_criteria():
+    report = validate_spec(
+        fixture("annotated.md"), project=project(done_criteria=("one", "two"))
+    )
+    assert "uncovered_criteria" not in {finding.rule_id for finding in report.findings}

@@ -1,0 +1,527 @@
+"""Safe Git and GitHub operations for an active autonomous build run."""
+
+from __future__ import annotations
+
+import fnmatch
+import re
+import subprocess
+from pathlib import Path
+from typing import Any
+
+from .build_runs import (
+    BuildError,
+    _read_lease,
+    confirm_writeback,
+    read_events,
+    record_event,
+)
+from .dashboard import render_dashboard
+from .github.sync import load_snapshot
+from .storage import Paths, load_registry
+
+
+def slugify(title: str) -> str:
+    """Return the bounded, branch-safe slug used for build chunks."""
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    return slug[:40].strip("-") or "chunk"
+
+
+def branch_name(run_id: str, chunk_id: str, title: str) -> str:
+    """Derive a chunk branch name from its lease namespace."""
+    return f"push/{run_id}-{chunk_id}-{slugify(title)}"
+
+
+def push_args(branch: str) -> list[str]:
+    """Return the only supported push argument shape."""
+    return ["push", "-u", "origin", branch]
+
+
+def _active_lease(paths: Paths, run_id: str) -> dict[str, Any]:
+    lease = _read_lease(paths)
+    if lease is None or lease.get("run_id") != run_id:
+        raise BuildError("build lease does not match run_id")
+    status = lease.get("status")
+    if status in {"finalize_pending", "reconciling"}:
+        raise BuildError(f"run is {status}; build operations are not allowed")
+    return lease
+
+
+def _git(workdir: Path, *args: str) -> str:
+    completed = subprocess.run(
+        ["git", "-C", str(workdir), *args],
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise BuildError(f"git {args[0]} failed: {completed.stderr.strip()}")
+    return completed.stdout
+
+
+def _registry_git(paths: Paths, *args: str) -> str:
+    """Run git in the registry checkout."""
+    return _git(paths.root, *args)
+
+
+def _push_registry_main(paths: Paths) -> subprocess.CompletedProcess[str]:
+    """Push registry main without raising so writeback can preserve its lease."""
+    return subprocess.run(
+        ["git", "-C", str(paths.root), "push", "origin", "main"],
+        capture_output=True,
+        text=True,
+    )
+
+
+def _push_error(completed: subprocess.CompletedProcess[str]) -> str:
+    return completed.stderr.strip() or completed.stdout.strip()
+
+
+def _resolve(path: str | Path, base: Path) -> Path:
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        candidate = base / candidate
+    return candidate.resolve(strict=False)
+
+
+def _matches_contract_forbidden(value: str | Path, forbidden: list[str], base: Path) -> bool:
+    """Mirror the build guard's contract-forbidden glob matching."""
+    raw = str(value).strip("'\"")
+    if not raw:
+        return False
+    normalized = raw.replace("\\", "/").lstrip("./")
+    resolved = _resolve(raw, base).as_posix()
+    basename = Path(normalized).name
+    for pattern_value in forbidden:
+        pattern = str(pattern_value).replace("\\", "/").rstrip("/")
+        if not pattern:
+            continue
+        patterns = {pattern}
+        pending = [pattern]
+        while pending:
+            candidate_pattern = pending.pop()
+            offset = candidate_pattern.find("**/")
+            if offset >= 0:
+                without_recursive = (
+                    candidate_pattern[:offset] + candidate_pattern[offset + 3:]
+                )
+                if without_recursive not in patterns:
+                    patterns.add(without_recursive)
+                    pending.append(without_recursive)
+        parts = [part for part in normalized.split("/") if part]
+        suffixes = {"/".join(parts[index:]) for index in range(len(parts))}
+        candidates = {normalized, resolved, basename, *suffixes}
+        if any(
+            fnmatch.fnmatch(candidate, candidate_pattern)
+            for candidate in candidates
+            for candidate_pattern in patterns
+        ):
+            return True
+        if not Path(pattern).is_absolute():
+            resolved_path = Path(resolved)
+            relative = (
+                resolved_path.relative_to(base).as_posix()
+                if resolved_path.is_relative_to(base)
+                else ""
+            )
+            if relative and fnmatch.fnmatch(relative, pattern):
+                return True
+    return False
+
+
+def _forbidden_matches(
+    paths_changed: list[str], forbidden: list[str], workdir: Path
+) -> list[str]:
+    """Return changed paths prohibited by the active build contract."""
+    return [
+        path
+        for path in paths_changed
+        if _matches_contract_forbidden(path, forbidden, workdir)
+    ]
+
+
+def create_branch(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    title: str,
+) -> dict[str, Any]:
+    """Create and journal a new chunk branch from an up-to-date main."""
+    _active_lease(paths, run_id)
+    _git(workdir, "checkout", "main")
+    _git(workdir, "pull", "--ff-only")
+    branch = branch_name(run_id, chunk_id, title)
+    _git(workdir, "checkout", "-b", branch)
+    recorded = record_event(paths, run_id, {
+        "type": "chunk_started",
+        "chunk_id": chunk_id,
+        "detail": {"branch": branch},
+    })
+    return {"branch": branch, "chunk_id": chunk_id, "event": recorded["event"]}
+
+
+def _changed_paths(status: str) -> list[str]:
+    changed: list[str] = []
+    for line in status.splitlines():
+        path = line[3:] if len(line) >= 3 else ""
+        if " -> " in path:
+            path = path.rsplit(" -> ", 1)[1]
+        if path:
+            changed.append(path)
+    return changed
+
+
+def open_pr(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    title: str,
+    body_file: Path,
+) -> dict[str, Any]:
+    """Commit, push, open, and journal a PR for a leased chunk branch."""
+    lease = _active_lease(paths, run_id)
+    if not body_file.exists():
+        raise BuildError(f"body file does not exist: {body_file}")
+
+    branch = _git(workdir, "rev-parse", "--abbrev-ref", "HEAD").strip()
+    namespace = f"push/{run_id}-{chunk_id}-"
+    if not branch.startswith(namespace):
+        raise BuildError(f"current branch is outside the run namespace: {branch}")
+
+    changed = _changed_paths(
+        _git(workdir, "status", "--porcelain", "--untracked-files=all")
+    )
+    forbidden = _forbidden_matches(
+        changed, lease.get("contract_forbidden_paths", []), workdir
+    )
+    if forbidden:
+        raise BuildError(f"contract-forbidden paths changed: {', '.join(forbidden)}")
+    if not changed:
+        raise BuildError("nothing to commit")
+
+    _git(workdir, "add", "-A")
+    _git(workdir, "commit", "-m", title)
+    _git(workdir, *push_args(branch))
+
+    completed = subprocess.run(
+        [
+            "gh", "pr", "create",
+            "--repo", lease["repo"],
+            "--head", branch,
+            "--title", title,
+            "--body-file", str(body_file),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise BuildError(f"gh pr create failed: {completed.stderr.strip()}")
+    lines = [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+    if not lines:
+        raise BuildError("gh pr create failed: no PR URL returned")
+    pr_url = lines[-1]
+    try:
+        pr_number = int(pr_url.rstrip("/").rsplit("/", 1)[1])
+    except (IndexError, ValueError) as exc:
+        raise BuildError(f"gh pr create returned an invalid PR URL: {pr_url}") from exc
+
+    recorded = record_event(paths, run_id, {
+        "type": "pr_opened",
+        "chunk_id": chunk_id,
+        "pr_url": pr_url,
+        "detail": {"branch": branch, "pr_number": pr_number},
+    })
+    return {
+        "branch": branch,
+        "pr_url": pr_url,
+        "pr_number": pr_number,
+        "event": recorded["event"],
+    }
+
+
+def push_fix(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    message: str,
+) -> dict[str, Any]:
+    """Commit and push a requested fix to its existing chunk branch."""
+    lease = _active_lease(paths, run_id)
+    branch = _git(workdir, "rev-parse", "--abbrev-ref", "HEAD").strip()
+    namespace = f"push/{run_id}-{chunk_id}-"
+    if not branch.startswith(namespace):
+        raise BuildError(f"current branch is outside the run namespace: {branch}")
+
+    changed = _changed_paths(
+        _git(workdir, "status", "--porcelain", "--untracked-files=all")
+    )
+    forbidden = _forbidden_matches(
+        changed, lease.get("contract_forbidden_paths", []), workdir
+    )
+    if forbidden:
+        raise BuildError(f"contract-forbidden paths changed: {', '.join(forbidden)}")
+    if not changed:
+        raise BuildError("nothing to commit")
+
+    _git(workdir, "add", "-A")
+    _git(workdir, "commit", "-m", message)
+    _git(workdir, *push_args(branch))
+    return {"branch": branch, "commit": _git(workdir, "rev-parse", "HEAD").strip()}
+
+
+def writeback(paths: Paths, run_id: str) -> dict[str, Any]:
+    """Commit, push, and confirm a finalized registry run."""
+    lease = _read_lease(paths)
+    if lease is None:
+        raise BuildError("build lease is missing (actual status: missing)")
+    if lease.get("run_id") != run_id:
+        raise BuildError("build lease does not match run_id")
+    status = lease.get("status")
+    if status != "finalize_pending":
+        raise BuildError(f"build lease status is {status}; expected finalize_pending")
+    branch = _registry_git(paths, "rev-parse", "--abbrev-ref", "HEAD").strip()
+    if branch != "main":
+        raise BuildError(f"registry checkout must be on main (actual branch: {branch})")
+
+    project = lease["project_id"]
+    outcome = lease["finalize"]["outcome"]
+    paths.dashboard_file.write_text(
+        render_dashboard(load_registry(paths), load_snapshot(paths)),
+        encoding="utf-8",
+    )
+
+    stage_paths = ["data/build"]
+    if paths.proposals_dir.exists():
+        stage_paths.append("data/proposals")
+    if paths.dashboard_file.exists():
+        stage_paths.append("DASHBOARD.md")
+    _registry_git(paths, "add", "-A", "--", *stage_paths)
+    staged = [
+        value for value in
+        _registry_git(paths, "diff", "--cached", "--name-only").splitlines()
+        if value
+    ]
+    tracked_changes = [
+        value for value in
+        _registry_git(paths, "diff", "--name-only").splitlines()
+        if value
+    ]
+    outside_scope = [
+        value for value in [*staged, *tracked_changes]
+        if value != "DASHBOARD.md"
+        and not value.startswith("data/build/")
+        and not value.startswith("data/proposals/")
+    ]
+    outside_scope = list(dict.fromkeys(outside_scope))
+    if outside_scope:
+        _registry_git(paths, "reset", "-q")
+        raise BuildError(f"registry_commit_scope: {', '.join(outside_scope)}")
+
+    commits: list[str] = []
+    committed = bool(staged)
+    if committed:
+        _registry_git(paths, "commit", "-m", f"build: {run_id} {project} {outcome}")
+        commits.append(_registry_git(paths, "rev-parse", "HEAD").strip())
+
+    pushed = _push_registry_main(paths)
+    if pushed.returncode != 0:
+        try:
+            _registry_git(paths, "pull", "--rebase", "origin", "main")
+        except BuildError as exc:
+            return {
+                "run_id": run_id, "project_id": project, "outcome": outcome,
+                "committed": committed, "pushed": False, "confirmed": False,
+                "pending_commit": False, "commits": commits, "error": str(exc),
+            }
+        pushed = _push_registry_main(paths)
+    if pushed.returncode != 0:
+        return {
+            "run_id": run_id, "project_id": project, "outcome": outcome,
+            "committed": committed, "pushed": False, "confirmed": False,
+            "pending_commit": False, "commits": commits, "error": _push_error(pushed),
+        }
+
+    confirm_writeback(paths, run_id)
+    _registry_git(paths, "add", "-A", "--", "data/build")
+    _registry_git(paths, "commit", "-m", f"build: confirm writeback {run_id}")
+    commits.append(_registry_git(paths, "rev-parse", "HEAD").strip())
+    confirmed_push = _push_registry_main(paths)
+    pending_commit = confirmed_push.returncode != 0
+    return {
+        "run_id": run_id,
+        "project_id": project,
+        "outcome": outcome,
+        "committed": committed,
+        "pushed": True,
+        "confirmed": True,
+        "pending_commit": pending_commit,
+        "commits": commits,
+    }
+
+
+def _gh(*args: str) -> str:
+    completed = subprocess.run(
+        ["gh", *args],
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise BuildError(
+            f"gh {' '.join(args[:2])} failed: {completed.stderr.strip()}"
+        )
+    return completed.stdout
+
+
+def merge_chunk(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    pr_number: int,
+) -> dict[str, Any]:
+    """Squash-merge a verified chunk and push its checkpoint tag."""
+    lease = _active_lease(paths, run_id)
+    if lease.get("dry_run") is True:
+        raise BuildError("shadow run never merges; use `build skip`")
+
+    chunk = lease.get("chunks", {}).get(chunk_id)
+    conditions = [
+        (chunk is not None, "chunk missing"),
+        (chunk is not None and chunk.get("pr_number") == pr_number,
+         "pr_number mismatch"),
+        (chunk is not None and chunk.get("verify") == "passed",
+         "verify is not passed"),
+        (chunk is not None and chunk.get("verdict") == "approve",
+         "verdict is not approve"),
+        (chunk is not None and chunk.get("merged") is False,
+         "chunk is already merged"),
+    ]
+    for valid, reason in conditions:
+        if not valid:
+            raise BuildError(f"unverified_merge: {reason}")
+
+    events, _ = read_events(paths)
+    chunk_events = [
+        event for event in events
+        if event.get("run_id") == run_id and event.get("chunk_id") == chunk_id
+    ]
+    if not any(event.get("type") == "verify_passed" for event in chunk_events):
+        raise BuildError("unverified_merge: no verify_passed event")
+    verdicts = [
+        event for event in chunk_events if event.get("type") == "review_verdict"
+    ]
+    latest_detail = (verdicts[-1].get("detail") or {}) if verdicts else {}
+    if latest_detail.get("verdict") != "approve":
+        raise BuildError("unverified_merge: latest review verdict is not approve")
+    if latest_detail.get("accepted", True) is not True:
+        raise BuildError("unverified_merge: latest review verdict is not accepted")
+
+    _gh(
+        "pr", "merge", str(pr_number), "--repo", lease["repo"],
+        "--squash", "--delete-branch",
+    )
+    sha = _gh(
+        "pr", "view", str(pr_number), "--repo", lease["repo"],
+        "--json", "mergeCommit", "-q", ".mergeCommit.oid",
+    ).strip()
+    if re.fullmatch(r"[0-9a-fA-F]{40}", sha) is None:
+        raise BuildError("gh pr view returned an invalid merge commit SHA")
+
+    _git(workdir, "fetch", "origin", "main")
+    tag = f"checkpoint/{run_id}-{chunk_id}"
+    _git(workdir, "tag", tag, sha)
+    _git(workdir, "push", "origin", f"refs/tags/{tag}")
+    recorded = record_event(paths, run_id, {
+        "type": "merged",
+        "chunk_id": chunk_id,
+        "pr_url": chunk.get("pr_url"),
+        "tag": tag,
+        "detail": {"merge_sha": sha},
+    })
+    _git(workdir, "checkout", "main")
+    _git(workdir, "pull", "--ff-only")
+    return {
+        "pr_number": pr_number,
+        "merge_sha": sha,
+        "tag": tag,
+        "event": recorded["event"],
+    }
+
+
+def reject_chunk(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    reason: str,
+    pr_number: int | None = None,
+) -> dict[str, Any]:
+    """Close and remove a rejected chunk's namespaced branch."""
+    if reason not in {"review", "verify"}:
+        raise BuildError("reason must be review or verify")
+    lease = _active_lease(paths, run_id)
+    chunk = lease.get("chunks", {}).get(chunk_id) or {}
+    if pr_number is not None:
+        if chunk.get("pr_number") != pr_number:
+            raise BuildError("pr_close_policy: pr_number mismatch")
+        if not (
+            chunk.get("verdict") in {"reject", "request_changes", "invalid"}
+            or chunk.get("verify") == "failed"
+        ):
+            raise BuildError("pr_close_policy: chunk is not rejected or failed")
+
+    branch = chunk.get("branch") or _git(
+        workdir, "rev-parse", "--abbrev-ref", "HEAD"
+    ).strip()
+    if not branch.startswith(f"push/{run_id}-"):
+        raise BuildError("branch outside run namespace")
+
+    if pr_number is not None:
+        _gh("pr", "close", str(pr_number), "--repo", lease["repo"])
+    _git(workdir, "reset", "--hard")
+    _git(workdir, "clean", "-fd")
+    _git(workdir, "checkout", "main")
+    if pr_number is not None:
+        _git(workdir, "push", "origin", "--delete", branch)
+    subprocess.run(
+        ["git", "-C", str(workdir), "branch", "-D", branch],
+        capture_output=True,
+        text=True,
+    )
+    recorded = record_event(paths, run_id, {
+        "type": "chunk_rejected",
+        "chunk_id": chunk_id,
+        "reason": reason,
+    })
+    return {
+        "chunk_id": chunk_id,
+        "reason": reason,
+        "branch": branch,
+        "closed_pr": pr_number,
+        "event": recorded["event"],
+    }
+
+
+def skip_chunk(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+) -> dict[str, Any]:
+    """Journal a shadow-run chunk without merging it."""
+    lease = _active_lease(paths, run_id)
+    if lease.get("dry_run") is not True:
+        raise BuildError("skip is for shadow runs; use `build merge`")
+    recorded = record_event(paths, run_id, {
+        "type": "chunk_skipped",
+        "chunk_id": chunk_id,
+        "reason": "shadow",
+    })
+    _git(workdir, "checkout", "main")
+    _git(workdir, "pull", "--ff-only")
+    return {
+        "chunk_id": chunk_id,
+        "reason": "shadow",
+        "event": recorded["event"],
+    }

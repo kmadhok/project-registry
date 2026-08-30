@@ -43,7 +43,7 @@ indirect GitHub or registry write commands.
 | `unverified_merge` | A merge requires a known, unmerged lease PR with passed verification and an approve verdict. |
 | `shadow_mode` | PR merges are forbidden while `lease.dry_run` is true. |
 | `foreign_pr` | Close/edit/reopen/lock/ready/review operations are limited to lease PRs. |
-| `pr_close_policy` | A lease PR may close only during reconciliation or after rejection, requested changes, or failed verification. |
+| `pr_close_policy` | A lease PR may close only during reconciliation or after rejection, requested changes, an invalid (unaccepted) verdict, or failed verification. |
 | `issue_mutation` | GitHub issue mutations are forbidden. |
 | `repo_mutation` | GitHub repository mutations are forbidden. |
 | `api_mutation` | `gh api` is GET-only and cannot supply mutation fields or input. |
@@ -63,6 +63,23 @@ indirect GitHub or registry write commands.
 
 Every policy denial is also appended best-effort to `data/build/runs.jsonl` as a
 `guard_denied` event. Logging failure does not weaken the denial.
+
+## The happy path does not go through the guard
+
+The skill's normal git/GitHub operations are registry verbs —
+`registry build branch | pr | push | merge | reject | skip | writeback`
+(`src/project_registry/build_ops.py`, ADR-006 AD-14). Each verb requires the
+active lease, derives branch and tag names from it, enforces the same
+invariants listed above in code (namespace, `origin` only, never force,
+contract-forbidden paths refused before staging, merge only with a journaled
+`verify_passed` and an accepted `approve`, no merge in shadow, close only
+after a negative or invalid verdict, registry commits limited to
+`data/build/**`, `data/proposals/**`, `DASHBOARD.md`), runs git/gh as
+subprocesses, and journals the matching event itself. The guard sees only the
+`registry build …` call, which `_evaluate_registry` allows. Raw `git`/`gh`
+remains fully guarded, so the rules in the table are the backstop for anything
+that bypasses the verbs; the verbs' own tests (`tests/test_build_ops.py`) name
+the guard rule they mirror.
 
 The guard can inspect the command line and inline code, but it cannot inspect
 the behavior of scripts or files invoked by otherwise ordinary commands. Such

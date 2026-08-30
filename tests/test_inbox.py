@@ -13,10 +13,11 @@ NOW = dt.datetime(2026, 8, 26, 12, 0, tzinfo=dt.timezone.utc)
 
 
 def ready(write_project, pid="builder", **extra):
+    automation = extra.pop("automation", {"mode": "build"})
     write_project(
         id=pid, name=pid, purpose="Ship it", desired_outcome="It ships",
         repo=f"owner/{pid}", brief={"done_criteria": ["tests pass"]},
-        automation={"mode": "build"}, **extra,
+        automation=automation, **extra,
     )
 
 
@@ -72,18 +73,18 @@ def test_failed_last_run_is_listed_with_digest_path(paths, write_project):
     assert item["action"].endswith("data/build/digests/r1.md")
 
 
-def test_blocked_by_policy_skip_is_listed(paths, write_project):
+def test_blocked_by_policy_skip_without_waiting_state_is_not_listed(
+    paths, write_project
+):
     ready(write_project)
     append_event(paths, {"run_id": "r1", "host": "x", "type": "run_started", "project_id": "builder"}, now=NOW)
     append_event(paths, {"run_id": "r1", "host": "x", "type": "chunk_skipped", "project_id": "builder",
                          "chunk_id": "4", "reason": "blocked_by_policy",
                          "detail": {"classes": ["personal_data"]}}, now=NOW)
-    append_event(paths, {"run_id": "r1", "host": "x", "type": "run_finished", "project_id": "builder",
-                         "outcome": "completed"}, now=NOW)
-    result = owner_inbox(paths, load_registry(paths), now=NOW)
-    item = next(i for i in result["items"] if i["kind"] == "blocked_by_policy")
-    assert "personal_data" in item["summary"]
-    assert "automation.allow" in item["action"]
+
+    assert "blocked_by_policy" not in kinds(
+        owner_inbox(paths, load_registry(paths), now=NOW)
+    )
 
 
 def test_finalize_pending_lease_is_listed(paths, write_project):
@@ -128,12 +129,91 @@ def test_resumed_after_failed_run_clears_run_failed(paths, write_project):
     assert "run_failed" not in kinds(owner_inbox(paths, load_registry(paths), now=NOW))
 
 
-def test_blocked_by_policy_action_uses_comma_list_syntax(paths, write_project):
+def test_blocked_by_policy_wait_includes_existing_allow(paths, write_project):
+    ready(
+        write_project,
+        automation={"mode": "build", "allow": ["dependencies"]},
+    )
+    save_state(paths, {"builder": ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy",
+        "classes": ["generated_data"],
+        "since": NOW.isoformat(),
+        "run_id": "run-1",
+    })})
+
+    result = owner_inbox(paths, load_registry(paths), now=NOW)
+    blocked = [item for item in result["items"] if item["kind"] == "blocked_by_policy"]
+
+    assert len(blocked) == 1
+    assert "--set automation.allow=dependencies,generated_data" in blocked[0]["action"]
+    assert "generated_data" in blocked[0]["summary"]
+    assert "run-1" in blocked[0]["summary"]
+
+
+def test_allowed_blocked_class_clears_policy_inbox_item(paths, write_project):
+    ready(
+        write_project,
+        automation={"mode": "build", "allow": ["generated_data"]},
+    )
+    save_state(paths, {"builder": ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy",
+        "classes": ["generated_data"],
+        "since": NOW.isoformat(),
+        "run_id": "run-1",
+    })})
+
+    assert "blocked_by_policy" not in kinds(
+        owner_inbox(paths, load_registry(paths), now=NOW)
+    )
+
+
+def test_blocked_policy_without_classes_points_to_digest(paths, write_project):
     ready(write_project)
-    append_event(paths, {"run_id": "r1", "host": "x", "type": "run_started", "project_id": "builder"}, now=NOW)
-    append_event(paths, {"run_id": "r1", "host": "x", "type": "chunk_skipped", "project_id": "builder",
-                         "chunk_id": "4", "reason": "blocked_by_policy",
-                         "detail": {"classes": ["personal_data", "ci"]}}, now=NOW)
+    save_state(paths, {"builder": ProjectBuildState(waiting_on={
+        "kind": "blocked_by_policy",
+        "classes": [],
+        "since": NOW.isoformat(),
+        "run_id": "run-1",
+    })})
+
     result = owner_inbox(paths, load_registry(paths), now=NOW)
     item = next(i for i in result["items"] if i["kind"] == "blocked_by_policy")
-    assert "--set automation.allow=ci,personal_data" in item["action"]
+
+    assert item["action"].startswith("read ")
+    assert str(paths.build_digests_dir / "run-1.md") in item["action"]
+
+
+def test_needs_intent_wait_without_proposal_points_to_review(paths, write_project):
+    ready(write_project)
+    save_state(paths, {"builder": ProjectBuildState(waiting_on={
+        "kind": "needs_intent",
+        "classes": [],
+        "since": NOW.isoformat(),
+        "run_id": "run-1",
+    })})
+
+    result = owner_inbox(paths, load_registry(paths), now=NOW)
+    items = [item for item in result["items"] if item["kind"] == "needs_intent"]
+
+    assert len(items) == 1
+    assert "record-review builder" in items[0]["action"]
+
+
+def test_needs_intent_wait_with_pending_proposal_has_no_extra_item(
+    paths, write_project
+):
+    ready(write_project)
+    save_state(paths, {"builder": ProjectBuildState(waiting_on={
+        "kind": "needs_intent",
+        "classes": [],
+        "since": NOW.isoformat(),
+        "run_id": "run-1",
+    })})
+    propose_update(
+        load_registry(paths), "builder", {"brief.done_criteria": ["more detail"]},
+        rationale="clarify intent", paths=paths, now=NOW,
+    )
+
+    assert kinds(owner_inbox(paths, load_registry(paths), now=NOW)) == [
+        "proposal_pending"
+    ]

@@ -56,7 +56,13 @@ digest and parks the lease as `finalize_pending`; the run commits
 `data/build` + `DASHBOARD.md` to `main`, then `build finish
 --confirm-writeback` releases the lease and journals `writeback_confirmed`,
 which the run commits as well. Every step is an event in
-`data/build/runs.jsonl`; `build_runs.EVENT_TYPES` is the vocabulary.
+`data/build/runs.jsonl`; `build_runs.EVENT_TYPES` is the vocabulary. The
+skill drives git and GitHub through `registry build branch | pr | push |
+merge | reject | skip | writeback` (`build_ops.py`), which derive every name
+from the lease and journal their own events; raw `git`/`gh` stays guarded and
+is used only for reads, the reviewer's PR comment, and crash reconciliation.
+A stop on `needs_intent` or `blocked_by_policy` parks the project as
+`waiting_owner` until the owner acts; the inbox carries the releasing command.
 
 Modes: `shadow` = everything except merge, PRs left open for the owner;
 `build` = self-merging. **Current state (2026-08-27): the three focus
@@ -83,6 +89,14 @@ Enforced by code (a violation is a denial, not a warning):
   `STOP`; it never invents intent — an incomplete brief is `needs_intent`.
 - `registry build finish` refuses any outcome other than `aborted` (or
   `crashed`) once the run has a `guard_denied` event. A denial ends the run.
+- `registry build finish --outcome blocked_by_policy` refuses unless the run
+  journaled the blocked items (`chunk_skipped --reason blocked_by_policy
+  --detail classes=…`). A stop on `blocked_by_policy` or `needs_intent` is
+  folded into `waiting_on` in `data/build/state.json`, and
+  `registry build-queue` reports the project as `waiting_owner` — never
+  `ready` — until the classes are allowed or the owner acts on the project
+  after that run (a proposal applied or rejected, or `record-review`). The
+  owner inbox carries the one-line command that releases it.
 - `registry validate-spec` / `validate-contract`: an item whose change class
   is not in `automation.allow` is `blocked_by_policy`; `plan` and `contract`
   are always allowed; `personal_data` globs and `forbidden_paths` come from the
@@ -131,6 +145,7 @@ Read-only queries:
 registry validate               # check operating rules; non-zero exit on errors
 registry validate-contract <path> [--project-id <id>] # check a target repo's .project-meta.yaml contract
 registry validate-spec <id> <path> # check an agent-owned docs/SPEC.md roadmap
+registry outcome-status <id> <path> # score the brief's done criteria against the SPEC: met / in progress / blocked / needs intent / unplanned
 registry list                   # whole portfolio (add --lifecycle/--active/... filters)
 registry show <id>              # one project in full, with relationships and GitHub state
 registry search <text>          # free-text search across curated fields
@@ -150,6 +165,8 @@ registry push-report            # push-run totals and cached PR states; add --re
 registry build-report           # build-run/chunk metrics; add --since/--json
 registry owner-inbox            # everything that needs the owner, with the clearing command; add --json
 registry notify --run <run> [--dry-run] # push digest + inbox to ntfy
+registry notify --inbox [--dry-run]     # push the owner inbox alone (retro, /inbox)
+registry request-run <id> [--reason <text>] # ask the build host to start a named run now (ntfy command topic; prints when unconfigured)
 registry build-queue            # explain eligibility and builder rank; add --state/--json
 registry build-readiness <id>   # explain one project's brief gaps and automation policy; add --shadow-gate
 registry build resume <id>      # clear a project's build pause and failure count
@@ -157,7 +174,14 @@ registry build env --json       # resolved host, CLI, workdir, budget, and TTL
 registry build context <id> --json # authoritative context for one candidate
 registry build start --host <host> [--project <id>] # preflight, select, and atomically lease a run
 registry build event <run> <type> # append a validated event and update the active lease
-registry build finish <run> --outcome <outcome> # finalize state and digest, then park the lease
+registry build branch <run> --chunk-id <n> --title <t> --workdir <clone> # checkout main, create push/<run>-<n>-<slug>, journal chunk_started
+registry build pr <run> --chunk-id <n> --title <t> --body-file <f> --workdir <clone> # commit (refusing forbidden paths), push, gh pr create, journal pr_opened
+registry build merge <run> --chunk-id <n> --pr <pr> --workdir <clone> # re-check verify_passed + accepted approve, squash-merge, tag checkpoint/<run>-<n>, journal merged
+registry build reject <run> --chunk-id <n> --reason review|verify [--pr <pr>] --workdir <clone> # close the PR (policy-checked), delete the run branch, journal chunk_rejected
+registry build skip <run> --chunk-id <n> --workdir <clone> # shadow only: journal chunk_skipped and return to main
+registry build push <run> --chunk-id <n> --message <m> --workdir <clone> # commit + push a fix to the same run branch (no PR, no event)
+registry build writeback <run>  # dashboard, registry commit, push main (rebase once), confirm-writeback, confirm commit — idempotent
+registry build finish <run> --outcome <outcome> [--spec <clone>/docs/SPEC.md] # finalize state and digest (with the criteria score), then park the lease
 registry build finish <run> --confirm-writeback # release the lease after the registry push succeeded
 registry build reconcile [--done] [--json] # plan or acknowledge crash cleanup
 registry portfolio              # public-safe export; add --format json|markdown/-o

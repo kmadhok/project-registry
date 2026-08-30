@@ -575,7 +575,7 @@ def _evaluate_gh(args: list[str], command_dir: Path, lease: dict[str, Any]) -> N
             raise Denied("foreign_pr")
         if action == "close" and not (
             lease.get("status") == "reconciling"
-            or chunk.get("verdict") in {"reject", "request_changes"}
+            or chunk.get("verdict") in {"reject", "request_changes", "invalid"}
             or chunk.get("verify") == "failed"
         ):
             raise Denied("pr_close_policy")

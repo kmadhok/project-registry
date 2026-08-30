@@ -36,7 +36,8 @@ __all__ = [
 EVENT_TYPES = frozenset({
     "run_started", "candidate_selected", "contract_bootstrapped",
     "contract_repaired", "chunk_started", "pr_opened", "verify_passed",
-    "verify_failed", "review_verdict", "merged", "merge_conflict", "reverted",
+    "verify_failed", "review_verdict", "second_opinion", "merged",
+    "merge_conflict", "reverted",
     "chunk_rejected", "chunk_skipped", "guard_denied", "needs_intent",
     "reconciled", "writeback_confirmed", "crashed", "stopped", "resumed",
     "run_finished",
@@ -530,6 +531,51 @@ def build_report(
     merged = [event for event in events if event["type"] == "merged"]
     rejected = [event for event in events if event["type"] == "chunk_rejected"]
     skipped = [event for event in events if event["type"] == "chunk_skipped"]
+    verdicts = [event for event in events if event["type"] == "review_verdict"]
+    second_opinions = [event for event in events if event["type"] == "second_opinion"]
+
+    review = {
+        "verdicts": len(verdicts),
+        "accepted_approvals": 0,
+        "unaccepted": 0,
+        "probed": 0,
+    }
+    dispositions = Counter()
+    for event in verdicts:
+        detail = event.get("detail") or {}
+        if not isinstance(detail, dict):
+            continue
+        if (
+            detail.get("verdict") == "approve"
+            and detail.get("accepted", True) is True
+        ):
+            review["accepted_approvals"] += 1
+        if detail.get("accepted") is False:
+            review["unaccepted"] += 1
+        probes = detail.get("probes") or []
+        if isinstance(probes, list) and len(probes) > 0:
+            review["probed"] += 1
+        findings = detail.get("second_opinion") or []
+        if isinstance(findings, list):
+            for finding in findings:
+                if isinstance(finding, dict):
+                    disposition = finding.get("disposition")
+                    if disposition in {"confirmed", "refuted", "out_of_scope"}:
+                        dispositions[disposition] += 1
+
+    second_opinion_counts = {"ok": 0, "unavailable": 0, "findings": 0}
+    for event in second_opinions:
+        detail = event.get("detail") or {}
+        if not isinstance(detail, dict):
+            continue
+        status = detail.get("status")
+        if status in {"ok", "unavailable"}:
+            second_opinion_counts[status] += 1
+        if status == "ok":
+            try:
+                second_opinion_counts["findings"] += int(detail.get("findings", 0))
+            except (TypeError, ValueError):
+                pass
 
     starts = {
         (event["run_id"], event.get("chunk_id")): parse_ts(event["ts"])
@@ -562,6 +608,13 @@ def build_report(
             "merged": len(merged),
             "rejected_by_reason": _counts(rejected, "reason"),
             "skipped_by_reason": _counts(skipped, "reason"),
+        },
+        "review": review,
+        "second_opinions": {
+            **second_opinion_counts,
+            "confirmed": dispositions["confirmed"],
+            "refuted": dispositions["refuted"],
+            "out_of_scope": dispositions["out_of_scope"],
         },
         "reverts": sum(event["type"] == "reverted" for event in events),
         "guard_denials": sum(event["type"] == "guard_denied" for event in events),
@@ -899,6 +952,7 @@ def record_event(paths: Paths, run_id: str, event: dict[str, Any]) -> dict[str, 
     chunk_id = payload.get("chunk_id")
     if event_type in {
         "pr_opened", "verify_passed", "verify_failed", "review_verdict",
+        "second_opinion",
         "merged", "chunk_rejected", "chunk_skipped",
     } and not chunk_id:
         raise BuildError(f"{event_type} requires chunk_id")

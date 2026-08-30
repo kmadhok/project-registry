@@ -158,6 +158,7 @@ registry push-report            # push-run totals and cached PR states; add --re
 registry build-report           # build-run/chunk metrics; add --since/--json
 registry owner-inbox            # everything that needs the owner, with the clearing command; add --json
 registry notify --run <run> [--dry-run] # push digest + inbox to ntfy
+registry notify --inbox [--dry-run]     # push the owner inbox alone (retro, /inbox)
 registry build-queue            # explain eligibility and builder rank; add --state/--json
 registry build-readiness <id>   # explain one project's brief gaps and automation policy; add --shadow-gate
 registry build resume <id>      # clear a project's build pause and failure count

@@ -9,9 +9,11 @@ Turn a window of build runs into two things: a factual observation file and prop
 
 Default window: since the previous retro file in `docs/observations/*-retro.md`, else the last 7 days. `--since YYYY-MM-DD` overrides.
 
+Runs on any host with the registry checkout on `main` — scheduled on the build host through `scripts/run-retro.sh`, or by hand on the Mac. If `data/build/lease.json` exists, stop immediately: a build is running and the journal is mid-write.
+
 ## Gather (read-only)
 
-1. `registry build-report --since <date> --json` — runs by outcome, host, and project; chunks merged, skipped, rejected; guard denials; paused projects.
+1. `registry build-report --since <date> --json` — runs by outcome, host, and project; chunks merged, skipped, rejected; guard denials; paused projects; review verdicts (accepted / unaccepted / probed) and second opinions (ok / unavailable, findings confirmed / refuted / out of scope).
 2. Every `data/build/digests/<run-id>.md` whose run id falls in the window. A missing digest is itself a finding (record the run id).
 3. `registry owner-inbox --json` and `registry build-queue --json`.
 4. `registry sync` when `GITHUB_TOKEN` is set, then `registry prs --json`; and per active project `gh pr list --repo <owner/repo> --state closed --search 'head:push/' --json number,title,mergedAt,closedAt` to see builder PRs the owner closed without merging, and `git log --oneline -30` of `main` for reverts of `checkpoint/` commits.
@@ -22,8 +24,9 @@ For each project with at least one run in the window, one line each:
 
 - **Flow** — chunks merged per run, and the trend against the previous retro.
 - **Stalls** — for every run that did not finish `completed`/`budget_exhausted`, the outcome and its cause class: infrastructure (Codex sandbox, session quota, host offline), policy (`blocked_by_policy`, `needs_intent`), or quality (`reject`, revert, owner-closed PR).
-- **Reviewer misses** — merged chunks later reverted, redone, or contradicted by a following chunk; cite both run ids.
+- **Reviewer misses** — merged chunks later reverted, redone, or contradicted by a following chunk; cite both run ids. Also: approvals recorded without probes, and second opinions `unavailable` for the whole window (an infrastructure finding, not a reviewer one).
 - **Brief drift** — done criteria now met (retire them) or unreachable under the current `automation.allow` (either allow the class or drop the criterion).
+- **Waiting** — projects `waiting_owner` for more than a week (`registry build-queue --state waiting_owner`): the inbox item has been ignored; say so, do not re-file it.
 
 ## Record
 
@@ -52,4 +55,6 @@ File exactly one proposal per judgement that implies a curated change; skip anyt
 
 ## Deliver
 
-Finish with `registry owner-inbox` and `registry notify --run <latest run id in the window>` so the retro's proposals reach the owner in the same channel as run digests. Print the observation file path last.
+1. `registry validate` (0 errors required), then commit the retro and its proposals to `main`: `git add docs/observations data/proposals data/audit_log.jsonl && git commit -m "retro: <date>" && git push origin main`. On non-fast-forward, `git pull --rebase` once and push again; if it still fails, leave the commit local and say so — the next `/inbox` on the Mac pulls it.
+2. `registry notify --inbox` so the retro's proposals reach the owner in the same channel as run digests (it prints the message when no topic is configured).
+3. Print the observation file path last.

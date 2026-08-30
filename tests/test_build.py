@@ -112,6 +112,38 @@ def test_report_aggregates_chunks_reasons_reverts_guards_and_timing(paths):
     }
 
 
+def test_report_aggregates_review_and_second_opinion_metrics_in_window(paths):
+    records = [
+        event("review_verdict", ts="2026-08-21T12:00:00+00:00", detail={
+            "verdict": "approve", "probes": [{"probe": "old"}],
+            "second_opinion": [{"disposition": "confirmed"}],
+        }),
+        event("review_verdict", detail={
+            "verdict": "approve", "probes": [{"probe": "pytest"}],
+            "second_opinion": [
+                {"disposition": "confirmed"}, {"disposition": "refuted"},
+                {"disposition": "out_of_scope"},
+            ],
+        }),
+        event("review_verdict", detail={"verdict": "approve", "accepted": False}),
+        event("review_verdict", detail={"verdict": "reject", "accepted": True}),
+        event("second_opinion", detail={"status": "ok", "findings": "3"}),
+        event("second_opinion", detail={"status": "ok", "findings": "bad"}),
+        event("second_opinion", detail={"status": "unavailable", "findings": 9}),
+    ]
+    for record in records:
+        append_event(paths, record)
+
+    report = build_report(paths, since="2026-08-22")
+    assert report["review"] == {
+        "verdicts": 3, "accepted_approvals": 1, "unaccepted": 1, "probed": 1,
+    }
+    assert report["second_opinions"] == {
+        "ok": 2, "unavailable": 1, "findings": 3,
+        "confirmed": 1, "refuted": 1, "out_of_scope": 1,
+    }
+
+
 def test_report_counts_valid_legacy_push_runs(paths):
     append_jsonl(paths.push_runs_file, {
         "ts": NOW.isoformat(), "host": "old", "outcome": "chunk",

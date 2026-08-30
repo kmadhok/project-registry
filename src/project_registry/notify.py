@@ -148,6 +148,31 @@ def build_notification(digest: str, inbox: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def build_inbox_notification(inbox: dict[str, Any]) -> dict[str, Any]:
+    """Assemble a lock-screen notification from the owner inbox alone."""
+    count = int(inbox.get("count") or 0)
+    items = list(inbox.get("items") or [])
+    title = f"Needs you ({count})" if count > 0 else "Nothing needed"
+    body: list[str] = []
+    for item in items[:8]:
+        body.append(
+            f"[{item['kind']}] {item.get('project_id') or '-'}: {item['summary']}"
+        )
+        body.append(f"    -> {item['action']}")
+    if count > 8:
+        body.append(f"+{count - 8} more — registry owner-inbox")
+    if not body:
+        body.append("Nothing needs you.")
+    return {
+        "title": _clean_label(title),
+        "body": "\n".join(body),
+        "priority": 4 if count > 0 else 3,
+        "tags": ["warning"] if count > 0 else ["white_check_mark"],
+        "click": None,
+        "actions": [],
+    }
+
+
 def render_notification(digest: str, inbox: dict[str, Any]) -> str:
     """Plain-text form (title + body) for terminals and dry runs."""
     notification = build_notification(digest, inbox)

@@ -5,7 +5,8 @@ import urllib.error
 
 from project_registry.cli import main
 from project_registry.notify import (
-    build_notification, notify_config, render_notification, send_ntfy,
+    build_inbox_notification, build_notification, notify_config,
+    render_notification, send_ntfy,
 )
 from project_registry.storage import write_json
 
@@ -65,6 +66,42 @@ INBOX = {"count": 2, "items": [
      "action": "registry proposal-apply builder-1 --approve  (or proposal-reject)"},
     {"kind": "paused", "project_id": "other", "summary": "paused: revert", "action": "registry build resume other"},
 ]}
+
+
+def test_build_empty_inbox_notification():
+    notification = build_inbox_notification(EMPTY_INBOX)
+    assert notification == {
+        "title": "Nothing needed",
+        "body": "Nothing needs you.",
+        "priority": 3,
+        "tags": ["white_check_mark"],
+        "click": None,
+        "actions": [],
+    }
+
+
+def test_build_inbox_notification_lists_items():
+    inbox = {"count": 3, "items": INBOX["items"] + [{
+        "kind": "run_failed", "project_id": None,
+        "summary": "run r3 crashed", "action": "registry build-report",
+    }]}
+    notification = build_inbox_notification(inbox)
+    assert notification["title"] == "Needs you (3)"
+    assert notification["priority"] == 4 and notification["tags"] == ["warning"]
+    assert "[proposal_pending] builder: proposal builder-1: allow deps" in notification["body"]
+    assert "    -> registry build resume other" in notification["body"]
+    assert "[run_failed] -: run r3 crashed" in notification["body"]
+
+
+def test_build_inbox_notification_truncates_after_eight_items():
+    items = [{
+        "kind": "paused", "project_id": f"p{index}",
+        "summary": f"summary {index}", "action": f"action {index}",
+    } for index in range(10)]
+    notification = build_inbox_notification({"count": 10, "items": items})
+    assert "[paused] p7: summary 7" in notification["body"]
+    assert "[paused] p8: summary 8" not in notification["body"]
+    assert notification["body"].splitlines()[-1] == "+2 more — registry owner-inbox"
 
 
 def test_clean_run_title_says_nothing_needed_and_lists_prs():

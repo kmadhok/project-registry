@@ -376,6 +376,17 @@ def test_event_counters_and_finish_digest(paths, write_project):
         "detail": {"pr_number": 9, "branch": "push/run-1-work"},
     })
     record_event(paths, "run", {"type": "verify_passed", "chunk_id": "c1"})
+    before_opinion = read_json(paths.build_lease_file)
+    with pytest.raises(BuildError, match="second_opinion requires chunk_id"):
+        record_event(paths, "run", {"type": "second_opinion"})
+    opinion = record_event(paths, "run", {
+        "type": "second_opinion", "chunk_id": "c1",
+        "detail": {"source": "codex", "status": "ok", "findings": "3"},
+    })
+    after_opinion = read_json(paths.build_lease_file)
+    assert opinion["event"]["detail"]["findings"] == "3"
+    assert after_opinion["prs_open"] == before_opinion["prs_open"]
+    assert after_opinion["merges"] == before_opinion["merges"]
     record_event(paths, "run", {
         "type": "review_verdict", "chunk_id": "c1",
         "detail": {

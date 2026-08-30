@@ -797,6 +797,8 @@ def cmd_build_report(args, paths, now) -> int:
 
     runs = report["runs"]
     chunks = report["chunks"]
+    review = report["review"]
+    second_opinions = report["second_opinions"]
     timing = report["minutes_per_merged_chunk"]
     timing_text = (
         "—" if timing["count"] == 0
@@ -809,6 +811,19 @@ def cmd_build_report(args, paths, now) -> int:
         ["reverts", str(report["reverts"])],
         ["guard denials", str(report["guard_denials"])],
         ["needs intent", str(report["needs_intent_events"])],
+        [
+            "review verdicts",
+            f"{review['verdicts']} ({review['accepted_approvals']} accepted approvals, "
+            f"{review['unaccepted']} unaccepted, {review['probed']} probed)",
+        ],
+        [
+            "second opinions",
+            f"ok {second_opinions['ok']} / unavailable {second_opinions['unavailable']}; "
+            f"findings {second_opinions['findings']}: "
+            f"{second_opinions['confirmed']} confirmed, "
+            f"{second_opinions['refuted']} refuted, "
+            f"{second_opinions['out_of_scope']} out_of_scope",
+        ],
         ["minutes/merge", timing_text],
     ]
     print(_table(rows, ["METRIC", "VALUE"]))
@@ -843,14 +858,19 @@ def cmd_owner_inbox(args, paths, now) -> int:
 
 def cmd_notify(args, paths, now) -> int:
     from .inbox import owner_inbox
-    from .notify import build_notification, notify_config, send_ntfy
-    digest_path = paths.build_digests_dir / f"{args.run}.md"
-    if not digest_path.exists():
-        print(f"no digest for run {args.run}", file=sys.stderr)
-        return 1
-    digest = digest_path.read_text(encoding="utf-8")
+    from .notify import (
+        build_inbox_notification, build_notification, notify_config, send_ntfy,
+    )
     inbox = owner_inbox(paths, load_registry(paths), now=now)
-    notification = build_notification(digest, inbox)
+    if args.inbox:
+        notification = build_inbox_notification(inbox)
+    else:
+        digest_path = paths.build_digests_dir / f"{args.run}.md"
+        if not digest_path.exists():
+            print(f"no digest for run {args.run}", file=sys.stderr)
+            return 1
+        digest = digest_path.read_text(encoding="utf-8")
+        notification = build_notification(digest, inbox)
     message = notification["title"] + "\n" + notification["body"]
     config = notify_config(paths)
     result = {
@@ -1218,7 +1238,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = add("notify", cmd_notify,
               "Push the run digest and owner inbox to the configured ntfy topic.")
-    sub.add_argument("--run", required=True)
+    notify_source = sub.add_mutually_exclusive_group(required=True)
+    notify_source.add_argument("--run")
+    notify_source.add_argument("--inbox", action="store_true")
     sub.add_argument("--dry-run", action="store_true")
 
     sub = add("build-queue", cmd_build_queue, "Show autonomous build eligibility and rank.")

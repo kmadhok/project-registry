@@ -161,11 +161,28 @@ points at such a checkout) would otherwise fail closed on every tool call.
 
 ## Weekly retro
 
-Run `/build-retro` on the Mac every Monday after the first scheduled run of
-the week (`.claude/skills/build-retro/SKILL.md`). It reads the window's runs,
-writes `docs/observations/<date>-retro.md`, files proposals for brief and
-policy changes, and sends them through `registry notify`. Approve or reject
-each proposal from `registry owner-inbox`; that is the whole owner loop.
+`scripts/run-retro.sh` runs `/build-retro` (`.claude/skills/build-retro/SKILL.md`)
+unattended: it refuses while a build lease exists, pulls `main`, refreshes
+evidence when `GITHUB_TOKEN` is set, and logs to
+`../build-work/logs/<utc>-retro-<host>.log`. The skill reads the window's
+runs, writes `docs/observations/<date>-retro.md`, files proposals for brief
+and policy changes, commits both to `main`, and sends them through
+`registry notify --inbox`. Approve or reject each proposal from `/inbox`;
+that is the whole owner loop.
+
+Schedule it on the build host one hour after the week's first build, so the
+retro sees that run:
+
+```cron
+GITHUB_TOKEN=<token>
+BUILD_HOST_LABEL=vps-e7eb4af7
+0 12 * * *   /home/ubuntu/project-registry/scripts/run-build.sh
+0 13 * * 1   /home/ubuntu/project-registry/scripts/run-retro.sh
+```
+
+`scripts/run-retro.sh --dry-run` prints the command without running it. A
+manual `/build-retro [--since YYYY-MM-DD]` on the Mac still works when the
+main checkout is on `main`.
 
 ## Observations
 

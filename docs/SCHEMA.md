@@ -201,7 +201,7 @@ Each line of `runs.jsonl` is an event object with these fields:
 | `ts` | ISO-8601 UTC timestamp | Event time. |
 | `run_id` | string | Required, non-empty run identifier. |
 | `host` | string | Required execution host. |
-| `type` | enum | `run_started`, `candidate_selected`, `contract_bootstrapped`, `contract_repaired`, `chunk_started`, `pr_opened`, `verify_passed`, `verify_failed`, `review_verdict`, `merged`, `merge_conflict`, `reverted`, `chunk_rejected`, `chunk_skipped`, `guard_denied`, `needs_intent`, `reconciled`, `writeback_confirmed`, `crashed`, `stopped`, `resumed`, or `run_finished`. |
+| `type` | enum | `run_started`, `candidate_selected`, `contract_bootstrapped`, `contract_repaired`, `chunk_started`, `pr_opened`, `verify_passed`, `verify_failed`, `review_verdict`, `second_opinion`, `merged`, `merge_conflict`, `reverted`, `chunk_rejected`, `chunk_skipped`, `guard_denied`, `needs_intent`, `reconciled`, `writeback_confirmed`, `crashed`, `stopped`, `resumed`, or `run_finished`. |
 | `project_id` | string or null | Registry project, when applicable. |
 | `chunk_id` | string or null | Chunk identifier, when applicable. |
 | `pr_url` | GitHub PR URL or null | Pull request associated with the event. |

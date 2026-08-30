@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from project_registry import cli as cli_module
 from project_registry.build import ProjectBuildState, append_event, save_state
 from project_registry.cli import main
@@ -366,6 +368,22 @@ def test_build_report_and_resume_commands(paths, capsys):
     state = json.loads(out)
     assert state["project_id"] == "alpha"
     assert state["paused_reason"] is None
+
+
+def test_notify_inbox_dry_run_needs_no_digest(paths, capsys):
+    code, out = run(paths, "notify", "--inbox", "--dry-run", capsys=capsys)
+    assert code == 0
+    assert out.splitlines()[0] == "Nothing needed"
+
+
+def test_notify_requires_exactly_one_source(paths):
+    with pytest.raises(SystemExit) as missing:
+        main(["--root", str(paths.root), "notify"])
+    assert missing.value.code != 0
+
+    with pytest.raises(SystemExit) as conflicting:
+        main(["--root", str(paths.root), "notify", "--run", "x", "--inbox"])
+    assert conflicting.value.code != 0
 
 
 def test_build_queue_and_readiness_commands(paths, write_project, capsys):

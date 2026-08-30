@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from .build_runs import BuildError, _read_lease, record_event
+from .build_runs import BuildError, _read_lease, read_events, record_event
 from .storage import Paths
 
 
@@ -209,5 +209,170 @@ def open_pr(
         "branch": branch,
         "pr_url": pr_url,
         "pr_number": pr_number,
+        "event": recorded["event"],
+    }
+
+
+def _gh(*args: str) -> str:
+    completed = subprocess.run(
+        ["gh", *args],
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        raise BuildError(
+            f"gh {' '.join(args[:2])} failed: {completed.stderr.strip()}"
+        )
+    return completed.stdout
+
+
+def merge_chunk(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    pr_number: int,
+) -> dict[str, Any]:
+    """Squash-merge a verified chunk and push its checkpoint tag."""
+    lease = _active_lease(paths, run_id)
+    if lease.get("dry_run") is True:
+        raise BuildError("shadow run never merges; use `build skip`")
+
+    chunk = lease.get("chunks", {}).get(chunk_id)
+    conditions = [
+        (chunk is not None, "chunk missing"),
+        (chunk is not None and chunk.get("pr_number") == pr_number,
+         "pr_number mismatch"),
+        (chunk is not None and chunk.get("verify") == "passed",
+         "verify is not passed"),
+        (chunk is not None and chunk.get("verdict") == "approve",
+         "verdict is not approve"),
+        (chunk is not None and chunk.get("merged") is False,
+         "chunk is already merged"),
+    ]
+    for valid, reason in conditions:
+        if not valid:
+            raise BuildError(f"unverified_merge: {reason}")
+
+    events, _ = read_events(paths)
+    chunk_events = [
+        event for event in events
+        if event.get("run_id") == run_id and event.get("chunk_id") == chunk_id
+    ]
+    if not any(event.get("type") == "verify_passed" for event in chunk_events):
+        raise BuildError("unverified_merge: no verify_passed event")
+    verdicts = [
+        event for event in chunk_events if event.get("type") == "review_verdict"
+    ]
+    latest_detail = (verdicts[-1].get("detail") or {}) if verdicts else {}
+    if latest_detail.get("verdict") != "approve":
+        raise BuildError("unverified_merge: latest review verdict is not approve")
+    if latest_detail.get("accepted", True) is not True:
+        raise BuildError("unverified_merge: latest review verdict is not accepted")
+
+    _gh(
+        "pr", "merge", str(pr_number), "--repo", lease["repo"],
+        "--squash", "--delete-branch",
+    )
+    sha = _gh(
+        "pr", "view", str(pr_number), "--repo", lease["repo"],
+        "--json", "mergeCommit", "-q", ".mergeCommit.oid",
+    ).strip()
+    if re.fullmatch(r"[0-9a-fA-F]{40}", sha) is None:
+        raise BuildError("gh pr view returned an invalid merge commit SHA")
+
+    _git(workdir, "fetch", "origin", "main")
+    tag = f"checkpoint/{run_id}-{chunk_id}"
+    _git(workdir, "tag", tag, sha)
+    _git(workdir, "push", "origin", f"refs/tags/{tag}")
+    recorded = record_event(paths, run_id, {
+        "type": "merged",
+        "chunk_id": chunk_id,
+        "pr_url": chunk.get("pr_url"),
+        "tag": tag,
+        "detail": {"merge_sha": sha},
+    })
+    _git(workdir, "checkout", "main")
+    _git(workdir, "pull", "--ff-only")
+    return {
+        "pr_number": pr_number,
+        "merge_sha": sha,
+        "tag": tag,
+        "event": recorded["event"],
+    }
+
+
+def reject_chunk(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+    reason: str,
+    pr_number: int | None = None,
+) -> dict[str, Any]:
+    """Close and remove a rejected chunk's namespaced branch."""
+    if reason not in {"review", "verify"}:
+        raise BuildError("reason must be review or verify")
+    lease = _active_lease(paths, run_id)
+    chunk = lease.get("chunks", {}).get(chunk_id) or {}
+    if pr_number is not None:
+        if chunk.get("pr_number") != pr_number:
+            raise BuildError("pr_close_policy: pr_number mismatch")
+        if not (
+            chunk.get("verdict") in {"reject", "request_changes", "invalid"}
+            or chunk.get("verify") == "failed"
+        ):
+            raise BuildError("pr_close_policy: chunk is not rejected or failed")
+
+    branch = chunk.get("branch") or _git(
+        workdir, "rev-parse", "--abbrev-ref", "HEAD"
+    ).strip()
+    if not branch.startswith(f"push/{run_id}-"):
+        raise BuildError("branch outside run namespace")
+
+    if pr_number is not None:
+        _gh("pr", "close", str(pr_number), "--repo", lease["repo"])
+    _git(workdir, "checkout", "main")
+    if pr_number is not None:
+        _git(workdir, "push", "origin", "--delete", branch)
+    subprocess.run(
+        ["git", "-C", str(workdir), "branch", "-D", branch],
+        capture_output=True,
+        text=True,
+    )
+    recorded = record_event(paths, run_id, {
+        "type": "chunk_rejected",
+        "chunk_id": chunk_id,
+        "reason": reason,
+    })
+    return {
+        "chunk_id": chunk_id,
+        "reason": reason,
+        "branch": branch,
+        "closed_pr": pr_number,
+        "event": recorded["event"],
+    }
+
+
+def skip_chunk(
+    paths: Paths,
+    run_id: str,
+    workdir: Path,
+    chunk_id: str,
+) -> dict[str, Any]:
+    """Journal a shadow-run chunk without merging it."""
+    lease = _active_lease(paths, run_id)
+    if lease.get("dry_run") is not True:
+        raise BuildError("skip is for shadow runs; use `build merge`")
+    recorded = record_event(paths, run_id, {
+        "type": "chunk_skipped",
+        "chunk_id": chunk_id,
+        "reason": "shadow",
+    })
+    _git(workdir, "checkout", "main")
+    _git(workdir, "pull", "--ff-only")
+    return {
+        "chunk_id": chunk_id,
+        "reason": "shadow",
         "event": recorded["event"],
     }

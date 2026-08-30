@@ -34,7 +34,13 @@ from .build import (
     resume_project,
     shadow_gate,
 )
-from .build_ops import create_branch, open_pr
+from .build_ops import (
+    create_branch,
+    merge_chunk,
+    open_pr,
+    reject_chunk,
+    skip_chunk,
+)
 from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
@@ -941,6 +947,36 @@ def cmd_build_pr(args, paths, now) -> int:
     return 0
 
 
+def cmd_build_merge(args, paths, now) -> int:
+    result = merge_chunk(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.pr
+    )
+    if emit(result, args):
+        return 0
+    print(f"merged #{result['pr_number']} {result['merge_sha']} {result['tag']}")
+    return 0
+
+
+def cmd_build_reject(args, paths, now) -> int:
+    result = reject_chunk(
+        paths, args.run_id, Path(args.workdir), args.chunk_id, args.reason, args.pr
+    )
+    if emit(result, args):
+        return 0
+    print(f"rejected {result['chunk_id']} ({result['reason']})")
+    return 0
+
+
+def cmd_build_skip(args, paths, now) -> int:
+    result = skip_chunk(
+        paths, args.run_id, Path(args.workdir), args.chunk_id
+    )
+    if emit(result, args):
+        return 0
+    print(f"skipped {result['chunk_id']} (shadow)")
+    return 0
+
+
 def cmd_build_finish(args, paths, now) -> int:
     if args.confirm_writeback:
         result = confirm_writeback(paths, args.run_id, now=now)
@@ -1312,6 +1348,36 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--workdir", required=True)
     pr.add_argument("--json", action="store_true", help="Emit JSON.")
     pr.set_defaults(handler=cmd_build_pr)
+
+    merge = build_subparsers.add_parser(
+        "merge", help="Merge a verified chunk PR and checkpoint it."
+    )
+    merge.add_argument("run_id")
+    merge.add_argument("--chunk-id", required=True)
+    merge.add_argument("--pr", required=True, type=int)
+    merge.add_argument("--workdir", required=True)
+    merge.add_argument("--json", action="store_true", help="Emit JSON.")
+    merge.set_defaults(handler=cmd_build_merge)
+
+    reject = build_subparsers.add_parser(
+        "reject", help="Close and remove a rejected chunk."
+    )
+    reject.add_argument("run_id")
+    reject.add_argument("--chunk-id", required=True)
+    reject.add_argument("--reason", required=True, choices=["review", "verify"])
+    reject.add_argument("--pr", type=int)
+    reject.add_argument("--workdir", required=True)
+    reject.add_argument("--json", action="store_true", help="Emit JSON.")
+    reject.set_defaults(handler=cmd_build_reject)
+
+    skip = build_subparsers.add_parser(
+        "skip", help="Skip a chunk in a shadow run."
+    )
+    skip.add_argument("run_id")
+    skip.add_argument("--chunk-id", required=True)
+    skip.add_argument("--workdir", required=True)
+    skip.add_argument("--json", action="store_true", help="Emit JSON.")
+    skip.set_defaults(handler=cmd_build_skip)
 
     finish = build_subparsers.add_parser("finish", help="Finalize a build run.")
     finish.add_argument("run_id")

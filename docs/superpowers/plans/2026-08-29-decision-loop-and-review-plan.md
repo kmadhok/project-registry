@@ -6,9 +6,11 @@ the 2026-08-25 shadow-run audit, and `docs/ideas/owner-loop.md`.
 
 ## Progress (2026-08-30, branch `worktree-decision-loop`)
 
-Tasks 1–9 and 7–8 landed with tests and the fault harness green; Tasks 10–12
-in flight; Phases 5–6 not started. Deviations: verbs are CLI-only (no MCP
-twins); a `build push` verb was added for round-2 fix pushes; the sandbox
+Phases 1–5 landed (Tasks 1–15) with the full suite and the fault harness
+green; Phase 6 (Tasks 16–17) in flight — the listener script and RUNBOOK unit
+exist, `registry request-run` is being wired. Deviations: verbs are CLI-only
+(no MCP twins); a `build push` verb was added for round-2 fix pushes;
+`reject` discards a dirty attempt before returning to `main`; the sandbox
 observe checkpoint is deferred until the branch is on `main` (from a worktree
 the hook and skill paths point at the main checkout). Codex's review of
 Phase 1 found two defects (same-day `brief.reviewed` re-arming a wait; a stale

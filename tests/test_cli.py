@@ -406,6 +406,22 @@ def test_notify_requires_exactly_one_source(paths):
     assert conflicting.value.code != 0
 
 
+def test_request_run_json_unconfigured(paths, write_project, capsys, monkeypatch):
+    write_project(id="builder", purpose="p")
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    code, out = run(paths, "request-run", "builder", "--json", capsys=capsys)
+    assert code == 0
+    assert json.loads(out)["configured"] is False
+
+
+def test_request_run_unknown_project_is_clean_error(paths, capsys):
+    code = main(["--root", str(paths.root), "request-run", "ghost"])
+    captured = capsys.readouterr()
+    assert code != 0
+    assert "not found" in captured.err.lower() or "unknown" in captured.err.lower()
+
+
 def test_build_queue_and_readiness_commands(paths, write_project, capsys):
     write_project(
         id="builder", purpose="Ship it", desired_outcome="It ships",

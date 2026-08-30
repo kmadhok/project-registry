@@ -1,5 +1,15 @@
 # The owner loop — decisions from a phone, everything else unattended
 
+> **Status 2026-08-30.** Layers 1–2 shipped. The *command topic* half of
+> layer 3 shipped in a narrower form: `registry request-run <id>` (called by
+> `/inbox` for each project it released) publishes `{"action":"run",
+> "project":"<id>"}` and `scripts/decision-listener.sh` on the build host
+> starts the run — decision latency drops from "next cron" to a minute
+> without any phone-side buttons. Approve/Reject buttons and a `decide`
+> action remain the next step; the listener already has the shape to accept
+> them. `blocked_by_policy` and `needs_intent` stops now park a project as
+> `waiting_owner` (ADR-006 AD-13), so a missed notification costs nothing.
+
 ## Problem Statement
 
 How might we let Kanu run three autonomous builders with the *only* human work being a handful of yes/no decisions a week — delivered to, and answerable from, his phone?

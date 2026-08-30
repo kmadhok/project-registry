@@ -6,7 +6,7 @@ import urllib.error
 from project_registry.cli import main
 from project_registry.notify import (
     build_inbox_notification, build_notification, notify_config,
-    render_notification, send_ntfy,
+    render_notification, request_run, send_ntfy,
 )
 from project_registry.storage import write_json
 
@@ -178,14 +178,65 @@ def test_config_env_wins_over_file(paths, monkeypatch):
     paths.build_dir.mkdir(parents=True, exist_ok=True)
     write_json(paths.build_dir / "notify.json", {"topic": "file-topic", "server": "https://x"})
     monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
-    assert notify_config(paths)["topic"] == "file-topic"
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    assert notify_config(paths) == {
+        "topic": "file-topic", "server": "https://x", "command_topic": None,
+    }
     monkeypatch.setenv("REGISTRY_NTFY_TOPIC", "env-topic")
-    assert notify_config(paths) == {"topic": "env-topic", "server": "https://x"}
+    assert notify_config(paths) == {
+        "topic": "env-topic", "server": "https://x", "command_topic": None,
+    }
+
+
+def test_config_command_topic_env_wins_over_file(paths, monkeypatch):
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    write_json(paths.build_dir / "notify.json", {
+        "topic": "notifications", "command_topic": "file-commands",
+    })
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    assert notify_config(paths)["command_topic"] == "file-commands"
+    monkeypatch.setenv("REGISTRY_NTFY_COMMAND_TOPIC", "env-commands")
+    assert notify_config(paths)["command_topic"] == "env-commands"
 
 
 def test_config_absent_is_none(paths, monkeypatch):
     monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
     assert notify_config(paths) is None
+
+
+def test_request_run_unconfigured(paths, write_project, monkeypatch):
+    write_project(id="builder", purpose="p")
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
+    monkeypatch.delenv("REGISTRY_NTFY_COMMAND_TOPIC", raising=False)
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    write_json(paths.build_dir / "notify.json", {"topic": "notifications"})
+    result = request_run(paths, "builder")
+    command = json.loads(result["message"])
+    assert result["configured"] is False and result["sent"] is False
+    assert command["action"] == "run" and command["project"] == "builder"
+
+
+def test_request_run_posts_to_command_topic(paths, write_project, monkeypatch):
+    write_project(id="builder", purpose="p")
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    write_json(paths.build_dir / "notify.json", {
+        "topic": "notifications", "command_topic": "commands", "server": "https://x",
+    })
+    seen = {}
+
+    def fake_post(server, payload):
+        seen.update(server=server, payload=payload)
+        return {"sent": True, "status": 200}
+
+    monkeypatch.setattr("project_registry.notify._post_json", fake_post)
+    result = request_run(paths, "builder", reason="owner approved")
+    command = json.loads(seen["payload"]["message"])
+    assert seen["server"] == "https://x"
+    assert seen["payload"]["topic"] == "commands"
+    assert command["action"] == "run" and command["project"] == "builder"
+    assert command["reason"] == "owner approved"
+    assert result["configured"] is True and result["sent"] is True
 
 
 def test_send_publishes_utf8_json_body(monkeypatch):

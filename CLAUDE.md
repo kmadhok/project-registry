@@ -166,6 +166,7 @@ registry build-report           # build-run/chunk metrics; add --since/--json
 registry owner-inbox            # everything that needs the owner, with the clearing command; add --json
 registry notify --run <run> [--dry-run] # push digest + inbox to ntfy
 registry notify --inbox [--dry-run]     # push the owner inbox alone (retro, /inbox)
+registry request-run <id> [--reason <text>] # ask the build host to start a named run now (ntfy command topic; prints when unconfigured)
 registry build-queue            # explain eligibility and builder rank; add --state/--json
 registry build-readiness <id>   # explain one project's brief gaps and automation policy; add --shadow-gate
 registry build resume <id>      # clear a project's build pause and failure count

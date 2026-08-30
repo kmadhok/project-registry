@@ -919,6 +919,18 @@ def cmd_notify(args, paths, now) -> int:
     return 0
 
 
+def cmd_request_run(args, paths, now) -> int:
+    from .notify import request_run
+
+    result = request_run(paths, args.project_id, reason=args.reason, now=now)
+    if not emit(result, args):
+        print(result["message"])
+        print(
+            f"[request-run] configured={result['configured']} sent={result['sent']}"
+        )
+    return 1 if result["configured"] and not result["sent"] else 0
+
+
 def cmd_build_resume(args, paths, now) -> int:
     state = resume_project(paths, args.project_id, now=now)
     payload = {"project_id": args.project_id, **state.to_dict()}
@@ -1362,6 +1374,11 @@ def build_parser() -> argparse.ArgumentParser:
     notify_source.add_argument("--run")
     notify_source.add_argument("--inbox", action="store_true")
     sub.add_argument("--dry-run", action="store_true")
+
+    sub = add("request-run", cmd_request_run,
+              "Ask the build host to start a run for one project.")
+    sub.add_argument("project_id")
+    sub.add_argument("--reason", default="")
 
     sub = add("build-queue", cmd_build_queue, "Show autonomous build eligibility and rank.")
     sub.add_argument("--state", choices=ELIGIBILITY_STATES)

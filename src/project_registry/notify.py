@@ -7,6 +7,7 @@ something needs a human, and up to three "view" buttons for the merged PRs.
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import os
 import re
@@ -14,7 +15,7 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-from .storage import Paths, read_json
+from .storage import Paths, load_registry, read_json
 
 DEFAULT_SERVER = "https://ntfy.sh"
 MAX_ACTIONS = 3  # ntfy allows at most three action buttons per message.
@@ -31,7 +32,16 @@ def notify_config(paths: Paths) -> dict[str, Any] | None:
     topic = os.environ.get("REGISTRY_NTFY_TOPIC") or raw.get("topic")
     if not topic:
         return None
-    return {"topic": topic, "server": raw.get("server") or DEFAULT_SERVER}
+    command_topic = (
+        os.environ.get("REGISTRY_NTFY_COMMAND_TOPIC")
+        or raw.get("command_topic")
+        or None
+    )
+    return {
+        "topic": topic,
+        "server": raw.get("server") or DEFAULT_SERVER,
+        "command_topic": command_topic,
+    }
 
 
 def _field(digest: str, name: str) -> str:
@@ -226,12 +236,10 @@ def ntfy_payload(topic: str, notification: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
-def send_ntfy(topic: str, notification: dict[str, Any] | str, *, server: str) -> dict[str, Any]:
-    """POST one notification to an ntfy topic as JSON. Returns a result dict; never raises."""
-    if isinstance(notification, str):
-        notification = {"title": notification.splitlines()[0], "body": notification}
+def _post_json(server: str, payload: dict) -> dict:
+    """POST a JSON payload to an ntfy server. Returns a result dict; never raises."""
     try:
-        body = json.dumps(ntfy_payload(topic, notification), ensure_ascii=False).encode("utf-8")
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         request = urllib.request.Request(
             server.rstrip("/"),
             data=body,
@@ -242,3 +250,53 @@ def send_ntfy(topic: str, notification: dict[str, Any] | str, *, server: str) ->
             return {"sent": True, "status": response.status}
     except (urllib.error.URLError, OSError, ValueError, UnicodeError) as error:
         return {"sent": False, "error": str(error)}
+
+
+def send_ntfy(topic: str, notification: dict[str, Any] | str, *, server: str) -> dict[str, Any]:
+    """POST one notification to an ntfy topic as JSON. Returns a result dict; never raises."""
+    if isinstance(notification, str):
+        notification = {"title": notification.splitlines()[0], "body": notification}
+    return _post_json(server, ntfy_payload(topic, notification))
+
+
+def request_run(
+    paths: Paths,
+    project_id: str,
+    *,
+    reason: str = "",
+    now: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """Request that the build host start a run for a registered project."""
+    if project_id not in load_registry(paths):
+        raise KeyError(project_id)
+    requested_at = (now or dt.datetime.now(dt.timezone.utc)).astimezone(
+        dt.timezone.utc
+    ).isoformat()
+    command = {
+        "action": "run",
+        "project": project_id,
+        "requested_at": requested_at,
+        "reason": reason,
+    }
+    message = json.dumps(command)
+    config = notify_config(paths)
+    if config is None or not config.get("command_topic"):
+        return {
+            "project_id": project_id,
+            "configured": False,
+            "sent": False,
+            "message": message,
+        }
+    payload = {
+        "topic": config["command_topic"],
+        "title": f"run {project_id}",
+        "message": message,
+        "tags": ["arrow_forward"],
+    }
+    result = _post_json(config["server"], payload)
+    return {
+        "project_id": project_id,
+        "configured": True,
+        "message": message,
+        **result,
+    }

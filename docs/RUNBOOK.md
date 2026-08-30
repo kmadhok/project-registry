@@ -154,6 +154,39 @@ failure digest, asks approve / reject / resume / skip, runs the registry
 command, commits, pushes. Nothing else is required of the owner day to day.
 Phone-side approve/reject buttons are the next step: `docs/ideas/owner-loop.md`.
 
+A decision that makes a project `ready` should not wait for tomorrow's cron.
+`/inbox` ends by running `registry request-run <id>` for each project it
+released; that publishes `{"action":"run","project":"<id>"}` to a second,
+private ntfy *command* topic (`data/build/notify.json` `command_topic`, or
+`REGISTRY_NTFY_COMMAND_TOPIC`; unconfigured means "print and do nothing").
+On the build host `scripts/decision-listener.sh` subscribes to that topic,
+validates the project id against the registry, and runs
+`scripts/run-build.sh <id>` — a named run through the normal lease,
+eligibility, and guard. Anyone holding the command topic can trigger a run,
+nothing more; pick a long random name and never commit it. Install it as a
+user service:
+
+```ini
+# ~/.config/systemd/user/registry-listener.service
+[Unit]
+Description=project-registry decision listener
+After=network-online.target
+
+[Service]
+WorkingDirectory=/home/ubuntu/project-registry
+Environment=BUILD_HOST_LABEL=vps-e7eb4af7
+Environment=GITHUB_TOKEN=<token>
+ExecStart=/home/ubuntu/project-registry/scripts/decision-listener.sh
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=default.target
+```
+
+`systemctl --user enable --now registry-listener` and `loginctl enable-linger
+ubuntu` so it survives logout. Log: `../build-work/logs/listener.log`.
+
 The `PreToolUse` hook in `.claude/settings.json` runs the guard only when a
 lease or the guard script exists at `$CLAUDE_PROJECT_DIR`; a checkout on a
 branch without `scripts/build-guard.py` (or a nested worktree whose hook

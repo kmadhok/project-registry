@@ -35,4 +35,5 @@ Run the chosen command, print its last lines, and move on. On any error, show it
 
 1. `registry dashboard`, then `registry validate` (0 errors required).
 2. Commit what changed: `git add registry data/proposals data/audit_log.jsonl DASHBOARD.md && git commit -m "inbox: <n> item(s) decided <date>" && git push origin main`.
-3. Print the remaining `registry owner-inbox` (should be empty) and, when a notify topic is configured, `registry notify --run <latest run id>` so the phone shows the cleared state.
+3. Release what you unblocked: run `registry build-queue --json` and, for every project that was `waiting_owner` when the session started and is `ready` now, run `registry request-run <id> --reason "inbox <date>"`. Unconfigured means it prints the command and does nothing; configured means the build host starts that run within a minute instead of at the next cron.
+4. Print the remaining `registry owner-inbox` (should be empty) and, when a notify topic is configured, `registry notify --inbox` so the phone shows the cleared state.

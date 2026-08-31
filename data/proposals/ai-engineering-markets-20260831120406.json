@@ -1,0 +1,23 @@
+{
+  "id": "ai-engineering-markets-20260831120406",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-08-31T12:04:06.570842+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-08-31: gear 2, https://github.com/kmadhok/ai_engineering_markets/pull/9",
+  "source": "record_review",
+  "applied_at": "2026-08-31T12:04:06.570842+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": "2026-08-11",
+      "after": "2026-08-31"
+    },
+    "notes": {
+      "before": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/ai_engineering_markets/pull/1\nowner 2026-08-10: spec PR #1 merged (5eb66c3). Repo now has docs/SPEC.md; next push-project run enters gear 2 at chunk 1 (reproducible DuckDB ingest). Chunk 1 is large \u2014 ingest rewrite + schema + requirements.txt + standing up pytest \u2014 and may warrant splitting.",
+      "after": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/ai_engineering_markets/pull/1\nowner 2026-08-10: spec PR #1 merged (5eb66c3). Repo now has docs/SPEC.md; next push-project run enters gear 2 at chunk 1 (reproducible DuckDB ingest). Chunk 1 is large \u2014 ingest rewrite + schema + requirements.txt + standing up pytest \u2014 and may warrant splitting.\npush-project 2026-08-31: chunk shipped https://github.com/kmadhok/ai_engineering_markets/pull/9"
+    },
+    "next_action.reviewed": {
+      "before": "2026-08-11",
+      "after": "2026-08-31"
+    }
+  }
+}

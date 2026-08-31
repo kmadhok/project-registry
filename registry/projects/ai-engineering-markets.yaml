@@ -61,11 +61,11 @@ automation:
     minutes_per_run: 100
 repo: kmadhok/ai_engineering_markets
 visibility: private
-last_reviewed: '2026-08-11'
+last_reviewed: '2026-08-31'
 next_action:
   description: 'Gear 2 is unblocked: review the chunk-1 PR (reproducible DuckDB ingest) when
     push-project opens it, or split chunk 1 in docs/SPEC.md first'
-  reviewed: '2026-08-11'
+  reviewed: '2026-08-31'
 tags:
 - kalshi
 - prediction-markets
@@ -75,4 +75,6 @@ notes: 'push-project 2026-08-01: spec drafted https://github.com/kmadhok/ai_engi
 
   owner 2026-08-10: spec PR #1 merged (5eb66c3). Repo now has docs/SPEC.md; next push-project
   run enters gear 2 at chunk 1 (reproducible DuckDB ingest). Chunk 1 is large — ingest rewrite
-  + schema + requirements.txt + standing up pytest — and may warrant splitting.'
+  + schema + requirements.txt + standing up pytest — and may warrant splitting.
+
+  push-project 2026-08-31: chunk shipped https://github.com/kmadhok/ai_engineering_markets/pull/9'

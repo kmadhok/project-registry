@@ -1,0 +1,23 @@
+{
+  "id": "ai-news-aggregator-20260901120606",
+  "project_id": "ai-news-aggregator",
+  "created_at": "2026-09-01T12:06:06.777807+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-09-01: gear 2, https://github.com/kmadhok/AI-News-Aggregator/pull/22 (spec amendment \u2014 index-refresh chunk unexecutable as written, split into portability fix + refresh)",
+  "source": "record_review",
+  "applied_at": "2026-09-01T12:06:06.777807+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": "2026-08-11",
+      "after": "2026-09-01"
+    },
+    "notes": {
+      "before": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/AI-News-Aggregator/pull/13\npush-project 2026-08-01: chunk shipped https://github.com/kmadhok/AI-News-Aggregator/pull/14\nowner 2026-08-10: chunk PR #14 merged (dadf4ae). Verified independently: root requirements.txt byte-identical to ai_news_aggregator/requirements.txt, and 14 tests pass in a clean venv with only pytest. Note the two manifests are now duplicates that can drift. Next chunk: close the 24-of-44 indexing gap.",
+      "after": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/AI-News-Aggregator/pull/13\npush-project 2026-08-01: chunk shipped https://github.com/kmadhok/AI-News-Aggregator/pull/14\nowner 2026-08-10: chunk PR #14 merged (dadf4ae). Verified independently: root requirements.txt byte-identical to ai_news_aggregator/requirements.txt, and 14 tests pass in a clean venv with only pytest. Note the two manifests are now duplicates that can drift. Next chunk: close the 24-of-44 indexing gap.\npush-project 2026-09-01: amended https://github.com/kmadhok/AI-News-Aggregator/pull/22 \u2014 the 24-of-44 refresh chunk is blocked by absolute Mac paths keyed into content.db; spec now splits it into 1a (repo-relative paths + migration) and 1b (refresh + count regression test)"
+    },
+    "next_action.reviewed": {
+      "before": "2026-08-11",
+      "after": "2026-09-01"
+    }
+  }
+}

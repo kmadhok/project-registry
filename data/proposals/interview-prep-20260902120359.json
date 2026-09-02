@@ -1,0 +1,23 @@
+{
+  "id": "interview-prep-20260902120359",
+  "project_id": "interview-prep",
+  "created_at": "2026-09-02T12:03:59.854726+00:00",
+  "status": "applied",
+  "rationale": "push-project 2026-09-02: gear 2, https://github.com/kmadhok/interview-prep/pull/17",
+  "source": "record_review",
+  "applied_at": "2026-09-02T12:03:59.854726+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": "2026-08-11",
+      "after": "2026-09-02"
+    },
+    "notes": {
+      "before": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/interview-prep/pull/8\npush-project 2026-08-04: chunk shipped https://github.com/kmadhok/interview-prep/pull/9\npush-project 2026-08-06: chunk shipped https://github.com/kmadhok/interview-prep/pull/10\nowner 2026-08-10: chunk PR #10 merged (2373806). Read-only CI workflow now live. Verified independently in a clean clone: 5 validator tests pass, 97 total (92 baseline + 5 new), validator checks 278 tracked JSON/JSONL files all valid. Two minor follow-ups, neither blocking: scripts/ci lacks a conftest.py so the bare import would break under --import-mode=importlib; and 'on: push' has no branch filter, so every push/* branch runs CI twice (push + PR). Next chunk: pipeline_health reporter.",
+      "after": "push-project 2026-08-01: spec drafted https://github.com/kmadhok/interview-prep/pull/8\npush-project 2026-08-04: chunk shipped https://github.com/kmadhok/interview-prep/pull/9\npush-project 2026-08-06: chunk shipped https://github.com/kmadhok/interview-prep/pull/10\nowner 2026-08-10: chunk PR #10 merged (2373806). Read-only CI workflow now live. Verified independently in a clean clone: 5 validator tests pass, 97 total (92 baseline + 5 new), validator checks 278 tracked JSON/JSONL files all valid. Two minor follow-ups, neither blocking: scripts/ci lacks a conftest.py so the bare import would break under --import-mode=importlib; and 'on: push' has no branch filter, so every push/* branch runs CI twice (push + PR). Next chunk: pipeline_health reporter.\npush-project 2026-09-02: chunk shipped https://github.com/kmadhok/interview-prep/pull/17"
+    },
+    "next_action.reviewed": {
+      "before": "2026-08-11",
+      "after": "2026-09-02"
+    }
+  }
+}

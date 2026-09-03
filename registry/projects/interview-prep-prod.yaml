@@ -52,7 +52,9 @@ automation:
     minutes_per_run: 100
 repo: kmadhok/interview-prep-prod
 visibility: private
+last_reviewed: '2026-09-03'
 next_action:
   description: Read the first build-run digest for interview-prep-prod and decide the first
     proposals it files
-  reviewed: '2026-08-27'
+  reviewed: '2026-09-03'
+notes: 'push-project 2026-09-03: spec drafted https://github.com/kmadhok/interview-prep-prod/pull/2'

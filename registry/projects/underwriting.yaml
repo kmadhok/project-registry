@@ -13,11 +13,11 @@ active: true
 category: project-placeholder
 repo: kmadhok/underwriting-
 visibility: private
-last_reviewed: '2026-08-11'
+last_reviewed: '2026-09-04'
 next_action:
   description: Answer which underwriting domain this repo targets (credit / insurance / mortgage
     / other), or archive it — no further agent work adds value until then
-  reviewed: '2026-08-11'
+  reviewed: '2026-09-04'
 tags:
 - underwriting
 - placeholder
@@ -29,4 +29,10 @@ notes: 'push-project 2026-08-03: spec drafted https://github.com/kmadhok/underwr
   three open questions. Confirmed the fallback was honest: repo is 2 files, only human commit
   is ''Initial commit'', zero issues, no evidence anywhere names a domain. BLOCKER: no further
   agent run adds value until the owner answers which underwriting domain this targets. Spec
-  chunk 2 (restate status in CLAUDE.md) is low value.'
+  chunk 2 (restate status in CLAUDE.md) is low value.
+
+  push-project 2026-09-04: chunk shipped https://github.com/kmadhok/underwriting-/pull/3 (owner
+  resolved the domain on 2026-08-28: commercial real-estate underwriting engine, multifamily-first,
+  with a rewritten docs/SPEC.md; the 2026-08-10 blocker no longer applies; the remaining SPEC
+  chunk is owner-gated on a hosting target and an OpenRouter key; Codex on the build host
+  has a revoked refresh token, chunk implemented inline)'

@@ -1,0 +1,38 @@
+{
+  "id": "underwriting-20260904120807",
+  "project_id": "underwriting",
+  "created_at": "2026-09-04T12:08:07.579485+00:00",
+  "status": "pending",
+  "rationale": "push-project 2026-09-04: the owner resolved the domain on 2026-08-28 (README, docs/SPEC.md, and 10 commits on main: FastAPI + Next.js real-estate underwriting engine). The curated purpose, next action, and open decision still describe an empty placeholder. Proposed replacements are grounded in the repo; owner to confirm.",
+  "source": "mcp",
+  "applied_at": null,
+  "changes": {
+    "purpose": {
+      "before": "A recently initialized placeholder for an underwriting project that currently contains only a title README and no implementation or specification.",
+      "after": "An AI-assisted commercial real-estate underwriting engine (multifamily-first): an LLM extracts rent rolls and T-12s into a sourced canonical schema, a deterministic layer computes the pro forma, and a live-formula Excel export plus a FastAPI/Next.js web app make every assumption auditable."
+    },
+    "next_action.description": {
+      "before": "Answer which underwriting domain this repo targets (credit / insurance / mortgage / other), or archive it \u2014 no further agent work adds value until then",
+      "after": "Review push-project PR #3 (income deductions + rent-roll lease fields), then choose the API host and supply an OpenRouter key so the remaining SPEC chunk (wire to hosting, one live PDF extraction) can run"
+    },
+    "brief.open_decisions": {
+      "before": [
+        {
+          "question": "Which underwriting domain does this repo target (credit / insurance / mortgage / other), and should it be built, kept as a placeholder, or archived?",
+          "status": "open"
+        }
+      ],
+      "after": [
+        {
+          "question": "Which underwriting domain does this repo target (credit / insurance / mortgage / other), and should it be built, kept as a placeholder, or archived?",
+          "status": "answered",
+          "answer": "Commercial real estate, multifamily-first; built (MVP + web app merged 2026-08-28)"
+        },
+        {
+          "question": "Which Python-capable host runs the FastAPI backend (Railway / Render / Fly / Cloud Run), and is the frontend a kanumadhok.com subdomain or a linked page?",
+          "status": "open"
+        }
+      ]
+    }
+  }
+}

@@ -1,11 +1,17 @@
 id: underwriting
 name: underwriting-
-purpose: A recently initialized placeholder for an underwriting project that currently contains
-  only a title README and no implementation or specification.
+purpose: 'An AI-assisted commercial real-estate underwriting engine (multifamily-first): an
+  LLM extracts rent rolls and T-12s into a sourced canonical schema, a deterministic layer
+  computes the pro forma, and a live-formula Excel export plus a FastAPI/Next.js web app make
+  every assumption auditable.'
 brief:
   open_decisions:
   - question: Which underwriting domain does this repo target (credit / insurance / mortgage
       / other), and should it be built, kept as a placeholder, or archived?
+    status: answered
+    answer: Commercial real estate, multifamily-first; built (MVP + web app merged 2026-08-28)
+  - question: Which Python-capable host runs the FastAPI backend (Railway / Render / Fly /
+      Cloud Run), and is the frontend a kanumadhok.com subdomain or a linked page?
     status: open
   reviewed: '2026-08-23'
 lifecycle: next
@@ -15,8 +21,9 @@ repo: kmadhok/underwriting-
 visibility: private
 last_reviewed: '2026-09-04'
 next_action:
-  description: Answer which underwriting domain this repo targets (credit / insurance / mortgage
-    / other), or archive it — no further agent work adds value until then
+  description: 'Review push-project PR #3 (income deductions + rent-roll lease fields), then
+    choose the API host and supply an OpenRouter key so the remaining SPEC chunk (wire to
+    hosting, one live PDF extraction) can run'
   reviewed: '2026-09-04'
 tags:
 - underwriting

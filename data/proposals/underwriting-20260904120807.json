@@ -2,10 +2,10 @@
   "id": "underwriting-20260904120807",
   "project_id": "underwriting",
   "created_at": "2026-09-04T12:08:07.579485+00:00",
-  "status": "pending",
+  "status": "applied",
   "rationale": "push-project 2026-09-04: the owner resolved the domain on 2026-08-28 (README, docs/SPEC.md, and 10 commits on main: FastAPI + Next.js real-estate underwriting engine). The curated purpose, next action, and open decision still describe an empty placeholder. Proposed replacements are grounded in the repo; owner to confirm.",
   "source": "mcp",
-  "applied_at": null,
+  "applied_at": "2026-09-04T21:23:07.615867+00:00",
   "changes": {
     "purpose": {
       "before": "A recently initialized placeholder for an underwriting project that currently contains only a title README and no implementation or specification.",

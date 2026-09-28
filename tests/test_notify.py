@@ -315,3 +315,57 @@ def test_notify_cli_dry_run_prints_message(paths, write_project, capsys, monkeyp
     assert code == 0 and payload["sent"] is False and payload["configured"] is True
     assert payload["message"].startswith("builder: merged 2 — nothing needed")
     assert payload["notification"]["priority"] == 3
+
+
+def test_health_notification_ok_empty_inbox():
+    from project_registry.notify import build_health_notification
+    notification = build_health_notification({
+        "status": "ok", "headline": "OK · ran today",
+        "next_expected": "2026-09-29T12:00:00+00:00",
+    }, EMPTY_INBOX)
+    assert notification["title"] == "OK · ran today"
+    assert notification["priority"] == 3
+    assert notification["tags"] == ["white_check_mark"]
+    assert notification["body"] == "next expected: Tue Sep 29 12:00 UTC\nNothing needs you."
+    assert notification["click"] is None and notification["actions"] == []
+
+
+def test_health_notification_stalled():
+    from project_registry.notify import build_health_notification
+    notification = build_health_notification({
+        "status": "stalled", "headline": "STALLED · no run since Aug 28",
+        "next_expected": "2026-09-29T12:00:00+00:00",
+    }, EMPTY_INBOX)
+    assert notification["priority"] == 5
+    assert notification["tags"] == ["rotating_light"]
+
+
+def test_health_notification_late_with_inbox():
+    from project_registry.notify import build_health_notification
+    notification = build_health_notification({
+        "status": "late", "headline": "LATE · no run since Fri Sep 25",
+        "next_expected": "2026-09-29T12:00:00+00:00",
+    }, INBOX)
+    assert notification["priority"] == 4
+    assert notification["tags"] == ["warning"]
+    assert notification["body"].split("\n", 1)[1] == build_inbox_notification(INBOX)["body"]
+
+
+def test_health_notification_ok_with_inbox_and_never():
+    from project_registry.notify import build_health_notification
+    for status, inbox, tag in [("ok", INBOX, "white_check_mark"), ("never", EMPTY_INBOX, "warning")]:
+        notification = build_health_notification({
+            "status": status, "headline": status.upper(),
+            "next_expected": "2026-09-29T12:00:00+00:00",
+        }, inbox)
+        assert notification["priority"] == 4
+        assert notification["tags"] == [tag]
+
+
+def test_notify_health_without_topic(tmp_path, monkeypatch, capsys):
+    monkeypatch.delenv("REGISTRY_NTFY_TOPIC", raising=False)
+    assert main(["--root", str(tmp_path), "notify", "--health", "--json"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["run_id"] is None
+    assert result["sent"] is False and result["configured"] is False
+    assert result["message"].startswith("NEVER · no runs in the journal\nnext expected:")

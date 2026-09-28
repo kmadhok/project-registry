@@ -50,8 +50,15 @@ LOG="$LOG_DIR/$(date -u +%Y%m%d-%H%M%S)-$HOST.log"
 
 {
   cd "$REGISTRY_ROOT" || exit 1
-  git pull --ff-only && \
-    refresh_evidence && \
+  if git pull --ff-only && refresh_evidence; then
     claude -p "$PROMPT" --dangerously-skip-permissions --mcp-config .mcp.json
+    STATUS=$?
+  else
+    echo "run-build: git pull or evidence refresh failed; skipping the run"
+    STATUS=1
+  fi
+  PYTHONPATH="$REGISTRY_ROOT/src" "$REGISTRY_PY" -m project_registry.cli notify --health \
+    || echo "run-build: heartbeat failed"
+  exit "$STATUS"
 } 2>&1 | tee "$LOG"
 exit "${PIPESTATUS[0]}"

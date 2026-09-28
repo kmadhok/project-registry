@@ -163,6 +163,7 @@ registry briefs-status          # evidence-brief presence, age, and revision sta
 registry brief-status           # owner brief completeness/age; add --incomplete/--stale/--json
 registry push-report            # push-run totals and cached PR states; add --refresh/--since/--json
 registry build-report           # build-run/chunk metrics; add --since/--json
+registry build-health            # did the builder run when expected? status, last run, weekdays missed; add --json
 registry owner-inbox            # everything that needs the owner, with the clearing command; add --json
 registry notify --run <run> [--dry-run] # push digest + inbox to ntfy
 registry notify --inbox [--dry-run]     # push the owner inbox alone (retro, /inbox)

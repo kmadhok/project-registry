@@ -47,6 +47,7 @@ from .dashboard import render_dashboard
 from .github.client import GitHubClient, GitHubError
 from .github.importer import fetch_inventory, import_inventory
 from .github.sync import load_snapshot, sync
+from .health import build_health
 from .intent import build_brief_status, filter_brief_status
 from .model import Effort, Lifecycle, Priority, RegistryError
 from .portfolio import export_portfolio, render_portfolio_markdown
@@ -875,6 +876,24 @@ def cmd_build_report(args, paths, now) -> int:
     return 0
 
 
+def cmd_build_health(args, paths, now) -> int:
+    result = build_health(paths, now=now)
+    if emit(result, args):
+        return 0
+    print(result["headline"])
+    run = result["last_run"]
+    if run is None:
+        print("last_run: None")
+    else:
+        print(
+            f"last_run: {run['run_id']} · {run['project_id'] or '-'} · "
+            f"{run['started_at']} · {run['outcome'] or 'crashed?'} · {run['merged']} merged"
+        )
+    for key in ("weekdays_missed", "next_expected", "stop_file", "lease", "journal_events"):
+        print(f"{key}: {result[key]}")
+    return 0
+
+
 def cmd_owner_inbox(args, paths, now) -> int:
     from .inbox import owner_inbox
     registry = load_registry(paths)
@@ -893,10 +912,13 @@ def cmd_owner_inbox(args, paths, now) -> int:
 def cmd_notify(args, paths, now) -> int:
     from .inbox import owner_inbox
     from .notify import (
-        build_inbox_notification, build_notification, notify_config, send_ntfy,
+        build_health_notification, build_inbox_notification, build_notification,
+        notify_config, send_ntfy,
     )
     inbox = owner_inbox(paths, load_registry(paths), now=now)
-    if args.inbox:
+    if args.health:
+        notification = build_health_notification(build_health(paths, now=now), inbox)
+    elif args.inbox:
         notification = build_inbox_notification(inbox)
     else:
         digest_path = paths.build_digests_dir / f"{args.run}.md"
@@ -1365,14 +1387,17 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("--since", metavar="YYYY-MM-DD",
                      help="Include events on or after this UTC date.")
 
+    add("build-health", cmd_build_health, "Check whether the builder ran when expected.")
+
     add("owner-inbox", cmd_owner_inbox,
         "List everything that needs the owner, with the command that clears it.")
 
     sub = add("notify", cmd_notify,
-              "Push the run digest and owner inbox to the configured ntfy topic.")
+              "Push a run digest, owner inbox, or builder heartbeat to the ntfy topic.")
     notify_source = sub.add_mutually_exclusive_group(required=True)
     notify_source.add_argument("--run")
     notify_source.add_argument("--inbox", action="store_true")
+    notify_source.add_argument("--health", action="store_true")
     sub.add_argument("--dry-run", action="store_true")
 
     sub = add("request-run", cmd_request_run,

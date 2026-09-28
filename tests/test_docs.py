@@ -94,7 +94,10 @@ def test_retired_launcher_is_absent_from_current_documentation():
         Path("docs/superpowers/specs/2026-08-22-autonomous-builder-C-technical-design.md"),
     }
     paths = [*DOC_ENTRYPOINTS]
-    paths.extend(path for path in (ROOT / "docs").rglob("*") if path.is_file())
+    paths.extend(
+        path for path in (ROOT / "docs").rglob("*")
+        if path.is_file() and path.name != ".DS_Store"
+    )
     offenders = {
         path.relative_to(ROOT)
         for path in paths

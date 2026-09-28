@@ -1,0 +1,13 @@
+[Unit]
+Description=project-registry builder heartbeat (independent of the build timer)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/project-registry
+Environment=PATH=/home/ubuntu/bin:/home/ubuntu/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-/home/ubuntu/.config/registry-build.env
+ExecStart=/bin/bash -lc 'git pull --ff-only --quiet || true; PYTHONPATH=src .venv/bin/python -m project_registry.cli notify --health'
+TimeoutStartSec=5min

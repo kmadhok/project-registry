@@ -1,0 +1,14 @@
+[Unit]
+Description=project-registry autonomous builder
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/project-registry
+Environment=BUILD_ENV_PC_ROOT=/home/ubuntu/project-registry
+Environment=PATH=/home/ubuntu/bin:/home/ubuntu/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-/home/ubuntu/.config/registry-build.env
+ExecStart=/home/ubuntu/project-registry/scripts/run-build.sh
+TimeoutStartSec=3h

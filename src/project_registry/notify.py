@@ -174,11 +174,10 @@ def build_notification(digest: str, inbox: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_inbox_notification(inbox: dict[str, Any]) -> dict[str, Any]:
-    """Assemble a lock-screen notification from the owner inbox alone."""
+def _inbox_lines(inbox: dict[str, Any]) -> list[str]:
+    """Format the bounded owner inbox shared by inbox and health messages."""
     count = int(inbox.get("count") or 0)
     items = list(inbox.get("items") or [])
-    title = f"Needs you ({count})" if count > 0 else "Nothing needed"
     body: list[str] = []
     for item in items[:8]:
         body.append(
@@ -189,11 +188,41 @@ def build_inbox_notification(inbox: dict[str, Any]) -> dict[str, Any]:
         body.append(f"+{count - 8} more — registry owner-inbox")
     if not body:
         body.append("Nothing needs you.")
+    return body
+
+
+def build_inbox_notification(inbox: dict[str, Any]) -> dict[str, Any]:
+    """Assemble a lock-screen notification from the owner inbox alone."""
+    count = int(inbox.get("count") or 0)
+    title = f"Needs you ({count})" if count > 0 else "Nothing needed"
     return {
         "title": _clean_label(title),
-        "body": "\n".join(body),
+        "body": "\n".join(_inbox_lines(inbox)),
         "priority": 4 if count > 0 else 3,
         "tags": ["warning"] if count > 0 else ["white_check_mark"],
+        "click": None,
+        "actions": [],
+    }
+
+
+def build_health_notification(health: dict[str, Any], inbox: dict[str, Any]) -> dict[str, Any]:
+    """Combine builder liveness and the owner inbox into a daily heartbeat."""
+    priority, tag = {
+        "ok": (3, "white_check_mark"),
+        "never": (4, "warning"),
+        "late": (4, "warning"),
+        "stalled": (5, "rotating_light"),
+    }[health["status"]]
+    if int(inbox.get("count") or 0) > 0:
+        priority = max(priority, 4)
+    expected = dt.datetime.fromisoformat(health["next_expected"].replace("Z", "+00:00"))
+    expected = expected.astimezone(dt.timezone.utc)
+    body = [f"next expected: {expected:%a %b} {expected.day} {expected:%H:%M} UTC"]
+    return {
+        "title": _clean_label(health["headline"]),
+        "body": "\n".join(body + _inbox_lines(inbox)),
+        "priority": priority,
+        "tags": [tag],
         "click": None,
         "actions": [],
     }

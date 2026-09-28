@@ -13,6 +13,7 @@ from typing import Any
 from .automation import build_queue
 from .build import load_state
 from .github.snapshot import Snapshot, humanize_age
+from .health import build_health
 from .model import Lifecycle, Project
 from .queries import (
     build_review_queue,
@@ -55,6 +56,7 @@ def render_dashboard(
     lines += _lifecycle_section(registry)
     lines += _active_section(registry, now)
     lines += _work_queue_section(registry, snapshot, now, config)
+    lines += _builder_health_section(registry, now)
     lines += _build_section(registry, snapshot, now)
     lines += _missing_next_actions_section(registry)
     lines += _prs_section(registry, snapshot, now)
@@ -159,6 +161,35 @@ def _missing_next_actions_section(registry: Registry) -> list[str]:
         lines.append(f"- `{row['project_id']}` — {row['reason']}")
     lines.append("")
     return lines
+
+
+def _builder_health_section(registry: Registry, now: dt.datetime) -> list[str]:
+    if registry.paths is None:
+        return []
+    health = build_health(registry.paths, now=now)
+    status = health["status"].upper()
+    headline = health["headline"].removeprefix(f"{status} · ")
+    lines = _heading("Builder health")
+    lines.append(f"- **{status}** — {headline}")
+    run = health["last_run"]
+    if run is None:
+        lines.append("- Last run: _No runs in the journal._")
+    else:
+        started = dt.datetime.fromisoformat(run["started_at"].replace("Z", "+00:00"))
+        lines.append(
+            f"- Last run: `{run['run_id']}` · {run['project_id'] or '-'} · "
+            f"{run['outcome'] or 'crashed?'} · {run['merged']} merged · "
+            f"{started:%Y-%m-%d %H:%M UTC}"
+        )
+    expected = dt.datetime.fromisoformat(health["next_expected"])
+    lines.append(f"- Next expected: {expected:%Y-%m-%d %H:%M UTC}")
+    brakes = []
+    if health["stop_file"]:
+        brakes.append("STOP present")
+    if health["lease"] is not None:
+        brakes.append(f"lease held by {health['lease']['run_id']}")
+    lines.append(f"- Brakes: {' / '.join(brakes) if brakes else 'none'}")
+    return lines + [""]
 
 
 def _build_section(

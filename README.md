@@ -47,6 +47,7 @@ registry attention                       # work needing a human, with the rule b
 registry mismatches                      # where registry intent and GitHub disagree
 registry push-report                     # push-run totals and cached linked-PR states
 registry build-report                    # autonomous build-run and chunk metrics
+registry build-health            # did the builder run when expected? status, last run, weekdays missed; add --json
 registry owner-inbox                     # everything that needs the owner, with the clearing command; add --json
 registry notify --run <run> [--dry-run]  # push digest + inbox to ntfy
 registry build-queue [--state ready]     # explain eligibility and rank every project

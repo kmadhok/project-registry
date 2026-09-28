@@ -61,8 +61,16 @@ Before scheduling on a new host: `git pull --ff-only`, `registry validate`
 (0 errors), `registry build env --json` (check `codex_bin` is not null),
 `registry build-queue` (see what a bare run would pick).
 
+The VPS systemd units live in `scripts/systemd/registry-build.service` and
+`registry-build.timer`: weekdays at 07:00 America/Chicago, with a three-hour
+service timeout. These files are the source of truth for the host units;
+shared secrets and host settings belong in
+`/home/ubuntu/.config/registry-build.env`.
+
 ## Reading a run
 
+- `registry build-health` — did the builder run when expected? Status, last
+  run, weekdays missed, next expected run, and brakes; add `--json` for data.
 - `registry build-report [--since <date>]` — totals: runs by outcome/host,
   chunks started/merged/skipped, guard denials, reverts.
 - `data/build/digests/<run-id>.md` — one page per run: outcome, merged chunks
@@ -97,6 +105,33 @@ topic name, and put it in the build host's environment as
 `REGISTRY_NTFY_TOPIC` (or in `data/build/notify.json`, gitignored). Test with
 `registry notify --run <any past run> --dry-run`. The topic name is a shared
 secret: never commit it.
+
+`registry notify --health` sends a heartbeat: the journal-derived health
+headline, the next expected run, and the owner inbox. The launcher sends it
+at the end of every launch, including a failed pull or builder command, and
+the independent watchdog timer sends it again at 09:00 America/Chicago.
+With no topic configured it prints the message with `sent=False`.
+
+Health uses UTC weekdays, an expected start of 12:00 UTC, and a two-hour
+grace period. **OK** means no weekday window has been missed; **LATE** means
+one has been missed; **STALLED** means two or more; **NEVER** means there are
+no started runs in the journal. A run without a finish shows `crashed?`.
+STOP and held leases appear in the headline. These statuses measure run
+cadence; the last outcome explains what happened in the run. The UTC health
+window stays fixed even when the Chicago timers shift for daylight saving.
+
+### Watchdog
+
+The watchdog runs independently of the build timer, so it can report a dead
+build timer or a launcher that exits before sending its heartbeat. Install
+it from the registry checkout on the VPS:
+
+```bash
+sudo cp scripts/systemd/registry-watchdog.* /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now registry-watchdog.timer
+```
+
+Residual risk: if the host itself is down, nothing fires — the absence of
+the 09:00 message is the signal.
 
 ## Shadow gate — when a project may switch to `build`
 

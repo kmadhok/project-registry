@@ -181,6 +181,18 @@ def _builder_health_section(registry: Registry, now: dt.datetime) -> list[str]:
             f"{run['outcome'] or 'crashed?'} · {run['merged']} merged · "
             f"{started:%Y-%m-%d %H:%M UTC}"
         )
+    attempt = health["last_attempt"]
+    if attempt is not None:
+        lines.append(
+            f"- Last attempt: `{attempt['run_id']}` · {attempt['host']} · "
+            f"{attempt['ts']} · {attempt['outcome']}"
+        )
+    if health["refusals_since_last_run"]:
+        counts = ", ".join(f"{outcome}: {count}" for outcome, count in
+                           sorted(health["refusals_since_last_run"].items()))
+        lines.append(f"- Refusals since last run: {counts}")
+    if health["standdowns"]:
+        lines.append(f"- Inactive-host standdowns: {health['standdowns']}")
     expected = dt.datetime.fromisoformat(health["next_expected"])
     lines.append(f"- Next expected: {expected:%Y-%m-%d %H:%M UTC}")
     brakes = []

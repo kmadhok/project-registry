@@ -156,3 +156,80 @@ def test_build_health_cli(tmp_path, capsys):
     assert [line.split(":", 1)[0] for line in lines[1:]] == [
         "last_run", "weekdays_missed", "next_expected", "stop_file", "lease", "journal_events",
     ]
+
+
+@pytest.mark.parametrize("started,status", [("2026-09-25", "late"), ("2026-09-24", "stalled"), (None, "never")])
+def test_preflight_refusal_visible_without_changing_run_health(tmp_path, started, status):
+    events = [] if started is None else [event("run_started", f"{started}T12:00:00")]
+    refusal = event("run_finished", "2026-09-28T12:00:00", run_id="refused",
+                    project_id=None, outcome="registry_dirty", detail={"branch": "work"})
+    paths = journal(tmp_path, [refusal, *events])  # journal order is not timestamp order
+    health = build_health(paths, now=timestamp("2026-09-28T15:00:00"))
+    assert health["status"] == status
+    assert health["last_attempt"]["run_id"] == "refused"
+    assert health["last_attempt"]["host"] == "builder-host"
+    assert health["last_attempt"]["detail"] == {"branch": "work"}
+    assert health["refusals_since_last_run"] == {"registry_dirty": 1}
+    assert health["standdowns"] == 0
+    assert health["headline"].endswith(" · last attempt Sep 28: registry_dirty")
+    assert health_headline(json.loads(json.dumps(health))) == health["headline"]
+
+
+def test_standdowns_do_not_hide_refusals_or_change_headline(tmp_path):
+    paths = journal(tmp_path, [event("run_finished", "2026-09-28T12:00:00",
+                                   outcome="registry_dirty", project_id=None)])
+    before = build_health(paths, now=timestamp("2026-09-28T15:00:00"))
+    with paths.build_runs_file.open("a") as handle:
+        handle.write(json.dumps(event("run_finished", "2026-09-28T13:00:00", run_id="mac",
+                                      outcome="stopped", detail={"reason": "inactive_host"})) + "\n")
+    after = build_health(paths, now=timestamp("2026-09-28T15:00:00"))
+    assert after["standdowns"] == 1
+    assert after["last_attempt"] == before["last_attempt"]
+    assert after["headline"] == before["headline"]
+    assert after["refusals_since_last_run"] == {"registry_dirty": 1}
+
+
+def test_new_started_run_clears_refusal_counts_and_headline(tmp_path):
+    paths = journal(tmp_path, [
+        event("run_finished", "2026-09-24T12:00:00", run_id="old", outcome="lease_held"),
+        event("run_started", "2026-09-25T12:00:00"),
+    ])
+    health = build_health(paths, now=timestamp("2026-09-28T15:00:00"))
+    assert health["last_attempt"]["outcome"] == "lease_held"
+    assert health["refusals_since_last_run"] == {}
+    assert "last attempt" not in health["headline"]
+
+
+def test_refusal_renders_in_dashboard_and_health_notification(tmp_path, capsys):
+    from project_registry.dashboard import render_dashboard
+    from project_registry.storage import load_registry
+
+    paths = journal(tmp_path, [event("run_finished", "2026-09-28T12:00:00",
+                                   outcome="registry_dirty", project_id=None)])
+    rendered = render_dashboard(load_registry(paths), now=timestamp("2026-09-28T15:00:00"))
+    assert "last attempt Sep 28: registry_dirty" in rendered
+    assert "Last attempt: `r1`" in rendered
+    assert "Refusals since last run: registry_dirty: 1" in rendered
+    assert main(["--root", str(tmp_path), "notify", "--health", "--dry-run"]) == 0
+    output = capsys.readouterr().out
+    assert "registry_dirty" in output
+    assert "build_refused" in output
+
+
+def test_refusal_counts_by_outcome_and_standdown_only_health(tmp_path):
+    paths = journal(tmp_path, [
+        event("run_finished", "2026-09-28T12:00:00", run_id="mac", outcome="stopped",
+              detail={"reason": "inactive_host"}),
+    ])
+    health = build_health(paths, now=timestamp("2026-09-28T15:00:00"))
+    assert health["last_attempt"] is None
+    assert health["standdowns"] == 1
+    assert health["refusals_since_last_run"] == {}
+    assert health["headline"] == "NEVER · no runs in the journal"
+    with paths.build_runs_file.open("a") as handle:
+        for i, outcome in enumerate(["registry_dirty", "registry_dirty", "lease_held", "stopped"]):
+            handle.write(json.dumps(event("run_finished", f"2026-09-28T13:0{i}:00",
+                                          run_id=f"attempt-{i}", outcome=outcome)) + "\n")
+    health = build_health(paths, now=timestamp("2026-09-28T15:00:00"))
+    assert health["refusals_since_last_run"] == {"registry_dirty": 2, "lease_held": 1, "stopped": 1}
+    assert health["headline"].endswith("last attempt Sep 28: stopped (STOP file)")

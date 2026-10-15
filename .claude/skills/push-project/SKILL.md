@@ -7,6 +7,8 @@ description: "Autonomous builder — selects a ready project via the registry, p
 
 Turn one approved project brief into independently reviewed, squash-merged chunks. Follow the phases in order. Accept an optional project id and `--force-named` only as `/push-project [project-id] [--force-named]`.
 
+Run every `$REGISTRY_CLI`, `gh`, and `git` command as its own Bash call, with literal values (no unexpanded variables in branch names), no `&&` chains across steps, and no piping into an interpreter (`python3 -c`, `eval`, `xargs`). Read JSON output yourself. The guard denies those forms and a denial aborts the run (runs 4c56 and 3914 ended this way).
+
 ## Constants from `registry build env --json`
 
 1. Run `registry build env --json` before all other CLI calls.

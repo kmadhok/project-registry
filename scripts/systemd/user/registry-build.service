@@ -1,0 +1,11 @@
+[Unit]
+Description=project-registry autonomous builder (user unit, kayak)
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/project-registry
+Environment=BUILD_ENV_PC_ROOT=%h/project-registry
+Environment=PATH=%h/bin:%h/.local/bin:%h/.nvm/current/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-%h/.config/registry-build.env
+ExecStart=%h/project-registry/scripts/run-build.sh
+TimeoutStartSec=3h

@@ -1,0 +1,10 @@
+[Unit]
+Description=project-registry builder heartbeat (user unit, independent of the build timer)
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/project-registry
+Environment=PATH=%h/bin:%h/.local/bin:%h/.nvm/current/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=-%h/.config/registry-build.env
+ExecStart=/bin/bash -c 'git pull --ff-only --quiet || true; PYTHONPATH=src .venv/bin/python -m project_registry.cli notify --health'
+TimeoutStartSec=5min

@@ -10,7 +10,8 @@ the step-by-step orchestration in `.claude/skills/push-project/SKILL.md`.
 |---|---|---|---|
 | `mac` | Kanu's MacBook | `/Users/kanumadhok/Documents/Claude/Projects/project-registry` | interactive runs (`/push-project [id]`) and audits |
 | `pc` | Windows PC, WSL Ubuntu (`learnmsds`) | `/home/learnmsds/Github/project-registry` | scheduled runs via Task Scheduler → `scripts/run-build.sh`; **offline since mid-August 2026** |
-| hostname-derived | Linux build instance (`ubuntu`, tailnet `instance-20250830-043814`) | `/home/ubuntu/project-registry` | scheduled runs since 2026-08-24; set `BUILD_HOST_LABEL` there so the journal label is honest |
+| hostname-derived | Linux build instance (`ubuntu`, tailnet `instance-20250830-043814`) | `/home/ubuntu/project-registry` | scheduled runs 2026-08-24 to 2026-08-28, then failing silently; **retired 2026-10-15** (stands down via `data/build/active_host`); set `BUILD_HOST_LABEL` there so the journal label is honest |
+| `kayak` | Windows PC `kayak` (on 24/7), WSL2 Ubuntu (`kanum`, systemd, linger) | `/home/kanum/project-registry` | **active build host since 2026-10-15**; systemd user units from `scripts/systemd/user/` |
 
 `registry build env --json` resolves `host_kind` (drives CLI/Codex paths) and
 `host` (the journal label: `BUILD_HOST_LABEL`, else `mac` on macOS, else the
@@ -60,6 +61,24 @@ the repository. `registry sync-status` shows whether it worked.
 Before scheduling on a new host: `git pull --ff-only`, `registry validate`
 (0 errors), `registry build env --json` (check `codex_bin` is not null),
 `registry build-queue` (see what a bare run would pick).
+
+`data/build/active_host` names the single scheduled host (one label, e.g.
+`kayak`). Leases live in each checkout, so without it two scheduled hosts can
+build the same project at once. A host whose label differs stands down: the
+launcher exits 0 after `git pull` without running Claude or the heartbeat,
+`registry build start` journals `stopped` (`detail.reason=inactive_host`), and
+`notify --health` sends nothing. The Mac (`mac`) is interactive and exempt. Delete the file to allow any host; change it
+to move the builder.
+
+On kayak (no sudo; linger on) the units are user units:
+
+```bash
+mkdir -p ~/.config/systemd/user && cp scripts/systemd/user/*.service scripts/systemd/registry-*.timer ~/.config/systemd/user/
+systemctl --user daemon-reload && systemctl --user enable --now registry-build.timer registry-watchdog.timer
+```
+
+`~/.config/registry-build.env` there holds `BUILD_HOST_LABEL=kayak` and
+`GITHUB_TOKEN`; Claude, Codex, and gh use the host's own logins.
 
 The VPS systemd units live in `scripts/systemd/registry-build.service` and
 `registry-build.timer`: weekdays at 07:00 America/Chicago, with a three-hour

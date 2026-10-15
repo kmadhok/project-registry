@@ -30,7 +30,7 @@ __all__ = [
     "resume_project", "build_report", "registry_checkout_status", "get_build_context",
     "begin_run", "record_event", "reconcile", "reconcile_done", "finish_run",
     "confirm_writeback", "shadow_gate",
-    "build_env",
+    "build_env", "active_build_host", "host_may_build",
 ]
 
 EVENT_TYPES = frozenset({
@@ -686,6 +686,24 @@ def _host_label(value: str) -> str:
     return normalized.strip("-")[:20] or "unknown"
 
 
+def active_build_host(paths: Paths) -> str | None:
+    """The one host label allowed to build, from data/build/active_host; None allows any.
+
+    Leases are per checkout, so two scheduled hosts could otherwise build at once.
+    """
+    try:
+        value = paths.build_active_host_file.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return None
+    return _host_label(value) if value else None
+
+
+def host_may_build(paths: Paths, host: str) -> bool:
+    """Scheduled hosts defer to data/build/active_host; the Mac is interactive and always may."""
+    active = active_build_host(paths)
+    return active is None or _host_label(host) in {active, "mac"}
+
+
 def _run_id(host: str, now: dt.datetime, supplied: str | None = None) -> str:
     return supplied or (
         f"{now.strftime('%Y%m%dT%H%M%SZ')}-{_host_label(host)}-{os.urandom(2).hex()}"
@@ -807,6 +825,12 @@ def begin_run(
     if isinstance(ttl_seconds, bool) or not isinstance(ttl_seconds, int) or ttl_seconds < 1:
         raise BuildError("ttl_seconds must be an integer >= 1")
     attempt_id = _run_id(host, current, run_id)
+    if not host_may_build(paths, host):
+        detail = {"reason": "inactive_host", "active_host": active_build_host(paths)}
+        _attempt_finished(
+            paths, attempt_id, host, "stopped", current, project_id=project_id, detail=detail,
+        )
+        return {"outcome": "stopped", "detail": detail}
     existing = _read_lease(paths)
     if existing is not None and existing.get("status") == "finalize_pending":
         return {

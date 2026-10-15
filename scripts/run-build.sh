@@ -50,7 +50,16 @@ LOG="$LOG_DIR/$(date -u +%Y%m%d-%H%M%S)-$HOST.log"
 
 {
   cd "$REGISTRY_ROOT" || exit 1
-  if git pull --ff-only && refresh_evidence; then
+  git pull --ff-only
+  PULL_STATUS=$?
+  # data/build/active_host names the one scheduled host; any other non-Mac
+  # host stands down silently (build start and notify --health enforce the same).
+  ACTIVE_HOST="$(tr -d '[:space:]' < data/build/active_host 2>/dev/null)"
+  if [[ -n "$ACTIVE_HOST" && "$ACTIVE_HOST" != "$HOST" && "$HOST" != mac ]]; then
+    echo "run-build: $HOST is not the active build host ($ACTIVE_HOST); standing down"
+    exit 0
+  fi
+  if [[ $PULL_STATUS -eq 0 ]] && refresh_evidence; then
     claude -p "$PROMPT" --dangerously-skip-permissions --mcp-config .mcp.json
     STATUS=$?
   else

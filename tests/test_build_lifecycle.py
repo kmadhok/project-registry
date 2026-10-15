@@ -580,3 +580,36 @@ def test_stop_file_journals_stopped(paths, write_project):
     assert not paths.build_lease_file.exists()
     events, _ = read_events(paths)
     assert events[-1]["outcome"] == "stopped"
+
+
+def start_on(paths, host, run_id):
+    return begin_run(paths, host=host, now=NOW, run_id=run_id,
+                     registry=load_registry(paths), snapshot=Snapshot())
+
+
+def test_inactive_host_stops_before_any_lease(paths, write_project):
+    ready_project(write_project)
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    paths.build_active_host_file.write_text("kayak\n", encoding="utf-8")
+    result = start_on(paths, "vps-e7eb4af7", "elsewhere")
+    assert result == {
+        "outcome": "stopped", "detail": {"reason": "inactive_host", "active_host": "kayak"},
+    }
+    assert not paths.build_lease_file.exists()
+    events, _ = read_events(paths)
+    assert (events[-1]["type"], events[-1]["outcome"]) == ("run_finished", "stopped")
+
+
+@pytest.mark.parametrize("host,content", [
+    ("kayak", "kayak\n"), ("kayak", "  KAYAK "), ("vps-e7eb4af7", ""), ("mac", "kayak\n"),
+])
+def test_active_host_matching_blank_or_mac_allows_start(paths, write_project, host, content):
+    ready_project(write_project)
+    paths.build_dir.mkdir(parents=True, exist_ok=True)
+    paths.build_active_host_file.write_text(content, encoding="utf-8")
+    assert start_on(paths, host, "here")["run_id"] == "here"
+
+
+def test_no_active_host_file_allows_any_host(paths, write_project):
+    ready_project(write_project)
+    assert start_on(paths, "vps-e7eb4af7", "any")["run_id"] == "any"

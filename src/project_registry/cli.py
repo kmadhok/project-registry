@@ -21,7 +21,9 @@ from .build import (
     BuildError,
     EVENT_TYPES,
     RUN_OUTCOMES,
+    active_build_host,
     begin_run,
+    host_may_build,
     build_env,
     build_report,
     confirm_writeback,
@@ -915,6 +917,14 @@ def cmd_notify(args, paths, now) -> int:
         build_health_notification, build_inbox_notification, build_notification,
         notify_config, send_ntfy,
     )
+    if args.health:
+        host = build_env(paths.root)["host"]
+        if not host_may_build(paths, host):
+            # Only the active build host reports health; a retired host's
+            # checkout would describe a journal it no longer writes.
+            print(f"[notify] {host} is not the active build host "
+                  f"({active_build_host(paths)}); not sent")
+            return 0
     inbox = owner_inbox(paths, load_registry(paths), now=now)
     if args.health:
         notification = build_health_notification(build_health(paths, now=now), inbox)

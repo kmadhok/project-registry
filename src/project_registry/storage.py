@@ -89,6 +89,10 @@ class Paths:
         return self.build_dir / "STOP"
 
     @property
+    def build_active_host_file(self) -> Path:
+        return self.build_dir / "active_host"
+
+    @property
     def build_digests_dir(self) -> Path:
         return self.build_dir / "digests"
 

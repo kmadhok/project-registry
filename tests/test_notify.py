@@ -369,3 +369,26 @@ def test_notify_health_without_topic(tmp_path, monkeypatch, capsys):
     assert result["run_id"] is None
     assert result["sent"] is False and result["configured"] is False
     assert result["message"].startswith("NEVER · no runs in the journal\nnext expected:")
+
+
+def test_notify_health_silent_on_inactive_host(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("REGISTRY_NTFY_TOPIC", "topic")
+    monkeypatch.setenv("BUILD_HOST_LABEL", "vps-e7eb4af7")
+    sent = []
+    monkeypatch.setattr("project_registry.notify.send_ntfy", lambda *a, **k: sent.append(a) or {"sent": True})
+    (tmp_path / "data/build").mkdir(parents=True)
+    (tmp_path / "data/build/active_host").write_text("kayak\n")
+    assert main(["--root", str(tmp_path), "notify", "--health"]) == 0
+    assert sent == []
+    assert "not the active build host (kayak)" in capsys.readouterr().out
+
+
+def test_notify_health_sends_on_active_host(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("REGISTRY_NTFY_TOPIC", "topic")
+    monkeypatch.setenv("BUILD_HOST_LABEL", "kayak")
+    sent = []
+    monkeypatch.setattr("project_registry.notify.send_ntfy", lambda *a, **k: sent.append(a) or {"sent": True})
+    (tmp_path / "data/build").mkdir(parents=True)
+    (tmp_path / "data/build/active_host").write_text("kayak\n")
+    assert main(["--root", str(tmp_path), "notify", "--health"]) == 0
+    assert len(sent) == 1

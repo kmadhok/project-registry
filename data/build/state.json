@@ -36,15 +36,15 @@
     "waiting_on": null
   },
   "interview-prep-prod": {
-    "last_run_at": "2026-08-27T12:17:08.719873+00:00",
+    "last_run_at": "2026-10-16T12:16:46.384148+00:00",
     "last_success_at": null,
-    "consecutive_failures": 2,
-    "paused_reason": null,
-    "paused_at": null,
+    "consecutive_failures": 4,
+    "paused_reason": "contract_broken",
+    "paused_at": "2026-10-16T12:16:46.384148+00:00",
     "chunks_merged_total": 0,
     "needs_intent_proposal_id": null,
-    "last_run_id": "20260827T120027Z-vps-e7eb4af7-4c56",
-    "last_outcome": "aborted",
+    "last_run_id": "20261016T120418Z-kayak-522e",
+    "last_outcome": "contract_broken",
     "waiting_on": null
   }
 }

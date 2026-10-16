@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import datetime as dt
+import shlex
 from typing import Any
 
 from .automation import build_queue
 from .build_runs import load_state, read_events, _read_lease
+from .health import preflight_attempts
 from .github.sync import load_snapshot
 from .proposals import last_owner_action, list_proposals
 from .storage import Paths, Registry
@@ -108,11 +110,34 @@ def owner_inbox(
             ))
 
     events, _ = read_events(paths)
+    attempts = preflight_attempts(events)
+    attempt = attempts["last_attempt"]
+    if attempt and attempts["refusals_since_last_run"]:
+        outcome = attempt["outcome"]
+        project_id = attempt["project_id"]
+        duplicate = any(
+            item["kind"] == "finalize_pending" or
+            (item["kind"] == "paused" and item["project_id"] == project_id)
+            for item in items
+        )
+        actions = {
+            "registry_dirty": f"git -C {shlex.quote(str(paths.root))} status",
+            "lease_held": "registry build-health",
+            "stopped": f"rm -- {shlex.quote(str(paths.build_stop_file))}",
+        }
+        if outcome in actions and not duplicate:
+            reason = "STOP file" if outcome == "stopped" else outcome
+            items.append(_item(
+                "build_refused", project_id,
+                f"build attempt {attempt['run_id']} on {attempt['host']} refused: {reason}",
+                actions[outcome],
+            ))
+    started_ids = {event["run_id"] for event in events if event["type"] == "run_started"}
     last_finished: dict[str, dict[str, Any]] = {}
     resumed_after: set[str] = set()
     for event in events:
         project_id = event.get("project_id")
-        if event["type"] == "run_finished" and project_id:
+        if event["type"] == "run_finished" and project_id and event["run_id"] in started_ids:
             last_finished[project_id] = event
             resumed_after.discard(project_id)
         if event["type"] == "resumed" and project_id:

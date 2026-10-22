@@ -217,3 +217,55 @@ def test_needs_intent_wait_with_pending_proposal_has_no_extra_item(
     assert kinds(owner_inbox(paths, load_registry(paths), now=NOW)) == [
         "proposal_pending"
     ]
+
+
+def attempt(paths, outcome, *, run_id="refused", project_id=None, detail=None, hours=1):
+    append_event(paths, {"run_id": run_id, "host": "kayak", "type": "run_finished",
+                         "project_id": project_id, "outcome": outcome, "detail": detail},
+                 now=NOW + dt.timedelta(hours=hours))
+
+
+def test_preflight_refusals_have_concrete_actions(paths):
+    append_event(paths, {"run_id": "prior", "host": "kayak", "type": "run_started"}, now=NOW)
+    for outcome, command in [("registry_dirty", "git -C"), ("lease_held", "registry build-health"),
+                             ("stopped", "rm --")]:
+        attempt(paths, outcome, run_id=outcome)
+        result = owner_inbox(paths, load_registry(paths), now=NOW)
+        assert kinds(result) == ["build_refused"]
+        assert result["items"][0]["action"].startswith(command)
+        assert outcome in result["items"][0]["summary"] or outcome == "stopped"
+
+
+def test_standdown_only_is_not_an_inbox_problem(paths):
+    attempt(paths, "stopped", detail={"reason": "inactive_host"})
+    assert owner_inbox(paths, load_registry(paths), now=NOW)["items"] == []
+
+
+def test_standdown_does_not_hide_latest_refusal(paths):
+    attempt(paths, "registry_dirty")
+    attempt(paths, "stopped", run_id="mac", hours=2, detail={"reason": "inactive_host"})
+    assert kinds(owner_inbox(paths, load_registry(paths), now=NOW)) == ["build_refused"]
+
+
+def test_new_run_or_nonactionable_attempt_clears_refusal_item(paths):
+    attempt(paths, "registry_dirty")
+    attempt(paths, "no_candidate", run_id="no-work", hours=2)
+    assert owner_inbox(paths, load_registry(paths), now=NOW)["items"] == []
+    attempt(paths, "lease_held", run_id="lease", hours=3)
+    append_event(paths, {"run_id": "new", "host": "kayak", "type": "run_started"},
+                 now=NOW + dt.timedelta(hours=4))
+    assert owner_inbox(paths, load_registry(paths), now=NOW)["items"] == []
+
+
+def test_named_refusal_not_duplicated_as_failed_run_or_paused(paths, write_project):
+    ready(write_project)
+    attempt(paths, "registry_dirty", project_id="builder")
+    assert kinds(owner_inbox(paths, load_registry(paths), now=NOW)) == ["build_refused"]
+    save_state(paths, {"builder": ProjectBuildState(paused_reason="consecutive_failures")})
+    assert kinds(owner_inbox(paths, load_registry(paths), now=NOW)) == ["paused"]
+
+
+def test_refusal_does_not_duplicate_finalize_pending(paths):
+    attempt(paths, "lease_held")
+    write_json(paths.build_lease_file, {"run_id": "r9", "status": "finalize_pending"})
+    assert kinds(owner_inbox(paths, load_registry(paths), now=NOW)) == ["finalize_pending"]

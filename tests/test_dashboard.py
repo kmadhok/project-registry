@@ -31,7 +31,10 @@ def test_dashboard_shows_last_run_and_brakes(tmp_path):
         "pr_url": None, "tag": None, "reason": None, "detail": None,
     }) + "\n")
     paths.build_stop_file.touch()
-    paths.build_lease_file.write_text(json.dumps({"run_id": "r1", "project_id": "builder"}))
+    paths.build_lease_file.write_text(json.dumps({
+        "run_id": "r1", "project_id": "builder",
+        "started_at": "2026-09-28T12:00:00Z", "ttl_seconds": 10800,
+    }))
     rendered = render_dashboard(
         Registry(paths=paths), now=dt.datetime(2026, 9, 28, 13, tzinfo=dt.timezone.utc),
     )

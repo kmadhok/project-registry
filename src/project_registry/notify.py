@@ -205,19 +205,36 @@ def build_inbox_notification(inbox: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_health_notification(health: dict[str, Any], inbox: dict[str, Any]) -> dict[str, Any]:
-    """Combine builder liveness and the owner inbox into a daily heartbeat."""
+def build_health_notification(
+    health: dict[str, Any], inbox: dict[str, Any], *,
+    exit_code: int | None = None, log_tail: list[str] | None = None,
+) -> dict[str, Any]:
+    """Combine builder liveness and the owner inbox into a daily heartbeat.
+
+    The launcher passes the builder's exit code and its output; the last
+    lines are shown only when the run failed or health is not OK.
+    """
     priority, tag = {
         "ok": (3, "white_check_mark"),
+        "warn": (4, "warning"),
         "never": (4, "warning"),
         "late": (4, "warning"),
         "stalled": (5, "rotating_light"),
     }[health["status"]]
     if int(inbox.get("count") or 0) > 0:
         priority = max(priority, 4)
+    failed = exit_code not in (None, 0)
+    if failed:
+        priority = max(priority, 4)
+        tag = "warning" if tag == "white_check_mark" else tag
     expected = dt.datetime.fromisoformat(health["next_expected"].replace("Z", "+00:00"))
     expected = expected.astimezone(dt.timezone.utc)
     body = [f"next expected: {expected:%a %b} {expected.day} {expected:%H:%M} UTC"]
+    if exit_code is not None:
+        body.append(f"builder exit: {exit_code}")
+    tail = [" ".join(line.split())[:160] for line in log_tail or [] if line.strip()][-5:]
+    if tail and (failed or health["status"] != "ok"):
+        body += ["log tail:", *(f"  {line}" for line in tail)]
     return {
         "title": _clean_label(health["headline"]),
         "body": "\n".join(body + _inbox_lines(inbox)),

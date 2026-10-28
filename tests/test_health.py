@@ -55,6 +55,7 @@ def test_completed_run_today(tmp_path):
         "run_id": "r1", "project_id": "ai-engineering-markets", "host": "builder-host",
         "started_at": "2026-09-28T12:00:00+00:00",
         "finished_at": "2026-09-28T12:30:00+00:00", "outcome": "completed", "merged": 3,
+        "summary": None,
     }
     assert health["journal_events"] == 5
     assert health["last_event_at"] == "2026-09-28T12:30:00+00:00"

@@ -927,7 +927,17 @@ def cmd_notify(args, paths, now) -> int:
             return 0
     inbox = owner_inbox(paths, load_registry(paths), now=now)
     if args.health:
-        notification = build_health_notification(build_health(paths, now=now), inbox)
+        tail = None
+        if args.log_tail:
+            try:
+                tail = Path(args.log_tail).read_text(
+                    encoding="utf-8", errors="replace").splitlines()
+            except OSError:
+                tail = [f"(log tail unreadable: {args.log_tail})"]
+        notification = build_health_notification(
+            build_health(paths, now=now), inbox,
+            exit_code=args.exit_code, log_tail=tail,
+        )
     elif args.inbox:
         notification = build_inbox_notification(inbox)
     else:
@@ -1409,6 +1419,10 @@ def build_parser() -> argparse.ArgumentParser:
     notify_source.add_argument("--inbox", action="store_true")
     notify_source.add_argument("--health", action="store_true")
     sub.add_argument("--dry-run", action="store_true")
+    sub.add_argument("--exit-code", type=int,
+                     help="With --health: the builder's exit code, shown in the body.")
+    sub.add_argument("--log-tail", metavar="FILE",
+                     help="With --health: builder output; its last lines show on failure.")
 
     sub = add("request-run", cmd_request_run,
               "Ask the build host to start a run for one project.")

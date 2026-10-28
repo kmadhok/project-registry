@@ -7,6 +7,7 @@ import json
 from typing import Any
 
 from .build_runs import read_events
+from .notify import FAILURE_OUTCOMES
 from .storage import Paths
 
 UTC = dt.timezone.utc
@@ -90,10 +91,12 @@ def preflight_attempts(events: list[dict[str, Any]]) -> dict[str, Any]:
 def build_health(
     paths: Paths, *, now: dt.datetime, expected_hour_utc: int = 12, grace_hours: int = 2,
 ) -> dict[str, Any]:
-    """Describe whether a started run exists for each elapsed weekday window."""
+    """Describe whether a started run exists for each elapsed weekday window,
+    and whether the latest one ended in a failure outcome."""
     now = now.replace(tzinfo=UTC) if now.tzinfo is None else now.astimezone(UTC)
     events, _ = read_events(paths)
     attempts = preflight_attempts(events)
+    lease = _read_lease(paths)
     starts = [event for event in events if event["type"] == "run_started"]
     run_ids = {event["run_id"] for event in starts}
     events = [event for event in events if event["run_id"] in run_ids]
@@ -107,17 +110,26 @@ def build_health(
         run_events = [event for event in events if event["run_id"] == start["run_id"]]
         finish = next((event for event in reversed(run_events)
                        if event["type"] == "run_finished"), None)
+        detail = (finish or {}).get("detail") or {}
         last_run = {
             "run_id": start["run_id"], "project_id": start.get("project_id"),
             "host": start["host"], "started_at": start["ts"],
             "finished_at": finish["ts"] if finish else None,
             "outcome": finish["outcome"] if finish else None,
             "merged": sum(event["type"] == "merged" for event in run_events),
+            "summary": (detail.get("summary") or detail.get("reason")
+                        or (finish or {}).get("reason")),
         }
         started_at = _timestamp(start["ts"])
         hours_since = (now - started_at).total_seconds() / 3600
         missed = _weekdays_missed(started_at.date(), now, expected_hour_utc, grace_hours)
         status = "ok" if missed == 0 else "late" if missed == 1 else "stalled"
+        # On schedule is not the same as healthy: a failure outcome, or a run
+        # that died without journaling a finish and left no lease, is WARN.
+        # Missed windows (LATE/STALLED) keep priority.
+        unfinished = finish is None and lease is None
+        if status == "ok" and (last_run["outcome"] in FAILURE_OUTCOMES or unfinished):
+            status = "warn"
     health = {
         **attempts,
         "last_run": last_run,
@@ -125,7 +137,7 @@ def build_health(
         "weekdays_missed": missed,
         "status": status,
         "stop_file": paths.build_stop_file.exists(),
-        "lease": _read_lease(paths),
+        "lease": lease,
         "journal_events": len(events),
         "last_event_at": events[-1]["ts"] if events else None,
         "next_expected": _next_expected(now, expected_hour_utc).isoformat(),
@@ -147,9 +159,12 @@ def health_headline(health: dict[str, Any]) -> str:
         date = f"{started:%a %b} {started.day}"
         project = run["project_id"] or "-"
         outcome = run["outcome"] or "crashed?"
-        if status == "OK":
+        if status in {"OK", "WARN"}:
             when = "today" if started.date() == now.date() else date
-            headline = f"OK · ran {when} · {project} · {outcome} · {run['merged']} merged"
+            headline = f"{status} · ran {when} · {project} · {outcome} · {run['merged']} merged"
+            summary = run.get("summary")
+            if status == "WARN" and summary:
+                headline += f" · {' '.join(str(summary).split())[:120]}"
         else:
             missed = health["weekdays_missed"]
             if status == "STALLED":
@@ -160,7 +175,7 @@ def health_headline(health: dict[str, Any]) -> str:
                 f" · last: {project} {outcome}"
             )
     attempt = health.get("last_attempt")
-    if status in {"LATE", "STALLED", "NEVER"} and attempt and (
+    if status in {"WARN", "LATE", "STALLED", "NEVER"} and attempt and (
         run is None or _timestamp(attempt["ts"]) > _timestamp(run["started_at"])
     ):
         attempted = _timestamp(attempt["ts"])

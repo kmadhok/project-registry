@@ -50,6 +50,13 @@ scripts/run-build.sh --dry-run       # print the command without running
 
 Logs land in `../build-work/logs/<utc>-<host>.log`. Target clones live in
 `../build-work/<run-id>/` and are deleted at the end of a clean run.
+While a launch runs, pull, sync, and Claude output is also copied to
+`<log>.tail`; the heartbeat reads it and the launcher deletes it afterwards.
+
+The launcher `git pull`s its own checkout, so a pull can rewrite
+`run-build.sh` while it is running. The whole script body lives in `main()`,
+which bash parses in full before executing, and `main "$@"; exit` stops bash
+from reading the rewritten file afterwards. Keep any new code inside `main()`.
 
 The launcher refreshes GitHub evidence (`registry sync`) after `git pull` and
 before the run, but only when `GITHUB_TOKEN` is in the scheduler's
@@ -132,12 +139,28 @@ the independent watchdog timer sends it again at 09:00 America/Chicago.
 With no topic configured it prints the message with `sent=False`.
 
 Health uses UTC weekdays, an expected start of 12:00 UTC, and a two-hour
-grace period. **OK** means no weekday window has been missed; **LATE** means
-one has been missed; **STALLED** means two or more; **NEVER** means there are
-no started runs in the journal. A run without a finish shows `crashed?`.
-STOP and held leases appear in the headline. These statuses measure run
-cadence; the last outcome explains what happened in the run. The UTC health
-window stays fixed even when the Chicago timers shift for daylight saving.
+grace period. **OK** means no weekday window has been missed and the last run
+did not fail; **WARN** means the builder ran on schedule but the last run
+ended in a failure outcome (`notify.FAILURE_OUTCOMES`: `aborted`,
+`contract_broken`, `crashed`, `baseline_red`, `codex_unavailable`, …), or it
+has no finish and no lease is held — the headline then appends the run's
+summary from its `run_finished` detail; **LATE** means one window has been
+missed; **STALLED** means two or more; **NEVER** means there are no started
+runs in the journal. LATE and STALLED outrank WARN. Human-wait outcomes
+(`needs_intent`, `blocked_by_policy`) stay OK; the inbox carries them. A run
+without a finish shows `crashed?`. STOP and held leases appear in the
+headline, as does a preflight refusal logged after the last run. The UTC
+health window stays fixed even when the Chicago timers shift for daylight
+saving.
+
+The launcher calls `notify --health --exit-code <code> --log-tail <log>.tail`.
+The body always shows `builder exit: <code>` when an exit code is passed; the
+last five non-blank lines of the tail (each cut to 160 characters) appear
+under `log tail:` only when the exit code is non-zero or the status is not
+OK. A non-zero exit raises priority to at least 4 and swaps the ✅ tag for
+⚠️. Those lines go to the ntfy topic; drop `--log-tail` from
+`scripts/run-build.sh` to stop sending them. The 09:00 watchdog passes
+neither option, so its body has no exit or tail lines.
 
 ### Watchdog
 

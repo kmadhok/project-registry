@@ -6,7 +6,7 @@ import datetime as dt
 import json
 from typing import Any
 
-from .build_runs import read_events
+from .build_runs import _lease_expired, read_events
 from .notify import FAILURE_OUTCOMES
 from .storage import Paths
 
@@ -17,19 +17,32 @@ def _timestamp(value: str) -> dt.datetime:
     return dt.datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC)
 
 
-def _read_lease(paths: Paths) -> dict[str, Any] | None:
+def _read_raw_lease(paths: Paths) -> dict[str, Any] | None:
+    """Return the lease object, {} when present but unreadable, None when absent."""
     if not paths.build_lease_file.exists():
         return None
     try:
         lease = json.loads(paths.build_lease_file.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         lease = None
-    if not isinstance(lease, dict):
-        lease = {}
+    return lease if isinstance(lease, dict) else {}
+
+
+def _lease_snapshot(raw: dict[str, Any] | None) -> dict[str, Any] | None:
+    if raw is None:
+        return None
     return {
-        key: lease.get(key) if isinstance(lease.get(key), str) else None
+        key: raw.get(key) if isinstance(raw.get(key), str) else None
         for key in ("run_id", "project_id")
     }
+
+
+def _lease_covers(raw: dict[str, Any] | None, run_id: str, now: dt.datetime) -> bool:
+    """A lease explains an unfinished run only if it is that run's and unexpired.
+
+    Crashed runs leave their lease behind, so mere presence proves nothing.
+    """
+    return bool(raw) and raw.get("run_id") == run_id and not _lease_expired(raw, now)
 
 
 def _next_expected(now: dt.datetime, hour: int) -> dt.datetime:
@@ -96,7 +109,8 @@ def build_health(
     now = now.replace(tzinfo=UTC) if now.tzinfo is None else now.astimezone(UTC)
     events, _ = read_events(paths)
     attempts = preflight_attempts(events)
-    lease = _read_lease(paths)
+    raw_lease = _read_raw_lease(paths)
+    lease = _lease_snapshot(raw_lease)
     starts = [event for event in events if event["type"] == "run_started"]
     run_ids = {event["run_id"] for event in starts}
     events = [event for event in events if event["run_id"] in run_ids]
@@ -125,9 +139,9 @@ def build_health(
         missed = _weekdays_missed(started_at.date(), now, expected_hour_utc, grace_hours)
         status = "ok" if missed == 0 else "late" if missed == 1 else "stalled"
         # On schedule is not the same as healthy: a failure outcome, or a run
-        # that died without journaling a finish and left no lease, is WARN.
-        # Missed windows (LATE/STALLED) keep priority.
-        unfinished = finish is None and lease is None
+        # that died without journaling a finish and holds no live lease of its
+        # own, is WARN. Missed windows (LATE/STALLED) keep priority.
+        unfinished = finish is None and not _lease_covers(raw_lease, start["run_id"], now)
         if status == "ok" and (last_run["outcome"] in FAILURE_OUTCOMES or unfinished):
             status = "warn"
     health = {

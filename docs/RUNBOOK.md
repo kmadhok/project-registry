@@ -58,6 +58,14 @@ The launcher `git pull`s its own checkout, so a pull can rewrite
 which bash parses in full before executing, and `main "$@"; exit` stops bash
 from reading the rewritten file afterwards. Keep any new code inside `main()`.
 
+The guard only protects launches that start from a launcher which already has
+it. The launch that first pulls the `main()` version is still the old,
+unprotected script: it can finish the build and heartbeat and then exit 2 on a
+syntax error from reading the rewritten file. To avoid that once, run
+`git -C ~/project-registry pull --ff-only` by hand on each scheduled host
+before its next scheduled launch after this change lands. Later self-pulls
+are safe.
+
 The launcher refreshes GitHub evidence (`registry sync`) after `git pull` and
 before the run, but only when `GITHUB_TOKEN` is in the scheduler's
 environment; a missing token or a failed sync is logged and never blocks the
@@ -143,7 +151,9 @@ grace period. **OK** means no weekday window has been missed and the last run
 did not fail; **WARN** means the builder ran on schedule but the last run
 ended in a failure outcome (`notify.FAILURE_OUTCOMES`: `aborted`,
 `contract_broken`, `crashed`, `baseline_red`, `codex_unavailable`, …), or it
-has no finish and no lease is held — the headline then appends the run's
+has no finish and no live lease of its own (one with that run's id whose
+3 h TTL has not run out; a crashed run's leftover or malformed lease does not
+count) — the headline then appends the run's
 summary from its `run_finished` detail; **LATE** means one window has been
 missed; **STALLED** means two or more; **NEVER** means there are no started
 runs in the journal. LATE and STALLED outrank WARN. Human-wait outcomes

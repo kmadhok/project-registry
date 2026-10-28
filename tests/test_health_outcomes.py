@@ -59,15 +59,40 @@ def test_missed_windows_outrank_warn(tmp_path):
     assert health["headline"].startswith("STALLED · no run since Sep 24")
 
 
-def test_unfinished_run_warns_only_without_lease(tmp_path):
+LIVE_LEASE = {"run_id": "r1", "project_id": "ai-engineering-markets",
+              "started_at": "2026-09-28T12:00:00Z", "ttl_seconds": 10800}
+
+
+def test_unfinished_run_warns_only_without_live_lease(tmp_path):
     paths = journal(tmp_path, [event("run_started", "2026-09-28T12:00:00")])
     now = timestamp("2026-09-28T13:00:00")
     health = build_health(paths, now=now)
     assert health["status"] == "warn"
     assert "crashed?" in health["headline"]
-    paths.build_lease_file.write_text(
-        json.dumps({"run_id": "r1", "project_id": "ai-engineering-markets"}))
+    paths.build_lease_file.write_text(json.dumps(LIVE_LEASE))
     assert build_health(paths, now=now)["status"] == "ok"
+
+
+def test_expired_lease_does_not_hide_crashed_run(tmp_path):
+    # A crashed run leaves its lease behind; after the TTL it explains nothing.
+    paths = journal(tmp_path, [event("run_started", "2026-09-28T12:00:00")])
+    paths.build_lease_file.write_text(json.dumps(LIVE_LEASE))
+    health = build_health(paths, now=timestamp("2026-09-28T16:00:00"))
+    assert health["status"] == "warn"
+    assert health["headline"].startswith("WARN · ran today · ai-engineering-markets · crashed?")
+    assert health["lease"] == {"run_id": "r1", "project_id": "ai-engineering-markets"}
+
+
+@pytest.mark.parametrize("raw", [
+    "{}", "not json", "[]",
+    json.dumps({**LIVE_LEASE, "run_id": "someone-else"}),
+    json.dumps({k: v for k, v in LIVE_LEASE.items() if k != "ttl_seconds"}),
+    json.dumps({**LIVE_LEASE, "started_at": "garbage"}),
+])
+def test_malformed_or_foreign_lease_does_not_hide_unfinished_run(tmp_path, raw):
+    paths = journal(tmp_path, [event("run_started", "2026-09-28T12:00:00")])
+    paths.build_lease_file.write_text(raw)
+    assert build_health(paths, now=timestamp("2026-09-28T13:00:00"))["status"] == "warn"
 
 
 def test_warn_notification_carries_exit_code_and_tail():

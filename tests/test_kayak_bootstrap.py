@@ -34,7 +34,7 @@ def fake_nvm(home, versions=("v20.18.0", "v22.9.0", "v22.11.0"), default="22",
     return nvm
 
 
-def run(home, *args, email=None):
+def run(home, *args, email=None, returncode=0):
     # A scrubbed environment: no real HOME, git config, or NVM_DIR leaks in.
     env = {
         "PATH": os.environ["PATH"],
@@ -47,7 +47,7 @@ def run(home, *args, email=None):
         env["GIT_EMAIL"] = email
     result = subprocess.run(["bash", str(SCRIPT), "--root", str(home), *args],
                             env=env, capture_output=True, text=True, timeout=60)
-    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.returncode == returncode, result.stdout + result.stderr
     assert not (home.parent / "not-home").exists()
     return result.stdout
 
@@ -55,8 +55,7 @@ def run(home, *args, email=None):
 def git_config(home, key):
     result = subprocess.run(
         ["git", "config", "--global", "--get", key],
-        env={"PATH": os.environ["PATH"], "HOME": str(home),
-             "GIT_CONFIG_GLOBAL": str(home / ".gitconfig"), "GIT_CONFIG_NOSYSTEM": "1"},
+        env={"PATH": os.environ["PATH"], "HOME": str(home), "GIT_CONFIG_NOSYSTEM": "1"},
         capture_output=True, text=True,
     )
     return result.stdout.strip()
@@ -260,6 +259,74 @@ def test_symlinked_bashrc_is_edited_in_place(home):
     run(home, email="kanu@example.com")
     assert (home / ".bashrc").is_symlink()
     assert "kayak-bootstrap PATH" in (dotfiles / "bashrc").read_text()
+
+
+def test_symlinked_systemd_conf_target_is_backed_up(home):
+    fake_nvm(home)
+    target = home / "dotfiles/kayak.conf"
+    target.parent.mkdir()
+    target.write_text("PATH=/custom\nOTHER=1\n")
+    conf = home / ".config/environment.d/50-kayak-path.conf"
+    conf.parent.mkdir(parents=True)
+    conf.symlink_to(target)
+    run(home, email="kanu@example.com")
+    assert conf.is_symlink() and "kayak/bootstrap.sh" in target.read_text()
+    backups = list(target.parent.glob("kayak.conf.bak.*"))
+    assert [b.read_text() for b in backups] == ["PATH=/custom\nOTHER=1\n"]
+
+
+def test_xdg_git_config_is_the_file_backed_up(home):
+    fake_nvm(home)
+    xdg = home / ".config/git/config"
+    xdg.parent.mkdir(parents=True)
+    xdg.write_text("[core]\n\teditor = vim\n")
+    out = run(home, email="kanu@example.com")
+    assert "CHANGED git user.email set to 'kanu@example.com'" in out
+    assert not (home / ".gitconfig").exists()
+    assert "kanu@example.com" in xdg.read_text()
+    backups = list(xdg.parent.glob("config.bak.*"))
+    assert [b.read_text() for b in backups] == ["[core]\n\teditor = vim\n"]
+
+
+def test_symlinked_gitconfig_target_is_backed_up(home):
+    fake_nvm(home)
+    target = home / "dotfiles/gitconfig"
+    target.parent.mkdir()
+    target.write_text("[user]\n\tname = Kanu Madhok\n")
+    (home / ".gitconfig").symlink_to(target)
+    run(home, email="kanu@example.com")
+    assert (home / ".gitconfig").is_symlink()
+    assert git_config(home, "user.email") == "kanu@example.com"
+    backups = list(target.parent.glob("gitconfig.bak.*"))
+    assert [b.read_text() for b in backups] == ["[user]\n\tname = Kanu Madhok\n"]
+
+
+def test_locked_git_config_is_reported_and_exits_nonzero(home):
+    fake_nvm(home)
+    (home / ".gitconfig").write_text("[user]\n\tname = Kanu Madhok\n")
+    (home / ".gitconfig.lock").write_text("")
+    out = run(home, email="kanu@example.com", returncode=1)
+    assert "WARN    setting git user.email failed" in out
+    assert "CHANGED git user.email" not in out
+    assert "1 failure(s)" in out
+    assert git_config(home, "user.email") == ""
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="root reads unreadable files")
+def test_failed_backup_prevents_the_edit(home):
+    fake_nvm(home)
+    conf = home / ".config/environment.d/50-kayak-path.conf"
+    conf.parent.mkdir(parents=True)
+    conf.write_text("PATH=/custom\n")
+    conf.chmod(0o200)
+    try:
+        out = run(home, email="kanu@example.com", returncode=1)
+    finally:
+        conf.chmod(0o600)
+    assert f"WARN    backup of {conf} failed" in out
+    assert "CHANGED systemd user PATH" not in out
+    assert conf.read_text() == "PATH=/custom\n"
+    assert not list(conf.parent.glob("50-kayak-path.conf.bak.*"))
 
 
 def test_no_live_host_commands():

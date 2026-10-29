@@ -20,9 +20,11 @@ treat that label as "not the Mac" for those runs.
 
 Runtime facts that bite:
 
-- `~/bin` and `~/.local/bin` are not on the non-interactive `PATH`; the
-  launcher exports them. Codex on Linux needs `codex-code-mode-host` beside
-  the binary or every file edit fails.
+- `~/bin` and `~/.local/bin` are not on the non-interactive `PATH` of a
+  stock account; the launchers still export them, and on a new host
+  `scripts/kayak/bootstrap.sh` (below) fixes it for every shell. Codex on
+  Linux needs `codex-code-mode-host` beside the binary or every file edit
+  fails.
 - Codex must run in the foreground. A backgrounded Codex ends the turn and
   the run dies mid-chunk (this happened twice in 2026-08).
 - The reviewer's second opinion is `codex review --base main` (codex-cli
@@ -94,6 +96,44 @@ systemctl --user daemon-reload && systemctl --user enable --now registry-build.t
 
 `~/.config/registry-build.env` there holds `BUILD_HOST_LABEL=kayak` and
 `GITHUB_TOKEN`; Claude, Codex, and gh use the host's own logins.
+
+### Host bootstrap (manual)
+
+`scripts/kayak/bootstrap.sh` prepares the build user's account. Run it by
+hand on the host, once and again after installing a new node or Codex; it is
+idempotent, and nothing schedules or activates it:
+
+```bash
+scripts/kayak/bootstrap.sh --email <address>   # or GIT_EMAIL=<address>
+```
+
+It prints one `OK` (already right), `CHANGED` (fixed now) or `WARN` (left
+alone, needs you) line per step and exits 0; read the `WARN` lines.
+
+- **git identity:** sets `user.name` to `Kanu Madhok` and `user.email` from
+  `--email`/`GIT_EMAIL` only when they are unset. An existing identity is
+  never changed; a missing email with no value given is a `WARN`.
+- **node tools:** resolves nvm's `alias/default` (`22`, `v22.11.0`, `node`,
+  `lts/*`) to an installed version, points `~/.nvm/current` at it (the path
+  the systemd units use), and links `node`, `npm`, `npx`, `codex` from
+  `~/.nvm/current/bin` into `~/.local/bin`. A tool that is not installed, or a
+  real file already at the link path, is a `WARN` and is not touched.
+- **PATH:** one marked `kayak-bootstrap PATH` block adds `~/bin`,
+  `~/.local/bin`, `~/.nvm/current/bin` — in the login file bash reads
+  (`.bash_profile`, `.bash_login`, else `.profile`) and at the *top* of
+  `~/.bashrc`, above the interactive-only `return`, so `ssh kayak cmd` and
+  other non-interactive shells get it. `~/.config/environment.d/50-kayak-path.conf`
+  carries the same entries for systemd user sessions; it applies the next
+  time the user manager starts (reboot, or last logout with linger off). The
+  script does not touch the running manager; the units set `PATH` themselves.
+- **directories:** `~/scratch` and `~/runs`, for work files that would
+  otherwise pile up in `/tmp`.
+
+Every edited file is first copied to `<file>.bak.<utc>`. Symlinked dotfiles
+are edited at their target. `--root <dir>` (or `KAYAK_BOOTSTRAP_ROOT`) runs
+everything against `<dir>` as `$HOME`, with git isolated to the gitconfig
+under `<dir>`; `tests/test_kayak_bootstrap.py` uses it, and it is the way to
+preview a run: `scripts/kayak/bootstrap.sh --root "$(mktemp -d)"`.
 
 The VPS systemd units live in `scripts/systemd/registry-build.service` and
 `registry-build.timer`: weekdays at 07:00 America/Chicago, with a three-hour

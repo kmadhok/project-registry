@@ -329,6 +329,37 @@ def test_failed_backup_prevents_the_edit(home):
     assert not list(conf.parent.glob("50-kayak-path.conf.bak.*"))
 
 
+def inherited_home(tmp_path):
+    real = tmp_path / "inherited"
+    real.mkdir()
+    (real / ".bashrc").write_text(UBUNTU_BASHRC)
+    (real / ".gitconfig").write_text("[user]\n\tname = Someone Else\n")
+    return real
+
+
+@pytest.mark.parametrize("make_args", [
+    lambda tmp: (["--root="], {}),
+    lambda tmp: (["--root", ""], {}),
+    lambda tmp: ([], {"KAYAK_BOOTSTRAP_ROOT": ""}),
+    lambda tmp: (["--root", str(tmp / "a-file")], {}),
+    lambda tmp: (["--root", str(tmp / "a-file/child")], {}),
+], ids=["root-equals-empty", "root-empty-arg", "env-empty", "root-is-file", "root-under-file"])
+def test_unusable_root_stops_before_touching_inherited_home(tmp_path, make_args):
+    real = inherited_home(tmp_path)
+    (tmp_path / "a-file").write_text("not a directory\n")
+    before = snapshot(real)
+    args, extra = make_args(tmp_path)
+    env = {"PATH": os.environ["PATH"], "HOME": str(real), "LANG": "C",
+           "GIT_EMAIL": "x@example.com", **extra}
+    result = subprocess.run(["bash", str(SCRIPT), *args], env=env,
+                            capture_output=True, text=True, timeout=60)
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "kayak bootstrap for HOME" not in result.stdout
+    assert statuses(result.stdout) == []
+    assert snapshot(real) == before
+    assert (tmp_path / "a-file").read_text() == "not a directory\n"
+
+
 def test_no_live_host_commands():
     text = SCRIPT.read_text()
     for forbidden in ("systemctl", "loginctl", "crontab", ".exe", "apt", "curl", "npm install",

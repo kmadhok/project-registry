@@ -284,21 +284,36 @@ setup_dirs() {
 }
 
 main() {
-  local root="${KAYAK_BOOTSTRAP_ROOT:-}"
+  local root="${KAYAK_BOOTSTRAP_ROOT-}" root_set="${KAYAK_BOOTSTRAP_ROOT+1}" resolved
   EMAIL="${GIT_EMAIL:-}"
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --email) EMAIL="${2:?--email needs a value}"; shift 2 ;;
       --email=*) EMAIL="${1#--email=}"; shift ;;
-      --root) root="${2:?--root needs a value}"; shift 2 ;;
-      --root=*) root="${1#--root=}"; shift ;;
+      --root)
+        [[ $# -ge 2 ]] || { echo "bootstrap: --root needs a value" >&2; return 2; }
+        root="$2"; root_set=1; shift 2 ;;
+      --root=*) root="${1#--root=}"; root_set=1; shift ;;
       -h|--help) usage; return 0 ;;
       *) echo "bootstrap: unknown argument: $1" >&2; usage >&2; return 2 ;;
     esac
   done
-  if [[ -n "$root" ]]; then
-    mkdir -p "$root"
-    HOME="$(cd "$root" && pwd)"
+  if [[ -n "$root_set" ]]; then
+    # An explicit root that is empty or unusable must stop here: falling back
+    # to the inherited HOME (or an empty one) would edit the real account.
+    if [[ -z "$root" ]]; then
+      echo "bootstrap: --root/KAYAK_BOOTSTRAP_ROOT is empty" >&2
+      return 2
+    fi
+    if ! mkdir -p -- "$root" 2>/dev/null || [[ ! -d "$root" ]]; then
+      echo "bootstrap: cannot create root directory: $root" >&2
+      return 2
+    fi
+    if ! resolved="$(cd -- "$root" 2>/dev/null && pwd)" || [[ -z "$resolved" ]]; then
+      echo "bootstrap: cannot enter root directory: $root" >&2
+      return 2
+    fi
+    HOME="$resolved"
     export HOME
     # Global git config then resolves under the new HOME (~/.gitconfig or
     # ~/.config/git/config) exactly as it does on a real account.

@@ -3,6 +3,8 @@ from __future__ import annotations
 import datetime as dt
 import json
 
+import pytest
+
 from project_registry.build import ProjectBuildState, append_event, save_state
 from project_registry.cli import main
 from project_registry.inbox import owner_inbox
@@ -71,6 +73,111 @@ def test_failed_last_run_is_listed_with_digest_path(paths, write_project):
     item = next(i for i in result["items"] if i["kind"] == "run_failed")
     assert "crashed" in item["summary"] and "quota" in item["summary"]
     assert item["action"].endswith("data/build/digests/r1.md")
+
+
+@pytest.mark.parametrize("outcome", [
+    "crashed", "aborted", "codex_unavailable", "contract_broken",
+    "baseline_red", "registry_dirty",
+])
+def test_projectless_failed_run_is_global(paths, outcome):
+    append_event(paths, {"run_id": "r1", "host": "x", "type": "run_started"}, now=NOW)
+    append_event(paths, {"run_id": "r1", "host": "x", "type": "run_finished",
+                         "project_id": None, "outcome": outcome,
+                         "detail": {"summary": "quota"}}, now=NOW)
+
+    result = owner_inbox(paths, load_registry(paths), now=NOW)
+
+    assert result["count"] == 1
+    assert result["items"] == [{
+        "kind": "run_failed", "project_id": "global",
+        "summary": f"last run r1 {outcome}: quota",
+        "action": f"read {paths.build_digests_dir / 'r1.md'}",
+    }]
+
+
+@pytest.mark.parametrize("project_id", [None, "builder"])
+@pytest.mark.parametrize("outcome", [
+    "completed", "shadow_completed", "budget_exhausted", "roadmap_done",
+])
+def test_later_success_clears_global_failure(paths, project_id, outcome):
+    append_event(paths, {"run_id": "failed", "host": "x", "type": "run_started"}, now=NOW)
+    attempt(paths, "crashed", run_id="failed")
+    assert kinds(owner_inbox(paths, load_registry(paths), now=NOW)) == ["run_failed"]
+
+    append_event(paths, {"run_id": "recovered", "host": "x", "type": "run_started",
+                         "project_id": project_id}, now=NOW + dt.timedelta(hours=2))
+    attempt(paths, outcome, run_id="recovered", project_id=project_id, hours=3)
+
+    assert owner_inbox(paths, load_registry(paths), now=NOW)["items"] == []
+
+
+def test_projectless_resume_acknowledges_only_global_failure(paths, write_project):
+    ready(write_project)
+    for run_id, project_id in [("project", "builder"), ("global", None)]:
+        append_event(paths, {"run_id": run_id, "host": "x", "type": "run_started",
+                             "project_id": project_id}, now=NOW)
+        attempt(paths, "crashed", run_id=run_id, project_id=project_id)
+
+    append_event(paths, {"run_id": "manual", "host": "cli", "type": "resumed"},
+                 now=NOW + dt.timedelta(hours=2))
+    result = owner_inbox(paths, load_registry(paths), now=NOW)
+    assert [(item["kind"], item["project_id"]) for item in result["items"]] == [
+        ("run_failed", "builder"),
+    ]
+
+    append_event(paths, {"run_id": "again", "host": "x", "type": "run_started"},
+                 now=NOW + dt.timedelta(hours=3))
+    attempt(paths, "aborted", run_id="again", hours=4)
+    assert [item["project_id"] for item in owner_inbox(
+        paths, load_registry(paths), now=NOW,
+    )["items"]] == ["builder", "global"]
+
+
+@pytest.mark.parametrize("project_id", [None, "builder"])
+def test_unstarted_failure_is_ignored_and_success_does_not_clear_global(paths, project_id):
+    attempt(paths, "crashed", run_id="unstarted", project_id=project_id)
+    assert owner_inbox(paths, load_registry(paths), now=NOW)["items"] == []
+
+    append_event(paths, {"run_id": "failed", "host": "x", "type": "run_started"},
+                 now=NOW + dt.timedelta(hours=2))
+    attempt(paths, "crashed", run_id="failed", hours=3)
+    attempt(paths, "completed", run_id="unstarted-success", project_id=project_id, hours=4)
+    result = owner_inbox(paths, load_registry(paths), now=NOW)
+    assert result["count"] == 1
+    assert result["items"][0]["project_id"] == "global"
+
+
+def test_project_success_preserves_other_project_failures(paths, write_project):
+    ready(write_project, pid="other")
+    ready(write_project)
+    for run_id, project_id, outcome in [
+        ("other-failed", "other", "crashed"),
+        ("global-failed", None, "aborted"),
+        ("recovered", "builder", "completed"),
+    ]:
+        append_event(paths, {"run_id": run_id, "host": "x", "type": "run_started",
+                             "project_id": project_id}, now=NOW)
+        attempt(paths, outcome, run_id=run_id, project_id=project_id)
+
+    result = owner_inbox(paths, load_registry(paths), now=NOW)
+    assert [(item["kind"], item["project_id"]) for item in result["items"]] == [
+        ("run_failed", "other"),
+    ]
+
+
+def test_global_failure_renders_in_cli_and_notification(paths, capsys):
+    from project_registry.notify import build_inbox_notification
+
+    append_event(paths, {"run_id": "failed", "host": "x", "type": "run_started"}, now=NOW)
+    attempt(paths, "crashed", run_id="failed")
+
+    assert main(["--root", str(paths.root), "owner-inbox", "--json"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["count"] == 1 and result["items"][0]["project_id"] == "global"
+    assert main(["--root", str(paths.root), "owner-inbox"]) == 0
+    assert "[run_failed] global: last run failed crashed:" in capsys.readouterr().out
+    notification = build_inbox_notification(result)
+    assert "[run_failed] global: last run failed crashed:" in notification["body"]
 
 
 def test_blocked_by_policy_skip_without_waiting_state_is_not_listed(

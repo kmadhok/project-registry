@@ -136,11 +136,16 @@ def owner_inbox(
     last_finished: dict[str, dict[str, Any]] = {}
     resumed_after: set[str] = set()
     for event in events:
-        project_id = event.get("project_id")
-        if event["type"] == "run_finished" and project_id and event["run_id"] in started_ids:
+        project_id = event.get("project_id") or "global"
+        if event["type"] == "run_finished" and event["run_id"] in started_ids:
+            if event.get("outcome") in {
+                "completed", "shadow_completed", "budget_exhausted", "roadmap_done",
+            }:
+                # A successful run on any project shows the builder has recovered.
+                last_finished.pop("global", None)
             last_finished[project_id] = event
             resumed_after.discard(project_id)
-        if event["type"] == "resumed" and project_id:
+        if event["type"] == "resumed":
             # An owner resume after a failed run acknowledges it; stop nagging.
             resumed_after.add(project_id)
     for project_id, event in sorted(last_finished.items()):

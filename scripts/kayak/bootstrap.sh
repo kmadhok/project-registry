@@ -8,11 +8,13 @@
 # shells, SSH non-interactive shells, and future systemd user sessions, and
 # creates ~/scratch and ~/runs. Every step prints OK (already right), CHANGED
 # (fixed now), or WARN (left alone; needs a human). Existing files are backed
-# up to <file>.bak.<timestamp> before they are edited and never overwritten
-# when they are real files rather than links this script manages.
+# up to <file>.bak.<timestamp> before they are edited (symlinks at their
+# target), never edited when that backup fails, and never overwritten when
+# they are real files rather than links this script manages. A step that
+# fails prints WARN ... failed and the script exits 1.
 #
 # --root <dir> (or KAYAK_BOOTSTRAP_ROOT) treats <dir> as $HOME and isolates git
-# to <dir>/.gitconfig, so tests never touch the real account. Nothing here
+# to the global config under <dir>, so tests never touch the real account. Nothing here
 # installs packages, starts services, or changes a running systemd manager.
 set -u
 
@@ -21,27 +23,63 @@ BLOCK_BEGIN="# >>> kayak-bootstrap PATH >>>"
 BLOCK_END="# <<< kayak-bootstrap PATH <<<"
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 WARNINGS=0
+FAILURES=0
 BACKED_UP=""
 
 ok() { echo "OK      $*"; }
 changed() { echo "CHANGED $*"; }
 warn() { echo "WARN    $*"; WARNINGS=$((WARNINGS + 1)); }
+fail() { warn "$* failed"; FAILURES=$((FAILURES + 1)); }
 
 usage() {
-  sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+real_path() {
+  # The file an edit through "$1" actually writes: a symlink's final target.
+  if [[ -L "$1" ]]; then readlink -f "$1"; else echo "$1"; fi
 }
 
 backup() {
-  # Copy an existing file aside before the first edit; links are left as is.
+  # Copy an existing file (a symlink's target) aside before the first edit.
   # Once per file per run, so a second edit cannot clobber the original copy.
-  local file="$1" dest n=0
-  [[ -f "$file" && ! -L "$file" ]] || return 0
+  # Returns non-zero, so the caller skips its edit, when the copy fails.
+  local file dest n=0
+  file="$(real_path "$1")" || { fail "resolving $1"; return 1; }
+  [[ -e "$file" ]] || return 0
   [[ " $BACKED_UP " == *" $file "* ]] && return 0
   dest="$file.bak.$STAMP"
-  while [[ -e "$dest" ]]; do n=$((n + 1)); dest="$file.bak.$STAMP.$n"; done
-  cp -p "$file" "$dest"
+  while [[ -e "$dest" || -L "$dest" ]]; do n=$((n + 1)); dest="$file.bak.$STAMP.$n"; done
+  if ! cp -p "$file" "$dest"; then
+    rm -f "$dest"
+    fail "backup of $file"
+    return 1
+  fi
   BACKED_UP="$BACKED_UP $file"
   echo "        backup: $dest"
+}
+
+git_global_file() {
+  # The file `git config --global` writes: GIT_CONFIG_GLOBAL, else
+  # ~/.gitconfig, else the XDG config when only that one exists.
+  local file xdg="${XDG_CONFIG_HOME:-$HOME/.config}/git/config"
+  if [[ -n "${GIT_CONFIG_GLOBAL:-}" ]]; then
+    file="$GIT_CONFIG_GLOBAL"
+  else
+    file="$HOME/.gitconfig"
+    [[ ! -e "$file" && ! -L "$file" && -e "$xdg" ]] && file="$xdg"
+  fi
+  echo "$file"
+}
+
+set_git() {
+  local key="$1" value="$2"
+  backup "$(git_global_file)" || { warn "git $key not set (no backup)"; return 1; }
+  if git config --global "$key" "$value"; then
+    changed "git $key set to '$value'"
+  else
+    fail "setting git $key"
+  fi
 }
 
 setup_git() {
@@ -50,17 +88,13 @@ setup_git() {
   if [[ -n "$name" ]]; then
     ok "git user.name is '$name'"
   else
-    backup "$GITCONFIG"
-    git config --global user.name "$NAME_DEFAULT"
-    changed "git user.name set to '$NAME_DEFAULT'"
+    set_git user.name "$NAME_DEFAULT"
   fi
   email="$(git config --global --get user.email 2>/dev/null || true)"
   if [[ -n "$email" ]]; then
     ok "git user.email is '$email'"
   elif [[ -n "$EMAIL" ]]; then
-    backup "$GITCONFIG"
-    git config --global user.email "$EMAIL"
-    changed "git user.email set to '$EMAIL'"
+    set_git user.email "$EMAIL"
   else
     warn "git user.email is unset; rerun with --email <address> or GIT_EMAIL=<address>"
   fi
@@ -111,7 +145,10 @@ setup_nvm() {
   if [[ -L "$current" && "$(readlink "$current")" == "$target" ]]; then
     ok "$current -> $version"
   elif [[ -L "$current" || ! -e "$current" ]]; then
-    ln -sfn "$target" "$current"
+    if ! ln -sfn "$target" "$current"; then
+      fail "linking $current -> $version"
+      return 1
+    fi
     changed "$current -> $version (nvm default '$default')"
   else
     warn "$current is a real file or directory; left alone"
@@ -121,7 +158,7 @@ setup_nvm() {
 
 link_tools() {
   local bin="$HOME/.local/bin" tool source link
-  mkdir -p "$bin"
+  mkdir -p "$bin" || { fail "creating $bin"; return; }
   for tool in node npm npx codex; do
     source="$NVM_DIR/current/bin/$tool"
     link="$bin/$tool"
@@ -130,8 +167,11 @@ link_tools() {
     elif [[ -L "$link" && "$(readlink "$link")" == "$source" ]]; then
       ok "$link -> $source"
     elif [[ -L "$link" || ! -e "$link" ]]; then
-      ln -sfn "$source" "$link"
-      changed "$link -> $source"
+      if ln -sfn "$source" "$link"; then
+        changed "$link -> $source"
+      else
+        fail "linking $link -> $source"
+      fi
     else
       warn "$link is a real file; left alone (remove it to use the nvm $tool)"
     fi
@@ -175,15 +215,23 @@ ensure_block() {
     ok "$label PATH block in $file"
     return
   fi
-  tmp="$(mktemp "$file.kayak.XXXXXX")"
   if [[ -e "$file" ]]; then
-    backup "$file"
-    { path_block; echo; strip_block "$file"; } > "$tmp"
-    chmod --reference="$file" "$tmp" 2>/dev/null || true
+    backup "$file" || { warn "$label PATH block not written to $file (no backup)"; return; }
+  fi
+  if ! tmp="$(mktemp "$file.kayak.XXXXXX")"; then
+    fail "writing $label PATH block in $file"
+    return
+  fi
+  if [[ -e "$file" ]]; then
+    { path_block && echo && strip_block "$file"; } > "$tmp" \
+      && { chmod --reference="$file" "$tmp" 2>/dev/null || true; }
   else
     path_block > "$tmp"
-  fi
-  mv "$tmp" "$file"
+  fi && mv "$tmp" "$file" || {
+    rm -f "$tmp"
+    fail "writing $label PATH block in $file"
+    return
+  }
   changed "$label PATH block in $file"
 }
 
@@ -204,13 +252,17 @@ setup_systemd_env() {
   file="$dir/50-kayak-path.conf"
   want="# Managed by project-registry scripts/kayak/bootstrap.sh
 PATH=$HOME/bin:$HOME/.local/bin:$HOME/.nvm/current/bin:\${PATH:-/usr/local/bin:/usr/bin:/bin}"
-  mkdir -p "$dir"
-  if [[ -f "$file" && "$(cat "$file")" == "$want" ]]; then
+  mkdir -p "$dir" || { fail "creating $dir"; return; }
+  if [[ -f "$file" && "$(cat "$file" 2>/dev/null)" == "$want" ]]; then
     ok "systemd user PATH in $file"
     return
   fi
-  backup "$file"
-  printf '%s\n' "$want" > "$file"
+  backup "$file" || { warn "systemd user PATH not written to $file (no backup)"; return; }
+  # Writing through a symlink edits its (backed-up) target and keeps the link.
+  if ! printf '%s\n' "$want" > "$file"; then
+    fail "writing systemd user PATH in $file"
+    return
+  fi
   changed "systemd user PATH in $file (applies to the next user-manager start)"
 }
 
@@ -222,8 +274,11 @@ setup_dirs() {
     elif [[ -e "$dir" ]]; then
       warn "$dir exists and is not a directory; left alone"
     else
-      mkdir -p "$dir"
-      changed "directory $dir"
+      if mkdir -p "$dir"; then
+        changed "directory $dir"
+      else
+        fail "creating directory $dir"
+      fi
     fi
   done
 }
@@ -245,12 +300,14 @@ main() {
     mkdir -p "$root"
     HOME="$(cd "$root" && pwd)"
     export HOME
-    export GIT_CONFIG_GLOBAL="$HOME/.gitconfig" GIT_CONFIG_NOSYSTEM=1
+    # Global git config then resolves under the new HOME (~/.gitconfig or
+    # ~/.config/git/config) exactly as it does on a real account.
+    unset GIT_CONFIG_GLOBAL XDG_CONFIG_HOME
+    export GIT_CONFIG_NOSYSTEM=1
     NVM_DIR="$HOME/.nvm"
   else
     NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
   fi
-  GITCONFIG="${GIT_CONFIG_GLOBAL:-$HOME/.gitconfig}"
   echo "kayak bootstrap for HOME=$HOME"
 
   setup_git
@@ -261,8 +318,8 @@ main() {
   setup_systemd_env
   setup_dirs
 
-  echo "done: $WARNINGS warning(s)"
-  return 0
+  echo "done: $WARNINGS warning(s), $FAILURES failure(s)"
+  [[ $FAILURES -eq 0 ]]
 }
 
 main "$@"

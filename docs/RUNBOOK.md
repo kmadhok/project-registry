@@ -108,7 +108,9 @@ scripts/kayak/bootstrap.sh --email <address>   # or GIT_EMAIL=<address>
 ```
 
 It prints one `OK` (already right), `CHANGED` (fixed now) or `WARN` (left
-alone, needs you) line per step and exits 0; read the `WARN` lines.
+alone, needs you) line per step; read the `WARN` lines. A step that could not be carried out
+(a locked git config, a failed write or backup) is `WARN … failed` and makes
+the script exit 1; everything else exits 0.
 
 - **git identity:** sets `user.name` to `Kanu Madhok` and `user.email` from
   `--email`/`GIT_EMAIL` only when they are unset. An existing identity is
@@ -129,10 +131,12 @@ alone, needs you) line per step and exits 0; read the `WARN` lines.
 - **directories:** `~/scratch` and `~/runs`, for work files that would
   otherwise pile up in `/tmp`.
 
-Every edited file is first copied to `<file>.bak.<utc>`. Symlinked dotfiles
-are edited at their target. `--root <dir>` (or `KAYAK_BOOTSTRAP_ROOT`) runs
-everything against `<dir>` as `$HOME`, with git isolated to the gitconfig
-under `<dir>`; `tests/test_kayak_bootstrap.py` uses it, and it is the way to
+Every edited file is first copied to `<file>.bak.<utc>` — for a symlink,
+its target, and for git the global file git actually writes (`~/.gitconfig`,
+or `~/.config/git/config` when only that exists). If the backup fails the
+file is not edited. Symlinked dotfiles are edited at their target. `--root
+<dir>` (or `KAYAK_BOOTSTRAP_ROOT`) runs everything against `<dir>` as
+`$HOME`, with git isolated to the global config under `<dir>`; `tests/test_kayak_bootstrap.py` uses it, and it is the way to
 preview a run: `scripts/kayak/bootstrap.sh --root "$(mktemp -d)"`.
 
 The VPS systemd units live in `scripts/systemd/registry-build.service` and

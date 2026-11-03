@@ -77,10 +77,28 @@ git_global_file() {
   echo "$file"
 }
 
+append_git() {
+  # git writes into an existing section, and a later include's empty value still
+  # beats that. Move the value to a new section at the end of the file, after
+  # every include, and succeed only if git now reports it.
+  local key="$1" value="$2" file tmp rc=0
+  file="$(real_path "$(git_global_file)")" || return 1
+  tmp="$(mktemp "$file.kayak.XXXXXX")" || return 1
+  # The fragment comes from git so the value is quoted the way git reads it.
+  git config --file "$tmp" "$key" "$value" \
+    && git config --global --unset-all "$key" \
+    && { [[ -z "$(tail -c 1 "$file")" ]] || echo; cat "$tmp"; } >> "$file" \
+    || rc=$?
+  rm -f "$tmp"
+  [[ $rc -eq 0 && "$(effective_git "$key")" == "$value" ]]
+}
+
 set_git() {
   local key="$1" value="$2"
   backup "$(git_global_file)" || { warn "git $key not set (no backup)"; return 1; }
-  if git config --global "$key" "$value"; then
+  # Collapses repeated empty values too, which a plain set refuses to overwrite.
+  if git config --global --replace-all "$key" "$value" \
+    && { [[ "$(effective_git "$key")" == "$value" ]] || append_git "$key" "$value"; }; then
     changed "git $key set to '$value'"
   else
     fail "setting git $key"
@@ -326,7 +344,9 @@ main() {
   local email_flag="" email_arg=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --email) email_flag="${2:?--email needs a value}"; shift 2 ;;
+      --email)
+        [[ $# -ge 2 && -n "$2" ]] || { echo "bootstrap: --email needs a value" >&2; return 2; }
+        email_flag="$2"; shift 2 ;;
       --email=*) email_flag="${1#--email=}"; shift ;;
       --root)
         [[ $# -ge 2 ]] || { echo "bootstrap: --root needs a value" >&2; return 2; }

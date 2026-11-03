@@ -111,13 +111,16 @@ It prints one `OK` (already right), `CHANGED` (fixed now) or `WARN` (left
 alone, needs you) line per step; read the `WARN` lines. A step that could not be carried out
 (a locked git config, a failed write or backup) is `WARN … failed` and makes
 the script exit 1. If git has no `user.email` and no address was given, it
-stops with a message and exit 2 before changing anything; everything else
-exits 0.
+stops with a message and exit 2 before changing anything, as it does for bad
+arguments (`--email` without a value, say); everything else exits 0.
 
 - **git identity:** reads each key with `git config --global --includes`, so
   a value from an `include` or a matching `includeIf` file counts as set and
   is left alone. Each key is handled on its own: an empty `user.name` becomes
-  `Kanu Madhok`, an empty `user.email` takes the given address. A key set only
+  `Kanu Madhok`, an empty `user.email` takes the given address. The write is
+  checked with the same lookup; if an include later in the file still empties
+  the key, the value moves to a new `[user]` section at the end of the file,
+  and a value git still does not report is `WARN … failed`. A key set only
   by an `includeIf` that does not apply from `$HOME` is a `WARN` and is not
   written, because a value appended to the global file would override that
   include in its own directories. An include git cannot read is `WARN … failed`.

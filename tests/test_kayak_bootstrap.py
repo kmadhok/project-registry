@@ -1,6 +1,7 @@
 """Run scripts/kayak/bootstrap.sh against a temporary root, never the real host."""
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -367,6 +368,104 @@ def test_empty_identity_is_set(home):
     assert "CHANGED git user.email set to 'new@example.com'" in out
     assert git_config_noscope(home, "user.name") == "Kanu Madhok"
     assert git_config_noscope(home, "user.email") == "new@example.com"
+
+
+EMPTY_EMAIL_INCLUDE = "[include]\n\tpath = empty.inc\n"
+
+
+def write_empty_email_include(home):
+    path = home / "empty.inc"
+    path.write_text("[user]\n\temail =\n")
+    return path
+
+
+def git_config_all(home, key):
+    # Only the global file itself, so included values are not counted.
+    result = subprocess.run(
+        ["git", "config", "--global", "--no-includes", "--get-all", key],
+        env={"PATH": os.environ["PATH"], "HOME": str(home), "GIT_CONFIG_NOSYSTEM": "1"},
+        capture_output=True, text=True, cwd=home,
+    )
+    return result.stdout.splitlines()
+
+
+@pytest.mark.parametrize("config_body", [
+    # git would add the key to this section, above the include that empties it.
+    "[user]\n\tname = Existing Name\n" + EMPTY_EMAIL_INCLUDE,
+    # The key is already there, empty, above that include.
+    "[user]\n\tname = Existing Name\n\temail =\n" + EMPTY_EMAIL_INCLUDE,
+    # git refuses to overwrite a repeated key without --replace-all.
+    "[user]\n\tname = Existing Name\n\temail =\n\temail =\n" + EMPTY_EMAIL_INCLUDE,
+    # Appending must not run the new section into an unterminated last line.
+    "[user]\n\tname = Existing Name\n[include]\n\tpath = empty.inc",
+], ids=["section-above", "empty-key-above", "repeated-empty-key", "no-final-newline"])
+def test_write_beats_a_later_include_with_an_empty_value(home, config_body):
+    fake_nvm(home)
+    config = write_gitconfig(home, config_body)
+    included = write_empty_email_include(home)
+    included_before = included.read_bytes()
+
+    first = run(home, "--email", "new@example.com")
+    assert "OK      git user.name is 'Existing Name'" in first
+    assert "CHANGED git user.email set to 'new@example.com'" in first
+    assert git_config_effective(home, "user.email") == "new@example.com"
+    assert git_config_noscope(home, "user.email") == "new@example.com"
+    assert git_config_effective(home, "user.name") == "Existing Name"
+    # One value in the file, so a later plain `git config` can still replace it.
+    assert git_config_all(home, "user.email") == ["new@example.com"]
+    assert included.read_bytes() == included_before
+    assert [p.read_text() for p in home.glob(config.name + ".bak.*")] == [config_body]
+    assert not list(home.glob("*.kayak.*"))
+
+    before = disk_state(home)
+    second = run(home, "--email", "new@example.com")
+    assert set(statuses(second)) == {"OK"}, second
+    assert disk_state(home) == before
+
+
+def test_write_beats_a_later_empty_include_through_a_symlink(home):
+    fake_nvm(home)
+    target = home / "dotfiles/gitconfig"
+    target.parent.mkdir()
+    target.write_text(f"[user]\n\tname = Existing Name\n[include]\n\tpath = {home}/empty.inc\n")
+    link = home / (".git" + "config")
+    link.symlink_to(target)
+    write_empty_email_include(home)
+
+    out = run(home, "--email", "new@example.com")
+    assert "CHANGED git user.email set to 'new@example.com'" in out
+    assert link.is_symlink()
+    assert git_config_effective(home, "user.email") == "new@example.com"
+    assert git_config_all(home, "user.email") == ["new@example.com"]
+
+
+def test_write_git_does_not_report_is_a_failure(home, tmp_path):
+    # A stub keeps the effective lookup empty whatever is written, so CHANGED
+    # could only come from trusting the write rather than checking it.
+    fake_nvm(home)
+    stubs = tmp_path / "stubs"
+    stubs.mkdir()
+    (stubs / "git").write_text(
+        "#!/bin/sh\n"
+        'case " $* " in *" --includes --get user.email "*) exit 0 ;; esac\n'
+        f'exec "{shutil.which("git")}" "$@"\n'
+    )
+    (stubs / "git").chmod(0o755)
+    out = run(home, "--email", "new@example.com", returncode=1,
+              path=f"{stubs}:{os.environ['PATH']}")
+    assert "WARN    setting git user.email failed" in out
+    assert "CHANGED git user.email" not in out
+    assert "1 failure(s)" in out
+
+
+@pytest.mark.parametrize("args", [("--email",), ("--email", "")], ids=["missing", "empty"])
+def test_email_flag_without_a_value_stops_cleanly(home, args):
+    fake_nvm(home)
+    before = snapshot(home)
+    result = run_raw(home, *args)
+    assert result.returncode == 2
+    assert result.stderr.strip() == "bootstrap: --email needs a value"
+    assert snapshot(home) == before
 
 
 def test_second_run_is_all_ok_and_writes_nothing(home):

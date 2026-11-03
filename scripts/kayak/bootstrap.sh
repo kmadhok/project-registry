@@ -1,0 +1,409 @@
+#!/usr/bin/env bash
+# Manual, idempotent setup of a kayak-style build host user account.
+#
+#   scripts/kayak/bootstrap.sh [--email <address> | <address>] [--root <dir>]
+#
+# The email comes from --email, then the first argument, then GIT_EMAIL, and is
+# only needed when git has no user.email; without one there, the script stops
+# with a message before changing anything.
+#
+# Sets a missing git identity (values from included config files count as
+# set), points ~/.nvm/current at nvm's default node, links node/npm/npx/codex
+# into ~/.local/bin, adds PATH entries for login shells, SSH non-interactive
+# shells, and future systemd user sessions, and creates ~/scratch and ~/runs. Every step prints OK (already right), CHANGED
+# (fixed now), or WARN (left alone; needs a human). Existing files are backed
+# up to <file>.bak.<timestamp> before they are edited (symlinks at their
+# target), never edited when that backup fails, and never overwritten when
+# they are real files rather than links this script manages. A step that
+# fails prints WARN ... failed and the script exits 1. The .wslconfig reminder
+# at the end is only printed; that file is never read or written.
+#
+# --root <dir> (or KAYAK_BOOTSTRAP_ROOT) treats <dir> as $HOME and isolates git
+# to the global config under <dir>, so tests never touch the real account. Nothing here
+# installs packages, starts services, or changes a running systemd manager.
+set -u
+
+NAME_DEFAULT="Kanu Madhok"
+BLOCK_BEGIN="# >>> kayak-bootstrap PATH >>>"
+BLOCK_END="# <<< kayak-bootstrap PATH <<<"
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+WARNINGS=0
+FAILURES=0
+BACKED_UP=""
+
+ok() { echo "OK      $*"; }
+changed() { echo "CHANGED $*"; }
+warn() { echo "WARN    $*"; WARNINGS=$((WARNINGS + 1)); }
+fail() { warn "$* failed"; FAILURES=$((FAILURES + 1)); }
+
+usage() {
+  sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+real_path() {
+  # The file an edit through "$1" actually writes: a symlink's final target.
+  if [[ -L "$1" ]]; then readlink -f "$1"; else echo "$1"; fi
+}
+
+backup() {
+  # Copy an existing file (a symlink's target) aside before the first edit.
+  # Once per file per run, so a second edit cannot clobber the original copy.
+  # Returns non-zero, so the caller skips its edit, when the copy fails.
+  local file dest n=0
+  file="$(real_path "$1")" || { fail "resolving $1"; return 1; }
+  [[ -e "$file" ]] || return 0
+  [[ " $BACKED_UP " == *" $file "* ]] && return 0
+  dest="$file.bak.$STAMP"
+  while [[ -e "$dest" || -L "$dest" ]]; do n=$((n + 1)); dest="$file.bak.$STAMP.$n"; done
+  if ! cp -p "$file" "$dest"; then
+    rm -f "$dest"
+    fail "backup of $file"
+    return 1
+  fi
+  BACKED_UP="$BACKED_UP $file"
+  echo "        backup: $dest"
+}
+
+git_global_file() {
+  # The file `git config --global` writes: GIT_CONFIG_GLOBAL, else
+  # ~/.gitconfig, else the XDG config when only that one exists.
+  local file xdg="${XDG_CONFIG_HOME:-$HOME/.config}/git/config"
+  if [[ -n "${GIT_CONFIG_GLOBAL:-}" ]]; then
+    file="$GIT_CONFIG_GLOBAL"
+  else
+    file="$HOME/.gitconfig"
+    [[ ! -e "$file" && ! -L "$file" && -e "$xdg" ]] && file="$xdg"
+  fi
+  echo "$file"
+}
+
+append_git() {
+  # git writes into an existing section, and a later include's empty value still
+  # beats that. Move the value to a new section at the end of the file, after
+  # every include, and succeed only if git now reports it.
+  local key="$1" value="$2" file tmp rc=0
+  file="$(real_path "$(git_global_file)")" || return 1
+  tmp="$(mktemp "$file.kayak.XXXXXX")" || return 1
+  # The fragment comes from git so the value is quoted the way git reads it.
+  git config --file "$tmp" "$key" "$value" \
+    && git config --global --unset-all "$key" \
+    && { [[ -z "$(tail -c 1 "$file")" ]] || echo; cat "$tmp"; } >> "$file" \
+    || rc=$?
+  rm -f "$tmp"
+  [[ $rc -eq 0 && "$(effective_git "$key")" == "$value" ]]
+}
+
+set_git() {
+  local key="$1" value="$2"
+  backup "$(git_global_file)" || { warn "git $key not set (no backup)"; return 1; }
+  # Collapses repeated empty values too, which a plain set refuses to overwrite.
+  if git config --global --replace-all "$key" "$value" \
+    && { [[ "$(effective_git "$key")" == "$value" ]] || append_git "$key" "$value"; }; then
+    changed "git $key set to '$value'"
+  else
+    fail "setting git $key"
+  fi
+}
+
+effective_git() {
+  # The value git itself would use, with include and includeIf files applied.
+  # --global alone skips them. Run from HOME so the answer does not depend on
+  # where the script was started. Exit 1 only means unset; anything else (an
+  # unreadable include, say) means the value is unknown.
+  git -C "$HOME" config --global --includes --get "$1" 2>/dev/null
+}
+
+conditional_git() {
+  # Succeeds when an includeIf file that does not apply from HOME sets the key.
+  # A value written to the global file lands after that includeIf and would
+  # override it in the directories it is meant for.
+  local key="$1" origin entry file
+  while IFS= read -r -d '' origin && IFS= read -r -d '' entry; do
+    file="${entry#*$'\n'}"
+    # git resolves a relative include path against the file that names it.
+    [[ "$file" == /* ]] || file="$(dirname "${origin#file:}")/$file"
+    [[ -n "$(git config --file "$file" --includes --get "$key" 2>/dev/null)" ]] && return 0
+  done < <(git -C "$HOME" config --global --includes --show-origin --type=path -z \
+    --get-regexp '^includeif\..*\.path$' 2>/dev/null)
+  return 1
+}
+
+setup_identity_key() {
+  # Set one identity key only when git's effective value is empty.
+  local key="$1" value="$2" current rc=0
+  current="$(effective_git "$key")" || rc=$?
+  if [[ $rc -gt 1 ]]; then
+    fail "reading git $key"
+  elif [[ -n "$current" ]]; then
+    ok "git $key is '$current'"
+  elif conditional_git "$key"; then
+    warn "git $key is only set by an includeIf file that does not apply in $HOME; left alone"
+  else
+    set_git "$key" "$value"
+  fi
+}
+
+email_is_missing() {
+  # True only when user.email is really unset and no value was given.
+  local current rc=0
+  [[ -z "$EMAIL" ]] || return 1
+  current="$(effective_git user.email)" || rc=$?
+  [[ $rc -le 1 && -z "$current" ]] && ! conditional_git user.email
+}
+
+setup_git() {
+  setup_identity_key user.name "$NAME_DEFAULT"
+  setup_identity_key user.email "$EMAIL"
+}
+
+resolve_alias() {
+  # Print the installed versions/node/<dir> name an nvm alias resolves to.
+  local want="$1" depth="${2:-0}" versions="$NVM_DIR/versions/node" match
+  [[ $depth -gt 8 ]] && return 1
+  case "$want" in
+    node|stable) want="v" ;;
+    v*|[0-9]*) [[ "$want" == v* ]] || want="v$want" ;;
+    *)
+      [[ -f "$NVM_DIR/alias/$want" ]] || return 1
+      resolve_alias "$(tr -d '[:space:]' < "$NVM_DIR/alias/$want")" $((depth + 1))
+      return
+      ;;
+  esac
+  [[ -d "$versions" ]] || return 1
+  if [[ -d "$versions/$want" ]]; then
+    echo "$want"
+    return
+  fi
+  # A partial version (v22, v22.11) picks the newest installed match.
+  match="$(find "$versions" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+    | grep -E "^${want//./\\.}(\.|$)" | sort -V | tail -n 1)"
+  [[ "$want" == v ]] && match="$(find "$versions" -mindepth 1 -maxdepth 1 -type d \
+    -name 'v*' -printf '%f\n' | sort -V | tail -n 1)"
+  [[ -n "$match" ]] && echo "$match"
+}
+
+setup_nvm() {
+  local current="$NVM_DIR/current" default version target
+  if [[ ! -d "$NVM_DIR" ]]; then
+    warn "nvm not found at $NVM_DIR; node/npm/npx/codex links skipped"
+    return 1
+  fi
+  if [[ ! -f "$NVM_DIR/alias/default" ]]; then
+    warn "nvm has no default alias ($NVM_DIR/alias/default); run 'nvm alias default <version>'"
+    return 1
+  fi
+  default="$(tr -d '[:space:]' < "$NVM_DIR/alias/default")"
+  if ! version="$(resolve_alias "$default")" || [[ -z "$version" ]]; then
+    warn "nvm default '$default' does not match an installed version"
+    return 1
+  fi
+  target="$NVM_DIR/versions/node/$version"
+  if [[ -L "$current" && "$(readlink "$current")" == "$target" ]]; then
+    ok "$current -> $version"
+  elif [[ -L "$current" || ! -e "$current" ]]; then
+    if ! ln -sfn "$target" "$current"; then
+      fail "linking $current -> $version"
+      return 1
+    fi
+    changed "$current -> $version (nvm default '$default')"
+  else
+    warn "$current is a real file or directory; left alone"
+    return 1
+  fi
+}
+
+link_tools() {
+  local bin="$HOME/.local/bin" tool source link
+  mkdir -p "$bin" || { fail "creating $bin"; return; }
+  for tool in node npm npx codex; do
+    source="$NVM_DIR/current/bin/$tool"
+    link="$bin/$tool"
+    if [[ ! -e "$source" ]]; then
+      warn "$tool is not installed under $NVM_DIR/current/bin; $link not linked"
+    elif [[ -L "$link" && "$(readlink "$link")" == "$source" ]]; then
+      ok "$link -> $source"
+    elif [[ -L "$link" || ! -e "$link" ]]; then
+      if ln -sfn "$source" "$link"; then
+        changed "$link -> $source"
+      else
+        fail "linking $link -> $source"
+      fi
+    else
+      warn "$link is a real file; left alone (remove it to use the nvm $tool)"
+    fi
+  done
+}
+
+path_block() {
+  cat <<EOF
+$BLOCK_BEGIN
+# Managed by project-registry scripts/kayak/bootstrap.sh. Placed above any
+# interactive-only guard so ssh commands and unattended shells see the tools.
+for _kayak_dir in "\$HOME/.nvm/current/bin" "\$HOME/.local/bin" "\$HOME/bin"; do
+  case ":\$PATH:" in *":\$_kayak_dir:"*) ;; *) PATH="\$_kayak_dir:\$PATH" ;; esac
+done
+unset _kayak_dir
+export PATH
+$BLOCK_END
+EOF
+}
+
+strip_block() {
+  awk -v b="$BLOCK_BEGIN" -v e="$BLOCK_END" '
+    $0 == b { skip = 1; next }
+    $0 == e { skip = 0; next }
+    !skip' "$1"
+}
+
+block_line() { grep -nxF "$BLOCK_BEGIN" "$1" 2>/dev/null | head -n 1 | cut -d: -f1; }
+
+ensure_block() {
+  # Keep exactly one current PATH block, before the file's first `return`
+  # (bashrc's interactive guard) when there is one.
+  local file="$1" label="$2" at guard tmp
+  # Edit a dotfiles-managed symlink's target rather than replacing the link.
+  [[ -L "$file" ]] && file="$(readlink -f "$file")"
+  at="$(block_line "$file")"
+  guard="$(grep -nE '^[^#]*\breturn\b' "$file" 2>/dev/null | head -n 1 | cut -d: -f1)"
+  if [[ -n "$at" ]] && { [[ -z "$guard" ]] || (( at < guard )); } \
+    && diff -q <(awk -v b="$BLOCK_BEGIN" -v e="$BLOCK_END" \
+      '$0 == b { on = 1 } on { print } $0 == e { exit }' "$file") <(path_block) >/dev/null; then
+    ok "$label PATH block in $file"
+    return
+  fi
+  if [[ -e "$file" ]]; then
+    backup "$file" || { warn "$label PATH block not written to $file (no backup)"; return; }
+  fi
+  if ! tmp="$(mktemp "$file.kayak.XXXXXX")"; then
+    fail "writing $label PATH block in $file"
+    return
+  fi
+  if [[ -e "$file" ]]; then
+    { path_block && echo && strip_block "$file"; } > "$tmp" \
+      && { chmod --reference="$file" "$tmp" 2>/dev/null || true; }
+  else
+    path_block > "$tmp"
+  fi && mv "$tmp" "$file" || {
+    rm -f "$tmp"
+    fail "writing $label PATH block in $file"
+    return
+  }
+  changed "$label PATH block in $file"
+}
+
+setup_shells() {
+  local login="$HOME/.profile"
+  # bash reads the first of these that exists and ignores .profile after it.
+  if [[ -f "$HOME/.bash_profile" ]]; then login="$HOME/.bash_profile"
+  elif [[ -f "$HOME/.bash_login" ]]; then login="$HOME/.bash_login"
+  fi
+  ensure_block "$login" "login-shell"
+  ensure_block "$HOME/.bashrc" "ssh/non-interactive"
+}
+
+setup_systemd_env() {
+  # Read by the systemd user manager when it next starts; this script never
+  # pushes the value into a running manager.
+  local dir="$HOME/.config/environment.d" file want
+  file="$dir/50-kayak-path.conf"
+  want="# Managed by project-registry scripts/kayak/bootstrap.sh
+PATH=$HOME/bin:$HOME/.local/bin:$HOME/.nvm/current/bin:\${PATH:-/usr/local/bin:/usr/bin:/bin}"
+  mkdir -p "$dir" || { fail "creating $dir"; return; }
+  if [[ -f "$file" && "$(cat "$file" 2>/dev/null)" == "$want" ]]; then
+    ok "systemd user PATH in $file"
+    return
+  fi
+  backup "$file" || { warn "systemd user PATH not written to $file (no backup)"; return; }
+  # Writing through a symlink edits its (backed-up) target and keeps the link.
+  if ! printf '%s\n' "$want" > "$file"; then
+    fail "writing systemd user PATH in $file"
+    return
+  fi
+  changed "systemd user PATH in $file (applies to the next user-manager start)"
+}
+
+setup_dirs() {
+  local dir
+  for dir in "$HOME/scratch" "$HOME/runs"; do
+    if [[ -d "$dir" ]]; then
+      ok "directory $dir"
+    elif [[ -e "$dir" ]]; then
+      warn "$dir exists and is not a directory; left alone"
+    else
+      if mkdir -p "$dir"; then
+        changed "directory $dir"
+      else
+        fail "creating directory $dir"
+      fi
+    fi
+  done
+}
+
+main() {
+  local root="${KAYAK_BOOTSTRAP_ROOT-}" root_set="${KAYAK_BOOTSTRAP_ROOT+1}" resolved
+  local email_flag="" email_arg=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --email)
+        [[ $# -ge 2 && -n "$2" ]] || { echo "bootstrap: --email needs a value" >&2; return 2; }
+        email_flag="$2"; shift 2 ;;
+      --email=*) email_flag="${1#--email=}"; shift ;;
+      --root)
+        [[ $# -ge 2 ]] || { echo "bootstrap: --root needs a value" >&2; return 2; }
+        root="$2"; root_set=1; shift 2 ;;
+      --root=*) root="${1#--root=}"; root_set=1; shift ;;
+      -h|--help) usage; return 0 ;;
+      -*) echo "bootstrap: unknown argument: $1" >&2; usage >&2; return 2 ;;
+      *)
+        if [[ -n "$email_arg" ]]; then
+          echo "bootstrap: unexpected argument: $1" >&2; usage >&2; return 2
+        fi
+        email_arg="$1"; shift ;;
+    esac
+  done
+  EMAIL="${email_flag:-${email_arg:-${GIT_EMAIL:-}}}"
+  if [[ -n "$root_set" ]]; then
+    # An explicit root that is empty or unusable must stop here: falling back
+    # to the inherited HOME (or an empty one) would edit the real account.
+    if [[ -z "$root" ]]; then
+      echo "bootstrap: --root/KAYAK_BOOTSTRAP_ROOT is empty" >&2
+      return 2
+    fi
+    if ! mkdir -p -- "$root" 2>/dev/null || [[ ! -d "$root" ]]; then
+      echo "bootstrap: cannot create root directory: $root" >&2
+      return 2
+    fi
+    if ! resolved="$(cd -- "$root" 2>/dev/null && pwd)" || [[ -z "$resolved" ]]; then
+      echo "bootstrap: cannot enter root directory: $root" >&2
+      return 2
+    fi
+    HOME="$resolved"
+    export HOME
+    # Global git config then resolves under the new HOME (~/.gitconfig or
+    # ~/.config/git/config) exactly as it does on a real account.
+    unset GIT_CONFIG_GLOBAL XDG_CONFIG_HOME
+    export GIT_CONFIG_NOSYSTEM=1
+    NVM_DIR="$HOME/.nvm"
+  else
+    NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  fi
+  if email_is_missing; then
+    echo "bootstrap: git user.email is unset; rerun with --email <address> or GIT_EMAIL=<address>" >&2
+    return 2
+  fi
+  echo "kayak bootstrap for HOME=$HOME"
+
+  setup_git
+  if setup_nvm; then
+    link_tools
+  fi
+  setup_shells
+  setup_systemd_env
+  setup_dirs
+  echo "NOTE    reminder: WSL memory and CPU limits live in .wslconfig in the Windows user profile; check it by hand"
+
+  echo "done: $WARNINGS warning(s), $FAILURES failure(s)"
+  [[ $FAILURES -eq 0 ]]
+}
+
+main "$@"

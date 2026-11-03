@@ -1,17 +1,22 @@
 #!/usr/bin/env bash
 # Manual, idempotent setup of a kayak-style build host user account.
 #
-#   scripts/kayak/bootstrap.sh [--email <address>] [--root <dir>]
+#   scripts/kayak/bootstrap.sh [--email <address> | <address>] [--root <dir>]
 #
-# Sets a missing git identity, points ~/.nvm/current at nvm's default node,
-# links node/npm/npx/codex into ~/.local/bin, adds PATH entries for login
-# shells, SSH non-interactive shells, and future systemd user sessions, and
-# creates ~/scratch and ~/runs. Every step prints OK (already right), CHANGED
+# The email comes from --email, then the first argument, then GIT_EMAIL, and is
+# only needed when git has no user.email; without one there, the script stops
+# with a message before changing anything.
+#
+# Sets a missing git identity (values from included config files count as
+# set), points ~/.nvm/current at nvm's default node, links node/npm/npx/codex
+# into ~/.local/bin, adds PATH entries for login shells, SSH non-interactive
+# shells, and future systemd user sessions, and creates ~/scratch and ~/runs. Every step prints OK (already right), CHANGED
 # (fixed now), or WARN (left alone; needs a human). Existing files are backed
 # up to <file>.bak.<timestamp> before they are edited (symlinks at their
 # target), never edited when that backup fails, and never overwritten when
 # they are real files rather than links this script manages. A step that
-# fails prints WARN ... failed and the script exits 1.
+# fails prints WARN ... failed and the script exits 1. The .wslconfig reminder
+# at the end is only printed; that file is never read or written.
 #
 # --root <dir> (or KAYAK_BOOTSTRAP_ROOT) treats <dir> as $HOME and isolates git
 # to the global config under <dir>, so tests never touch the real account. Nothing here
@@ -32,7 +37,7 @@ warn() { echo "WARN    $*"; WARNINGS=$((WARNINGS + 1)); }
 fail() { warn "$* failed"; FAILURES=$((FAILURES + 1)); }
 
 usage() {
-  sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'
 }
 
 real_path() {
@@ -82,22 +87,55 @@ set_git() {
   fi
 }
 
+effective_git() {
+  # The value git itself would use, with include and includeIf files applied.
+  # --global alone skips them. Run from HOME so the answer does not depend on
+  # where the script was started. Exit 1 only means unset; anything else (an
+  # unreadable include, say) means the value is unknown.
+  git -C "$HOME" config --global --includes --get "$1" 2>/dev/null
+}
+
+conditional_git() {
+  # Succeeds when an includeIf file that does not apply from HOME sets the key.
+  # A value written to the global file lands after that includeIf and would
+  # override it in the directories it is meant for.
+  local key="$1" origin entry file
+  while IFS= read -r -d '' origin && IFS= read -r -d '' entry; do
+    file="${entry#*$'\n'}"
+    # git resolves a relative include path against the file that names it.
+    [[ "$file" == /* ]] || file="$(dirname "${origin#file:}")/$file"
+    [[ -n "$(git config --file "$file" --includes --get "$key" 2>/dev/null)" ]] && return 0
+  done < <(git -C "$HOME" config --global --includes --show-origin --type=path -z \
+    --get-regexp '^includeif\..*\.path$' 2>/dev/null)
+  return 1
+}
+
+setup_identity_key() {
+  # Set one identity key only when git's effective value is empty.
+  local key="$1" value="$2" current rc=0
+  current="$(effective_git "$key")" || rc=$?
+  if [[ $rc -gt 1 ]]; then
+    fail "reading git $key"
+  elif [[ -n "$current" ]]; then
+    ok "git $key is '$current'"
+  elif conditional_git "$key"; then
+    warn "git $key is only set by an includeIf file that does not apply in $HOME; left alone"
+  else
+    set_git "$key" "$value"
+  fi
+}
+
+email_is_missing() {
+  # True only when user.email is really unset and no value was given.
+  local current rc=0
+  [[ -z "$EMAIL" ]] || return 1
+  current="$(effective_git user.email)" || rc=$?
+  [[ $rc -le 1 && -z "$current" ]] && ! conditional_git user.email
+}
+
 setup_git() {
-  local name email
-  name="$(git config --global --get user.name 2>/dev/null || true)"
-  if [[ -n "$name" ]]; then
-    ok "git user.name is '$name'"
-  else
-    set_git user.name "$NAME_DEFAULT"
-  fi
-  email="$(git config --global --get user.email 2>/dev/null || true)"
-  if [[ -n "$email" ]]; then
-    ok "git user.email is '$email'"
-  elif [[ -n "$EMAIL" ]]; then
-    set_git user.email "$EMAIL"
-  else
-    warn "git user.email is unset; rerun with --email <address> or GIT_EMAIL=<address>"
-  fi
+  setup_identity_key user.name "$NAME_DEFAULT"
+  setup_identity_key user.email "$EMAIL"
 }
 
 resolve_alias() {
@@ -285,19 +323,25 @@ setup_dirs() {
 
 main() {
   local root="${KAYAK_BOOTSTRAP_ROOT-}" root_set="${KAYAK_BOOTSTRAP_ROOT+1}" resolved
-  EMAIL="${GIT_EMAIL:-}"
+  local email_flag="" email_arg=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --email) EMAIL="${2:?--email needs a value}"; shift 2 ;;
-      --email=*) EMAIL="${1#--email=}"; shift ;;
+      --email) email_flag="${2:?--email needs a value}"; shift 2 ;;
+      --email=*) email_flag="${1#--email=}"; shift ;;
       --root)
         [[ $# -ge 2 ]] || { echo "bootstrap: --root needs a value" >&2; return 2; }
         root="$2"; root_set=1; shift 2 ;;
       --root=*) root="${1#--root=}"; root_set=1; shift ;;
       -h|--help) usage; return 0 ;;
-      *) echo "bootstrap: unknown argument: $1" >&2; usage >&2; return 2 ;;
+      -*) echo "bootstrap: unknown argument: $1" >&2; usage >&2; return 2 ;;
+      *)
+        if [[ -n "$email_arg" ]]; then
+          echo "bootstrap: unexpected argument: $1" >&2; usage >&2; return 2
+        fi
+        email_arg="$1"; shift ;;
     esac
   done
+  EMAIL="${email_flag:-${email_arg:-${GIT_EMAIL:-}}}"
   if [[ -n "$root_set" ]]; then
     # An explicit root that is empty or unusable must stop here: falling back
     # to the inherited HOME (or an empty one) would edit the real account.
@@ -323,6 +367,10 @@ main() {
   else
     NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
   fi
+  if email_is_missing; then
+    echo "bootstrap: git user.email is unset; rerun with --email <address> or GIT_EMAIL=<address>" >&2
+    return 2
+  fi
   echo "kayak bootstrap for HOME=$HOME"
 
   setup_git
@@ -332,6 +380,7 @@ main() {
   setup_shells
   setup_systemd_env
   setup_dirs
+  echo "NOTE    reminder: WSL memory and CPU limits live in .wslconfig in the Windows user profile; check it by hand"
 
   echo "done: $WARNINGS warning(s), $FAILURES failure(s)"
   [[ $FAILURES -eq 0 ]]

@@ -104,17 +104,25 @@ hand on the host, once and again after installing a new node or Codex; it is
 idempotent, and nothing schedules or activates it:
 
 ```bash
-scripts/kayak/bootstrap.sh --email <address>   # or GIT_EMAIL=<address>
+scripts/kayak/bootstrap.sh --email <address>   # or <address> as the first argument, or GIT_EMAIL=<address>
 ```
 
 It prints one `OK` (already right), `CHANGED` (fixed now) or `WARN` (left
 alone, needs you) line per step; read the `WARN` lines. A step that could not be carried out
 (a locked git config, a failed write or backup) is `WARN … failed` and makes
-the script exit 1; everything else exits 0.
+the script exit 1. If git has no `user.email` and no address was given, it
+stops with a message and exit 2 before changing anything; everything else
+exits 0.
 
-- **git identity:** sets `user.name` to `Kanu Madhok` and `user.email` from
-  `--email`/`GIT_EMAIL` only when they are unset. An existing identity is
-  never changed; a missing email with no value given is a `WARN`.
+- **git identity:** reads each key with `git config --global --includes`, so
+  a value from an `include` or a matching `includeIf` file counts as set and
+  is left alone. Each key is handled on its own: an empty `user.name` becomes
+  `Kanu Madhok`, an empty `user.email` takes the given address. A key set only
+  by an `includeIf` that does not apply from `$HOME` is a `WARN` and is not
+  written, because a value appended to the global file would override that
+  include in its own directories. An include git cannot read is `WARN … failed`.
+  To check by hand, pass `--includes`: plain `git config --global user.name`
+  skips included files and prints nothing for such an identity.
 - **node tools:** resolves nvm's `alias/default` (`22`, `v22.11.0`, `node`,
   `lts/*`) to an installed version, points `~/.nvm/current` at it (the path
   the systemd units use), and links `node`, `npm`, `npx`, `codex` from
@@ -130,6 +138,7 @@ the script exit 1; everything else exits 0.
   script does not touch the running manager; the units set `PATH` themselves.
 - **directories:** `~/scratch` and `~/runs`, for work files that would
   otherwise pile up in `/tmp`.
+- **`.wslconfig`:** a printed reminder only. The script never reads or writes it.
 
 Every edited file is first copied to `<file>.bak.<utc>` — for a symlink,
 its target, and for git the global file git actually writes (`~/.gitconfig`,

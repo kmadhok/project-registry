@@ -34,10 +34,10 @@ def fake_nvm(home, versions=("v20.18.0", "v22.9.0", "v22.11.0"), default="22",
     return nvm
 
 
-def run(home, *args, email=None, returncode=0):
+def run(home, *args, email=None, returncode=0, path=None):
     # A scrubbed environment: no real HOME, git config, or NVM_DIR leaks in.
     env = {
-        "PATH": os.environ["PATH"],
+        "PATH": path or os.environ["PATH"],
         "HOME": str(home.parent / "not-home"),
         "GIT_CONFIG_GLOBAL": str(home.parent / "not-home/.gitconfig"),
         "NVM_DIR": str(home.parent / "not-home/.nvm"),
@@ -50,6 +50,54 @@ def run(home, *args, email=None, returncode=0):
     assert result.returncode == returncode, result.stdout + result.stderr
     assert not (home.parent / "not-home").exists()
     return result.stdout
+
+
+def run_raw(home, *args, env=None):
+    # For runs expected to stop early: no assertion on the exit code.
+    return subprocess.run(
+        ["bash", str(SCRIPT), "--root", str(home), *args],
+        env={"PATH": os.environ["PATH"], "LANG": "C", "HOME": str(home.parent / "not-home"),
+             **(env or {})},
+        capture_output=True, text=True, timeout=60,
+    )
+
+
+def write_gitconfig(home, body):
+    # The one place tests name this dotfile for a plain write.
+    path = home / (".git" + "config")
+    path.write_text(body)
+    return path
+
+
+def write_included_identity(home, name="Existing Name", email="existing@example.com",
+                            filename="identity.inc"):
+    lines = ["[user]"]
+    if name:
+        lines.append(f"\tname = {name}")
+    if email:
+        lines.append(f"\temail = {email}")
+    path = home / filename
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
+def git_config_effective(home, key, cwd=None):
+    """What git uses: --global skips includes unless --includes is passed."""
+    result = subprocess.run(
+        ["git", "config", "--global", "--includes", "--get", key],
+        env={"PATH": os.environ["PATH"], "HOME": str(home), "GIT_CONFIG_NOSYSTEM": "1"},
+        capture_output=True, text=True, cwd=cwd or home,
+    )
+    return result.stdout.strip()
+
+
+def git_config_noscope(home, key):
+    result = subprocess.run(
+        ["git", "config", key],
+        env={"PATH": os.environ["PATH"], "HOME": str(home), "GIT_CONFIG_NOSYSTEM": "1"},
+        capture_output=True, text=True, cwd=home,
+    )
+    return result.stdout.strip()
 
 
 def git_config(home, key):
@@ -66,6 +114,24 @@ def snapshot(home):
         str(p.relative_to(home)): (os.readlink(p) if p.is_symlink() else p.read_bytes())
         for p in sorted(home.rglob("*")) if p.is_symlink() or p.is_file()
     }
+
+
+def snapshot_of_fake_nvm_only(home):
+    return {path: value for path, value in snapshot(home).items() if path.startswith(".nvm/")}
+
+
+def disk_state(home):
+    """Content, inode and mtime of everything under home, to prove no writes."""
+    state = {}
+    for path in sorted(home.rglob("*")):
+        info = path.lstat()
+        content = None
+        if path.is_symlink():
+            content = os.readlink(path)
+        elif path.is_file():
+            content = path.read_bytes()
+        state[str(path.relative_to(home))] = (content, info.st_ino, info.st_mtime_ns)
+    return state
 
 
 def statuses(output):
@@ -140,18 +206,188 @@ def test_existing_identity_is_preserved(home):
     assert not list(home.glob(".gitconfig.bak.*"))
 
 
-def test_missing_email_warns_and_argument_wins_over_env(home):
+def test_missing_email_with_empty_identity_exits_with_the_message(home):
     fake_nvm(home)
-    out = run(home)
-    assert "WARN    git user.email is unset" in out
-    assert git_config(home, "user.email") == ""
-    assert git_config(home, "user.name") == "Kanu Madhok"
+    result = run_raw(home)
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "git user.email is unset" in result.stderr
+    assert "--email" in result.stderr
+    assert statuses(result.stdout) == []
+    assert snapshot(home) == snapshot_of_fake_nvm_only(home)
+    assert git_config(home, "user.name") == ""
 
-    out = run(home, "--email", "arg@example.com", email="env@example.com")
+
+def test_argument_wins_over_env(home):
+    fake_nvm(home)
+    write_gitconfig(home, "[core]\n\teditor = vim\n")
+    run(home, "--email", "arg@example.com", email="env@example.com")
     assert git_config(home, "user.email") == "arg@example.com"
-    # The pre-edit config was backed up once, before the email was added.
+    assert git_config(home, "user.name") == "Kanu Madhok"
+    # The pre-edit config is backed up once, though both keys were written.
     backups = list(home.glob(".gitconfig.bak.*"))
     assert len(backups) == 1 and "email" not in backups[0].read_text()
+
+
+def test_email_precedence_flag_then_first_argument_then_env(home):
+    fake_nvm(home)
+    run(home, "first@example.com", email="env@example.com")
+    assert git_config(home, "user.email") == "first@example.com"
+
+    other = home.parent / "other"
+    other.mkdir()
+    run(other, "first@example.com", "--email", "flag@example.com")
+    assert git_config(other, "user.email") == "flag@example.com"
+
+    result = run_raw(other, "one@example.com", "two@example.com")
+    assert result.returncode == 2
+    assert "unexpected argument: two@example.com" in result.stderr
+
+
+def test_email_is_not_hard_coded():
+    text = SCRIPT.read_text()
+    assert not [word for word in text.split() if "@" in word and "." in word.split("@")[-1]]
+
+
+def test_identity_from_include_file_is_kept(home):
+    fake_nvm(home)
+    config = write_gitconfig(home, "[include]\n\tpath = identity.inc\n")
+    included = write_included_identity(home)
+    config_before, included_before = config.read_bytes(), included.read_bytes()
+
+    out = run(home, "--email", "new@example.com")
+
+    assert "OK      git user.name is 'Existing Name'" in out
+    assert "OK      git user.email is 'existing@example.com'" in out
+    assert "CHANGED git" not in out
+    assert config.read_bytes() == config_before
+    assert included.read_bytes() == included_before
+    assert not list(home.glob(".gitconfig.bak.*"))
+    assert git_config_effective(home, "user.name") == "Existing Name"
+    assert git_config_effective(home, "user.email") == "existing@example.com"
+    # Scope-less lookups (what git commit sees) apply includes by default.
+    assert git_config_noscope(home, "user.name") == "Existing Name"
+    assert git_config_noscope(home, "user.email") == "existing@example.com"
+    # Nothing was copied into the top-level file either.
+    assert git_config(home, "user.name") == ""
+
+
+def test_identity_from_nested_include_is_kept(home):
+    fake_nvm(home)
+    write_gitconfig(home, "[include]\n\tpath = outer.inc\n")
+    (home / "outer.inc").write_text("[include]\n\tpath = identity.inc\n")
+    write_included_identity(home)
+    out = run(home, "--email", "new@example.com")
+    assert "CHANGED git" not in out
+    assert git_config_effective(home, "user.email") == "existing@example.com"
+
+
+def test_identity_keys_are_handled_independently(home):
+    fake_nvm(home)
+    write_gitconfig(home, "[include]\n\tpath = identity.inc\n")
+    write_included_identity(home, email=None)
+    out = run(home, "--email", "new@example.com")
+    assert "OK      git user.name is 'Existing Name'" in out
+    assert "CHANGED git user.email set to 'new@example.com'" in out
+    assert git_config_effective(home, "user.name") == "Existing Name"
+    assert git_config_effective(home, "user.email") == "new@example.com"
+
+    other = home.parent / "other"
+    other.mkdir()
+    write_gitconfig(other, "[include]\n\tpath = identity.inc\n")
+    write_included_identity(other, name=None)
+    # The email is present in the include, so no address is needed here.
+    out = run(other)
+    assert "CHANGED git user.name set to 'Kanu Madhok'" in out
+    assert "OK      git user.email is 'existing@example.com'" in out
+    assert git_config_effective(other, "user.email") == "existing@example.com"
+
+
+def test_matching_include_if_identity_is_kept(home):
+    fake_nvm(home)
+    subprocess.run(["git", "init", "-q", str(home)], check=True, capture_output=True,
+                   env={"PATH": os.environ["PATH"], "HOME": str(home), "GIT_CONFIG_NOSYSTEM": "1"})
+    config = write_gitconfig(home, '[includeIf "gitdir:~/"]\n\tpath = identity.inc\n')
+    write_included_identity(home)
+    before = config.read_bytes()
+    out = run(home, "--email", "new@example.com")
+    assert "OK      git user.name is 'Existing Name'" in out
+    assert "OK      git user.email is 'existing@example.com'" in out
+    assert config.read_bytes() == before
+
+
+@pytest.mark.parametrize("include_path", ["identity.inc", "~/identity.inc", "{home}/identity.inc"],
+                         ids=["relative", "tilde", "absolute"])
+def test_inactive_include_if_identity_is_not_shadowed(home, include_path):
+    # Elsewhere this is unset, but a value appended to the global file would
+    # override the identity inside the directories the includeIf is meant for.
+    fake_nvm(home)
+    target = include_path.format(home=home)
+    config = write_gitconfig(home, f'[includeIf "gitdir:~/my work/"]\n\tpath = {target}\n')
+    write_included_identity(home)
+    before = config.read_bytes()
+    out = run(home, "--email", "new@example.com")
+    assert "WARN    git user.name is only set by an includeIf file" in out
+    assert "WARN    git user.email is only set by an includeIf file" in out
+    assert "CHANGED git" not in out
+    assert config.read_bytes() == before
+
+    # And it does not count as a missing email.
+    assert run_raw(home).returncode == 0
+
+
+def test_inactive_include_if_without_identity_does_not_block_setting_it(home):
+    fake_nvm(home)
+    write_gitconfig(home, '[includeIf "gitdir:~/my work/"]\n\tpath = other.inc\n')
+    (home / "other.inc").write_text("[core]\n\teditor = vim\n")
+    run(home, "--email", "new@example.com")
+    assert git_config_effective(home, "user.email") == "new@example.com"
+
+
+def test_unreadable_include_fails_instead_of_writing(home, tmp_path):
+    # git exits 128 on an include it cannot read; the identity is then unknown,
+    # not empty. A stub git keeps this true for a root user.
+    fake_nvm(home)
+    config = write_gitconfig(home, "[include]\n\tpath = identity.inc\n")
+    before = config.read_bytes()
+    stubs = tmp_path / "stubs"
+    stubs.mkdir()
+    (stubs / "git").write_text("#!/bin/sh\necho 'fatal: unable to access' >&2\nexit 128\n")
+    (stubs / "git").chmod(0o755)
+    out = run(home, "--email", "new@example.com", returncode=1,
+              path=f"{stubs}:{os.environ['PATH']}")
+    assert "WARN    reading git user.name failed" in out
+    assert "WARN    reading git user.email failed" in out
+    assert config.read_bytes() == before
+
+
+def test_empty_identity_is_set(home):
+    fake_nvm(home)
+    out = run(home, "--email", "new@example.com")
+    assert "CHANGED git user.name set to 'Kanu Madhok'" in out
+    assert "CHANGED git user.email set to 'new@example.com'" in out
+    assert git_config_noscope(home, "user.name") == "Kanu Madhok"
+    assert git_config_noscope(home, "user.email") == "new@example.com"
+
+
+def test_second_run_is_all_ok_and_writes_nothing(home):
+    fake_nvm(home)
+    (home / ".bashrc").write_text(UBUNTU_BASHRC)
+    write_gitconfig(home, "[include]\n\tpath = identity.inc\n")
+    write_included_identity(home)
+    run(home, "--email", "new@example.com")
+
+    before = disk_state(home)
+    # No email given: the identity is already effective, so none is needed.
+    second = run(home)
+    assert set(statuses(second)) == {"OK"}, second
+    assert disk_state(home) == before
+
+
+def test_wslconfig_reminder_is_printed_and_nothing_is_created(home):
+    fake_nvm(home)
+    out = run(home, email="kanu@example.com")
+    assert "reminder" in out and ".wslconfig" in out
+    assert not list(home.parent.rglob(".wslconfig"))
 
 
 def test_unavailable_binaries_and_missing_nvm_warn(home):
@@ -312,17 +548,19 @@ def test_locked_git_config_is_reported_and_exits_nonzero(home):
     assert git_config(home, "user.email") == ""
 
 
-@pytest.mark.skipif(os.geteuid() == 0, reason="root reads unreadable files")
-def test_failed_backup_prevents_the_edit(home):
+def test_failed_backup_prevents_the_edit(home, tmp_path):
     fake_nvm(home)
     conf = home / ".config/environment.d/50-kayak-path.conf"
     conf.parent.mkdir(parents=True)
     conf.write_text("PATH=/custom\n")
-    conf.chmod(0o200)
-    try:
-        out = run(home, email="kanu@example.com", returncode=1)
-    finally:
-        conf.chmod(0o600)
+    # A failing cp on PATH, so this also holds for a root user, whom file
+    # modes would not stop.
+    stubs = tmp_path / "stubs"
+    stubs.mkdir()
+    (stubs / "cp").write_text("#!/bin/sh\nexit 1\n")
+    (stubs / "cp").chmod(0o755)
+    out = run(home, email="kanu@example.com", returncode=1,
+              path=f"{stubs}:{os.environ['PATH']}")
     assert f"WARN    backup of {conf} failed" in out
     assert "CHANGED systemd user PATH" not in out
     assert conf.read_text() == "PATH=/custom\n"

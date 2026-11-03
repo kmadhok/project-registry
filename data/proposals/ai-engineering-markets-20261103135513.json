@@ -1,0 +1,27 @@
+{
+  "id": "ai-engineering-markets-20261103135513",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-11-03T13:55:13.819978+00:00",
+  "status": "applied",
+  "rationale": "Kanu 2026-11-03, his own description of the project",
+  "source": "record_review",
+  "applied_at": "2026-11-03T13:55:13.819978+00:00",
+  "changes": {
+    "last_reviewed": {
+      "before": "2026-08-31",
+      "after": "2026-11-03"
+    },
+    "purpose": {
+      "before": "A due-diligence research spike testing whether a retail-scale systematic edge exists on Kalshi prediction markets, combining literature synthesis with stdlib-only Python scripts that census live markets and study orderbook depth.",
+      "after": "Analysis of the areas of AI an individual can invest in: where the profit goes, how to get exposure, and how the areas compare, kept current."
+    },
+    "desired_outcome": {
+      "before": "A reproducible Kalshi instrumentation layer - DuckDB ingest, decision log, markout gate, and calibration reporting - that can evaluate the section-4.7 gate (>=50 logged decisions, positive fee-adjusted expectancy) from logged data instead of ad hoc scripts.",
+      "after": "A sourced, ranked, regularly refreshed analysis of AI investment areas that Kanu can read and act on himself."
+    },
+    "next_action.reviewed": {
+      "before": "2026-08-31",
+      "after": "2026-11-03"
+    }
+  }
+}

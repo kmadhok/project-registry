@@ -1,0 +1,77 @@
+{
+  "id": "ai-engineering-markets-20261103135512",
+  "project_id": "ai-engineering-markets",
+  "created_at": "2026-11-03T13:55:12.343454+00:00",
+  "status": "applied",
+  "rationale": "Kanu 2026-11-03: this project is 'simply analysis of the different areas I can invest in on the AI side'. Replaces the Kalshi-instrumentation brief.",
+  "source": "propose",
+  "applied_at": "2026-11-03T13:55:13.058440+00:00",
+  "changes": {
+    "brief.done_criteria": {
+      "before": [
+        "a scheduled-safe ingest snapshots candidate markets to a DuckDB store with point-in-time published_at fields, and its tests pass from a clean checkout",
+        "every manual bet/pass decision is recordable with stated probability, reference class, and stake; records lacking these are rejected",
+        "the 30-day maker markout gate (fill markouts at +1h/+24h/settlement with both kill thresholds) is computable as a query over logged data",
+        "the FLAG-and-SPLIT resolution classifier is a re-runnable pipeline step with the 110-event sample as a regression fixture",
+        "a calibration report computes Brier score vs market-implied probability once decisions exist"
+      ],
+      "after": [
+        "[\"research/ai-investing/MAP.md covers the investable areas of AI (at minimum chips and accelerators",
+        "memory",
+        "networking",
+        "power and energy",
+        "data centers",
+        "cloud",
+        "models",
+        "applications",
+        "security",
+        "robotics)",
+        "and for each one says who captures the profit",
+        "how an individual can get exposure",
+        "the main risks and what would change the view\"",
+        "\"each area has its own dated memo in research/ai-investing/ in which every factual claim has a source and an A/B/C evidence tier",
+        "with valuation and financial figures dated\"",
+        "\"research/ai-investing/RANKING.md compares the areas on stated criteria",
+        "with assumptions visible and numbers reproducible by a script in the repo\"",
+        "\"every memo records the strongest case against its thesis and what evidence would prove it wrong\"",
+        "\"memos older than 30 days are refreshed",
+        "with what changed since the last version recorded at the top\"]"
+      ]
+    },
+    "brief.non_goals": {
+      "before": [
+        "no automated order placement or live capital deployment until the section-4.7 gate is met",
+        "no Project 2 (quant equity/ETF) or Project 3 (LLM feature-extraction) work",
+        "no Polymarket ingest until Kalshi maker flow is proven",
+        "no LLM-generated probabilities or forecasts feeding bet sizing",
+        "no Telegram/email digest delivery"
+      ],
+      "after": [
+        "[\"no placing orders",
+        "no connecting a brokerage or exchange account",
+        "no moving money\"",
+        "\"no further work on the Kalshi instrumentation",
+        "which stays in the repo as finished background\"",
+        "\"no paid data sources without Kanu's approval\"]"
+      ]
+    },
+    "brief.constraints": {
+      "before": [
+        "stdlib-plus-DuckDB bias: pin every new dependency in a manifest",
+        "chunk 1 of the current spec is oversized (owner note 2026-08-10) - split it before implementing",
+        "reuse the proven filter/category logic from the research scripts rather than rewriting it"
+      ],
+      "after": [
+        "[\"prefer primary sources (filings",
+        "earnings",
+        "company and government data) and label anything weaker with its tier\"",
+        "\"state uncertainty and base rates plainly; no price targets without the reasoning and data behind them\"",
+        "\"new Python dependencies are pinned\"]"
+      ]
+    },
+    "brief.reviewed": {
+      "before": "2026-08-28",
+      "after": "2026-11-03"
+    }
+  }
+}

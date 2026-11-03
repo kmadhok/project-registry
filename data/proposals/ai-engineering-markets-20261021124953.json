@@ -2,7 +2,7 @@
   "id": "ai-engineering-markets-20261021124953",
   "project_id": "ai-engineering-markets",
   "created_at": "2026-10-21T12:49:53.684533+00:00",
-  "status": "pending",
+  "status": "rejected",
   "rationale": "Run 20261021T120443Z-kayak-f712: criteria 1,2,3,5 met; criterion 4's only remaining item is chunk 2b, which the owner said waits on a separate network/API-key decision. Records that decision as an open question: build 2b (client, key, agreement bar) or count chunk 2a as meeting criterion 4.",
   "source": "propose",
   "applied_at": null,

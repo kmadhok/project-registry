@@ -46,7 +46,7 @@ active: true
 needs_review: false
 category: career-automation
 automation:
-  mode: build
+  mode: 'off'
   budget:
     chunks_per_run: 10
     minutes_per_run: 100

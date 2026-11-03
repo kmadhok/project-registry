@@ -48,6 +48,21 @@ brief:
       next to the 2026-02-05 Wayback copy. Use it as the [A] fee_coverage source; do not attempt
       live fetches from the builder. If a future refresh is needed and the live fetch fails
       again, fall back to the newest file in research/data/.'
+  - question: 'Criterion 4''s last open item is chunk 2b (LLM-backed FLAG-and-SPLIT classify_resolution).
+      Choose one. (A) Build 2b: name the LLM client library and pinned version the builder
+      may add; confirm the owner supplies an API key out of band (env var name?) with contract
+      network.allowed:true; tests that need the live provider are skipped when no key is set,
+      and offline tests use recorded responses; give the minimum agreement rate against the
+      110 verified labels that counts as acceptance (e.g. >=90%). (B) Drop 2b and count criterion
+      4 as met by chunk 2a''s re-runnable fixture-loader and 110-event regression harness.
+      Answer in one line, e.g. ''A: anthropic==X.Y, ANTHROPIC_API_KEY, skip without key, >=90%''
+      or ''B''.'
+    status: answered
+    answer: 'B. Owner decided 2026-11-03 via inbox triage: drop chunk 2b. Criterion 4 counts
+      as met by chunk 2a''s re-runnable fixture loader and 110-event regression harness. classify_resolution()
+      stays a NotImplementedError stub, so there is no LLM classifier and no API spend. Update
+      docs/SPEC.md to record 2b as dropped, not blocked. Reopen only if the owner starts logging
+      real decisions and asks for it.'
   reviewed: '2026-08-28'
 lifecycle: next
 active: true
